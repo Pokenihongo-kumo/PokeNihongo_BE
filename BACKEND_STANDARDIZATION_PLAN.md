@@ -1,6 +1,6 @@
 # Kế hoạch clean toàn bộ backend PokeNihongo — review cùng Claude
 
-Phiên bản 4 — 2026-11-02. Trạng thái: kế hoạch, chưa triển khai refactor. Giữ các quyết định v3 (migration message có chủ đích, cô lập Bull/Redis, AsyncLocalStorage native, format không tổ chức import); bổ sung LF ổn định trên Windows và Redis URL parser hỗ trợ default port/ACL username.
+Phiên bản 4 — 2026-11-02, bổ sung quy trình nhánh công việc → dev. Tiến độ triển khai thực tế ghi tại mục 12. Giữ các quyết định v3 (migration message có chủ đích, cô lập Bull/Redis, AsyncLocalStorage native, format không tổ chức import); bổ sung LF ổn định trên Windows và Redis URL parser hỗ trợ default port/ACL username.
 
 ## 1. Mục tiêu đã chốt
 
@@ -152,7 +152,7 @@ Với thay đổi hành vi có chủ đích:
 2. Ưu tiên adapter BE giữ client cũ khi chuẩn hóa nội bộ. Không sửa client chỉ để che breaking change không cần thiết.
 3. Nếu cần thay public contract, cập nhật DTO/parser/service/hook/UI/error handling của cả consumer có dùng; chia commit BE/FE/MO liên kết cùng một batch và test cả ba.
 4. BE hỗ trợ contract cũ và mới trong khoảng chuyển tiếp nếu mobile cũ còn được dùng. Không giả định web/mobile cập nhật cùng lúc. Chỉ bỏ adapter khi có bằng chứng consumer cũ đã hết hoặc một mốc chuyển đổi được chốt.
-5. Ghi thứ tự triển khai và rollback cho cả ba repo, nhưng không tự deploy/push trong task refactor.
+5. Ghi thứ tự tích hợp và rollback cho cả ba repo. Push nhánh công việc và merge vào dev theo mục 9; không tự deploy hoặc merge vào main/production.
 
 Không đổi response toàn cục trước khi hoàn thành ma trận này. Web build hoặc mobile typecheck pass không chứng minh UI/runtime tương thích.
 
@@ -317,11 +317,29 @@ Luồng end-to-end ưu tiên bổ sung qua các batch: login/refresh; web CRUD n
 
 ## 9. Quản lý tiến độ, commit và definition of done
 
+### Quy trình Git bắt buộc: nhánh công việc → dev
+
+Người dùng đã chốt: mỗi thay đổi độc lập đi qua nhánh riêng rồi merge vào `dev`. Áp dụng trong từng repo có sửa đổi; `dev` là nhánh tích hợp, không làm trực tiếp trên dev hoặc main. Khi được giao triển khai, commit/push nhánh công việc và merge vào dev là một phần của workflow; không cần hỏi lại cho mỗi thay đổi đã đạt gate. Việc cập nhật plan hiện tại không tự khởi chạy các thao tác này.
+
+1. **Chuẩn bị nền:** kiểm tra git status, remote, nhánh hiện tại và quy định branch protection/CI của repo. Fetch và cập nhật dev từ remote bằng fast-forward khi có thể; không reset/force-push để làm mất commit. Nếu repo chưa có dev, xác minh nhánh nền hiện hành rồi khởi tạo dev từ đó, không mặc định lấy toàn bộ thay đổi dở dang trên nhánh công việc.
+2. **Tạo nhánh trước khi sửa:** từ dev đã cập nhật, tạo `chore/<task>`, `fix/<task>` hoặc `refactor/<task>`. Một task là một thay đổi hoàn chỉnh có thể review/revert độc lập, không phải từng dòng code. Ví dụ: `chore/git-line-endings`, `fix/bull-redis-url`, `refactor/wordtype-conventions`.
+3. **Làm và kiểm tra:** hoàn thành phạm vi task cùng tests/checks phù hợp; review diff, chỉ stage file/hunk thuộc task. Tách format, rename và bugfix; không gom thay đổi của người khác hoặc credentials vào commit. Baseline lỗi có sẵn phải ghi rõ, không coi đó là lý do bỏ kiểm tra regression.
+4. **Commit và push nhánh:** dùng Conventional Commits phù hợp commitlint hiện có, ví dụ `fix(bull): preserve Redis database and ACL credentials`. Một nhánh có thể có vài commit nhỏ cùng mục tiêu; không đợi xong cả giai đoạn mới commit/push. Push lên đúng remote đã xác minh, không force-push.
+5. **Tích hợp vào dev:** sau review diff và các gate/CI bắt buộc pass, merge nhánh công việc vào dev. Nếu repo yêu cầu PR/review, mở PR đích dev và tuân thủ protection, không bypass hoặc tự coi review bắt buộc là đã có. Mặc định giữ lịch sử bằng merge commit (`--no-ff`) nếu repo cho phép; nếu có chính sách merge khác thì tuân theo repo và ghi lại. Trước merge cập nhật với dev mới nhất, giải quyết conflict và chạy lại checks bị ảnh hưởng.
+6. **Xác nhận tích hợp:** chạy smoke/checks phù hợp trên trạng thái đã merge; nếu merge local thì push dev khi kết quả đạt gate, nếu merge qua PR thì theo dõi CI của dev. Ghi branch, task commit, merge commit/PR và kết quả vào tracker. Không báo task hoàn tất khi mới push branch nhưng chưa merge dev hoặc checks sau merge đang lỗi.
+7. **Task tiếp theo:** bắt đầu từ dev đã tích hợp thành công, tạo nhánh mới. Không tái sử dụng nhánh đã merge để làm task khác. Chỉ xóa nhánh công việc sau khi xác minh đã merge và không còn công việc chưa bảo toàn; việc xóa nhánh không phải điều kiện bắt buộc để hoàn thành task.
+
+Trước push/merge phải đọc CI trigger: nếu push nhánh hoặc dev sẽ tự deploy tới môi trường thật, tách/điều chỉnh workflow tích hợp để không deploy ngoài phạm vi, hoặc báo rõ cần xử lý điều kiện đó trước khi tiếp tục. Không bypass required checks, không merge main/production và không rewrite lịch sử dùng chung.
+
+BE/FE/MO là ba repo độc lập: task chỉ sửa BE thì chỉ tạo nhánh BE; task tác động cả ba có các nhánh cùng task ID, commits/PR liên kết và kết quả contract tests chung trước khi merge. Merge theo thứ tự tương thích (thường BE hỗ trợ cũ+mới trước, rồi clients); không giả định ba repo merge nguyên tử hoặc mobile đã cập nhật ngay.
+
+### Tiêu chí hoàn thành và báo cáo
+
 - Lập tracker theo feature/concern và mapping BE/FE/MO. Mỗi batch có mục tiêu, file liên quan, contract, tests, kết quả thực chạy và bước tiếp theo.
 - Tách commit format, rename, extraction giữ behavior và bugfix. Repo là ba git root độc lập: ghi commit tương ứng cho batch phối hợp, không giả định commit nguyên tử cả ba.
 - Logic chung mới phải có consumer thật và trách nhiệm rõ; helper chưa dùng không tính là đã tái sử dụng. Không gom các đoạn chỉ giống cú pháp nhưng khác nghiệp vụ.
 - Bugfix đổi behavior có before/after và test. Không lấy “giữ contract” làm lý do giữ lỗi; thay vào đó lập migration thích hợp khi client bị ảnh hưởng.
-- Không thay dữ liệu demo, reset DB app, gọi payment thật, deploy/push/merge trong task refactor nếu chưa có yêu cầu riêng.
+- Không thay dữ liệu demo, reset DB app, gọi payment thật, deploy hoặc merge main/production. Commit/push nhánh công việc và tích hợp dev theo workflow ở trên.
 - Ghi rõ checks chưa chạy, môi trường thiếu và baseline lỗi. Không tuyên bố toàn bộ pass chỉ từ compiler hoặc snapshot OpenAPI.
 - Hoàn tất batch không có nghĩa hoàn tất toàn src. Giữ tracker để tiếp tục nhiều phiên, không phải lập kế hoạch lại sau mỗi phiên.
 
@@ -331,7 +349,7 @@ Luồng end-to-end ưu tiên bổ sung qua các batch: login/refresh; web CRUD n
 
 Sau khi review được giải quyết và người dùng yêu cầu triển khai, dùng prompt sau:
 
-> Triển khai kế hoạch đã review theo từng giai đoạn và gate. Bắt đầu từ git status ba repo, baseline, format riêng và môi trường test cô lập. Làm WordType + Level thành mẫu rồi rollout đủ toàn src. Bảo vệ contract web/mobile bằng consumer tests; có migration phối hợp nếu thật sự cần đổi contract. Không nâng major dependency, không tạo generic BaseService/BaseRepository, không tối ưu không có bằng chứng. Cập nhật tracker và báo checks thực chạy sau mỗi batch; tiếp tục qua các phiên tới khi hoàn tất phạm vi dài hạn. Không deploy/push hoặc thay dữ liệu demo.
+> Triển khai kế hoạch đã review theo từng giai đoạn và gate. Bắt đầu từ git status ba repo, baseline, format riêng và môi trường test cô lập. Tuân thủ mục 9: tạo nhánh công việc từ dev trước khi sửa, hoàn thành từng task độc lập thì kiểm tra, commit/push, review và merge vào dev; xác nhận checks sau tích hợp rồi tạo nhánh mới từ dev. Không làm trực tiếp trên dev/main, không bypass protection/CI hoặc tự deploy. Làm WordType + Level thành mẫu rồi rollout đủ toàn src. Bảo vệ contract web/mobile bằng consumer tests; có migration phối hợp nếu thật sự cần đổi contract. Không nâng major dependency, không tạo generic BaseService/BaseRepository, không tối ưu không có bằng chứng. Cập nhật tracker với branch/commit/merge và checks thực chạy sau mỗi task; tiếp tục qua các phiên tới khi hoàn tất phạm vi dài hạn. Không merge main/production hoặc thay dữ liệu demo.
 
 ## 11. Tài liệu đối chiếu
 
@@ -343,15 +361,25 @@ Sau khi review được giải quyết và người dùng yêu cầu triển kha
 
 Nhánh BE: `chore/standardization-phase-0` (tạo từ `main` @ `c484a5e`). FE/MO chỉ đo baseline, không sửa file.
 
+Ghi chú chuyển workflow: dòng trên ghi nhận nhánh đã bắt đầu trước khi người dùng chốt quy trình dev. Trước task tiếp theo, xác minh dev/remote và các commit/thay đổi đang làm; bảo toàn công việc, chia task độc lập và tích hợp qua nhánh đích dev theo mục 9. Có thể giữ nhánh hiện tại cho task đang dở nếu nền/commit tương thích với dev; không reset, checkout đè, amend hoặc di chuyển thay đổi của người khác chỉ để đổi tên/nền nhánh. Từ task mới trở đi bắt buộc tạo nhánh từ dev đã cập nhật.
+
 ### Giai đoạn 0
 
 - [x] 1. Git status + versions — BE/FE/MO đều ở `main`, working tree sạch (BE chỉ có file plan chưa track). BE: NestJS 11.0.x, Prisma 6.8.2, Zod 3.25, nestjs-zod 4.3, TypeScript 5.7, Jest 29, supertest 7, Prettier 3.4, ESLint 9, Bull 4.16, ioredis 5.7. FE/MO dùng npm (`package-lock.json`).
 - [ ] 2. Inventory nhanh toàn src
 - [x] 3. Baseline build/typecheck/lint/format (xem bảng dưới)
-- [ ] 4. Commit tooling (.gitattributes, renormalize, check scripts, lint-staged, tách organize-imports) + commit format-only
-- [ ] 5. Test tooling (supertest, Jest alias, smoke test) + test DB/Redis + Bull URL parser
-- [ ] 6. Script check không mutation (typecheck, lint:check, format:check)
+- [x] 4. Commit tooling + commit format-only
+  - [x] `7c62263` chore: `.gitattributes` (`* text=auto eol=lf`), `.prettierrc` endOfLine lf + bỏ plugin organize-imports (chuyển sang script `format:imports`), `.editorconfig` lf, lint-staged chỉ chạy file staged. Renormalize không tạo diff nội dung (index vốn LF).
+  - [x] `6387573` style: format src+test (307 file). Script so import trước/sau: 0 file đổi import/thứ tự import. Typecheck giữ đúng 1 lỗi baseline, build pass, prettier/prettier 43.942 → 0.
+  - [x] Worktree sạch với `core.autocrlf=true`: 1027 file `w/lf` (+2 `w/none` là 2 file rỗng), `format:check` pass.
+  - [ ] Kiểm tra checksum Prisma migration sau khi chuyển LF — **bị chặn**: Docker Desktop chưa chạy.
+- [ ] 5. Test tooling + test DB/Redis + Bull URL parser
+  - [x] `0c7f276` fix(bull): `parseRedisUrl` (port mặc định 6379, DB index, ACL username, decode credentials một lần, rediss→TLS) + `assertTestQueueIsolation` kiểm tra options cuối sau merge. 14 unit test pass.
+  - [x] `18357c5` test: Jest map alias `@/` và `src/`; e2e smoke (404 route lạ, 401 `/languages` không token, đóng app); `test/setup-e2e.ts` fail-fast nếu DB không `_test`, Redis DB 0 hoặc prefix không `bull_test` (đã thử cả 3 trường hợp sai: đều dừng trước khi kết nối); `.env.test.example`, `.env.test` vào `.gitignore`. Typecheck: 1 → **0 lỗi**.
+  - [ ] Tạo DB `pokenihongo_test` + Redis DB 15, chạy `pnpm test:e2e` — **bị chặn**: Docker Desktop chưa chạy.
+- [x] 6. Script check không mutation: `typecheck`, `lint:check`, `format:check` (trong `7c62263`).
 - [ ] 7. Response/OpenAPI mẫu, nơi client parse dữ liệu, tracker hành vi cần bảo toàn
+- [ ] Tích hợp vào `dev` theo mục 9 — **chờ quyết định**: xem ghi chú Git bên dưới.
 - [ ] Gate giai đoạn 0
 
 ### Baseline (2026-11-02, trước mọi thay đổi)
@@ -368,3 +396,10 @@ Nhánh BE: `chore/standardization-phase-0` (tạo từ `main` @ `c484a5e`). FE/M
 - FE/MO: `npm ci` bỏ qua postinstall của `esbuild` (FE) và `unrs-resolver` (MO) do policy install-scripts của npm; build/lint vẫn chạy được. Nếu sau này gặp lỗi native binary thì kiểm tra lại mục này.
 - BE: 2 file rỗng 0 byte `src/modules/attendance/dto/create-attendence.swagger.ts`, `src/modules/dashboard/entities/dashboard.entity.ts` → ghi vào inventory là dead file, kiểm tra import trước khi xóa.
 - BE: `docker-entrypoint.sh` và 197 `prisma/migrations/*/migration.sql` đang CRLF ở working copy Windows; sau khi áp `.gitattributes` cần chạy `prisma migrate status` (chỉ đọc) để chắc checksum migration không bị coi là đã sửa.
+- BE: Husky đang bật (`core.hooksPath=.husky/_`) nhưng repo không có `.husky/pre-commit` hay `.husky/commit-msg` → lint-staged và commitlint chưa từng chạy khi commit. Đã sửa cấu hình lint-staged nhưng **chưa bật hook** vì ảnh hưởng cách commit của cả team; cần người dùng quyết.
+- BE: Plan mục Format mô tả dùng config tạm không plugin. Thực tế đã bỏ plugin khỏi `.prettierrc` ngay trong commit tooling nên format bằng config chính, không cần file tạm; kết quả tương đương (đã kiểm import).
+- BE: `.eslintrc.js` (cấu hình ESLint cũ) vẫn còn nhưng ESLint 9 chỉ đọc `eslint.config.js` → file thừa, xóa trong một task dọn dẹp riêng.
+- BE: queue `kaiwa-processor` (`websockets.module.ts`) truyền `settings` riêng nên ghi đè toàn bộ `settings` mặc định (mất `lockDuration`, `drainDelay`). Hành vi sẵn có, giữ nguyên; ghi lại để xem xét ở giai đoạn ownership.
+- Git (mục 9): `origin/dev` đang **chậm hơn `origin/main` 192 commit** và không có commit nào main thiếu (dev là tổ tiên của main). Nhánh phase-0 tạo từ đỉnh `main` (`c484a5e`). Nếu tạo nhánh từ `dev` hiện tại sẽ quay về code cũ hơn 192 commit → cần chốt: fast-forward `dev` lên `main` trước rồi mới tích hợp.
+- Git (mục 9): CI `run-ci-cd.yml` chỉ chạy khi push `main` (deploy VPS + `prisma migrate deploy`); push nhánh công việc/`dev` không deploy. `dev` không bị protect (GitHub API). commitlint dùng `config-conventional`, các commit trên đều theo đúng định dạng.
+- Git: máy chưa có credential GitHub cho HTTPS (`git push` không thể hỏi đăng nhập) → chưa push nhánh nào. Repo BE đặt danh tính commit cục bộ `Kumo <145751369+thuanhd2102@users.noreply.github.com>` (lấy từ lịch sử repo, chỉ áp cho repo này).
