@@ -3,12 +3,12 @@ import {
   CreateLessonCategoryBodyType,
   UpdateLessonCategoryBodyType,
   GetLessonCategoryByIdParamsType,
-  GetLessonCategoryListQueryType,
+  GetLessonCategoryListQueryType
 } from './entities/lesson-category.entities'
 import {
   LessonCategoryNotFoundException,
   LessonCategoryAlreadyExistsException,
-  InvalidLessonCategoryDataException,
+  InvalidLessonCategoryDataException
 } from './dto/lesson-category.error'
 import { LessonCategoryRepository } from './lesson-category.repo'
 import { TranslationService } from '../translation/translation.service'
@@ -25,9 +25,12 @@ export class LessonCategoryService {
     private readonly translationService: TranslationService,
     private readonly languagesService: LanguagesService,
     private readonly i18nService: I18nService
-  ) { }
+  ) {}
 
-  async getLessonCategoryList(params: GetLessonCategoryListQueryType, lang: string = 'vi') {
+  async getLessonCategoryList(
+    params: GetLessonCategoryListQueryType,
+    lang: string = 'vi'
+  ) {
     try {
       this.logger.log('Getting lesson category list with params:', params)
 
@@ -51,12 +54,18 @@ export class LessonCategoryService {
 
           if (languageId) {
             try {
-              const translation = await this.translationService.findByKeyAndLanguage(item.nameKey, languageId)
+              const translation = await this.translationService.findByKeyAndLanguage(
+                item.nameKey,
+                languageId
+              )
               if (translation?.value) {
                 translatedName = translation.value
               }
             } catch (translationError) {
-              this.logger.warn(`Failed to get translation for ${item.nameKey}:`, translationError)
+              this.logger.warn(
+                `Failed to get translation for ${item.nameKey}:`,
+                translationError
+              )
             }
           }
 
@@ -113,7 +122,9 @@ export class LessonCategoryService {
         throw error
       }
 
-      throw new InvalidLessonCategoryDataException('Lỗi khi lấy thông tin danh mục bài học')
+      throw new InvalidLessonCategoryDataException(
+        'Lỗi khi lấy thông tin danh mục bài học'
+      )
     }
   }
 
@@ -139,7 +150,9 @@ export class LessonCategoryService {
         throw error
       }
 
-      throw new InvalidLessonCategoryDataException('Lỗi khi lấy thông tin danh mục bài học')
+      throw new InvalidLessonCategoryDataException(
+        'Lỗi khi lấy thông tin danh mục bài học'
+      )
     }
   }
 
@@ -176,7 +189,10 @@ export class LessonCategoryService {
         await this.createTranslationKeys(category.id, data.nameKey)
         this.logger.log(`Translation keys created for lesson category: ${category.id}`)
       } catch (translationError) {
-        this.logger.warn(`Failed to create translation keys for lesson category ${category.id}:`, translationError)
+        this.logger.warn(
+          `Failed to create translation keys for lesson category ${category.id}:`,
+          translationError
+        )
         // Không throw error vì category đã tạo thành công
       }
 
@@ -212,7 +228,10 @@ export class LessonCategoryService {
 
       // Check if slug already exists (excluding current category)
       if (data.slug) {
-        const slugExists = await this.lessonCategoryRepository.checkSlugExists(data.slug, id)
+        const slugExists = await this.lessonCategoryRepository.checkSlugExists(
+          data.slug,
+          id
+        )
         if (slugExists) {
           throw new LessonCategoryAlreadyExistsException()
         }
@@ -228,8 +247,10 @@ export class LessonCategoryService {
     } catch (error) {
       this.logger.error(`Error updating lesson category ${id}:`, error)
 
-      if (error instanceof LessonCategoryNotFoundException ||
-        error instanceof LessonCategoryAlreadyExistsException) {
+      if (
+        error instanceof LessonCategoryNotFoundException ||
+        error instanceof LessonCategoryAlreadyExistsException
+      ) {
         throw error
       }
 
@@ -296,28 +317,36 @@ export class LessonCategoryService {
       const vietnameseTranslation = {
         key: nameKey,
         languageId: 1, // Vietnamese
-        value: `Danh mục ${categoryId}`, // Default text, có thể cập nhật sau
+        value: `Danh mục ${categoryId}` // Default text, có thể cập nhật sau
       }
 
       const englishTranslation = {
         key: nameKey,
         languageId: 2, // English
-        value: `Category ${categoryId}`, // Default text, có thể cập nhật sau
+        value: `Category ${categoryId}` // Default text, có thể cập nhật sau
       }
 
       // Tạo tất cả translations
       await Promise.all([
-        this.translationService.create(vietnameseTranslation).catch(error => {
-          this.logger.warn(`Failed to create Vietnamese translation for ${nameKey}:`, error)
+        this.translationService.create(vietnameseTranslation).catch((error) => {
+          this.logger.warn(
+            `Failed to create Vietnamese translation for ${nameKey}:`,
+            error
+          )
         }),
-        this.translationService.create(englishTranslation).catch(error => {
+        this.translationService.create(englishTranslation).catch((error) => {
           this.logger.warn(`Failed to create English translation for ${nameKey}:`, error)
         })
       ])
 
-      this.logger.log(`Translation keys created successfully for lesson category ${categoryId}`)
+      this.logger.log(
+        `Translation keys created successfully for lesson category ${categoryId}`
+      )
     } catch (error) {
-      this.logger.error(`Error creating translation keys for lesson category ${categoryId}:`, error)
+      this.logger.error(
+        `Error creating translation keys for lesson category ${categoryId}:`,
+        error
+      )
       throw error
     }
   }
@@ -403,8 +432,7 @@ export class LessonCategoryService {
 
         // Speaking
         { key: 'category.speaking', languageId: 1, value: 'Luyện nói' },
-        { key: 'category.speaking', languageId: 2, value: 'Speaking Practice' },
-
+        { key: 'category.speaking', languageId: 2, value: 'Speaking Practice' }
       ]
 
       const results: any[] = []
@@ -413,9 +441,13 @@ export class LessonCategoryService {
       for (const categoryData of defaultCategories) {
         try {
           // Kiểm tra xem category đã tồn tại chưa
-          const existingCategory = await this.lessonCategoryRepository.findBySlug(categoryData.slug)
+          const existingCategory = await this.lessonCategoryRepository.findBySlug(
+            categoryData.slug
+          )
           if (existingCategory) {
-            this.logger.log(`Category with slug ${categoryData.slug} already exists, skipping...`)
+            this.logger.log(
+              `Category with slug ${categoryData.slug} already exists, skipping...`
+            )
             continue
           }
 
@@ -423,12 +455,17 @@ export class LessonCategoryService {
           const category = await this.lessonCategoryRepository.create(categoryData)
 
           // Tạo translations cho category này
-          const categoryTranslations = translations.filter(t => t.key === categoryData.nameKey)
+          const categoryTranslations = translations.filter(
+            (t) => t.key === categoryData.nameKey
+          )
           for (const translation of categoryTranslations) {
             try {
               await this.translationService.create(translation)
             } catch (translationError) {
-              this.logger.warn(`Failed to create translation for ${translation.key} (languageId: ${translation.languageId}):`, translationError)
+              this.logger.warn(
+                `Failed to create translation for ${translation.key} (languageId: ${translation.languageId}):`,
+                translationError
+              )
             }
           }
 
@@ -450,7 +487,9 @@ export class LessonCategoryService {
       }
     } catch (error) {
       this.logger.error('Error creating default lesson categories:', error)
-      throw new InvalidLessonCategoryDataException('Lỗi khi tạo danh mục bài học mặc định')
+      throw new InvalidLessonCategoryDataException(
+        'Lỗi khi tạo danh mục bài học mặc định'
+      )
     }
   }
 }

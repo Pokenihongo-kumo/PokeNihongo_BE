@@ -9,10 +9,15 @@ import { LanguagesModule } from '@/modules/languages/languages.module'
 import { UploadModule } from '@/3rdService/upload/upload.module'
 
 @Module({
-    imports: [SharedModule, KanjiReadingModule, TranslationModule, LanguagesModule, UploadModule],
-    controllers: [KanjiController],
-    providers: [KanjiService, KanjiRepository],
-    exports: [KanjiService, KanjiRepository]
+  imports: [
+    SharedModule,
+    KanjiReadingModule,
+    TranslationModule,
+    LanguagesModule,
+    UploadModule
+  ],
+  controllers: [KanjiController],
+  providers: [KanjiService, KanjiRepository],
+  exports: [KanjiService, KanjiRepository]
 })
-export class KanjiModule { }
-
+export class KanjiModule {}

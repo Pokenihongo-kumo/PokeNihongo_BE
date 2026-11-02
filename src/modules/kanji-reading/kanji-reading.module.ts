@@ -5,10 +5,9 @@ import { KanjiReadingRepository } from './kanji-reading.repo'
 import { SharedModule } from '@/shared/shared.module'
 
 @Module({
-    imports: [SharedModule],
-    controllers: [KanjiReadingController],
-    providers: [KanjiReadingService, KanjiReadingRepository],
-    exports: [KanjiReadingService, KanjiReadingRepository]
+  imports: [SharedModule],
+  controllers: [KanjiReadingController],
+  providers: [KanjiReadingService, KanjiReadingRepository],
+  exports: [KanjiReadingService, KanjiReadingRepository]
 })
-export class KanjiReadingModule { }
-
+export class KanjiReadingModule {}

@@ -8,15 +8,15 @@ import { TextToSpeechService } from '@/3rdService/speech/text-to-speech.service'
 import { UploadModule } from '@/3rdService/upload/upload.module'
 
 @Module({
-    imports: [UploadModule],
-    controllers: [SpeakingController],
-    providers: [
-        SpeakingService,
-        SpeakingRepository,
-        PrismaService,
-        SpeechToTextService,
-        TextToSpeechService
-    ],
-    exports: [SpeakingService, SpeakingRepository],
+  imports: [UploadModule],
+  controllers: [SpeakingController],
+  providers: [
+    SpeakingService,
+    SpeakingRepository,
+    PrismaService,
+    SpeechToTextService,
+    TextToSpeechService
+  ],
+  exports: [SpeakingService, SpeakingRepository]
 })
-export class SpeakingModule { }
+export class SpeakingModule {}

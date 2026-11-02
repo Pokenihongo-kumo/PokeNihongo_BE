@@ -6,9 +6,9 @@ import { UploadModule } from '../upload/upload.module'
 import { RedisModule } from '../redis/redis.module'
 
 @Module({
-    imports: [UploadModule, RedisModule],
-    controllers: [SpeechController],
-    providers: [SpeechToTextService, TextToSpeechService],
-    exports: [SpeechToTextService, TextToSpeechService]
+  imports: [UploadModule, RedisModule],
+  controllers: [SpeechController],
+  providers: [SpeechToTextService, TextToSpeechService],
+  exports: [SpeechToTextService, TextToSpeechService]
 })
-export class SpeechModule { }
+export class SpeechModule {}

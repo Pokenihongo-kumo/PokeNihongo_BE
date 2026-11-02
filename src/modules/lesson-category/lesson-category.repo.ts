@@ -3,12 +3,12 @@ import { PrismaService } from '@/shared/services/prisma.service'
 import {
   CreateLessonCategoryBodyType,
   UpdateLessonCategoryBodyType,
-  GetLessonCategoryListQueryType,
+  GetLessonCategoryListQueryType
 } from './entities/lesson-category.entities'
 
 @Injectable()
 export class LessonCategoryRepository {
-  constructor(private readonly prismaService: PrismaService) { }
+  constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(params: GetLessonCategoryListQueryType) {
     const { page, limit, search } = params
@@ -19,7 +19,7 @@ export class LessonCategoryRepository {
     if (search) {
       where.OR = [
         { nameKey: { contains: search, mode: 'insensitive' } },
-        { slug: { contains: search, mode: 'insensitive' } },
+        { slug: { contains: search, mode: 'insensitive' } }
       ]
     }
 
@@ -28,7 +28,7 @@ export class LessonCategoryRepository {
         where,
         orderBy: { createdAt: 'desc' },
         skip,
-        take: limit,
+        take: limit
       }),
       this.prismaService.lessonCategory.count({ where })
     ])
@@ -38,7 +38,7 @@ export class LessonCategoryRepository {
       total,
       page,
       limit,
-      totalPages: Math.ceil(total / limit),
+      totalPages: Math.ceil(total / limit)
     }
   }
 
@@ -51,7 +51,7 @@ export class LessonCategoryRepository {
             id: true,
             slug: true,
             titleKey: true,
-            isPublished: true,
+            isPublished: true
           },
           orderBy: {
             lessonOrder: 'asc'
@@ -70,7 +70,7 @@ export class LessonCategoryRepository {
             id: true,
             slug: true,
             titleKey: true,
-            isPublished: true,
+            isPublished: true
           },
           orderBy: {
             lessonOrder: 'asc'
@@ -80,7 +80,7 @@ export class LessonCategoryRepository {
     })
   }
 
-  async create(data: CreateLessonCategoryBodyType & { id?: number, slug: string }) {
+  async create(data: CreateLessonCategoryBodyType & { id?: number; slug: string }) {
     // Remove id from data if it exists since Prisma doesn't allow explicit id for auto-increment
     const { id, ...createData } = data
 
@@ -92,7 +92,7 @@ export class LessonCategoryRepository {
             id: true,
             slug: true,
             titleKey: true,
-            isPublished: true,
+            isPublished: true
           }
         }
       }
@@ -109,7 +109,7 @@ export class LessonCategoryRepository {
             id: true,
             slug: true,
             titleKey: true,
-            isPublished: true,
+            isPublished: true
           }
         }
       }

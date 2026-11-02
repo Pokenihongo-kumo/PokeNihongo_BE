@@ -13,7 +13,7 @@ export interface UploadResult {
 export class UploadService {
   private readonly logger = new Logger(UploadService.name)
 
-  constructor(@Inject('Cloudinary') private cloudinary) { }
+  constructor(@Inject('Cloudinary') private cloudinary) {}
 
   private isImageFile(mimetype: string): boolean {
     return mimetype.startsWith('image/')
@@ -624,5 +624,4 @@ export class UploadService {
       expiresAt
     }
   }
-
 }

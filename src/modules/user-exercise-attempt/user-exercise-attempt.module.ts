@@ -10,11 +10,16 @@ import { TranslationModule } from '../translation/translation.module'
 import { RewardModule } from '../reward/reward.module'
 
 @Module({
-    imports: [QuestionBankModule, UserAnswerLogModule, UserProgressModule, ExercisesModule, TranslationModule, RewardModule],
-    controllers: [UserExerciseAttemptController],
-    providers: [UserExerciseAttemptService, UserExerciseAttemptRepository],
-    exports: [UserExerciseAttemptService, UserExerciseAttemptRepository]
+  imports: [
+    QuestionBankModule,
+    UserAnswerLogModule,
+    UserProgressModule,
+    ExercisesModule,
+    TranslationModule,
+    RewardModule
+  ],
+  controllers: [UserExerciseAttemptController],
+  providers: [UserExerciseAttemptService, UserExerciseAttemptRepository],
+  exports: [UserExerciseAttemptService, UserExerciseAttemptRepository]
 })
-export class UserExerciseAttemptModule { }
-
-
+export class UserExerciseAttemptModule {}

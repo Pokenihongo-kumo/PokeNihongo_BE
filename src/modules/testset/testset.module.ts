@@ -11,9 +11,15 @@ import { UploadModule } from '@/3rdService/upload/upload.module'
 import { TextToSpeechService } from '@/3rdService/speech/text-to-speech.service'
 
 @Module({
-    imports: [ConfigModule, UploadModule, TranslationModule, LanguagesModule, QuestionBankModule],
-    controllers: [TestSetController],
-    providers: [TestSetService, TestSetRepository, PrismaService, TextToSpeechService],
-    exports: [TestSetService, TestSetRepository],
+  imports: [
+    ConfigModule,
+    UploadModule,
+    TranslationModule,
+    LanguagesModule,
+    QuestionBankModule
+  ],
+  controllers: [TestSetController],
+  providers: [TestSetService, TestSetRepository, PrismaService, TextToSpeechService],
+  exports: [TestSetService, TestSetRepository]
 })
-export class TestSetModule { }
+export class TestSetModule {}

@@ -7,9 +7,9 @@ import { TranslationModule } from '@/modules/translation/translation.module'
 import { LanguagesModule } from '@/modules/languages/languages.module'
 
 @Module({
-    imports: [SharedModule, TranslationModule, LanguagesModule],
-    controllers: [AnswerController],
-    providers: [AnswerService, AnswerRepository],
-    exports: [AnswerService, AnswerRepository],
+  imports: [SharedModule, TranslationModule, LanguagesModule],
+  controllers: [AnswerController],
+  providers: [AnswerService, AnswerRepository],
+  exports: [AnswerService, AnswerRepository]
 })
-export class AnswerModule { }
+export class AnswerModule {}

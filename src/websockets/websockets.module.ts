@@ -52,4 +52,4 @@ import { KaiwaGateway } from './kaiwa.gateway'
   ],
   exports: [WebsocketsService, SocketServerService, MatchingGateway, KaiwaGateway]
 })
-export class WebsocketsModule { }
+export class WebsocketsModule {}

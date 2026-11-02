@@ -9,9 +9,15 @@ import { LanguagesModule } from '../languages/languages.module'
 import { TestModule } from '../test/test.module'
 
 @Module({
-    imports: [SharedModule, LessonCategoryModule, TranslationModule, LanguagesModule, TestModule],
-    controllers: [LessonController],
-    providers: [LessonService, LessonRepository],
-    exports: [LessonService, LessonRepository]
+  imports: [
+    SharedModule,
+    LessonCategoryModule,
+    TranslationModule,
+    LanguagesModule,
+    TestModule
+  ],
+  controllers: [LessonController],
+  providers: [LessonService, LessonRepository],
+  exports: [LessonService, LessonRepository]
 })
-export class LessonModule { }
+export class LessonModule {}

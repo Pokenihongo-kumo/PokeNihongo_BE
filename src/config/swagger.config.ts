@@ -11,17 +11,17 @@ function setupSwagger(app: INestApplication) {
     .setDescription('The ' + appName + ' API description')
     .setVersion('1.0')
     .addBearerAuth()
-    // .addApiKey({ type: 'apiKey', name: 'Api-Key', in: 'header' }, 'Api-Key')
-  
+  // .addApiKey({ type: 'apiKey', name: 'Api-Key', in: 'header' }, 'Api-Key')
+
   if (url) {
     config.addServer(url)
   }
-  
+
   const configBuilt = config.build()
   const document = SwaggerModule.createDocument(app, configBuilt, {
-    extraModels: [], // Có thể thêm các models bổ sung nếu cần
+    extraModels: [] // Có thể thêm các models bổ sung nếu cần
   })
-  
+
   SwaggerModule.setup('api-docs', app, document, {
     customSiteTitle: appName,
     swaggerOptions: {
@@ -31,7 +31,7 @@ function setupSwagger(app: INestApplication) {
       displayRequestDuration: true,
       filter: true,
       showExtensions: true,
-      showCommonExtensions: true,
+      showCommonExtensions: true
     },
     customCss: `
       .swagger-ui .topbar { display: none; }

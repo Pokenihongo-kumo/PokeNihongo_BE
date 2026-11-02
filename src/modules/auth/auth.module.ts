@@ -11,8 +11,15 @@ import { AuthService } from './auth.service'
 import { GoogleService } from './google.service'
 
 @Module({
-  imports: [MailModule, UploadModule, LevelModule, UserProgressModule, UserTestModule, WalletModule],
+  imports: [
+    MailModule,
+    UploadModule,
+    LevelModule,
+    UserProgressModule,
+    UserTestModule,
+    WalletModule
+  ],
   controllers: [AuthController],
   providers: [AuthService, AuthRepository, GoogleService]
 })
-export class AuthModule { }
+export class AuthModule {}

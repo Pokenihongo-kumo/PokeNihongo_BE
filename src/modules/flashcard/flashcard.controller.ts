@@ -30,8 +30,25 @@ import { FlashcardService } from './flashcard.service'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { MessageResDTO, PaginationResponseDTO } from '@/shared/dtos/response.dto'
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common'
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query
+} from '@nestjs/common'
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags
+} from '@nestjs/swagger'
 import { ZodSerializerDto } from 'nestjs-zod'
 import {
   CreateFlashcardCardSwaggerDTO,
@@ -52,9 +69,7 @@ import {
 @ApiBearerAuth()
 @Controller('flashcards')
 export class FlashcardController {
-  constructor(
-    private readonly flashcardService: FlashcardService,
-  ) { }
+  constructor(private readonly flashcardService: FlashcardService) {}
 
   @Post('decks')
   @ApiOperation({ summary: 'Tạo bộ flashcard mới' })
@@ -102,9 +117,14 @@ export class FlashcardController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.flashcardService.markRead(body.deckId, body.cardId, body.read, userId, lang ?? undefined)
+    return this.flashcardService.markRead(
+      body.deckId,
+      body.cardId,
+      body.read,
+      userId,
+      lang ?? undefined
+    )
   }
-
 
   @Get('decks')
   @ApiOperation({ summary: 'Lấy danh sách bộ flashcard của người dùng' })
@@ -154,7 +174,12 @@ export class FlashcardController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.flashcardService.updateDeck(Number(id), userId, body as UpdateFlashcardDeckBody, lang ?? undefined)
+    return this.flashcardService.updateDeck(
+      Number(id),
+      userId,
+      body as UpdateFlashcardDeckBody,
+      lang ?? undefined
+    )
   }
 
   @Delete('decks/cards')
@@ -167,7 +192,12 @@ export class FlashcardController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.flashcardService.deleteCards(body.deckId, body.cardIds, userId, lang ?? undefined)
+    return this.flashcardService.deleteCards(
+      body.deckId,
+      body.cardIds,
+      userId,
+      lang ?? undefined
+    )
   }
 
   @Get('decks/:deckId/cards')
@@ -208,10 +238,10 @@ export class FlashcardController {
     )
   }
 
-
-
   @Post('decks/:deckId/cards/import')
-  @ApiOperation({ summary: 'Import nhiều thẻ từ Vocabulary/Kanji/Grammar vào bộ flashcard' })
+  @ApiOperation({
+    summary: 'Import nhiều thẻ từ Vocabulary/Kanji/Grammar vào bộ flashcard'
+  })
   @ApiResponse({ status: 200, type: MessageResDTO })
   @ApiBody({ type: FlashcardImportCardsBodySwaggerDTO })
   @ZodSerializerDto(MessageResDTO)
@@ -248,8 +278,6 @@ export class FlashcardController {
     )
   }
 
-
-
   @Post('review')
   @ApiOperation({ summary: 'Ghi nhận kết quả ôn tập của một thẻ flashcard' })
   @ApiResponse({ status: 200, type: MessageResDTO })
@@ -269,4 +297,3 @@ export class FlashcardController {
     )
   }
 }
-

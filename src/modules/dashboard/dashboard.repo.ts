@@ -1493,7 +1493,8 @@ export class DashboardRepo {
     })
 
     const fiveStarStats =
-      starDistribution.find((s) => s.star === 'FIVE') || ({ count: 0, percentage: 0 } as {
+      starDistribution.find((s) => s.star === 'FIVE') ||
+      ({ count: 0, percentage: 0 } as {
         count: number
         percentage: number
       })

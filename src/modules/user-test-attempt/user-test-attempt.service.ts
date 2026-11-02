@@ -55,7 +55,7 @@ export class UserTestAttemptService {
     private readonly userProgressRepository: UserProgressRepository,
     private readonly rewardService: RewardService,
     private readonly lessonRepository: LessonRepository
-  ) { }
+  ) {}
 
   async create(userId: number, testId: number) {
     try {
@@ -306,13 +306,13 @@ export class UserTestAttemptService {
       const normalizedLang = (languageCode || '').toLowerCase().split('-')[0] || 'vi'
       const message = allCorrect
         ? this.i18nService.translate(
-          UserTestAttemptMessage.TEST_COMPLETED_ALL_CORRECT,
-          normalizedLang
-        )
+            UserTestAttemptMessage.TEST_COMPLETED_ALL_CORRECT,
+            normalizedLang
+          )
         : this.i18nService.translate(
-          UserTestAttemptMessage.TEST_COMPLETED_SOME_WRONG,
-          normalizedLang
-        )
+            UserTestAttemptMessage.TEST_COMPLETED_SOME_WRONG,
+            normalizedLang
+          )
 
       // Với LESSON_REVIEW, totalQuestions luôn là 10
       const totalQuestions = isLessonReview
@@ -585,7 +585,7 @@ export class UserTestAttemptService {
       // 8. Tính điểm số (số câu đúng / tổng số câu * 100)
       const score = Math.round(
         (userAnswers.filter((log) => log.isCorrect).length / allQuestionBanks.length) *
-        100
+          100
       )
 
       // 9. Update status dựa trên kết quả
@@ -734,11 +734,7 @@ export class UserTestAttemptService {
       // Kiểm tra limit (null, undefined, hoặc 0 được coi như không giới hạn)
       // Chỉ throw error khi limit < 0 (âm số) hoặc limit > 0 nhưng đã hết lượt (cần check riêng)
       // Logic này phải nhất quán với decrementLimit: limit = 0 được coi là "không giới hạn"
-      if (
-        userTest.limit !== null &&
-        userTest.limit !== undefined &&
-        userTest.limit < 0
-      ) {
+      if (userTest.limit !== null && userTest.limit !== undefined && userTest.limit < 0) {
         const message = this.i18nService.translate(
           UserTestAttemptMessage.OUT_OF_LIMIT,
           normalizedLang

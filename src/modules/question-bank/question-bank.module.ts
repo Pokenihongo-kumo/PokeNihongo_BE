@@ -10,10 +10,14 @@ import { LanguagesModule } from '@/modules/languages/languages.module'
 import { AnswerModule } from '@/modules/answer/answer.module'
 
 @Module({
-    imports: [UploadModule, TranslationModule, LanguagesModule, AnswerModule],
-    controllers: [QuestionBankController],
-    providers: [QuestionBankService, QuestionBankRepository, PrismaService, TextToSpeechService],
-    exports: [QuestionBankService, QuestionBankRepository]
+  imports: [UploadModule, TranslationModule, LanguagesModule, AnswerModule],
+  controllers: [QuestionBankController],
+  providers: [
+    QuestionBankService,
+    QuestionBankRepository,
+    PrismaService,
+    TextToSpeechService
+  ],
+  exports: [QuestionBankService, QuestionBankRepository]
 })
-export class QuestionBankModule { }
-
+export class QuestionBankModule {}

@@ -5,10 +5,9 @@ import { UserTestAnswerLogService } from './user-test-answer-log.service'
 import { PrismaService } from '@/shared/services/prisma.service'
 
 @Module({
-    imports: [],
-    controllers: [UserTestAnswerLogController],
-    providers: [UserTestAnswerLogService, UserTestAnswerLogRepository, PrismaService],
-    exports: [UserTestAnswerLogService, UserTestAnswerLogRepository]
+  imports: [],
+  controllers: [UserTestAnswerLogController],
+  providers: [UserTestAnswerLogService, UserTestAnswerLogRepository, PrismaService],
+  exports: [UserTestAnswerLogService, UserTestAnswerLogRepository]
 })
-export class UserTestAnswerLogModule { }
-
+export class UserTestAnswerLogModule {}

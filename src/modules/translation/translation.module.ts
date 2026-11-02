@@ -6,9 +6,9 @@ import { TranslationHelperService } from './translation.helper.service'
 import { LanguagesModule } from '@/modules/languages/languages.module'
 
 @Module({
-    imports: [LanguagesModule],
-    controllers: [TranslationController],
-    providers: [TranslationService, TranslationRepository, TranslationHelperService],
-    exports: [TranslationService, TranslationRepository, TranslationHelperService]
+  imports: [LanguagesModule],
+  controllers: [TranslationController],
+  providers: [TranslationService, TranslationRepository, TranslationHelperService],
+  exports: [TranslationService, TranslationRepository, TranslationHelperService]
 })
-export class TranslationModule { }
+export class TranslationModule {}

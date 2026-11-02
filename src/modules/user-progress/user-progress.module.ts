@@ -4,9 +4,9 @@ import { UserProgressRepository } from './user-progress.repo'
 import { UserProgressService } from './user-progress.service'
 
 @Module({
-    imports: [],
-    controllers: [UserProgressController],
-    providers: [UserProgressService, UserProgressRepository],
-    exports: [UserProgressService, UserProgressRepository]
+  imports: [],
+  controllers: [UserProgressController],
+  providers: [UserProgressService, UserProgressRepository],
+  exports: [UserProgressService, UserProgressRepository]
 })
-export class UserProgressModule { }
+export class UserProgressModule {}

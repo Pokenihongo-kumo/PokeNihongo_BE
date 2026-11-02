@@ -17,22 +17,26 @@ import { RewardModule } from '../reward/reward.module'
 import { LessonModule } from '../lesson/lesson.module'
 
 @Module({
-    imports: [
-        QuestionBankModule,
-        UserTestAnswerLogModule,
-        TestModule,
-        TestSetModule,
-        TestSetQuestionBankModule,
-        TranslationModule,
-        UserModule,
-        LevelModule,
-        UserProgressModule,
-        RewardModule,
-        LessonModule
-    ],
-    controllers: [UserTestAttemptController],
-    providers: [UserTestAttemptService, UserTestAttemptRepository, UserTestRepository, PrismaService],
-    exports: [UserTestAttemptService, UserTestAttemptRepository]
+  imports: [
+    QuestionBankModule,
+    UserTestAnswerLogModule,
+    TestModule,
+    TestSetModule,
+    TestSetQuestionBankModule,
+    TranslationModule,
+    UserModule,
+    LevelModule,
+    UserProgressModule,
+    RewardModule,
+    LessonModule
+  ],
+  controllers: [UserTestAttemptController],
+  providers: [
+    UserTestAttemptService,
+    UserTestAttemptRepository,
+    UserTestRepository,
+    PrismaService
+  ],
+  exports: [UserTestAttemptService, UserTestAttemptRepository]
 })
-export class UserTestAttemptModule { }
-
+export class UserTestAttemptModule {}

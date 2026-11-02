@@ -14,21 +14,16 @@ import { DataAccessService } from '@/shared/services/data-access.service'
 import { RedisModule } from '../redis/redis.module'
 
 @Module({
-    imports: [
-        ConfigModule.forFeature(geminiConfig),
-        GeminiConfigModule,
-        SpeechModule,
-        SpeakingModule,
-        UploadModule,
-        RedisModule 
-    ],
-    controllers: [GeminiController, VertexAIController],
-    providers: [
-        GeminiService,
-        VertexAIService,
-        PrismaService,
-        DataAccessService
-    ],
-    exports: [GeminiService, VertexAIService] 
+  imports: [
+    ConfigModule.forFeature(geminiConfig),
+    GeminiConfigModule,
+    SpeechModule,
+    SpeakingModule,
+    UploadModule,
+    RedisModule
+  ],
+  controllers: [GeminiController, VertexAIController],
+  providers: [GeminiService, VertexAIService, PrismaService, DataAccessService],
+  exports: [GeminiService, VertexAIService]
 })
-export class GeminiModule { }
+export class GeminiModule {}

@@ -4,10 +4,9 @@ import { UserAnswerLogRepository } from './user-answer-log.repo'
 import { UserAnswerLogService } from './user-answer-log.service'
 
 @Module({
-    imports: [],
-    controllers: [UserAnswerLogController],
-    providers: [UserAnswerLogService, UserAnswerLogRepository],
-    exports: [UserAnswerLogService, UserAnswerLogRepository]
+  imports: [],
+  controllers: [UserAnswerLogController],
+  providers: [UserAnswerLogService, UserAnswerLogRepository],
+  exports: [UserAnswerLogService, UserAnswerLogRepository]
 })
-export class UserAnswerLogModule { }
-
+export class UserAnswerLogModule {}

@@ -5,9 +5,9 @@ import { MeaningRepository } from './meaning.repo'
 import { TranslationModule } from '@/modules/translation/translation.module'
 
 @Module({
-    imports: [TranslationModule],
-    controllers: [MeaningController],
-    providers: [MeaningService, MeaningRepository],
-    exports: [MeaningService, MeaningRepository]
+  imports: [TranslationModule],
+  controllers: [MeaningController],
+  providers: [MeaningService, MeaningRepository],
+  exports: [MeaningService, MeaningRepository]
 })
-export class MeaningModule { }
+export class MeaningModule {}

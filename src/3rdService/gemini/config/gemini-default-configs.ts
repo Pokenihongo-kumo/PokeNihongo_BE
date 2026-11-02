@@ -5,17 +5,17 @@ import { GeminiConfigType } from '@prisma/client'
  * Sẽ được seed vào database khi chạy seed script
  */
 export interface GeminiDefaultConfig {
-    configType: GeminiConfigType
-    modelName: string
-    prompt: string
-    isActive: boolean
+  configType: GeminiConfigType
+  modelName: string
+  prompt: string
+  isActive: boolean
 }
 
 export const GEMINI_DEFAULT_CONFIGS: GeminiDefaultConfig[] = [
-    {
-        configType: 'SPEAKING_EVALUATION',
-        modelName: 'gemini-2.5-pro',
-        prompt: `Bạn là giáo viên tiếng Nhật chuyên nghiệp. Hãy đánh giá phát âm tiếng Nhật của học viên.
+  {
+    configType: 'SPEAKING_EVALUATION',
+    modelName: 'gemini-2.5-pro',
+    prompt: `Bạn là giáo viên tiếng Nhật chuyên nghiệp. Hãy đánh giá phát âm tiếng Nhật của học viên.
 
 Câu cần phát âm: "{{text}}"
 Transcription từ audio của học viên: "{{transcription}}"
@@ -37,12 +37,12 @@ Trả về JSON với format:
 }
 
 Chỉ trả về JSON, không có text thừa.`,
-        isActive: true
-    },
-    {
-        configType: 'PERSONALIZED_RECOMMENDATIONS',
-        modelName: 'gemini-2.5-flash',
-        prompt: `Bạn là trợ lý AI chuyên về giáo dục tiếng Nhật. Dựa trên dữ liệu học tập của học viên, hãy đưa ra {{limit}} gợi ý cá nhân hóa.
+    isActive: true
+  },
+  {
+    configType: 'PERSONALIZED_RECOMMENDATIONS',
+    modelName: 'gemini-2.5-flash',
+    prompt: `Bạn là trợ lý AI chuyên về giáo dục tiếng Nhật. Dựa trên dữ liệu học tập của học viên, hãy đưa ra {{limit}} gợi ý cá nhân hóa.
 
 Thống kê học tập:
 {{analysis}}
@@ -65,29 +65,28 @@ Trả về JSON array với format:
 ]
 
 Chỉ trả về JSON array, không có text thừa. Sắp xếp theo priority từ cao xuống thấp.`,
-        isActive: true
-    },
-    {
-        configType: 'AI_KAIWA',
-        modelName: 'gemini-2.5-flash',
-        prompt: `Bạn là một người bạn Nhật Bản thân thiện và nhiệt tình. Hãy trò chuyện tự nhiên bằng tiếng Nhật với người học. Hãy:
+    isActive: true
+  },
+  {
+    configType: 'AI_KAIWA',
+    modelName: 'gemini-2.5-flash',
+    prompt: `Bạn là một người bạn Nhật Bản thân thiện và nhiệt tình. Hãy trò chuyện tự nhiên bằng tiếng Nhật với người học. Hãy:
 - Trả lời ngắn gọn, tự nhiên như đang trò chuyện với bạn
 - Sử dụng ngôn ngữ phù hợp với trình độ người học
 - Động viên và tạo động lực cho người học
 - Đưa ra gợi ý về cách cải thiện nếu có lỗi
 - Giữ cuộc trò chuyện vui vẻ và thú vị`,
-        isActive: true
-    }
+    isActive: true
+  }
 ]
 
 export const DEFAULT_GEMINI_MODELS: string[] = [
-    'gemini-2.5-pro',
-    'gemini-2.5-flash',
-    'gemini-2.0-flash',
-    'gemini-2.0-flash-lite',
-    'gemini-2.5-flash-lite',
-    'gemini-2.0-flash-live',
-    'gemini-2.5-flash-live',
-    'gemini-2.5-flash-native-audio-dialog'
+  'gemini-2.5-pro',
+  'gemini-2.5-flash',
+  'gemini-2.0-flash',
+  'gemini-2.0-flash-lite',
+  'gemini-2.5-flash-lite',
+  'gemini-2.0-flash-live',
+  'gemini-2.5-flash-live',
+  'gemini-2.5-flash-native-audio-dialog'
 ]
-

@@ -44,7 +44,7 @@ import { LessonService } from './lesson.service'
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class LessonController {
-  constructor(private readonly lessonService: LessonService) { }
+  constructor(private readonly lessonService: LessonService) {}
 
   @Get()
   @ApiOperation({ summary: 'Lấy danh sách bài học với phân trang và tìm kiếm' })
@@ -61,7 +61,10 @@ export class LessonController {
     required: false
   })
   @ZodSerializerDto(LessonListResponseDTO)
-  async getLessonList(@Query() query: GetLessonListQueryDTO, @Query('lang') lang?: string) {
+  async getLessonList(
+    @Query() query: GetLessonListQueryDTO,
+    @Query('lang') lang?: string
+  ) {
     return await this.lessonService.getLessonList(query, lang)
   }
 
@@ -129,10 +132,7 @@ export class LessonController {
     type: LessonResponseSwaggerDTO
   })
   @ZodSerializerDto(LessonResponseDTO)
-  async updateLesson(
-    @Param('id') id: string,
-    @Body() body: UpdateLessonBodyDTO
-  ) {
+  async updateLesson(@Param('id') id: string, @Body() body: UpdateLessonBodyDTO) {
     return await this.lessonService.updateLesson(Number(id), body)
   }
 
