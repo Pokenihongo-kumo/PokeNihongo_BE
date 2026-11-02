@@ -1,4 +1,4 @@
-import { MatchRoundParticipantMessage } from '@/i18n/message-keys'
+import { MatchingSocketMessage, MatchRoundParticipantMessage } from '@/i18n/message-keys'
 import { BadRequestException, NotFoundException } from '@nestjs/common'
 
 export class MatchRoundParticipantNotFoundException extends NotFoundException {
@@ -15,6 +15,16 @@ export class MatchRoundParticipantAlreadyExistsException extends BadRequestExcep
     super({
       message: MatchRoundParticipantMessage.ALREADY_EXISTS,
       errorKey: MatchRoundParticipantMessage.ALREADY_EXISTS
+    })
+  }
+}
+
+// Hết giờ chọn: hệ thống đã tự chọn Pokémon cho người chơi
+export class PokemonSelectionExpiredException extends BadRequestException {
+  constructor() {
+    super({
+      message: MatchingSocketMessage.TIMOUT_SELECTED_POKEMON,
+      errorKey: MatchingSocketMessage.TIMOUT_SELECTED_POKEMON
     })
   }
 }

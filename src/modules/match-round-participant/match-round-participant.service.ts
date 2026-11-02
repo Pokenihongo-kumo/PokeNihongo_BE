@@ -24,7 +24,10 @@ import { MatchRoundRepo } from '../match-round/match-round.repo'
 import { PokemonRepo } from '../pokemon/pokemon.repo'
 import { QuestionBankRepository } from '../question-bank/question-bank.repo'
 import { UserPokemonRepo } from '../user-pokemon/user-pokemon.repo'
-import { MatchRoundParticipantNotFoundException } from './dto/match-round-participant.error'
+import {
+  MatchRoundParticipantNotFoundException,
+  PokemonSelectionExpiredException
+} from './dto/match-round-participant.error'
 import {
   ChoosePokemonMatchRoundParticipantBodyType,
   CreateMatchRoundParticipantBodyType,
@@ -210,14 +213,7 @@ export class MatchRoundParticipantService {
           MatchingSocketMessage.TIMOUT_SELECTED_POKEMON
         )
 
-        return {
-          statusCode: 400,
-          data: null,
-          message: this.i18nService.translate(
-            MatchingSocketMessage.TIMOUT_SELECTED_POKEMON,
-            lang
-          )
-        }
+        throw new PokemonSelectionExpiredException()
       }
 
       // Tìm userPokemon dựa vào pokemonId và userId
