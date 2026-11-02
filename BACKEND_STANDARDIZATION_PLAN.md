@@ -1,12 +1,14 @@
-# Kế hoạch clean toàn bộ backend PokeNihongo — review cùng Claude
+# Kế hoạch clean toàn bộ src PokeNihongo — backend, web và mobile
 
-Phiên bản 4 — 2026-11-02, bổ sung quy trình nhánh công việc → dev. Tiến độ triển khai thực tế ghi tại mục 12. Giữ các quyết định v3 (migration message có chủ đích, cô lập Bull/Redis, AsyncLocalStorage native, format không tổ chức import); bổ sung LF ổn định trên Windows và Redis URL parser hỗ trợ default port/ACL username.
+Phiên bản 6 — 2026-11-03. Giữ phạm vi clean toàn src BE/web/mobile từ v5; bổ sung nền nhánh client, test runners, style, Genymotion, gap API, ApiError và CI-only. Quy định mới nhất: chỉ BE phải dừng trình diff và chờ người dùng duyệt trước mỗi commit; FE/mobile tự review, chạy checks và commit theo workflow. Tiến độ BE bảo toàn tại mục 12, client tại mục 13 và tài liệu liên kết. Giữ tên file để không làm hỏng tham chiếu.
 
 ## 1. Mục tiêu đã chốt
 
 Clean toàn bộ `src` theo lộ trình dài hạn: thống nhất hai phong cách viết, gom logic có thể tái sử dụng, làm rõ trách nhiệm và giảm phụ thuộc giữa các phần. Người dùng chấp nhận làm lâu dài; không thu hẹp công việc chỉ còn các luồng demo phỏng vấn. Tối ưu hiệu năng không phải mục tiêu mặc định.
 
-Backend là phạm vi refactor chính. Web và mobile là hai consumer bắt buộc phải audit và kiểm tra tương thích trong từng đợt. Có thể sửa client khi một thay đổi contract đã được xác định rõ và lập kế hoạch đồng bộ; không tự mở rộng thành viết lại giao diện hoặc kiến trúc toàn bộ client.
+Phạm vi đã chốt gồm toàn bộ src của backend, web và mobile. Web/mobile vừa là consumer cần bảo vệ contract, vừa là đối tượng refactor đầy đủ: models/services/hooks, state/cache, pages/screens/components/layouts, routing/auth/i18n, config/utils và native/realtime lifecycle. Giữ giao diện và nghiệp vụ đang có; không biến clean code thành viết lại UI hoặc thêm product feature.
+
+Kế hoạch client bắt buộc: [Clean src web và mobile đồng bộ với BE](docs/standardization/client-standardization-plan.md). Các chặng C0–C5 chạy phối hợp với giai đoạn BE tương ứng, không chờ clean xong backend rồi mới bắt đầu clients. Cả ba repo phải đạt tiêu chí hoàn thành riêng trước khi báo hoàn tất toàn dự án.
 
 Ba repository nằm cạnh nhau:
 
@@ -16,13 +18,13 @@ Ba repository nằm cạnh nhau:
 
 Giữ phiên bản dependency hiện tại theo lockfile: BE đang dùng NestJS 11, Prisma 6, Zod 3, nestjs-zod 4. Không gộp nâng major dependency, đổi DB schema hoặc thiết kế lại nghiệp vụ vào đợt clean code.
 
-Hướng kiến trúc: module theo feature, Controller → Service → Repo, tái sử dụng bằng composition và hàm có type. Không dựng BaseService/BaseRepository CRUD tổng quát, không thêm CQRS/microservice/cache/outbox chỉ vì muốn code “chuẩn”.
+Hướng kiến trúc BE: module theo feature, Controller → Service → Repo. Hướng client: Page/Screen → feature hook/use case → API service → HTTP adapter; state/cache có owner rõ. Tái sử dụng bằng composition và hàm có type. Không dựng BaseService/BaseRepository CRUD tổng quát, không thêm CQRS/microservice/cache/outbox chỉ vì muốn code “chuẩn”; không thay Redux/Saga web hoặc Zustand mobile toàn dự án để ép hai nền tảng giống nhau.
 
 Các thay đổi lớn như thu nhỏ SharedModule, tách service/gateway/worker và chuẩn hóa ownership response vẫn thuộc lộ trình dài hạn. Chúng nằm sau test và các module mẫu, không phải bước đầu và không tự động bỏ khỏi phạm vi.
 
 ## 2. Phạm vi bằng chứng và baseline
 
-Audit hiện tại gồm tìm kiếm cấu trúc toàn BE, đọc pipeline chung, các module đại diện và consumer quan trọng trên web/mobile. Chưa xác minh hành vi runtime của mọi endpoint. Các đường dẫn `src/...` dưới đây thuộc BE trừ nơi ghi rõ web/mobile.
+Audit hiện tại gồm tìm kiếm cấu trúc toàn BE, đọc pipeline chung, các module đại diện và consumer quan trọng trên web/mobile. Chưa audit toàn bộ src của hai client hoặc xác minh hành vi runtime của mọi endpoint; cần thực hiện C0 trong kế hoạch client. Các đường dẫn `src/...` dưới đây thuộc BE trừ nơi ghi rõ web/mobile. Tiến độ/baseline BE có sẵn không tự hoàn tất các gate client mới.
 
 ### Phát hiện đã đối chiếu
 
@@ -135,7 +137,7 @@ Quy trình cụ thể vì `.prettierrc` đang có prettier-plugin-organize-impor
 | Refresh | Cần audit thêm auth service/saga; không suy ra web có flow giống mobile | Đọc `response.data.data.accessToken` và refreshToken | Envelope/field name/nullable phải giữ tương thích |
 | Response | hooks useDashboard/useReward parse `response.data.data`; nhiều service unwrap khác nhau | dictionary đọc `data.results`, `data.pagination`, `statusCode`; subscription/progress có schema parse | Không sửa toàn cục interceptor hoặc bỏ field theo suy đoán |
 | Pagination | hooks useTestSet và nhiều màn hình dùng currentPage/pageSize/pagination.current | reward history gửi currentPage/pageSize | So sánh request thực từng endpoint, giữ default và output shape |
-| Socket | Inventory xác định consumer thực; chưa kết luận web có hoặc không có realtime | `src/configs/socket.ts` gửi bearer và Accept-Language trong `auth`, namespace theo room, websocket transport | Phân biệt handshake.auth với headers; giữ event/ack/payload và reconnect |
+| Socket | N/A hiện tại: package không có socket client, search src chưa thấy WebSocket/socket calls | `src/configs/socket.ts` gửi bearer và Accept-Language trong `auth`, namespace theo room, websocket transport | Chỉ kiểm socket ở mobile có dùng; không thêm realtime cho web; giữ handshake/event/ack/reconnect |
 | Schema version | package web khai báo Zod 4 | package mobile khai báo Zod 3; BE cũng Zod 3 | Không import schema runtime BE trực tiếp vào hai client hoặc buộc nâng major để chia sẻ |
 
 ### Contract inventory
@@ -198,6 +200,8 @@ Postgres/Redis Docker đã có theo thông tin người dùng. Trước khi test
 
 Thứ tự bắt buộc: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7. Mỗi giai đoạn có batch nhỏ và điểm dừng ổn định. Không lấy deadline demo làm lý do bỏ các bước clean còn lại; cũng không trộn tất cả vào một diff lớn.
 
+Đây là trục giai đoạn BE, phối hợp bắt buộc với C0–C5 của kế hoạch client: C0 audit/tooling client đi cùng nền giai đoạn 0; C1 nền HTTP/session đi cùng 1–2; C2 mẫu ba repo đi cùng 2; C3 clean từng feature đi cùng 3; C4 concern xuyên suốt đi cùng 4–6; C5 hoàn tất client đi cùng 7. Không yêu cầu một nhánh chứa cả một giai đoạn hoặc cả ba repo.
+
 ### Giai đoạn 0 — Inventory, baseline, format và test harness
 
 1. Đọc hướng dẫn repo và git status cả BE/FE/MO; không ghi đè thay đổi của người dùng. Ghi versions thực từ lockfile.
@@ -228,6 +232,8 @@ Gate: rollback create/delete thực sự pass trên DB test; validation đúng l
 4. Không bỏ startup default WordType khi chưa có bootstrap thay thế; test hook và ghi task tách seed ở giai đoạn ownership nếu cần.
 5. Viết convention và checklist từ code chạy được. Không tạo template/generator trước khi hai mẫu ổn định.
 
+6. Phối hợp C2 client: ngoài WordType/Level làm mẫu BE, chọn một feature có consumer thực ở cả ba repo (ứng viên Vocabulary, xác minh qua C0) để làm mẫu xuyên BE/service/model/hook/UI. Không tạo màn hình mới cho feature mà nền tảng chưa dùng chỉ để đủ ba repo.
+
 Gate: hai kiểu code dùng chung primitives thật, HTTP/Swagger/client contract tests pass, không thêm any không có lý do, không đổi cấu trúc response.
 
 ### Giai đoạn 3 — Chuẩn hóa theo chiều rộng toàn bộ module
@@ -240,7 +246,7 @@ Mỗi batch 3–5 feature theo dependency và mức ảnh hưởng. Inventory ph
 4. Kinh tế: reward, wallet, shop, gacha, invoice, payment, subscription/plan/feature...
 5. Battle/AI: match/round/participant, leaderboard/season, conversation và các feature liên quan...
 
-Trong mỗi batch: mapping consumer → contract tests phù hợp → naming/format còn lại → tái sử dụng helper → migration constants/message sang I18nService → type/error cleanup → kiểm tra BE/web/mobile → cập nhật tracker.
+Trong mỗi batch: mapping consumer → contract tests phù hợp → naming/format còn lại → tái sử dụng helper → migration constants/message sang I18nService → type/error cleanup BE → clean service/model/hook/cache/page hoặc screen/components client tương ứng theo C3 → kiểm tra BE/web/mobile → cập nhật tracker. Client không chỉ sửa khi BE gây lỗi; các concern nội bộ của feature cũng phải đạt convention và có owner rõ. Task chia nhỏ và merge tương thích, không gom tất cả thay đổi vào một branch lớn.
 
 Migration message là commit behavior change riêng: ghi before (luôn tiếng Việt) / after (theo vi/en/ja), bổ sung hoặc xác minh bản dịch đầy đủ trong cả ba message dictionaries, giữ baseline vi, kiểm tra consumer có phụ thuộc câu chữ và cập nhật phối hợp khi cần. Test response của locale en/ja cùng toast/field errors trên các client có dùng. Không gom thay đổi này vào commit “chỉ refactor”; không hoàn tất batch nếu key mới chỉ chạy nhờ fallback tiếng Việt.
 
@@ -289,7 +295,7 @@ Gate: REST/socket/job và consumer regression tests pass; không phát thưởng
 4. CI check không mutation cho BE, consumer checks FE/MO và integration DB/Redis test riêng. Ghi rõ kiểm thử thiết bị nào đã chạy.
 5. Tài liệu kiến trúc, convention, cách chạy test/demo và migration notes phản ánh code cuối. Có thể dùng làm tài liệu phỏng vấn nhưng không thay thế công việc còn dở.
 
-Gate cuối: mọi bucket src được rà soát và đạt convention hoặc có ngoại lệ được chốt rõ; không bỏ phần khó vào “optional” rồi báo clean toàn bộ hoàn tất.
+Gate cuối: mọi bucket src của BE, web và mobile được rà soát và đạt convention hoặc có ngoại lệ được chốt rõ; C5 client hoàn tất, lỗi baseline đã giải quyết hoặc ngoại lệ ghi rõ. Không bỏ phần khó vào “optional”, chỉ kiểm tra compatibility client hoặc chỉ hoàn tất BE rồi báo clean toàn bộ dự án hoàn tất.
 
 ## 8. Ma trận kiểm thử theo tác động
 
@@ -311,21 +317,47 @@ Checks theo repo:
 - BE: typecheck, build, lint:check, format:check, unit/contract/integration/e2e phù hợp. Script mới được bổ sung ở giai đoạn 0; không dùng --passWithNoTests để báo coverage.
 - Web: build Vite, TypeScript check theo tsconfig project thực, lint phần đổi, parser/service tests và smoke các màn hình bị tác động. Không coi Vite build thay thế toàn bộ typecheck.
 - Mobile: TypeScript/lint/tests phù hợp scripts hiện có; chạy Expo/dev build trên Android emulator hoặc thiết bị cho flow bị tác động. Expo web không thay thế native runtime test. iOS nếu có môi trường; nếu chưa chạy phải ghi rõ.
+- Native Android đã chốt dùng Genymotion. Đã xác minh thư mục cài và tools/adb.exe ngày 2026-11-03; chưa chạy thiết bị/app. Dùng APK development build đúng ABI/API, kiểm tra ADB/Metro/BE reachable và native permissions/lifecycle. Genymotion không tự thay thế Android SDK/JDK để build; thiếu build toolchain ghi task cụ thể, không yêu cầu cài thêm emulator Android Studio. Chi tiết native gate trong kế hoạch client.
 - Thay đổi shared auth/response/i18n yêu cầu regression rộng hơn thay đổi một feature. Không chạy lại toàn bộ suite lớn sau mỗi rename nếu không có rủi ro mới.
 
 Luồng end-to-end ưu tiên bổ sung qua các batch: login/refresh; web CRUD nội dung → mobile đọc nội dung tương ứng; làm bài → tiến độ → thưởng/lịch sử; shop/gacha/subscription nếu bị tác động; matching/battle/kaiwa sau batch realtime. Xác minh route thực trước khi chốt kịch bản.
 
 ## 9. Quản lý tiến độ, commit và definition of done
 
+### Organization riêng cho đợt clean code
+
+Người dùng đã tách ba repo sang organization `Pokenihongo-kumo` để tiếp tục phát triển độc lập. Đã đối chiếu cấu hình local bằng `git remote -v` ngày 2026-11-02:
+
+| Repo | origin — nơi push và tạo PR | upstream — chỉ fetch tham khảo |
+| --- | --- | --- |
+| BE | https://github.com/Pokenihongo-kumo/PokeNihongo_BE | https://github.com/SEP490-FALL25/PokeNihongo_BE |
+| Web | https://github.com/Pokenihongo-kumo/PokeNihongo_FE | https://github.com/SEP490-FALL25/PokeNihongo_FE |
+| Mobile | https://github.com/Pokenihongo-kumo/PokeNihogo_MO | https://github.com/SEP490-FALL25/PokeNihogo_MO |
+
+- Mọi nhánh công việc, push và PR cho kế hoạch này dùng repo trong `Pokenihongo-kumo`, PR đích `dev` của chính repo đó. Khi dùng CLI tạo PR phải chỉ rõ repo đích để không mặc định về repo gốc của fork.
+- `upstream` đang có push URL là `DISABLED` ở cả ba repo: giữ nguyên, không bật lại hoặc push/tạo PR sang `SEP490-FALL25` trong task clean code. Không tự sync/merge thay đổi upstream vào công việc nếu không nằm trong task đã xác định.
+- Lịch sử commit/PR, quyền và CI/branch protection đã ghi trước lúc tách organization là thông tin lịch sử; không mặc định chính sách GitHub, secrets hoặc khả năng deploy đã được sao chép sang repo mới. Kiểm tra remote, dev và CI/protection trên đúng origin trước push/merge; nếu thiếu dev thì xử lý theo workflow bên dưới.
+- Note này ghi nhận cấu hình remote local đã đọc, không khẳng định đã kiểm tra quyền truy cập hay thiết lập GitHub của organization mới. Việc cập nhật note không thay remote, tạo nhánh, push hoặc merge.
+
+Nền client trước task đầu (tracking refs local kiểm tra 2026-11-03; fetch/xác minh lại trước tích hợp): web origin/dev và origin/main cùng commit; mobile origin/dev là tổ tiên của origin/main và chậm 279 commit. Trước task MO, dùng task/PR chuẩn bị riêng để tích hợp main vào dev của origin mới, trình diff và chờ duyệt, không reset/force-push dev. FE dùng dev đã tạo từ main. Local FE/MO đang ở main và chưa có local dev trong lần kiểm tra này: tạo tracking branch phù hợp khi bắt đầu, không suy branch local thiếu nghĩa là remote dev thiếu.
+
+Actions trên origin mới đang tắt theo review. C5 chốt workflow `.github/workflows/ci.yml` check-only cho từng repo, trigger PR đích dev/push dev/workflow_dispatch; có thể bật sớm khi đã review. Giữ disabled workflow deploy VPS cũ BE run-ci-cd.yml và FE deploy-fe.yml; kiểm tra cấp repo/từng workflow trước bật Actions. Không coi các ghi chú CI/protection lịch sử ở mục 12 là trạng thái đã xác minh của origin mới.
+
 ### Quy trình Git bắt buộc: nhánh công việc → dev
 
-Người dùng đã chốt: mỗi thay đổi độc lập đi qua nhánh riêng rồi merge vào `dev`. Áp dụng trong từng repo có sửa đổi; `dev` là nhánh tích hợp, không làm trực tiếp trên dev hoặc main. Khi được giao triển khai, commit/push nhánh công việc và merge vào dev là một phần của workflow; không cần hỏi lại cho mỗi thay đổi đã đạt gate. Việc cập nhật plan hiện tại không tự khởi chạy các thao tác này.
+Người dùng đã chốt: mỗi thay đổi độc lập đi qua nhánh riêng rồi merge vào `dev`. Áp dụng trong từng repo có sửa đổi; `dev` là nhánh tích hợp, không làm trực tiếp trên dev hoặc main. Phê duyệt trước commit phân biệt theo repo:
+
+- **BE:** sau khi làm xong và kiểm tra, dừng trình diff/kết quả để người dùng duyệt trước mỗi commit, kể cả tài liệu/tooling trong repo BE. Gate pass hoặc im lặng không phải approval; không commit/amend nội dung BE chưa được duyệt.
+- **FE/mobile:** tự review diff, chạy checks phù hợp rồi commit/push/PR và tích hợp dev theo workflow; không cần dừng hỏi người dùng trước từng commit. Vẫn tuân thủ review/protection bắt buộc của repo và không rewrite lịch sử đã chia sẻ.
+- **Task liên repo:** FE/mobile không cần approval từng commit, nhưng không merge một client phụ thuộc contract BE chưa được duyệt/tích hợp khi chưa có adapter tương thích. Phần BE vẫn dừng chờ duyệt riêng.
+
+Quy định này thay thế yêu cầu cũ chờ duyệt ở cả ba repo. Việc cập nhật plan hiện tại không tự khởi chạy thao tác Git.
 
 1. **Chuẩn bị nền:** kiểm tra git status, remote, nhánh hiện tại và quy định branch protection/CI của repo. Fetch và cập nhật dev từ remote bằng fast-forward khi có thể; không reset/force-push để làm mất commit. Nếu repo chưa có dev, xác minh nhánh nền hiện hành rồi khởi tạo dev từ đó, không mặc định lấy toàn bộ thay đổi dở dang trên nhánh công việc.
 2. **Tạo nhánh trước khi sửa:** từ dev đã cập nhật, tạo `chore/<task>`, `fix/<task>` hoặc `refactor/<task>`. Một task là một thay đổi hoàn chỉnh có thể review/revert độc lập, không phải từng dòng code. Ví dụ: `chore/git-line-endings`, `fix/bull-redis-url`, `refactor/wordtype-conventions`.
-3. **Làm và kiểm tra:** hoàn thành phạm vi task cùng tests/checks phù hợp; review diff, chỉ stage file/hunk thuộc task. Tách format, rename và bugfix; không gom thay đổi của người khác hoặc credentials vào commit. Baseline lỗi có sẵn phải ghi rõ, không coi đó là lý do bỏ kiểm tra regression.
-4. **Commit và push nhánh:** dùng Conventional Commits phù hợp commitlint hiện có, ví dụ `fix(bull): preserve Redis database and ACL credentials`. Một nhánh có thể có vài commit nhỏ cùng mục tiêu; không đợi xong cả giai đoạn mới commit/push. Push lên đúng remote đã xác minh, không force-push.
-5. **Tích hợp vào dev:** sau review diff và các gate/CI bắt buộc pass, merge nhánh công việc vào dev. Nếu repo yêu cầu PR/review, mở PR đích dev và tuân thủ protection, không bypass hoặc tự coi review bắt buộc là đã có. Mặc định giữ lịch sử bằng merge commit (`--no-ff`) nếu repo cho phép; nếu có chính sách merge khác thì tuân theo repo và ghi lại. Trước merge cập nhật với dev mới nhất, giải quyết conflict và chạy lại checks bị ảnh hưởng.
+3. **Làm và kiểm tra diff:** hoàn thành task, chạy checks phù hợp, review và chỉ stage file/hunk thuộc task. BE phải trình summary/diff, checks pass/fail/chưa chạy, baseline lỗi và commit message dự kiến rồi dừng chờ người dùng duyệt; diff BE thay đổi sau review phải trình lại phần đổi. FE/mobile tự thực hiện review này và tiếp tục, không cần hỏi trước commit. Tách format/rename/bugfix, không gom thay đổi người khác hoặc credentials.
+4. **Commit và push nhánh:** dùng Conventional Commits và các commit nhỏ cùng mục tiêu. BE chỉ commit nội dung đã được người dùng duyệt; FE/mobile commit sau self-review và checks, không có gate approval từng commit. Push đúng origin mới trong phạm vi task, không force-push hoặc rewrite lịch sử đã chia sẻ; giữ giới hạn nếu người dùng chỉ cho commit local.
+5. **Tích hợp vào dev:** sau các gate/CI và review/protection bắt buộc pass, merge nhánh công việc vào dev. Mặc định merge commit (`--no-ff`) nếu repo cho phép; chính sách khác tuân theo repo. BE cần approval bao gồm diff tích hợp khi tạo merge commit; không coi approval cũ là duyệt conflict resolution BE mới. FE/mobile tự tích hợp khi đủ checks và không vướng review bắt buộc. Cập nhật dev, giải quyết conflict và chạy lại checks liên quan; không bypass hoặc tự coi required review đã có.
 6. **Xác nhận tích hợp:** chạy smoke/checks phù hợp trên trạng thái đã merge; nếu merge local thì push dev khi kết quả đạt gate, nếu merge qua PR thì theo dõi CI của dev. Ghi branch, task commit, merge commit/PR và kết quả vào tracker. Không báo task hoàn tất khi mới push branch nhưng chưa merge dev hoặc checks sau merge đang lỗi.
 7. **Task tiếp theo:** bắt đầu từ dev đã tích hợp thành công, tạo nhánh mới. Không tái sử dụng nhánh đã merge để làm task khác. Chỉ xóa nhánh công việc sau khi xác minh đã merge và không còn công việc chưa bảo toàn; việc xóa nhánh không phải điều kiện bắt buộc để hoàn thành task.
 
@@ -339,17 +371,17 @@ BE/FE/MO là ba repo độc lập: task chỉ sửa BE thì chỉ tạo nhánh B
 - Tách commit format, rename, extraction giữ behavior và bugfix. Repo là ba git root độc lập: ghi commit tương ứng cho batch phối hợp, không giả định commit nguyên tử cả ba.
 - Logic chung mới phải có consumer thật và trách nhiệm rõ; helper chưa dùng không tính là đã tái sử dụng. Không gom các đoạn chỉ giống cú pháp nhưng khác nghiệp vụ.
 - Bugfix đổi behavior có before/after và test. Không lấy “giữ contract” làm lý do giữ lỗi; thay vào đó lập migration thích hợp khi client bị ảnh hưởng.
-- Không thay dữ liệu demo, reset DB app, gọi payment thật, deploy hoặc merge main/production. Commit/push nhánh công việc và tích hợp dev theo workflow ở trên.
+- Không thay dữ liệu demo, reset DB app, gọi payment thật, deploy hoặc merge main/production. Chỉ BE dừng trình diff chờ người dùng duyệt trước mỗi commit; FE/mobile tự review/checks rồi commit/push/PR/dev theo workflow.
 - Ghi rõ checks chưa chạy, môi trường thiếu và baseline lỗi. Không tuyên bố toàn bộ pass chỉ từ compiler hoặc snapshot OpenAPI.
 - Hoàn tất batch không có nghĩa hoàn tất toàn src. Giữ tracker để tiếp tục nhiều phiên, không phải lập kế hoạch lại sau mỗi phiên.
 
 ## 10. Prompt đưa Claude review trước
 
-> Review BACKEND_STANDARDIZATION_PLAN.md phiên bản 4 với code thực của PokeNihongo_BE, PokeNihongo_FE và PokeNihogo_MO. Chưa triển khai refactor. Mục tiêu đã chốt là clean toàn src lâu dài, không giới hạn ở demo và không ưu tiên tối ưu hiệu năng. Kiểm tra bằng chứng/mức độ ảnh hưởng, convention XRepo/DTO, khả năng tái sử dụng, thứ tự dependency, test isolation pokenihongo_test, transaction Reward, và tương thích API/auth/response/i18n/socket với cả web/mobile. Bản này chốt migration en/ja là behavior change, AsyncLocalStorage native singleton, format không organize-imports với .gitattributes bảo đảm LF sau checkout Windows, và Bull parser hỗ trợ DB index/default port/ACL user với isolation kiểm tra sau merge options. Đặc biệt kiểm tra giai đoạn response ownership và tách shared/gateway/worker có gate đủ để thực hiện dần hay chưa. Phân biệt bugfix/refactor/breaking change, dẫn file cụ thể cho nhận xét. Đề xuất sửa plan khi có mâu thuẫn hoặc thiếu consumer; không đề nghị bỏ mục tiêu clean dài hạn chỉ vì phạm vi lớn. Không chạy thao tác ghi dữ liệu trên database pokenihongo.
+> Review master plan v6 cùng docs/standardization/client-standardization-plan.md với code ba repo. Phạm vi clean toàn src BE/web/mobile. Kiểm tra nền MO main → dev trước task đầu, CI-only, Vitest/RTL web, Jest-expo/RNTL mobile, style 4 spaces/semicolon/LF và Genymotion. Rà gap API/mocks, feature mẫu có endpoint thật, ApiError 422 và HTTP/body status lệch, filter active/inactive. Workflow task branch → checks → commit/push/PR dev: chỉ BE phải dừng để người dùng duyệt diff trước mỗi commit; FE/mobile tự review/checks rồi tiếp tục. Không triển khai code trong lượt review; dẫn file cho nhận xét, bảo toàn tiến độ và phân biệt checks thực với thông tin lịch sử.
 
 Sau khi review được giải quyết và người dùng yêu cầu triển khai, dùng prompt sau:
 
-> Triển khai kế hoạch đã review theo từng giai đoạn và gate. Bắt đầu từ git status ba repo, baseline, format riêng và môi trường test cô lập. Tuân thủ mục 9: tạo nhánh công việc từ dev trước khi sửa, hoàn thành từng task độc lập thì kiểm tra, commit/push, review và merge vào dev; xác nhận checks sau tích hợp rồi tạo nhánh mới từ dev. Không làm trực tiếp trên dev/main, không bypass protection/CI hoặc tự deploy. Làm WordType + Level thành mẫu rồi rollout đủ toàn src. Bảo vệ contract web/mobile bằng consumer tests; có migration phối hợp nếu thật sự cần đổi contract. Không nâng major dependency, không tạo generic BaseService/BaseRepository, không tối ưu không có bằng chứng. Cập nhật tracker với branch/commit/merge và checks thực chạy sau mỗi task; tiếp tục qua các phiên tới khi hoàn tất phạm vi dài hạn. Không merge main/production hoặc thay dữ liệu demo.
+> Triển khai master plan v6 và kế hoạch client để clean toàn src ba repo. Bảo toàn git status/tiến độ; xử lý nền dev client, C0 và phối hợp C0–C5 với BE. Tạo task branch từ dev, hoàn thành task và checks. Chỉ BE dừng trình diff/kết quả/commit message để người dùng duyệt trước mỗi commit; FE/mobile tự review/checks rồi commit/push/PR và tích hợp dev, không hỏi trước từng commit. Task liên repo vẫn giữ gate BE và compatibility khi tích hợp. Làm WordType/Level thành mẫu BE và mẫu ba repo sau xác minh endpoint/gap; dùng runners/style đã chốt và Genymotion development build. Giữ contract hoặc có migration/adapter rõ; không đổi major/state manager hay tối ưu không bằng chứng. Báo tracker task/branch/commit/PR/checks/platform; không báo xong toàn dự án chỉ từ BE. Không bypass protection, merge main/production, deploy hoặc thay dữ liệu demo.
 
 ## 11. Tài liệu đối chiếu
 
@@ -372,16 +404,16 @@ Ghi chú chuyển workflow: dòng trên ghi nhận nhánh đã bắt đầu trư
   - [x] `7c62263` chore: `.gitattributes` (`* text=auto eol=lf`), `.prettierrc` endOfLine lf + bỏ plugin organize-imports (chuyển sang script `format:imports`), `.editorconfig` lf, lint-staged chỉ chạy file staged. Renormalize không tạo diff nội dung (index vốn LF).
   - [x] `6387573` style: format src+test (307 file). Script so import trước/sau: 0 file đổi import/thứ tự import. Typecheck giữ đúng 1 lỗi baseline, build pass, prettier/prettier 43.942 → 0.
   - [x] Worktree sạch với `core.autocrlf=true`: 1027 file `w/lf` (+2 `w/none` là 2 file rỗng), `format:check` pass.
-  - [ ] Kiểm tra checksum Prisma migration sau khi chuyển LF — **bị chặn**: Docker Desktop chưa chạy.
-- [ ] 5. Test tooling + test DB/Redis + Bull URL parser
+  - [x] Checksum Prisma migration sau khi chuyển LF: DB demo lưu 42 checksum theo LF và 155 theo CRLF, `prisma migrate status` vẫn "up to date" → Prisma bỏ qua khác biệt line ending, chuyển LF an toàn (chỉ đọc, không ghi DB demo).
+- [x] 5. Test tooling + test DB/Redis + Bull URL parser
   - [x] `0c7f276` fix(bull): `parseRedisUrl` (port mặc định 6379, DB index, ACL username, decode credentials một lần, rediss→TLS) + `assertTestQueueIsolation` kiểm tra options cuối sau merge. 14 unit test pass.
   - [x] `18357c5` test: Jest map alias `@/` và `src/`; e2e smoke (404 route lạ, 401 `/languages` không token, đóng app); `test/setup-e2e.ts` fail-fast nếu DB không `_test`, Redis DB 0 hoặc prefix không `bull_test` (đã thử cả 3 trường hợp sai: đều dừng trước khi kết nối); `.env.test.example`, `.env.test` vào `.gitignore`. Typecheck: 1 → **0 lỗi**.
-  - [ ] Tạo DB `pokenihongo_test` + Redis DB 15, chạy `pnpm test:e2e` — **bị chặn**: Docker Desktop chưa chạy.
+  - [x] Tạo DB `pokenihongo_test` (197 migration, 93 bảng; DB demo không đổi) + Redis DB 15; `pnpm test:e2e` pass, chạy ~8s. Cô lập đã kiểm chứng: chỉ Redis DB 15 có key, toàn bộ prefix `bull_test`, DB 0 trống. Sửa kèm (nhánh `docs/phase-0-contracts`, chờ review): `testRegex` → `testMatch` (đường dẫn `\` trên Windows), ts-jest `isolatedModules` (tránh tràn bộ nhớ khi nạp AppModule), credential Google giả trong `.env.test.example`, `RedisModule` quit client khi app tắt, `forceExit` cho e2e (xem ghi chú timer rò rỉ).
 - [x] 6. Script check không mutation: `typecheck`, `lint:check`, `format:check` (trong `7c62263`).
-- [ ] 7. Response/OpenAPI mẫu, nơi client parse dữ liệu, tracker hành vi cần bảo toàn
+- [x] 7. Hợp đồng response baseline → [`docs/standardization/response-contract-baseline.md`](docs/standardization/response-contract-baseline.md) + test `test/contracts/response-shapes.e2e-spec.ts` (10 snapshot: thành công/lỗi, kiểu A `level` và kiểu B `languages`, vi/en, 401/404/422, login). Gồm pipeline response, cách web/mobile đọc response và 8 vấn đề cần quyết khi chốt hợp đồng chung. Xuất OpenAPI đầy đủ để task riêng.
 - [x] Tích hợp vào `dev` theo mục 9 — người dùng merge PR #691 (`chore/standardization-phase-0` → `dev`, merge commit `3f526ce`). Không xung đột: `dev` cũ là tổ tiên của nhánh; theo đó `dev` nhận luôn 192 commit có sẵn trên `main` (người dùng xác nhận chấp nhận, VPS đã ngừng nên không có rủi ro deploy).
   - [x] Checks sau tích hợp trên `dev` @ `3f526ce`: cây file trùng khớp nhánh phase-0 (0 file khác); typecheck 0 lỗi; `nest build` pass; unit 14/14 pass; `format:check` sạch; ESLint 54 errors / 518 warnings (đúng baseline còn lại: prefer-const, no-require-imports, ban-ts-comment, no-unused-vars).
-- [ ] Gate giai đoạn 0 — còn thiếu: inventory (bước 2), test DB/Redis + e2e và checksum migration (chờ Docker), mẫu response/OpenAPI (bước 7).
+- [ ] Gate giai đoạn 0 BE — các bước 1–7 đã xong; còn chờ người dùng review và merge nhánh `docs/phase-0-contracts`, và xuất OpenAPI đầy đủ (task riêng). C0 client mở mới theo phạm vi v5, không tính là đã xong từ baseline này.
 
 ### Baseline (2026-11-02, trước mọi thay đổi)
 
@@ -410,3 +442,23 @@ Ghi chú chuyển workflow: dòng trên ghi nhận nhánh đã bắt đầu trư
 - Inventory: `typeorm`/`@nestjs/typeorm` không có import nào trong `src`/`initialScript` → ứng viên gỡ ở giai đoạn 7 (xét scripts/build trước).
 - Inventory: lỗi đặt tên nhỏ — `user-gacha-pity/entities/user-gacha-pityentity.ts` (thiếu dấu chấm), `common/utils/prase.utils.ts` (sai chính tả "parse"); sửa trong batch rename của module/nhóm tương ứng.
 - Inventory: 24 module dùng `@UseGuards` cục bộ dù đã có `AuthenticationGuard` global; 17 module không dùng hệ message nào; 6 module để Zod DTO trong `dto/zod/` lồng. Repo BE đặt danh tính commit cục bộ `Kumo <145751369+thuanhd2102@users.noreply.github.com>` (lấy từ lịch sử repo, chỉ áp cho repo này).
+- Bước 7: `env.config.ts` khai báo `GOOGLE_CLOUD_*` là optional nhưng `VertexAIService` ném lỗi ngay trong constructor nếu thiếu → app không boot được khi thiếu credential Google. Sửa ở giai đoạn config (4).
+- Bước 7: `POST /auth/login` không có header `User-Agent` → 500 (`device.create` thiếu `userAgent`, không có validate trước). Bugfix riêng.
+- Bước 7: timer không được dọn khi app tắt — `RoundQuestionTimeoutProcessor.onModuleInit` tạo `setInterval` 10s không bao giờ `clearInterval` (vẫn gọi queue đã đóng, lỗi bị nuốt), còn 2 timer khác trong nhóm worker/realtime. Vì vậy e2e tạm dùng `forceExit`; sửa lifecycle ở giai đoạn 6 rồi bỏ `forceExit`.
+- Bước 7: `RedisModule` tạo client ioredis nhưng toàn BE không có chỗ nào `quit()` → đã thêm `onModuleDestroy` (bugfix nhỏ, nằm trong nhánh `docs/phase-0-contracts`).
+- Bước 7: `pnpm run test:e2e -- --runInBand` làm Jest coi `--runInBand` là mẫu đường dẫn ("No tests found"); chạy `pnpm test:e2e` hoặc `pnpm exec jest --config ./test/jest-e2e.json …`.
+- Quy tắc review (người dùng chốt 2026-11-03): chỉ BE phải dừng cho người dùng xem diff trước khi commit; FE/MO theo workflow bình thường. Mục 9 ("không cần hỏi lại cho mỗi thay đổi") cần thêm ngoại lệ này cho khớp.
+
+## 13. Tiến độ mở rộng clean web và mobile — phạm vi v5
+
+Kế hoạch chi tiết: [client-standardization-plan.md](docs/standardization/client-standardization-plan.md). Checklist này mở mới; số liệu baseline/consumer đã đọc không được dùng để tự đánh dấu đã clean client. Việc cập nhật tài liệu chưa khởi chạy các task triển khai.
+
+Bổ sung v6 ngày 2026-11-03: chốt runner/style/Genymotion/CI-only, xử lý nền nhánh MO main → dev và gap API ngay C0, fixtures ApiError C1. Genymotion đã cài và có ADB; chưa chạy thiết bị/APK. Hai file plan đang sửa trên docs/phase-0-contracts chưa commit trong lần kiểm tra này; vì nằm trong repo BE nên phải trình diff chờ người dùng duyệt trước commit. FE/mobile được tự commit sau self-review/checks; không stage lẫn hoặc ghi đè công việc đang có.
+
+- [ ] C0 — Inventory toàn src FE/MO, tái lập baseline, tooling/format/test harness từng repo, mapping feature và convention.
+- [ ] C1 — Chuẩn HTTP/error/session/locale/cache, giữ behavior auth từng nền tảng, tests tương ứng.
+- [ ] C2 — Feature mẫu có consumer thực ở BE/web/mobile; xác minh ứng viên Vocabulary rồi chốt; giữ WordType/Level làm mẫu BE.
+- [ ] C3 — Clean dọc từng feature theo nhóm BE, gồm service/model/hook/state/UI của client có dùng; merge dev từng task nhỏ và theo dõi ba repo.
+- [ ] C4 — Hoàn tất concern xuyên suốt: web routing/layout/UI, mobile native/session/socket/media và tương thích response ownership BE.
+- [ ] C5 — Hoàn tất mọi bucket src FE/MO, xử lý baseline debt, xóa migration adapters, CI/docs/checks và bằng chứng native runtime.
+- [ ] Gate toàn dự án — giai đoạn 7 BE và C5 client đều đạt; từng ngoại lệ/kiểm thử chưa chạy được ghi rõ, không báo hoàn tất chỉ từ BE hoặc bundler build.
