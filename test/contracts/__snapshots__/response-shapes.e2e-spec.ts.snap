@@ -68,20 +68,13 @@ exports[`Response contract baseline (e2e) errors validation, style A (POST /leve
 {
   "body": {
     "error": "UNPROCESSABLE_ENTITY",
-    "message": [
+    "errors": [
       {
-        "message": "Định dạng không hợp lệ",
-        "path": "string",
-      },
-      {
-        "message": "Định dạng không hợp lệ",
-        "path": "string",
-      },
-      {
-        "message": "Định dạng không hợp lệ",
-        "path": "string",
+        "field": "string",
+        "message": "Trường này là bắt buộc",
       },
     ],
+    "message": "Dữ liệu không hợp lệ",
     "statusCode": 422,
   },
   "httpStatus": 422,
@@ -92,16 +85,13 @@ exports[`Response contract baseline (e2e) errors validation, style B (POST /lang
 {
   "body": {
     "error": "UNPROCESSABLE_ENTITY",
-    "message": [
+    "errors": [
       {
-        "message": "Định dạng không hợp lệ",
-        "path": "string",
-      },
-      {
-        "message": "Định dạng không hợp lệ",
-        "path": "string",
+        "field": "string",
+        "message": "Trường này là bắt buộc",
       },
     ],
+    "message": "Dữ liệu không hợp lệ",
     "statusCode": 422,
   },
   "httpStatus": 422,
