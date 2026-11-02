@@ -379,8 +379,9 @@ Ghi chú chuyển workflow: dòng trên ghi nhận nhánh đã bắt đầu trư
   - [ ] Tạo DB `pokenihongo_test` + Redis DB 15, chạy `pnpm test:e2e` — **bị chặn**: Docker Desktop chưa chạy.
 - [x] 6. Script check không mutation: `typecheck`, `lint:check`, `format:check` (trong `7c62263`).
 - [ ] 7. Response/OpenAPI mẫu, nơi client parse dữ liệu, tracker hành vi cần bảo toàn
-- [ ] Tích hợp vào `dev` theo mục 9 — **chờ quyết định**: xem ghi chú Git bên dưới.
-- [ ] Gate giai đoạn 0
+- [x] Tích hợp vào `dev` theo mục 9 — người dùng merge PR #691 (`chore/standardization-phase-0` → `dev`, merge commit `3f526ce`). Không xung đột: `dev` cũ là tổ tiên của nhánh; theo đó `dev` nhận luôn 192 commit có sẵn trên `main` (người dùng xác nhận chấp nhận, VPS đã ngừng nên không có rủi ro deploy).
+  - [x] Checks sau tích hợp trên `dev` @ `3f526ce`: cây file trùng khớp nhánh phase-0 (0 file khác); typecheck 0 lỗi; `nest build` pass; unit 14/14 pass; `format:check` sạch; ESLint 54 errors / 518 warnings (đúng baseline còn lại: prefer-const, no-require-imports, ban-ts-comment, no-unused-vars).
+- [ ] Gate giai đoạn 0 — còn thiếu: inventory (bước 2), test DB/Redis + e2e và checksum migration (chờ Docker), mẫu response/OpenAPI (bước 7).
 
 ### Baseline (2026-11-02, trước mọi thay đổi)
 
@@ -400,6 +401,7 @@ Ghi chú chuyển workflow: dòng trên ghi nhận nhánh đã bắt đầu trư
 - BE: Plan mục Format mô tả dùng config tạm không plugin. Thực tế đã bỏ plugin khỏi `.prettierrc` ngay trong commit tooling nên format bằng config chính, không cần file tạm; kết quả tương đương (đã kiểm import).
 - BE: `.eslintrc.js` (cấu hình ESLint cũ) vẫn còn nhưng ESLint 9 chỉ đọc `eslint.config.js` → file thừa, xóa trong một task dọn dẹp riêng.
 - BE: queue `kaiwa-processor` (`websockets.module.ts`) truyền `settings` riêng nên ghi đè toàn bộ `settings` mặc định (mất `lockDuration`, `drainDelay`). Hành vi sẵn có, giữ nguyên; ghi lại để xem xét ở giai đoạn ownership.
-- Git (mục 9): `origin/dev` đang **chậm hơn `origin/main` 192 commit** và không có commit nào main thiếu (dev là tổ tiên của main). Nhánh phase-0 tạo từ đỉnh `main` (`c484a5e`). Nếu tạo nhánh từ `dev` hiện tại sẽ quay về code cũ hơn 192 commit → cần chốt: fast-forward `dev` lên `main` trước rồi mới tích hợp.
+- Git (mục 9): `origin/dev` từng **chậm hơn `origin/main` 192 commit** (dev là tổ tiên của main). Đã giải quyết: người dùng giữ `dev`, merge thẳng nhánh phase-0 (nền `main`) qua PR #691 nên `dev` nay đã bao gồm toàn bộ `main`. Từ đây mọi task tạo nhánh từ `dev`.
+- Bối cảnh (người dùng xác nhận 2026-11-02): VPS và các dịch vụ trả phí đã ngừng; mục tiêu hiện tại chỉ là clean code đúng chuẩn. Workflow tích hợp người dùng đang dùng: push nhánh rồi merge qua PR vào `dev`.
 - Git (mục 9): CI `run-ci-cd.yml` chỉ chạy khi push `main` (deploy VPS + `prisma migrate deploy`); push nhánh công việc/`dev` không deploy. `dev` không bị protect (GitHub API). commitlint dùng `config-conventional`, các commit trên đều theo đúng định dạng.
-- Git: máy chưa có credential GitHub cho HTTPS (`git push` không thể hỏi đăng nhập) → chưa push nhánh nào. Repo BE đặt danh tính commit cục bộ `Kumo <145751369+thuanhd2102@users.noreply.github.com>` (lấy từ lịch sử repo, chỉ áp cho repo này).
+- Git: shell của Claude không hỏi được đăng nhập GitHub (credential helper `manager` cần tương tác) → người dùng tự push nhánh phase-0 và mở/merge PR. Repo BE đặt danh tính commit cục bộ `Kumo <145751369+thuanhd2102@users.noreply.github.com>` (lấy từ lịch sử repo, chỉ áp cho repo này).
