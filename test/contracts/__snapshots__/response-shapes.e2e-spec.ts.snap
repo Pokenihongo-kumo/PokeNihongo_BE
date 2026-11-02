@@ -4,7 +4,7 @@ exports[`Response contract baseline (e2e) errors missing bearer token 1`] = `
 {
   "body": {
     "error": "UNAUTHORIZED",
-    "message": "Phiên đã hết hạn, vui lòng đăng nhập lại",
+    "message": "Vui lòng đăng nhập để tiếp tục",
     "statusCode": 401,
   },
   "httpStatus": 401,
@@ -111,11 +111,25 @@ exports[`Response contract baseline (e2e) errors validation, style B (POST /lang
 exports[`Response contract baseline (e2e) errors wrong password 1`] = `
 {
   "body": {
-    "error": "NOT_FOUND",
+    "error": "UNAUTHORIZED",
     "message": "Sai email hoặc mật khẩu",
-    "statusCode": 404,
+    "statusCode": 401,
   },
-  "httpStatus": 404,
+  "httpStatus": 401,
+}
+`;
+
+exports[`Response contract baseline (e2e) success check-email for a known device (no OTP) 1`] = `
+{
+  "body": {
+    "data": {
+      "requiresOtp": "boolean",
+      "type": "string",
+    },
+    "message": "Thiết bị đã được xác thực trước đó.",
+    "statusCode": 201,
+  },
+  "httpStatus": 200,
 }
 `;
 
@@ -175,6 +189,56 @@ exports[`Response contract baseline (e2e) success list, style B (GET /languages)
 `;
 
 exports[`Response contract baseline (e2e) success login (public, auth module) 1`] = `
+{
+  "body": {
+    "data": {
+      "accessToken": "string",
+      "avatar": "null",
+      "eloscore": "number",
+      "email": "string",
+      "exp": "number",
+      "id": "number",
+      "level": {
+        "createdAt": "string",
+        "createdById": "null",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "id": "number",
+        "levelNumber": "number",
+        "levelType": "string",
+        "nextLevelId": "null",
+        "requiredExp": "number",
+        "rewardId": "null",
+        "updatedAt": "string",
+        "updatedById": "null",
+      },
+      "levelJLPT": "null",
+      "name": "string",
+      "phoneNumber": "null",
+      "refreshToken": "string",
+      "role": {
+        "createdAt": "string",
+        "createdById": "null",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "description": "string",
+        "id": "number",
+        "isActive": "boolean",
+        "name": "string",
+        "updatedAt": "string",
+        "updatedById": "null",
+      },
+      "roleId": "number",
+      "status": "string",
+    },
+    "message": "Đăng nhập thành công",
+    "statusCode": 200,
+  },
+  "httpStatus": 200,
+}
+`;
+
+exports[`Response contract baseline (e2e) success login without a User-Agent header 1`] = `
 {
   "body": {
     "data": {
