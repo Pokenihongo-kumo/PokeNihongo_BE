@@ -3,6 +3,7 @@ import { DynamicModule, Module } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { RedisModule } from '../redis/redis.module'
 import { BullQueueService } from './bull-queue.service'
+import { assertTestQueueIsolation, parseRedisUrl } from './queue-config'
 
 @Module({})
 export class BullQueueModule {
@@ -44,35 +45,23 @@ export class BullQueueModule {
               throw new Error('REDIS_URI is not defined')
             }
 
-            // --- PHẦN QUAN TRỌNG BẠN ĐANG THIẾU ---
-            const url = new URL(redisUri)
-            const isTls = url.protocol === 'rediss:' // Kiểm tra xem có dùng SSL không
-            // ---------------------------------------
+            // host/port/username/password/db từ URL; rediss: bật TLS
+            // (AWS Redis public thường bắt buộc TLS)
+            const connection = parseRedisUrl(redisUri)
 
-            return {
+            const queueOptions = {
               redis: {
-                host: url.hostname,
-                port: parseInt(url.port),
-                password: url.password,
+                ...connection,
 
                 // Cấu hình mạng
-                keepAlive: 10000, // Bạn đã có
-                maxRetriesPerRequest: null, // Bạn đã có
-                retryStrategy: (times) => Math.min(times * 50, 2000), // Bạn đã có
-                connectTimeout: 20000, // Bạn đã có
-
-                // --- BẮT ĐẦU PHẦN CẦN BỔ SUNG ---
-                // 1. Cấu hình TLS: AWS Redis public thường bắt buộc dùng cái này
-                // Nếu không có, kết nối sẽ chập chờn hoặc bị từ chối ngầm
-                tls: isTls ? { rejectUnauthorized: false } : undefined
-                // --- KẾT THÚC PHẦN CẦN BỔ SUNG ---
+                keepAlive: 10000,
+                maxRetriesPerRequest: null,
+                retryStrategy: (times: number) => Math.min(times * 50, 2000),
+                connectTimeout: 20000
               },
 
-              // --- BẮT ĐẦU PHẦN CẦN BỔ SUNG ---
-              // 2. Prefix: QUAN TRỌNG NHẤT để tránh xung đột Local/VPS
-              // Nếu không có dòng này, máy Local của bạn sẽ cướp Job của VPS
+              // Prefix tách job giữa các môi trường (Local/VPS/test)
               prefix: configService.get<string>('QUEUE_PREFIX') || 'bull_production',
-              // --- KẾT THÚC PHẦN CẦN BỔ SUNG ---
 
               settings: {
                 stalledInterval: 60000, // Tăng lên 60s cho mạng chậm
@@ -82,6 +71,11 @@ export class BullQueueModule {
               },
               ...options
             }
+
+            // Kiểm tra sau khi merge options vì caller có thể ghi đè redis/prefix
+            assertTestQueueIsolation(queueName, queueOptions)
+
+            return queueOptions
           }
         })
       ],
