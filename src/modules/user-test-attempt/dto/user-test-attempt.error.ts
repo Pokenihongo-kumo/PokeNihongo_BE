@@ -1,5 +1,6 @@
 import { HttpException, HttpStatus } from '@nestjs/common'
 import { USER_TEST_ATTEMPT_MESSAGE } from '@/common/constants/message'
+import { UserTestAttemptMessage } from '@/i18n/message-keys'
 
 export const UserTestAttemptNotFoundException = new HttpException(
   {
@@ -63,6 +64,28 @@ export const ForbiddenReviewAccessException = new HttpException(
   },
   HttpStatus.FORBIDDEN
 )
+
+// Chỉ bỏ dở được attempt đang IN_PROGRESS
+export const TestAttemptNotInProgressException = () =>
+  new HttpException(
+    {
+      statusCode: HttpStatus.BAD_REQUEST,
+      message: 'Chỉ có thể bỏ dở bài test đang trong trạng thái IN_PROGRESS',
+      error: 'TEST_ATTEMPT_NOT_IN_PROGRESS'
+    },
+    HttpStatus.BAD_REQUEST
+  )
+
+// Chưa có lần COMPLETED và đúng < 80% → chưa được xem đáp án (message dịch theo Accept-Language)
+export const ReviewInsufficientScoreException = () =>
+  new HttpException(
+    {
+      statusCode: HttpStatus.FORBIDDEN,
+      message: UserTestAttemptMessage.REVIEW_INSUFFICIENT_SCORE,
+      errorKey: UserTestAttemptMessage.REVIEW_INSUFFICIENT_SCORE
+    },
+    HttpStatus.FORBIDDEN
+  )
 
 export const UnauthorizedUserTestAttemptAccessException = new HttpException(
   {

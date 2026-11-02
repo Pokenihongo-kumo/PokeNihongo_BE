@@ -11,7 +11,9 @@ import {
   ExerciseNotFoundException,
   LessonBlockedException,
   ForbiddenReviewAccessException,
-  LessonPrerequisiteNotMetException
+  LessonPrerequisiteNotMetException,
+  ExerciseAttemptNotInProgressException,
+  ReviewInsufficientScoreException
 } from '@/modules/user-exercise-attempt/dto/user-exercise-attempt.error'
 import {
   EXERCISES_MESSAGE,
@@ -541,11 +543,7 @@ export class UserExerciseAttemptService {
 
       // 3. Kiểm tra xem attempt có đang IN_PROGRESS không
       if (attempt.status !== 'IN_PROGRESS') {
-        return {
-          statusCode: 400,
-          message: 'Chỉ có thể bỏ dở bài tập đang trong trạng thái IN_PROGRESS',
-          data: attempt
-        }
+        throw ExerciseAttemptNotInProgressException()
       }
 
       // 4. Update status thành ABANDONED
@@ -970,20 +968,7 @@ export class UserExerciseAttemptService {
       // - Nếu exercise có ít nhất 1 lần làm COMPLETED → được quyền xem (không cần đúng 80%)
       // - Nếu chưa có lần nào COMPLETED → phải đúng >= 80% mới được xem
       if (!hasCompletedAttempt && roundedPercentage < 80) {
-        return {
-          statusCode: 403,
-          message: this.i18nService.translate(
-            UserExerciseAttemptMessage.REVIEW_INSUFFICIENT_SCORE,
-            normalizedLang
-          ),
-          data: {
-            status: attempt.status,
-            totalQuestions,
-            answeredCorrect: answeredCorrectCount,
-            correctPercentage: Math.round(correctPercentage),
-            minimumRequired: 80
-          }
-        }
+        throw ReviewInsufficientScoreException()
       }
 
       const translateOrFallback = async (key?: string, jp?: string): Promise<string> => {

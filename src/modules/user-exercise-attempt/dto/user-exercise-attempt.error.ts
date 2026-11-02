@@ -1,5 +1,6 @@
 import { HttpException, HttpStatus } from '@nestjs/common'
 import { USER_EXERCISE_ATTEMPT_MESSAGE } from '@/common/constants/message'
+import { UserExerciseAttemptMessage } from '@/i18n/message-keys'
 
 export const UserExerciseAttemptNotFoundException = new HttpException(
   {
@@ -86,3 +87,25 @@ export const ForbiddenReviewAccessException = new HttpException(
   },
   HttpStatus.FORBIDDEN
 )
+
+// Chỉ bỏ dở được attempt đang IN_PROGRESS
+export const ExerciseAttemptNotInProgressException = () =>
+  new HttpException(
+    {
+      statusCode: HttpStatus.BAD_REQUEST,
+      message: 'Chỉ có thể bỏ dở bài tập đang trong trạng thái IN_PROGRESS',
+      error: 'EXERCISE_ATTEMPT_NOT_IN_PROGRESS'
+    },
+    HttpStatus.BAD_REQUEST
+  )
+
+// Chưa có lần COMPLETED và đúng < 80% → chưa được xem đáp án (message dịch theo Accept-Language)
+export const ReviewInsufficientScoreException = () =>
+  new HttpException(
+    {
+      statusCode: HttpStatus.FORBIDDEN,
+      message: UserExerciseAttemptMessage.REVIEW_INSUFFICIENT_SCORE,
+      errorKey: UserExerciseAttemptMessage.REVIEW_INSUFFICIENT_SCORE
+    },
+    HttpStatus.FORBIDDEN
+  )
