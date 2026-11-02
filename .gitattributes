@@ -1,0 +1,18 @@
+# Normalize all text files to LF in the repository and in every checkout,
+# regardless of each machine's core.autocrlf setting.
+* text=auto eol=lf
+
+# No binary files are tracked today; declare them here when adding any.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.pdf binary
+*.mp3 binary
+*.wav binary
+*.mp4 binary
+*.zip binary
+*.woff binary
+*.woff2 binary
