@@ -17,7 +17,9 @@ import {
   InvalidUserTestAttemptDataException,
   TestNotFoundException,
   UnauthorizedUserTestAttemptAccessException,
-  UserTestAttemptNotFoundException
+  UserTestAttemptNotFoundException,
+  TestAttemptNotInProgressException,
+  ReviewInsufficientScoreException
 } from '@/modules/user-test-attempt/dto/user-test-attempt.error'
 import {
   GetUserTestAttemptListQueryType,
@@ -651,11 +653,7 @@ export class UserTestAttemptService {
 
       // 3. Kiểm tra xem attempt có đang IN_PROGRESS không
       if (attempt.status !== 'IN_PROGRESS') {
-        return {
-          statusCode: 400,
-          message: 'Chỉ có thể bỏ dở bài test đang trong trạng thái IN_PROGRESS',
-          data: attempt
-        }
+        throw TestAttemptNotInProgressException()
       }
 
       // 4. Update status thành ABANDONED
@@ -1045,20 +1043,7 @@ export class UserTestAttemptService {
       // - Nếu test có ít nhất 1 lần làm COMPLETED → được quyền xem (không cần đúng 80%)
       // - Nếu chưa có lần nào COMPLETED → phải đúng >= 80% mới được xem
       if (!hasCompletedAttempt && correctPercentage < 80) {
-        return {
-          statusCode: 403,
-          message: this.i18nService.translate(
-            UserTestAttemptMessage.REVIEW_INSUFFICIENT_SCORE,
-            normalizedLang
-          ),
-          data: {
-            status: attempt.status,
-            totalQuestions,
-            answeredCorrect: answeredCorrectCount,
-            correctPercentage: Math.round(correctPercentage),
-            minimumRequired: 80
-          }
-        }
+        throw ReviewInsufficientScoreException()
       }
 
       const translateOrFallback = async (key?: string, jp?: string): Promise<string> => {
@@ -1336,20 +1321,7 @@ export class UserTestAttemptService {
       // - Nếu test có ít nhất 1 lần làm COMPLETED → được quyền xem (không cần đúng 80%)
       // - Nếu chưa có lần nào COMPLETED → phải đúng >= 80% mới được xem
       if (!hasCompletedAttempt && correctPercentage < 80) {
-        return {
-          statusCode: 403,
-          message: this.i18nService.translate(
-            UserTestAttemptMessage.REVIEW_INSUFFICIENT_SCORE,
-            normalizedLang
-          ),
-          data: {
-            status: attempt.status,
-            totalQuestions,
-            answeredCorrect: answeredCorrectCount,
-            correctPercentage: Math.round(correctPercentage),
-            minimumRequired: 80
-          }
-        }
+        throw ReviewInsufficientScoreException()
       }
 
       // Lấy tất cả questionBankIds từ logs
