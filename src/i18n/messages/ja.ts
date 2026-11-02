@@ -35,6 +35,7 @@ export const jaMessages = {
     INVALID_TOTP_AND_CODE: '無効なTOTPと認証コードです',
     OTP_AUTHENTICATION_SUCCESS: 'OTP認証が完了しました',
     FAIL_TO_LOGIN: 'メールアドレスまたはパスワードが間違っています',
+    MISSING_ACCESS_TOKEN: '続行するにはログインしてください',
     FIRST_LOGIN:
       'このデバイスからの初回ログインです。認証のためにメールをご確認ください。',
     NOT_FIRST_LOGIN: 'このデバイスは既に認証されています',

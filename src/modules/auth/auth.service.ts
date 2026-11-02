@@ -564,7 +564,8 @@ export class AuthService {
       return {
         statusCode: HttpStatus.OK,
         data: {
-          type: TypeOfVerificationCode.REGISTER
+          type: TypeOfVerificationCode.REGISTER,
+          requiresOtp: true
         },
         message: this.i18nService.translate(AuthMessage.SEND_OTP_SUCCESS, lang)
       }
@@ -589,10 +590,13 @@ export class AuthService {
 
       this.mailService.generateAndSendOtp(email, template, content, bodyContent)
 
+      // `requiresOtp` là cách báo bước tiếp theo theo hợp đồng response chung.
+      // statusCode 401/201 giữ tạm cho mobile bản cũ; bỏ khi statusCode = HTTP status.
       return {
         statusCode: HttpStatus.UNAUTHORIZED,
         data: {
-          type: TypeOfVerificationCode.LOGIN
+          type: TypeOfVerificationCode.LOGIN,
+          requiresOtp: true
         },
         message: this.i18nService.translate(AuthMessage.FIRST_LOGIN, lang)
       }
@@ -602,7 +606,8 @@ export class AuthService {
     return {
       statusCode: HttpStatus.CREATED,
       data: {
-        type: TypeOfVerificationCode.LOGIN
+        type: TypeOfVerificationCode.LOGIN,
+        requiresOtp: false
       },
       message: this.i18nService.translate(AuthMessage.NOT_FIRST_LOGIN, lang)
     }

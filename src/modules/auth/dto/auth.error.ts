@@ -63,7 +63,8 @@ export class EmailAlreadyActiveException extends NotFoundException {
   }
 }
 
-export class FailToLoginException extends NotFoundException {
+// 401: sai email hoặc mật khẩu (trước đây trả 404)
+export class FailToLoginException extends UnauthorizedException {
   constructor() {
     super({
       message: 'Sai email hoặc mật khẩu',

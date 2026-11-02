@@ -3,6 +3,7 @@ import {
   REQUEST_USER_KEY
 } from '@/common/constants/auth.constant'
 import { HTTPMethod } from '@/common/constants/role.constant'
+import { AuthMessage } from '@/i18n/message-keys'
 import {
   CanActivate,
   ExecutionContext,
@@ -47,7 +48,11 @@ export class AccessTokenGuard implements CanActivate {
   private extractAccessTokenFromHeader(request: any): string {
     const accessToken = request.headers.authorization?.split(' ')[1]
     if (!accessToken) {
-      throw new UnauthorizedException(SYSTEM_MESSAGE.SESSION_EXPIRED)
+      // Chưa gửi token (khác với token hết hạn/không hợp lệ bên dưới)
+      throw new UnauthorizedException({
+        message: AuthMessage.MISSING_ACCESS_TOKEN,
+        errorKey: AuthMessage.MISSING_ACCESS_TOKEN
+      })
     }
     return accessToken
   }
