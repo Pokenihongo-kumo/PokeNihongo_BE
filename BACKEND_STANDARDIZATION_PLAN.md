@@ -366,7 +366,7 @@ Ghi chú chuyển workflow: dòng trên ghi nhận nhánh đã bắt đầu trư
 ### Giai đoạn 0
 
 - [x] 1. Git status + versions — BE/FE/MO đều ở `main`, working tree sạch (BE chỉ có file plan chưa track). BE: NestJS 11.0.x, Prisma 6.8.2, Zod 3.25, nestjs-zod 4.3, TypeScript 5.7, Jest 29, supertest 7, Prettier 3.4, ESLint 9, Bull 4.16, ioredis 5.7. FE/MO dùng npm (`package-lock.json`).
-- [ ] 2. Inventory nhanh toàn src
+- [x] 2. Inventory nhanh toàn src → [`docs/standardization/inventory.md`](docs/standardization/inventory.md) (nhánh `docs/phase-0-inventory`): 81 module / 616 endpoint chia 5 nhóm rollout, tín hiệu convention/behavior từng module, các thư mục ngoài modules. Kiểu A 36 · B 32 · lai 13. Cột consumer FE/MO là heuristic theo path, đã kiểm tay vài module (vd. `languages` 0 hit là đúng: FE chỉ có UI `LanguageSwitcher`).
 - [x] 3. Baseline build/typecheck/lint/format (xem bảng dưới)
 - [x] 4. Commit tooling + commit format-only
   - [x] `7c62263` chore: `.gitattributes` (`* text=auto eol=lf`), `.prettierrc` endOfLine lf + bỏ plugin organize-imports (chuyển sang script `format:imports`), `.editorconfig` lf, lint-staged chỉ chạy file staged. Renormalize không tạo diff nội dung (index vốn LF).
@@ -404,4 +404,9 @@ Ghi chú chuyển workflow: dòng trên ghi nhận nhánh đã bắt đầu trư
 - Git (mục 9): `origin/dev` từng **chậm hơn `origin/main` 192 commit** (dev là tổ tiên của main). Đã giải quyết: người dùng giữ `dev`, merge thẳng nhánh phase-0 (nền `main`) qua PR #691 nên `dev` nay đã bao gồm toàn bộ `main`. Từ đây mọi task tạo nhánh từ `dev`.
 - Bối cảnh (người dùng xác nhận 2026-11-02): VPS và các dịch vụ trả phí đã ngừng; mục tiêu hiện tại chỉ là clean code đúng chuẩn. Workflow tích hợp người dùng đang dùng: push nhánh rồi merge qua PR vào `dev`.
 - Git (mục 9): CI `run-ci-cd.yml` chỉ chạy khi push `main` (deploy VPS + `prisma migrate deploy`); push nhánh công việc/`dev` không deploy. `dev` không bị protect (GitHub API). commitlint dùng `config-conventional`, các commit trên đều theo đúng định dạng.
-- Git: shell của Claude không hỏi được đăng nhập GitHub (credential helper `manager` cần tương tác) → người dùng tự push nhánh phase-0 và mở/merge PR. Repo BE đặt danh tính commit cục bộ `Kumo <145751369+thuanhd2102@users.noreply.github.com>` (lấy từ lịch sử repo, chỉ áp cho repo này).
+- Git: lần đầu shell của Claude không push được (credential helper `manager` cần tương tác) nên người dùng tự push nhánh phase-0 và merge PR #691. Sau khi người dùng đăng nhập, credential đã được lưu và Claude push được bình thường.
+- Inventory: code chết chưa được nạp — `3rdService/payos` (service comment toàn bộ, `PayosModule` không import ở đâu; PayOS đang chạy là `shared/services/payos.service.ts`) và `3rdService/microservices` (RabbitMQ, không import ngoài thư mục). Xác nhận với người dùng trước khi xóa.
+- Inventory: `common/decorators/custom.ts` có `Public()` + `IS_PUBLIC_KEY` nhưng 0 lần dùng và guard không đọc key này; public route thật dùng `IsPublic()` (48 lần). Dọn ở giai đoạn auth.
+- Inventory: `typeorm`/`@nestjs/typeorm` không có import nào trong `src`/`initialScript` → ứng viên gỡ ở giai đoạn 7 (xét scripts/build trước).
+- Inventory: lỗi đặt tên nhỏ — `user-gacha-pity/entities/user-gacha-pityentity.ts` (thiếu dấu chấm), `common/utils/prase.utils.ts` (sai chính tả "parse"); sửa trong batch rename của module/nhóm tương ứng.
+- Inventory: 24 module dùng `@UseGuards` cục bộ dù đã có `AuthenticationGuard` global; 17 module không dùng hệ message nào; 6 module để Zod DTO trong `dto/zod/` lồng. Repo BE đặt danh tính commit cục bộ `Kumo <145751369+thuanhd2102@users.noreply.github.com>` (lấy từ lịch sử repo, chỉ áp cho repo này).
