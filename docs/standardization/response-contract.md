@@ -97,14 +97,14 @@ Mỗi client có **một** lớp adapter dùng chung (không globally unwrap tro
 | # | Hiện tại (baseline) | Sau | Ảnh hưởng client | Làm ở |
 | --- | --- | --- | --- | --- |
 | 1 | 422: `message` là mảng `[{ message, path }]`, câu chung "Định dạng không hợp lệ" | `message` chuỗi tóm tắt + `errors[{ field, message }]` cụ thể | Web 6 hook/page và mobile đang hiện "[object Object]" → sửa được; cập nhật adapter | Giai đoạn 1–2 (pipeline) + C1 |
-| 2 | 7 chỗ trả HTTP 2xx kèm `statusCode` 400/401/403: `user-exercise-attempt` (`abandon` 400, `getExerciseAttemptReview` 403), `user-test-attempt` (`abandon` 400, `getTestAttemptReview` 403, `getLessonTestAttemptReview` 403), `match-round-participant.choosePokemonWithRound` 400, `auth.checkMailToAction` 401. (Con số "15" ban đầu sai: 8 chỗ trong `user-answer-log`/`user-test-answer-log` là `throw new HttpException` với status đúng, không phải lỗi mềm.) | Throw exception với HTTP status đúng | Mobile `exercise-history`/`quiz/result` kiểm tra 403 ở cả nhánh thành công lẫn lỗi → tiếp tục chạy; mobile `quiz` (thoát bài tập) cần coi 400 là "đã đóng" → đã sửa ở MO trước | Từng module, trước bước 3 |
+| 2 | 7 chỗ trả HTTP 2xx kèm `statusCode` 400/401/403: `user-exercise-attempt` (`abandon` 400, `getExerciseAttemptReview` 403), `user-test-attempt` (`abandon` 400, `getTestAttemptReview` 403, `getLessonTestAttemptReview` 403), `match-round-participant.choosePokemonWithRound` 400, `auth.checkMailToAction` 401. (Con số "15" ban đầu sai: 8 chỗ trong `user-answer-log`/`user-test-answer-log` là `throw new HttpException` với status đúng, không phải lỗi mềm.) | Throw exception với HTTP status đúng (riêng `check-email`: không phải lỗi mà là bước tiếp theo → `data.requiresOtp`) | Mobile `exercise-history`/`quiz/result` kiểm tra 403 ở cả nhánh thành công lẫn lỗi → tiếp tục chạy; mobile `quiz` (thoát bài tập) coi 400 là "đã đóng", `pick-pokemon` coi 400 là hết giờ chọn, màn đăng nhập đọc `requiresOtp` → đã sửa ở MO trước | **Xong cả 7** (`6b0eaba`, `ff4f91f`, `23c3de6`) |
 | 3 | `statusCode` trong body lấy từ service, có thể lệch HTTP status | Tầng HTTP đặt `statusCode` = HTTP status | Chỉ ảnh hưởng chỗ còn lỗi mềm → **làm sau #2** | Sau khi #2 xong hết |
-| 4 | Sai mật khẩu: 404 `NOT_FOUND` | 401 `UNAUTHORIZED` | Không client nào kiểm tra 404 ở luồng đăng nhập; login mobile dùng client public nên không kích hoạt refresh — kiểm tra lại khi làm | Task auth |
+| 4 | Sai mật khẩu: 404 `NOT_FOUND` | 401 `UNAUTHORIZED` | Không client nào kiểm tra 404 ở luồng đăng nhập; login mobile dùng client public nên không kích hoạt refresh — kiểm tra lại khi làm | Task auth — **xong** (`23c3de6`) |
 | 5 | Field nội bộ trong payload | Giữ; cắt dần theo feature | Không | Giai đoạn 3 |
 | 6 | Lỗi ngoài `HttpException`: `{ statusCode: 500, message: "Internal server error" }`, không dịch, không `error` | Cùng shape lỗi, message dịch | Không đổi status | Giai đoạn 1–2 (pipeline) |
 | 7 | Message kiểu B không theo ngôn ngữ | Mọi message theo `Accept-Language` | en/ja nhận đúng ngôn ngữ (đã chốt là behavior change) | Giai đoạn 3 từng feature |
-| 8 | Login thiếu `User-Agent` → 500 | Không còn 500 (ghi thiết bị với user agent mặc định) | Không | Bugfix riêng |
-| 9 | Thiếu token: message "Phiên đã hết hạn" | Message riêng cho thiếu token, vẫn 401 | Mobile refresh khi gặp 401 → không đổi | Task auth |
+| 8 | Login thiếu `User-Agent` → 500 | Không còn 500 (ghi thiết bị với user agent mặc định) | Không | Bugfix riêng — **xong** (`23c3de6`, user agent mặc định `'unknown'`) |
+| 9 | Thiếu token: message "Phiên đã hết hạn" | Message riêng cho thiếu token, vẫn 401 | Mobile refresh khi gặp 401 → không đổi | Task auth — **xong** (`23c3de6`) |
 
 ## 8. Thứ tự triển khai
 
