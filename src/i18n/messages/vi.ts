@@ -35,6 +35,7 @@ export const viMessages = {
     INVALID_TOTP_AND_CODE: 'Mã TOTP và mã xác thực không hợp lệ',
     OTP_AUTHENTICATION_SUCCESS: 'Xác thực OTP thành công',
     FAIL_TO_LOGIN: 'Sai email hoặc mật khẩu',
+    MISSING_ACCESS_TOKEN: 'Vui lòng đăng nhập để tiếp tục',
     FIRST_LOGIN:
       'Đây là lần đăng nhập đầu tiên từ thiết bị này. Vui lòng kiểm tra email để xác thực.',
     NOT_FIRST_LOGIN: 'Thiết bị đã được xác thực trước đó.',

@@ -70,7 +70,8 @@ export async function loginAsTestAdmin(
     }
   })
 
-  // Login stores a Device row; without a User-Agent header it currently fails with 500.
+  // Login stores a Device keyed by user agent + IP; check-email treats that
+  // pair as a known device, so contract tests reuse the same User-Agent.
   const res = await request(app.getHttpServer())
     .post('/auth/login')
     .set('User-Agent', TEST_USER_AGENT)

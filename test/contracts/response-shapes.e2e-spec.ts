@@ -14,7 +14,7 @@ import { loginAsTestAdmin, TEST_ADMIN, TEST_USER_AGENT } from '../support/test-a
 describe('Response contract baseline (e2e)', () => {
   let app: INestApplication<App>
   let token: string
-  // Real clients always send a User-Agent (login fails with 500 without one)
+  // Real clients always send a User-Agent
   const http = () => request.agent(app.getHttpServer()).set('User-Agent', TEST_USER_AGENT)
 
   beforeAll(async () => {
@@ -42,6 +42,16 @@ describe('Response contract baseline (e2e)', () => {
   describe('success', () => {
     it('login (public, auth module)', async () => {
       const res = await http().post('/auth/login').send(TEST_ADMIN)
+      expect(capture(res)).toMatchSnapshot()
+    })
+
+    it('login without a User-Agent header', async () => {
+      const res = await request(app.getHttpServer()).post('/auth/login').send(TEST_ADMIN)
+      expect(capture(res)).toMatchSnapshot()
+    })
+
+    it('check-email for a known device (no OTP)', async () => {
+      const res = await http().get(`/auth/check-email/${TEST_ADMIN.email}`)
       expect(capture(res)).toMatchSnapshot()
     })
 

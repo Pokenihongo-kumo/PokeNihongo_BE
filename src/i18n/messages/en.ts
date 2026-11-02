@@ -35,6 +35,7 @@ export const enMessages = {
     INVALID_TOTP_AND_CODE: 'Invalid TOTP and verification code',
     OTP_AUTHENTICATION_SUCCESS: 'OTP authentication successful',
     FAIL_TO_LOGIN: 'Incorrect email or password',
+    MISSING_ACCESS_TOKEN: 'Please log in to continue',
     FIRST_LOGIN:
       'This is the first login from this device. Please check your email for verification.',
     NOT_FIRST_LOGIN: 'This device has been previously verified.',
