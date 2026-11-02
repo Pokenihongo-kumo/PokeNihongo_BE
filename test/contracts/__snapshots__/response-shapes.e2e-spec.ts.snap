@@ -1,0 +1,225 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Response contract baseline (e2e) errors missing bearer token 1`] = `
+{
+  "body": {
+    "error": "UNAUTHORIZED",
+    "message": "Phiên đã hết hạn, vui lòng đăng nhập lại",
+    "statusCode": 401,
+  },
+  "httpStatus": 401,
+}
+`;
+
+exports[`Response contract baseline (e2e) errors not found, style A (GET /level/999999), vi and en 1`] = `
+{
+  "en": {
+    "body": {
+      "error": "NOT_FOUND",
+      "message": "Record not found",
+      "statusCode": 404,
+    },
+    "httpStatus": 404,
+  },
+  "vi": {
+    "body": {
+      "error": "NOT_FOUND",
+      "message": "Không tìm thấy bản ghi",
+      "statusCode": 404,
+    },
+    "httpStatus": 404,
+  },
+}
+`;
+
+exports[`Response contract baseline (e2e) errors not found, style B (GET /languages/999999), vi and en 1`] = `
+{
+  "en": {
+    "body": {
+      "error": "NOT_FOUND",
+      "message": "Ngôn ngữ không tồn tại",
+      "statusCode": 404,
+    },
+    "httpStatus": 404,
+  },
+  "vi": {
+    "body": {
+      "error": "NOT_FOUND",
+      "message": "Ngôn ngữ không tồn tại",
+      "statusCode": 404,
+    },
+    "httpStatus": 404,
+  },
+}
+`;
+
+exports[`Response contract baseline (e2e) errors unknown route 1`] = `
+{
+  "body": {
+    "error": "NOT_FOUND",
+    "message": "Cannot GET /__route-that-does-not-exist__",
+    "statusCode": 404,
+  },
+  "httpStatus": 404,
+}
+`;
+
+exports[`Response contract baseline (e2e) errors validation, style A (POST /level with empty body) 1`] = `
+{
+  "body": {
+    "error": "UNPROCESSABLE_ENTITY",
+    "message": [
+      {
+        "message": "Định dạng không hợp lệ",
+        "path": "string",
+      },
+      {
+        "message": "Định dạng không hợp lệ",
+        "path": "string",
+      },
+      {
+        "message": "Định dạng không hợp lệ",
+        "path": "string",
+      },
+    ],
+    "statusCode": 422,
+  },
+  "httpStatus": 422,
+}
+`;
+
+exports[`Response contract baseline (e2e) errors validation, style B (POST /languages with empty body) 1`] = `
+{
+  "body": {
+    "error": "UNPROCESSABLE_ENTITY",
+    "message": [
+      {
+        "message": "Định dạng không hợp lệ",
+        "path": "string",
+      },
+      {
+        "message": "Định dạng không hợp lệ",
+        "path": "string",
+      },
+    ],
+    "statusCode": 422,
+  },
+  "httpStatus": 422,
+}
+`;
+
+exports[`Response contract baseline (e2e) errors wrong password 1`] = `
+{
+  "body": {
+    "error": "NOT_FOUND",
+    "message": "Sai email hoặc mật khẩu",
+    "statusCode": 404,
+  },
+  "httpStatus": 404,
+}
+`;
+
+exports[`Response contract baseline (e2e) success list, style A (GET /level, public) 1`] = `
+{
+  "body": {
+    "data": {
+      "pagination": {
+        "current": "number",
+        "pageSize": "number",
+        "totalItem": "number",
+        "totalPage": "number",
+      },
+      "results": [
+        {
+          "createdAt": "string",
+          "createdById": "null",
+          "deletedAt": "null",
+          "deletedById": "null",
+          "id": "number",
+          "levelNumber": "number",
+          "levelType": "string",
+          "nextLevel": "null",
+          "nextLevelId": "null",
+          "requiredExp": "number",
+          "reward": "null",
+          "rewardId": "null",
+          "updatedAt": "string",
+          "updatedById": "null",
+        },
+      ],
+    },
+    "message": "Lấy danh sách cấp độ thành công",
+    "statusCode": 200,
+  },
+  "httpStatus": 200,
+}
+`;
+
+exports[`Response contract baseline (e2e) success list, style B (GET /languages) 1`] = `
+{
+  "body": {
+    "data": {
+      "pagination": {
+        "current": "number",
+        "pageSize": "number",
+        "totalItem": "number",
+        "totalPage": "number",
+      },
+      "results": [],
+    },
+    "message": "Lấy danh sách ngôn ngữ thành công",
+    "statusCode": 200,
+  },
+  "httpStatus": 200,
+}
+`;
+
+exports[`Response contract baseline (e2e) success login (public, auth module) 1`] = `
+{
+  "body": {
+    "data": {
+      "accessToken": "string",
+      "avatar": "null",
+      "eloscore": "number",
+      "email": "string",
+      "exp": "number",
+      "id": "number",
+      "level": {
+        "createdAt": "string",
+        "createdById": "null",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "id": "number",
+        "levelNumber": "number",
+        "levelType": "string",
+        "nextLevelId": "null",
+        "requiredExp": "number",
+        "rewardId": "null",
+        "updatedAt": "string",
+        "updatedById": "null",
+      },
+      "levelJLPT": "null",
+      "name": "string",
+      "phoneNumber": "null",
+      "refreshToken": "string",
+      "role": {
+        "createdAt": "string",
+        "createdById": "null",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "description": "string",
+        "id": "number",
+        "isActive": "boolean",
+        "name": "string",
+        "updatedAt": "string",
+        "updatedById": "null",
+      },
+      "roleId": "number",
+      "status": "string",
+    },
+    "message": "Đăng nhập thành công",
+    "statusCode": 200,
+  },
+  "httpStatus": 200,
+}
+`;
