@@ -5,9 +5,9 @@ import { LanguagesRepository } from './languages.repo'
 import { SharedModule } from '@/shared/shared.module'
 
 @Module({
-    imports: [SharedModule],
-    controllers: [LanguagesController],
-    providers: [LanguagesService, LanguagesRepository],
-    exports: [LanguagesService, LanguagesRepository]
+  imports: [SharedModule],
+  controllers: [LanguagesController],
+  providers: [LanguagesService, LanguagesRepository],
+  exports: [LanguagesService, LanguagesRepository]
 })
-export class LanguagesModule { }
+export class LanguagesModule {}

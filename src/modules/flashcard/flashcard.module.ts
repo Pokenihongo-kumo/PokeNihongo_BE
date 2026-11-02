@@ -11,5 +11,4 @@ import { TranslationModule } from '@/modules/translation/translation.module'
   providers: [FlashcardService, FlashcardRepository],
   exports: [FlashcardService, FlashcardRepository]
 })
-export class FlashcardModule { }
-
+export class FlashcardModule {}

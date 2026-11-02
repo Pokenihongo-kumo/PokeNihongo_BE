@@ -15,20 +15,20 @@ import { UserExerciseAttemptModule } from '../user-exercise-attempt/user-exercis
 import { ExercisesModule } from '../exercises/exercises.module'
 
 @Module({
-    imports: [
-        SharedModule,
-        VocabularyModule,
-        GrammarModule,
-        KanjiModule,
-        TranslationModule,
-        LanguagesModule,
-        MeaningModule,
-        LessonModule,
-        UserExerciseAttemptModule,
-        ExercisesModule
-    ],
-    controllers: [LessonContentController],
-    providers: [LessonContentService, LessonContentRepository, GrammarRepository],
-    exports: [LessonContentService, LessonContentRepository]
+  imports: [
+    SharedModule,
+    VocabularyModule,
+    GrammarModule,
+    KanjiModule,
+    TranslationModule,
+    LanguagesModule,
+    MeaningModule,
+    LessonModule,
+    UserExerciseAttemptModule,
+    ExercisesModule
+  ],
+  controllers: [LessonContentController],
+  providers: [LessonContentService, LessonContentRepository, GrammarRepository],
+  exports: [LessonContentService, LessonContentRepository]
 })
-export class LessonContentModule { }
+export class LessonContentModule {}

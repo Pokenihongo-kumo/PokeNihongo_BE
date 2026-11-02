@@ -8,9 +8,9 @@ import { QuestionBankModule } from '@/modules/question-bank/question-bank.module
 import { TranslationModule } from '@/modules/translation/translation.module'
 
 @Module({
-    imports: [SharedModule, TestSetModule, QuestionBankModule, TranslationModule],
-    controllers: [TestSetQuestionBankController],
-    providers: [TestSetQuestionBankService, TestSetQuestionBankRepository],
-    exports: [TestSetQuestionBankService, TestSetQuestionBankRepository]
+  imports: [SharedModule, TestSetModule, QuestionBankModule, TranslationModule],
+  controllers: [TestSetQuestionBankController],
+  providers: [TestSetQuestionBankService, TestSetQuestionBankRepository],
+  exports: [TestSetQuestionBankService, TestSetQuestionBankRepository]
 })
-export class TestSetQuestionBankModule { }
+export class TestSetQuestionBankModule {}

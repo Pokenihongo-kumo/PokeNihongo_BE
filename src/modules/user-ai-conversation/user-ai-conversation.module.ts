@@ -4,10 +4,9 @@ import { UserAIConversationRepository } from './user-ai-conversation.repo'
 import { UserAIConversationService } from './user-ai-conversation.service'
 
 @Module({
-    imports: [],
-    controllers: [UserAIConversationController],
-    providers: [UserAIConversationService, UserAIConversationRepository],
-    exports: [UserAIConversationService, UserAIConversationRepository]
+  imports: [],
+  controllers: [UserAIConversationController],
+  providers: [UserAIConversationService, UserAIConversationRepository],
+  exports: [UserAIConversationService, UserAIConversationRepository]
 })
-export class UserAIConversationModule { }
-
+export class UserAIConversationModule {}

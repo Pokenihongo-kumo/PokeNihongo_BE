@@ -47,17 +47,20 @@ export const CreateGeminiConfigModelBodySchema = GeminiConfigModelBase.pick({
   safetySettings: true,
   extraParams: true,
   isEnabled: true
-}).partial({
-  presetId: true,
-  maxTokens: true,
-  jsonMode: true,
-  systemInstruction: true,
-  safetySettings: true,
-  extraParams: true,
-  isEnabled: true
-}).strict()
+})
+  .partial({
+    presetId: true,
+    maxTokens: true,
+    jsonMode: true,
+    systemInstruction: true,
+    safetySettings: true,
+    extraParams: true,
+    isEnabled: true
+  })
+  .strict()
 
-export const UpdateGeminiConfigModelBodySchema = CreateGeminiConfigModelBodySchema.partial().strict()
+export const UpdateGeminiConfigModelBodySchema =
+  CreateGeminiConfigModelBodySchema.partial().strict()
 
 export const GetParamsGeminiConfigModelSchema = z.object({
   id: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
@@ -70,9 +73,13 @@ export const GeminiConfigModelResSchema = z.object({
 })
 
 // types
-export type CreateGeminiConfigModelBodyType = z.infer<typeof CreateGeminiConfigModelBodySchema>
-export type UpdateGeminiConfigModelBodyType = z.infer<typeof UpdateGeminiConfigModelBodySchema>
-export type GetParamsGeminiConfigModelType = z.infer<typeof GetParamsGeminiConfigModelSchema>
+export type CreateGeminiConfigModelBodyType = z.infer<
+  typeof CreateGeminiConfigModelBodySchema
+>
+export type UpdateGeminiConfigModelBodyType = z.infer<
+  typeof UpdateGeminiConfigModelBodySchema
+>
+export type GetParamsGeminiConfigModelType = z.infer<
+  typeof GetParamsGeminiConfigModelSchema
+>
 export type GeminiConfigModelResType = z.infer<typeof GeminiConfigModelResSchema>
-
-

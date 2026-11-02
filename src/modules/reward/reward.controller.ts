@@ -40,7 +40,7 @@ import { UserRewardSourceType } from '@prisma/client'
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class RewardController {
-  constructor(private readonly rewardService: RewardService) { }
+  constructor(private readonly rewardService: RewardService) {}
 
   @Get()
   @IsPublic()
@@ -51,8 +51,16 @@ export class RewardController {
 
   @Post('convert')
   @ApiOperation({ summary: 'Quy đổi reward cho user' })
-  @ApiBody({ type: ConvertRewardsSwaggerDTO, description: 'REWARD_SERVICE , LESSON , DAILY_REQUEST, ATTENDANCE, SEASON_REWARD, ADMIN_ADJUST, OTHER' })
-  @ApiResponse({ status: 200, description: 'Quy đổi thành công', type: ConvertRewardsResponseSwaggerDTO })
+  @ApiBody({
+    type: ConvertRewardsSwaggerDTO,
+    description:
+      'REWARD_SERVICE , LESSON , DAILY_REQUEST, ATTENDANCE, SEASON_REWARD, ADMIN_ADJUST, OTHER'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Quy đổi thành công',
+    type: ConvertRewardsResponseSwaggerDTO
+  })
   @ZodSerializerDto(ConvertRewardsResDTO)
   convertRewards(
     @Body() body: ConvertRewardsBodyDTO,

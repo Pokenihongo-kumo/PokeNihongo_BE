@@ -34,4 +34,4 @@ import { MatchRoundParticipantService } from './match-round-participant.service'
   ],
   exports: [MatchRoundParticipantService, MatchRoundParticipantRepo]
 })
-export class MatchRoundParticipantModule { }
+export class MatchRoundParticipantModule {}

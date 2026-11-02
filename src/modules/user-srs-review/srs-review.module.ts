@@ -6,11 +6,9 @@ import { SrsReviewRepository } from './srs-review.repo'
 import { TranslationModule } from '@/modules/translation/translation.module'
 
 @Module({
-    imports: [SharedModule, TranslationModule],
-    controllers: [SrsReviewController],
-    providers: [SrsReviewService, SrsReviewRepository],
-    exports: [SrsReviewService, SrsReviewRepository]
+  imports: [SharedModule, TranslationModule],
+  controllers: [SrsReviewController],
+  providers: [SrsReviewService, SrsReviewRepository],
+  exports: [SrsReviewService, SrsReviewRepository]
 })
-export class SrsReviewModule { }
-
-
+export class SrsReviewModule {}

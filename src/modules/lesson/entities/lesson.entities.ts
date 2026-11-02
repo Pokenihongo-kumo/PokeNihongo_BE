@@ -7,13 +7,17 @@ export const LessonType = z.object({
   slug: z.string(),
   titleJp: z.string(),
   titleKey: z.string(),
-  title: z.union([
-    z.string(),
-    z.array(z.object({
-      language: z.string(),
-      value: z.string()
-    }))
-  ]).optional(),
+  title: z
+    .union([
+      z.string(),
+      z.array(
+        z.object({
+          language: z.string(),
+          value: z.string()
+        })
+      )
+    ])
+    .optional(),
   levelJlpt: z.number().nullable(),
   estimatedTimeMinutes: z.number(),
   lessonOrder: z.number(),

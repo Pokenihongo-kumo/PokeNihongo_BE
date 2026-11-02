@@ -12,9 +12,17 @@ import { LanguagesModule } from '@/modules/languages/languages.module'
 import { WordTypeModule } from '@/modules/wordtype/wordtype.module'
 
 @Module({
-    imports: [UploadModule, SpeechModule, KanjiModule, MeaningModule, TranslationModule, LanguagesModule, WordTypeModule],
-    controllers: [VocabularyController],
-    providers: [VocabularyService, VocabularyRepository, VocabularyHelperService],
-    exports: [VocabularyService, VocabularyRepository, VocabularyHelperService]
+  imports: [
+    UploadModule,
+    SpeechModule,
+    KanjiModule,
+    MeaningModule,
+    TranslationModule,
+    LanguagesModule,
+    WordTypeModule
+  ],
+  controllers: [VocabularyController],
+  providers: [VocabularyService, VocabularyRepository, VocabularyHelperService],
+  exports: [VocabularyService, VocabularyRepository, VocabularyHelperService]
 })
-export class VocabularyModule { }
+export class VocabularyModule {}

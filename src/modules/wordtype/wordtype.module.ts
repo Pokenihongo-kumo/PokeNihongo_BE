@@ -7,9 +7,9 @@ import { TranslationModule } from '@/modules/translation/translation.module'
 import { LanguagesModule } from '@/modules/languages/languages.module'
 
 @Module({
-    imports: [SharedModule, TranslationModule, LanguagesModule],
-    controllers: [WordTypeController],
-    providers: [WordTypeService, WordTypeRepository],
-    exports: [WordTypeService, WordTypeRepository]
+  imports: [SharedModule, TranslationModule, LanguagesModule],
+  controllers: [WordTypeController],
+  providers: [WordTypeService, WordTypeRepository],
+  exports: [WordTypeService, WordTypeRepository]
 })
-export class WordTypeModule { }
+export class WordTypeModule {}

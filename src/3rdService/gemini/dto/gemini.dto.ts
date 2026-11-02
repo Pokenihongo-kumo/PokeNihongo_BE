@@ -49,7 +49,8 @@ export class GetPersonalizedRecommendationsDto {
 export class AIKaiwaDto {
   @ApiProperty({
     example: 'こんにちは、元気ですか？',
-    description: 'Câu hỏi hoặc tin nhắn từ user (tiếng Nhật). Nếu có audioUrl thì message này sẽ được dùng làm reference text để đánh giá phát âm.',
+    description:
+      'Câu hỏi hoặc tin nhắn từ user (tiếng Nhật). Nếu có audioUrl thì message này sẽ được dùng làm reference text để đánh giá phát âm.',
     required: false
   })
   @IsOptional()
@@ -58,7 +59,8 @@ export class AIKaiwaDto {
 
   @ApiProperty({
     example: 'https://example.com/audio/user-audio.mp3',
-    description: 'URL audio file của user (nếu có, sẽ convert sang text bằng Speech-to-Text)',
+    description:
+      'URL audio file của user (nếu có, sẽ convert sang text bằng Speech-to-Text)',
     required: false
   })
   @IsOptional()
@@ -67,7 +69,8 @@ export class AIKaiwaDto {
 
   @ApiProperty({
     example: 'conv_123456789',
-    description: 'ID của conversation (nếu là conversation mới thì không cần, sẽ tự generate)',
+    description:
+      'ID của conversation (nếu là conversation mới thì không cần, sẽ tự generate)',
     required: false
   })
   @IsOptional()
@@ -103,7 +106,8 @@ export class ChatWithGeminiDto {
 
   @ApiProperty({
     example: 'conv_123456789',
-    description: 'ID của conversation (nếu là conversation mới thì không cần, sẽ tự generate)',
+    description:
+      'ID của conversation (nếu là conversation mới thì không cần, sẽ tự generate)',
     required: false
   })
   @IsOptional()
@@ -131,7 +135,8 @@ export class ChatWithGeminiDto {
 
   @ApiProperty({
     example: false,
-    description: 'Bật/tắt Service Account. true = dùng Service Account, false = dùng API Key (mặc định: false - dùng API Key)',
+    description:
+      'Bật/tắt Service Account. true = dùng Service Account, false = dùng API Key (mặc định: false - dùng API Key)',
     required: false,
     default: false
   })
@@ -151,7 +156,8 @@ export class ChatWithGeminiMultipartDto {
 
   @ApiProperty({
     example: 'conv_123456789',
-    description: 'ID của conversation (nếu là conversation mới thì không cần, sẽ tự generate)',
+    description:
+      'ID của conversation (nếu là conversation mới thì không cần, sẽ tự generate)',
     required: false
   })
   @IsOptional()
@@ -161,7 +167,8 @@ export class ChatWithGeminiMultipartDto {
   @ApiProperty({
     example: 'gemini-2.5-pro',
     enum: GeminiModel,
-    description: 'Tên model Gemini muốn sử dụng (mặc định: gemini-2.5-pro). Có thể chọn từ dropdown',
+    description:
+      'Tên model Gemini muốn sử dụng (mặc định: gemini-2.5-pro). Có thể chọn từ dropdown',
     required: false
   })
   @IsOptional()
@@ -170,7 +177,8 @@ export class ChatWithGeminiMultipartDto {
 
   @ApiProperty({
     example: 'true',
-    description: 'Có lưu lịch sử conversation vào DB không (mặc định: true). Gửi dưới dạng string "true" hoặc "false"',
+    description:
+      'Có lưu lịch sử conversation vào DB không (mặc định: true). Gửi dưới dạng string "true" hoặc "false"',
     required: false,
     default: 'true'
   })
@@ -180,7 +188,8 @@ export class ChatWithGeminiMultipartDto {
 
   @ApiProperty({
     example: 'false',
-    description: 'Bật/tắt Service Account. "true" = dùng Service Account, "false" = dùng API Key (mặc định: false - dùng API Key)',
+    description:
+      'Bật/tắt Service Account. "true" = dùng Service Account, "false" = dùng API Key (mặc định: false - dùng API Key)',
     required: false,
     default: 'false'
   })
@@ -203,7 +212,8 @@ export class RecommendationsMultipartDto {
 
   @ApiProperty({
     example: 'false',
-    description: 'Bật/tắt Service Account. "true" = dùng Service Account, "false" = dùng API Key (mặc định: false)',
+    description:
+      'Bật/tắt Service Account. "true" = dùng Service Account, "false" = dùng API Key (mặc định: false)',
     required: false,
     default: 'false'
   })
@@ -214,7 +224,11 @@ export class RecommendationsMultipartDto {
 
 // === Saved recommendations APIs ===
 export class ListSavedRecommendationsQueryDto {
-  @ApiProperty({ example: 'PENDING', required: false, description: 'Trạng thái lọc: PENDING|DONE|DISMISSED' })
+  @ApiProperty({
+    example: 'PENDING',
+    required: false,
+    description: 'Trạng thái lọc: PENDING|DONE|DISMISSED'
+  })
   @IsOptional()
   @IsString()
   status?: 'PENDING' | 'DONE' | 'DISMISSED'

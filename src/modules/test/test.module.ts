@@ -13,10 +13,22 @@ import { UserTestModule } from '../user-test/user-test.module'
 import { ExercisesModule } from '../exercises/exercises.module'
 
 @Module({
-    imports: [TranslationModule, LanguagesModule, TestSetModule, TestSetQuestionBankModule, UserTestModule, ExercisesModule],
-    controllers: [TestController],
-    providers: [TestService, TestRepository, PrismaService, UserTestAttemptRepository, UserTestRepository],
-    exports: [TestService, TestRepository],
+  imports: [
+    TranslationModule,
+    LanguagesModule,
+    TestSetModule,
+    TestSetQuestionBankModule,
+    UserTestModule,
+    ExercisesModule
+  ],
+  controllers: [TestController],
+  providers: [
+    TestService,
+    TestRepository,
+    PrismaService,
+    UserTestAttemptRepository,
+    UserTestRepository
+  ],
+  exports: [TestService, TestRepository]
 })
-export class TestModule { }
-
+export class TestModule {}

@@ -8,9 +8,9 @@ import { LanguagesModule } from '../languages/languages.module'
 import { I18nModule } from '@/i18n/i18n.module'
 
 @Module({
-    imports: [SharedModule, TranslationModule, LanguagesModule, I18nModule],
-    controllers: [LessonCategoryController],
-    providers: [LessonCategoryService, LessonCategoryRepository],
-    exports: [LessonCategoryService, LessonCategoryRepository]
+  imports: [SharedModule, TranslationModule, LanguagesModule, I18nModule],
+  controllers: [LessonCategoryController],
+  providers: [LessonCategoryService, LessonCategoryRepository],
+  exports: [LessonCategoryService, LessonCategoryRepository]
 })
-export class LessonCategoryModule { }
+export class LessonCategoryModule {}

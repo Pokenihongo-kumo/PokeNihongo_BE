@@ -15,7 +15,7 @@ import {
 
 @Injectable()
 export class TranslationRepository {
-  constructor(private readonly prismaService: PrismaService) { }
+  constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(params: {
     page: number

@@ -23,5 +23,9 @@ export const LessonCategoryListResponseSchema = z.object({
 })
 
 // DTO Classes
-export class LessonCategoryResponseDTO extends createZodDto(LessonCategoryResponseSchema) {}
-export class LessonCategoryListResponseDTO extends createZodDto(LessonCategoryListResponseSchema) {}
+export class LessonCategoryResponseDTO extends createZodDto(
+  LessonCategoryResponseSchema
+) {}
+export class LessonCategoryListResponseDTO extends createZodDto(
+  LessonCategoryListResponseSchema
+) {}

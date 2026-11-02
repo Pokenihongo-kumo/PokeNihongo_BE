@@ -8,10 +8,9 @@ import { TranslationModule } from '@/modules/translation/translation.module'
 import { LanguagesModule } from '@/modules/languages/languages.module'
 
 @Module({
-    imports: [I18nModule, TranslationModule, LanguagesModule],
-    controllers: [UserHistoryController],
-    providers: [UserHistoryService, UserHistoryRepository, PrismaService],
-    exports: [UserHistoryService]
+  imports: [I18nModule, TranslationModule, LanguagesModule],
+  controllers: [UserHistoryController],
+  providers: [UserHistoryService, UserHistoryRepository, PrismaService],
+  exports: [UserHistoryService]
 })
-export class UserHistoryModule { }
-
+export class UserHistoryModule {}

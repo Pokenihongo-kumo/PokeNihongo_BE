@@ -5,10 +5,9 @@ import { UserTestService } from './user-test.service'
 import { PrismaService } from '@/shared/services/prisma.service'
 
 @Module({
-    imports: [],
-    controllers: [UserTestController],
-    providers: [UserTestService, UserTestRepository, PrismaService],
-    exports: [UserTestService, UserTestRepository]
+  imports: [],
+  controllers: [UserTestController],
+  providers: [UserTestService, UserTestRepository, PrismaService],
+  exports: [UserTestService, UserTestRepository]
 })
-export class UserTestModule { }
-
+export class UserTestModule {}

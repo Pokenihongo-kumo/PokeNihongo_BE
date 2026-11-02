@@ -25,7 +25,7 @@ export class UserRewardHistoryService {
     private readonly rewardRepo: RewardRepo,
     private readonly translationService: TranslationService,
     private readonly languagesService: LanguagesService
-  ) { }
+  ) {}
 
   // Reusable builder for history payload
   createEntryPayload(params: {
@@ -135,7 +135,11 @@ export class UserRewardHistoryService {
     }
   }
 
-  async getMy(userId: number, query: GetMyRewardHistoryQueryType, languageCode: string = 'vi') {
+  async getMy(
+    userId: number,
+    query: GetMyRewardHistoryQueryType,
+    languageCode: string = 'vi'
+  ) {
     if (!userId) {
       throw InvalidUserRewardHistoryDataException
     }
@@ -180,16 +184,26 @@ export class UserRewardHistoryService {
         // Lấy translation nếu có nameKey và languageId
         if (nameKey && languageId) {
           try {
-            this.logger.debug(`Looking for translation: key=${nameKey}, languageId=${languageId}`)
-            const translation = await this.translationService.findByKeyAndLanguage(nameKey, languageId)
+            this.logger.debug(
+              `Looking for translation: key=${nameKey}, languageId=${languageId}`
+            )
+            const translation = await this.translationService.findByKeyAndLanguage(
+              nameKey,
+              languageId
+            )
             nameTranslation = translation?.value || null
             if (nameTranslation) {
               this.logger.debug(`Found translation: ${nameTranslation}`)
             } else {
-              this.logger.warn(`Translation not found for key ${nameKey} with languageId ${languageId}`)
+              this.logger.warn(
+                `Translation not found for key ${nameKey} with languageId ${languageId}`
+              )
             }
           } catch (error) {
-            this.logger.warn(`Failed to get translation for key ${nameKey} with languageId ${languageId}:`, error)
+            this.logger.warn(
+              `Failed to get translation for key ${nameKey} with languageId ${languageId}:`,
+              error
+            )
           }
         } else {
           if (!nameKey) {
@@ -202,16 +216,20 @@ export class UserRewardHistoryService {
 
         const resultItem = {
           ...item,
-          reward: item.reward ? {
-            id: item.reward.id,
-            name: nameTranslation ?? null,
-            rewardType: item.reward.rewardType,
-            rewardItem: item.reward.rewardItem,
-            rewardTarget: item.reward.rewardTarget
-          } : undefined
+          reward: item.reward
+            ? {
+                id: item.reward.id,
+                name: nameTranslation ?? null,
+                rewardType: item.reward.rewardType,
+                rewardItem: item.reward.rewardItem,
+                rewardTarget: item.reward.rewardTarget
+              }
+            : undefined
         }
 
-        this.logger.debug(`Item ${item.id} - name: ${nameTranslation}, reward exists: ${!!item.reward}`)
+        this.logger.debug(
+          `Item ${item.id} - name: ${nameTranslation}, reward exists: ${!!item.reward}`
+        )
 
         return resultItem
       })

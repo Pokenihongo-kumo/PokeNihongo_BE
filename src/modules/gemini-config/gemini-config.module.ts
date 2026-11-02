@@ -10,8 +10,17 @@ import { SchemaIntrospectService } from './schema-introspect.service'
 @Module({
   imports: [LanguagesModule, TranslationModule],
   controllers: [GeminiConfigController, GeminiServiceConfigController],
-  providers: [GeminiConfigService, GeminiConfigRepo, GeminiPresetRepo, SchemaIntrospectService],
-  exports: [GeminiConfigService, GeminiConfigRepo, GeminiPresetRepo, SchemaIntrospectService]
+  providers: [
+    GeminiConfigService,
+    GeminiConfigRepo,
+    GeminiPresetRepo,
+    SchemaIntrospectService
+  ],
+  exports: [
+    GeminiConfigService,
+    GeminiConfigRepo,
+    GeminiPresetRepo,
+    SchemaIntrospectService
+  ]
 })
-export class GeminiConfigModule { }
-
+export class GeminiConfigModule {}

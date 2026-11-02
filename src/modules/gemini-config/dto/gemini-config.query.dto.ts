@@ -1,15 +1,19 @@
 import { ApiPropertyOptional } from '@nestjs/swagger'
 
 export class GeminiConfigListQuerySwaggerDTO {
-    @ApiPropertyOptional({ example: 1, description: 'Trang hiện tại', default: 1 })
-    currentPage?: number
+  @ApiPropertyOptional({ example: 1, description: 'Trang hiện tại', default: 1 })
+  currentPage?: number
 
-    @ApiPropertyOptional({ example: 10, description: 'Số lượng item mỗi trang', default: 10 })
-    pageSize?: number
+  @ApiPropertyOptional({
+    example: 10,
+    description: 'Số lượng item mỗi trang',
+    default: 10
+  })
+  pageSize?: number
 
-    @ApiPropertyOptional({
-        example: 'configType:eq:SPEAKING_EVALUATION;isActive:eq:true',
-        description: `Query string filter (field@operator:value;field2@operator:value).<br/><br/>
+  @ApiPropertyOptional({
+    example: 'configType:eq:SPEAKING_EVALUATION;isActive:eq:true',
+    description: `Query string filter (field@operator:value;field2@operator:value).<br/><br/>
 Hướng dẫn sử dụng:<br/>
 • Định dạng: field@operator:value;field2@operator:value<br/>
 <br/>
@@ -33,20 +37,24 @@ Fields phổ biến:<br/>
 • configType<br/>
 • isActive<br/>
 • modelName`
-    })
-    qs?: string
+  })
+  qs?: string
 }
 
 export class GeminiModelListQuerySwaggerDTO {
-    @ApiPropertyOptional({ example: 1, description: 'Trang hiện tại', default: 1 })
-    currentPage?: number
+  @ApiPropertyOptional({ example: 1, description: 'Trang hiện tại', default: 1 })
+  currentPage?: number
 
-    @ApiPropertyOptional({ example: 10, description: 'Số lượng item mỗi trang', default: 10 })
-    pageSize?: number
+  @ApiPropertyOptional({
+    example: 10,
+    description: 'Số lượng item mỗi trang',
+    default: 10
+  })
+  pageSize?: number
 
-    @ApiPropertyOptional({
-        example: 'key:eq:gemini-2.5-pro;isEnabled:eq:true',
-        description: `Query string filter (field@operator:value;field2@operator:value).<br/><br/>
+  @ApiPropertyOptional({
+    example: 'key:eq:gemini-2.5-pro;isEnabled:eq:true',
+    description: `Query string filter (field@operator:value;field2@operator:value).<br/><br/>
 Hướng dẫn sử dụng:<br/>
 • Định dạng: field@operator:value;field2@operator:value<br/>
 <br/>
@@ -70,20 +78,24 @@ Fields phổ biến:<br/>
 • key<br/>
 • displayName<br/>
 • isEnabled`
-    })
-    qs?: string
+  })
+  qs?: string
 }
 
 export class GeminiConfigModelListQuerySwaggerDTO {
-    @ApiPropertyOptional({ example: 1, description: 'Trang hiện tại', default: 1 })
-    currentPage?: number
+  @ApiPropertyOptional({ example: 1, description: 'Trang hiện tại', default: 1 })
+  currentPage?: number
 
-    @ApiPropertyOptional({ example: 10, description: 'Số lượng item mỗi trang', default: 10 })
-    pageSize?: number
+  @ApiPropertyOptional({
+    example: 10,
+    description: 'Số lượng item mỗi trang',
+    default: 10
+  })
+  pageSize?: number
 
-    @ApiPropertyOptional({
-        example: 'isEnabled:eq:true;name:ilike:VN',
-        description: `Query string filter (field@operator:value;field2@operator:value).<br/><br/>
+  @ApiPropertyOptional({
+    example: 'isEnabled:eq:true;name:ilike:VN',
+    description: `Query string filter (field@operator:value;field2@operator:value).<br/><br/>
 Hướng dẫn sử dụng:<br/>
 • Định dạng: field@operator:value;field2@operator:value<br/>
 <br/>
@@ -107,8 +119,6 @@ Fields phổ biến:<br/>
 • name<br/>
 • geminiModelId<br/>
 • isEnabled`
-    })
-    qs?: string
+  })
+  qs?: string
 }
-
-
