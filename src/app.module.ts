@@ -1,4 +1,4 @@
-import { I18nHttpExceptionFilter } from '@/common/filters/i18n-http-exception.filter'
+import { ApiExceptionFilter } from '@/common/filters/api-exception.filter'
 import { RequestContextMiddleware } from '@/common/middleware/request-context.middleware'
 import CustomZodValidationPipe from '@/common/pipes/custom-zod-validation.pipe'
 import { I18nModule } from '@/i18n/i18n.module'
@@ -224,7 +224,7 @@ import { WebsocketsModule } from './websockets/websockets.module'
     { provide: APP_INTERCEPTOR, useClass: TransformInterceptor },
     {
       provide: APP_FILTER,
-      useClass: I18nHttpExceptionFilter
+      useClass: ApiExceptionFilter
     }
   ]
 })
