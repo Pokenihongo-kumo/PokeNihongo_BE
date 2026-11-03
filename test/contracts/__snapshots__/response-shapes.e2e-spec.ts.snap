@@ -117,7 +117,7 @@ exports[`Response contract baseline (e2e) success check-email for a known device
       "type": "string",
     },
     "message": "Thiết bị đã được xác thực trước đó.",
-    "statusCode": 201,
+    "statusCode": 200,
   },
   "httpStatus": 200,
 }
