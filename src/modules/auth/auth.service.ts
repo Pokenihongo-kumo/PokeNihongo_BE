@@ -590,10 +590,9 @@ export class AuthService {
 
       this.mailService.generateAndSendOtp(email, template, content, bodyContent)
 
-      // `requiresOtp` là cách báo bước tiếp theo theo hợp đồng response chung.
-      // statusCode 401/201 giữ tạm cho mobile bản cũ; bỏ khi statusCode = HTTP status.
+      // Bước tiếp theo nằm ở `requiresOtp`, statusCode luôn là HTTP status (200)
       return {
-        statusCode: HttpStatus.UNAUTHORIZED,
+        statusCode: HttpStatus.OK,
         data: {
           type: TypeOfVerificationCode.LOGIN,
           requiresOtp: true
@@ -604,7 +603,7 @@ export class AuthService {
     // neu la thiet bi da co
     //thi thoi
     return {
-      statusCode: HttpStatus.CREATED,
+      statusCode: HttpStatus.OK,
       data: {
         type: TypeOfVerificationCode.LOGIN,
         requiresOtp: false

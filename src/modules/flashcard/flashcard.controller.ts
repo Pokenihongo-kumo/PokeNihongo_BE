@@ -39,7 +39,9 @@ import {
   Patch,
   Post,
   Put,
-  Query
+  Query,
+  HttpCode,
+  HttpStatus
 } from '@nestjs/common'
 import {
   ApiBearerAuth,
@@ -239,6 +241,7 @@ export class FlashcardController {
   }
 
   @Post('decks/:deckId/cards/import')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Import nhiều thẻ từ Vocabulary/Kanji/Grammar vào bộ flashcard'
   })
@@ -279,6 +282,7 @@ export class FlashcardController {
   }
 
   @Post('review')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Ghi nhận kết quả ôn tập của một thẻ flashcard' })
   @ApiResponse({ status: 200, type: MessageResDTO })
   @ApiBody({ type: FlashcardReviewActionSwaggerDTO })

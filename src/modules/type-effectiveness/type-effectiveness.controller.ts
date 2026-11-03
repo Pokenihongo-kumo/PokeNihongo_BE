@@ -3,7 +3,18 @@ import { IsPublic } from '@/common/decorators/auth.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
 import { MessageResDTO, PaginationResponseDTO } from '@/shared/dtos/response.dto'
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  HttpCode,
+  HttpStatus
+} from '@nestjs/common'
 import { ZodSerializerDto } from 'nestjs-zod'
 import {
   CreateTypeEffectivenessBodyDTO,
@@ -45,6 +56,7 @@ export class TypeEffectivenessController {
   }
 
   @Post('calculate-multi-type')
+  @HttpCode(HttpStatus.OK)
   @IsPublic()
   calculateMultiType(
     @Body() body: { defenderTypeIds: number[] },

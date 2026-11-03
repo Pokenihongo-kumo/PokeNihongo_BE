@@ -1,4 +1,14 @@
-import { Controller, Get, Query, Param, Post, Body, Patch } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Query,
+  Param,
+  Post,
+  Body,
+  Patch,
+  HttpCode,
+  HttpStatus
+} from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { SrsReviewService } from './srs-review.service'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
@@ -57,6 +67,7 @@ export class SrsReviewController {
   }
 
   @Post('upsert')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Tạo hoặc cập nhật SRS cho 1 nội dung' })
   @ApiBody({ type: UpsertSrsReviewSwaggerDTO })
   @ApiResponse({ status: 200, type: SrsReviewSwaggerDTO })

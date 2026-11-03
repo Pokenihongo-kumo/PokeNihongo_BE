@@ -20,9 +20,11 @@ export class TransformInterceptor<T> implements NestInterceptor<T, Response<T>> 
       map((data) => {
         const ctx = context.switchToHttp()
         const response = ctx.getResponse()
+        // statusCode in the body always mirrors the HTTP status; a value set by
+        // the service is ignored (response contract: no 2xx with another code)
         const statusCode = response.statusCode
         if (data && typeof data === 'object' && 'data' in data && 'message' in data) {
-          return { statusCode, ...data }
+          return { ...data, statusCode }
         }
         return { statusCode, data }
       })

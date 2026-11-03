@@ -205,6 +205,7 @@ export class UserProgressController {
   }
 
   @Post('admin/init-user-progress/:userId')
+  @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Admin: Khởi tạo UserProgress cho tất cả lesson cho user' })
   @ApiResponse({
@@ -217,6 +218,7 @@ export class UserProgressController {
   }
 
   @Post('admin/init-all-users-progress')
+  @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Admin: Khởi tạo UserProgress cho tất cả lesson cho TẤT CẢ user'

@@ -10,7 +10,9 @@ import {
   Post,
   Put,
   Query,
-  Patch
+  Patch,
+  HttpCode,
+  HttpStatus
 } from '@nestjs/common'
 import {
   ApiBearerAuth,
@@ -88,12 +90,14 @@ export class GeminiConfigController {
   }
 
   @Post('presets/seed-default')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Seed các preset mặc định vào DB' })
   seedPresets(@I18nLang() lang: string) {
     return this.geminiConfigService.seedDefaultPresets(lang)
   }
 
   @Post('models/seed-default')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Seed default Gemini models vào bảng GeminiModel' })
   seedDefaultModels(@I18nLang() lang: string) {
     return this.geminiConfigService.seedDefaultModels(lang)
@@ -164,6 +168,7 @@ export class GeminiConfigController {
   }
 
   @Post('config-models')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Tạo Gemini Config Model' })
   @ApiBody({ type: CreateGeminiConfigModelSwaggerDTO })
   @ZodSerializerDto(GeminiConfigModelResDTO)

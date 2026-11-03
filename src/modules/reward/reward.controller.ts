@@ -14,7 +14,9 @@ import {
   Post,
   Put,
   Query,
-  UseGuards
+  UseGuards,
+  HttpCode,
+  HttpStatus
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { ZodSerializerDto } from 'nestjs-zod'
@@ -50,6 +52,7 @@ export class RewardController {
   }
 
   @Post('convert')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Quy đổi reward cho user' })
   @ApiBody({
     type: ConvertRewardsSwaggerDTO,
