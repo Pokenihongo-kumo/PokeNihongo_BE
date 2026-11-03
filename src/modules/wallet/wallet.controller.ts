@@ -13,7 +13,9 @@ import {
   Post,
   Put,
   Query,
-  UseGuards
+  UseGuards,
+  HttpCode,
+  HttpStatus
 } from '@nestjs/common'
 import { ApiBearerAuth } from '@nestjs/swagger'
 import { ZodSerializerDto } from 'nestjs-zod'
@@ -53,6 +55,7 @@ export class WalletController {
   }
 
   @Post('generate/users')
+  @HttpCode(HttpStatus.OK)
   @ZodSerializerDto(MessageResDTO)
   generateWalletForAllUsers(
     @ActiveUser('userId') userId: number,

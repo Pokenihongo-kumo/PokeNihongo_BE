@@ -177,8 +177,9 @@ export class UserGachaPityService {
           status: GachaPityType.PENDING
         }
       })
+      // GET route: 200 even when the pity row is created on first read
       return {
-        statusCode: 201,
+        statusCode: 200,
         data: created,
         message: this.i18nService.translate(UserGachaPityMessage.CREATE_SUCCESS, lang)
       }

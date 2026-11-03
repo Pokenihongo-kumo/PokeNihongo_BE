@@ -134,6 +134,7 @@ export class UserTestController {
   }
 
   @Post('init-all')
+  @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Khởi tạo UserTest cho TẤT CẢ user trong hệ thống' })
   @ApiResponse({

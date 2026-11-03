@@ -2,7 +2,18 @@ import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
 import { MessageResDTO, PaginationResponseDTO } from '@/shared/dtos/response.dto'
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  HttpCode,
+  HttpStatus
+} from '@nestjs/common'
 import { ZodSerializerDto } from 'nestjs-zod'
 import { UpdateLevelJLPTBodyDTO, UpdateLevelJLPTResDTO } from '../auth/dto/auth.zod-dto'
 import {
@@ -114,6 +125,7 @@ export class UserController {
   }
 
   @Post('me/set-main-pokemon')
+  @HttpCode(HttpStatus.OK)
   @ZodSerializerDto(MessageResDTO)
   setMainPokemon(
     @Body() body: SetMainPokemonBodyDTO,

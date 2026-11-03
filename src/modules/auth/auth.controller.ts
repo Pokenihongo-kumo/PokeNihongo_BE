@@ -130,6 +130,7 @@ export class AuthController {
   // gui otp qua email
 
   @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
   @IsPublic()
   @UseGuards(RateLimitGuard)
   @RateLimit({

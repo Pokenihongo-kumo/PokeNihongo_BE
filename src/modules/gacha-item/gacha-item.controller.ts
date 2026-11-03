@@ -11,7 +11,9 @@ import {
   ParseIntPipe,
   Post,
   Put,
-  Query
+  Query,
+  HttpCode,
+  HttpStatus
 } from '@nestjs/common'
 import { ZodSerializerDto } from 'nestjs-zod'
 import {
@@ -65,6 +67,7 @@ export class GachaItemController {
   }
 
   @Post('random')
+  @HttpCode(HttpStatus.OK)
   @ZodSerializerDto(GetRandomGachaItemsResDTO)
   getRandomListItem(
     @Body() body: GetRamdomAmountGachaItemsBodyDTO,
@@ -80,6 +83,7 @@ export class GachaItemController {
   }
 
   @Post('list')
+  @HttpCode(HttpStatus.OK)
   @ZodSerializerDto(CreateWithListItemResDTO)
   createByList(
     @Body() body: CreateWithListItemBodyDTO,
