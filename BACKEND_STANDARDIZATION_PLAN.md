@@ -470,7 +470,12 @@ Kế hoạch chi tiết: [client-standardization-plan.md](docs/standardization/c
 Bổ sung v6 ngày 2026-11-03: chốt runner/style/Genymotion/CI-only, xử lý nền nhánh MO main → dev và gap API ngay C0, fixtures ApiError C1. Genymotion đã cài và có ADB; chưa chạy thiết bị/APK. Hai file plan đang sửa trên docs/phase-0-contracts chưa commit trong lần kiểm tra này; vì nằm trong repo BE nên phải trình diff chờ người dùng duyệt trước commit. FE/mobile được tự commit sau self-review/checks; không stage lẫn hoặc ghi đè công việc đang có.
 
 - [ ] C0 — Inventory toàn src FE/MO, tái lập baseline, tooling/format/test harness từng repo, mapping feature và convention.
+  - [x] FE test harness: Vitest (`npm test` = `vitest run`, dùng chung cấu hình/alias Vite) — FE `72d41c0`.
+  - [ ] MO test harness (đề xuất `jest-expo` + RN Testing Library), formatter + `.gitattributes` cho FE/MO, inventory toàn src client.
 - [ ] C1 — Chuẩn HTTP/error/session/locale/cache, giữ behavior auth từng nền tảng, tests tương ứng.
+  - [x] Bỏ log token: FE (`configs/axios` log bearer token, LoginPage log JWT đã giải mã) → merge FE `dev` @ `9d5c251`; MO (`configs/axios` log token, `auth.slices` log token mới) → merge MO `dev` @ `6e2cc5a`. tsc FE 52 / MO 19 = baseline.
+  - [x] FE adapter lỗi dùng chung `src/utils/api-error` (`toApiError`, `getApiErrorMessage`; đọc 422 mới `message + errors[]` và dạng cũ `message: [{ message, path }]`; tách http/network/cancel). Gỡ 6 bản `ApiError`, 3 bản `getErrorMessage` lặp; chuyển 11 chỗ xử lý 422 (useAnswer, useQuestionBank, useTest, useTestSet, useExercise, CreatePokemon, CreateVocabulary, TestSetManagement, Grammar) → hết "[object Object]", hiện lỗi từng field. Nhánh `refactor/shared-api-error` (`f853b94`) → merge FE `dev` @ `505ed71`. 5 Vitest test; tsc 52, ESLint 317/9 = baseline, vite build pass. Chưa smoke trên trình duyệt.
+  - [ ] MO adapter lỗi tương ứng (thay `handleError` đổi lỗi thành `new Error(message)` ở client public), adapter response thành công (service trả kiểu rõ, hook bỏ `data.data`), locale/session/cache.
 - [ ] C2 — Feature mẫu có consumer thực ở BE/web/mobile; xác minh ứng viên Vocabulary rồi chốt; giữ WordType/Level làm mẫu BE.
 - [ ] C3 — Clean dọc từng feature theo nhóm BE, gồm service/model/hook/state/UI của client có dùng; merge dev từng task nhỏ và theo dõi ba repo.
 - [ ] C4 — Hoàn tất concern xuyên suốt: web routing/layout/UI, mobile native/session/socket/media và tương thích response ownership BE.
