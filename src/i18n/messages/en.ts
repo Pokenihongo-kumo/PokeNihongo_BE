@@ -69,7 +69,11 @@ export const enMessages = {
     GET_SUCCESS: 'Word type retrieved successfully',
     GET_LIST_SUCCESS: 'Word type list retrieved successfully',
     GET_STATS_SUCCESS: 'Word type statistics retrieved successfully',
-    CREATE_DEFAULT_SUCCESS: 'Default word types created successfully'
+    CREATE_DEFAULT_SUCCESS: 'Default word types created successfully',
+    NOT_FOUND: 'Word type not found',
+    ALREADY_EXISTS: 'Word type already exists',
+    INVALID_DATA: 'Invalid word type data',
+    INVALID_ID: 'Invalid word type ID'
   },
   system: {
     NOT_FOUND: 'Record not found',

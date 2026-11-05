@@ -228,7 +228,7 @@ exports[`WordType and Level contract (e2e) WordType delete, then delete again 1`
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Loại từ không tồn tại",
+        "message": "Word type not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -271,11 +271,16 @@ exports[`WordType and Level contract (e2e) WordType detail by id and by nameKey 
   },
   "byNameKey": {
     "body": {
-      "error": "INTERNAL_SERVER_ERROR",
-      "message": "Internal Server Error",
-      "statusCode": 500,
+      "data": {
+        "createdAt": "string",
+        "id": "number",
+        "nameKey": "string",
+        "updatedAt": "string",
+      },
+      "message": "Lấy thông tin loại từ thành công",
+      "statusCode": 200,
     },
-    "httpStatus": 500,
+    "httpStatus": 200,
   },
 }
 `;
@@ -286,7 +291,7 @@ exports[`WordType and Level contract (e2e) WordType errors: duplicate, not found
     "en": {
       "body": {
         "error": "CONFLICT",
-        "message": "Loại từ đã tồn tại",
+        "message": "Word type already exists",
         "statusCode": 409,
       },
       "httpStatus": 409,
@@ -333,26 +338,38 @@ exports[`WordType and Level contract (e2e) WordType errors: duplicate, not found
   "invalidId": {
     "en": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "An error occurred",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid word type ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "Đã xảy ra lỗi",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID loại từ không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
   },
   "notFound": {
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Loại từ không tồn tại",
+        "message": "Word type not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -370,7 +387,7 @@ exports[`WordType and Level contract (e2e) WordType errors: duplicate, not found
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Loại từ không tồn tại",
+        "message": "Word type not found",
         "statusCode": 404,
       },
       "httpStatus": 404,

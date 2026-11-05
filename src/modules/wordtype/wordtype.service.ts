@@ -6,7 +6,11 @@ import {
 } from './entities/wordtype.entity'
 
 import { HttpException, Injectable, Logger, OnModuleInit } from '@nestjs/common'
-import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from '@/shared/helpers'
+import { toPaginationMeta } from '@/shared/utils/pagination'
+import {
+  isNotFoundPrismaError,
+  isUniqueConstraintPrismaError
+} from '@/shared/utils/prisma-errors'
 import { WordTypeRepo } from './wordtype.repo'
 import {
   WordTypeNotFoundException,
@@ -103,12 +107,7 @@ export class WordTypeService implements OnModuleInit {
         message: this.i18nService.translate(WordTypeMessage.GET_LIST_SUCCESS, lang),
         data: {
           results: resultsWithName,
-          pagination: {
-            current: result.page,
-            pageSize: result.limit,
-            totalPage: result.totalPages,
-            totalItem: result.total
-          }
+          pagination: toPaginationMeta(queryParams.page, queryParams.limit, result.total)
         }
       }
     } catch (error) {
@@ -123,7 +122,7 @@ export class WordTypeService implements OnModuleInit {
       const wordType = await this.wordTypeRepository.findById(id)
 
       if (!wordType) {
-        throw WordTypeNotFoundException
+        throw new WordTypeNotFoundException()
       }
 
       return {
@@ -142,7 +141,7 @@ export class WordTypeService implements OnModuleInit {
       const wordType = await this.wordTypeRepository.findByNameKey(nameKey)
 
       if (!wordType) {
-        throw WordTypeNotFoundException
+        throw new WordTypeNotFoundException()
       }
 
       return {
@@ -162,7 +161,7 @@ export class WordTypeService implements OnModuleInit {
       // Kiểm tra nameKey đã tồn tại chưa
       const existingWordType = await this.wordTypeRepository.findByNameKey(data.nameKey)
       if (existingWordType) {
-        throw WordTypeAlreadyExistsException
+        throw new WordTypeAlreadyExistsException()
       }
 
       const wordType = await this.wordTypeRepository.create(data)
@@ -184,7 +183,7 @@ export class WordTypeService implements OnModuleInit {
       // Kiểm tra word type có tồn tại không
       const existingWordType = await this.wordTypeRepository.findById(id)
       if (!existingWordType) {
-        throw WordTypeNotFoundException
+        throw new WordTypeNotFoundException()
       }
 
       // Nếu có nameKey mới, kiểm tra đã tồn tại chưa
@@ -194,7 +193,7 @@ export class WordTypeService implements OnModuleInit {
           id
         )
         if (nameKeyExists) {
-          throw WordTypeAlreadyExistsException
+          throw new WordTypeAlreadyExistsException()
         }
       }
 
@@ -217,7 +216,7 @@ export class WordTypeService implements OnModuleInit {
       // Kiểm tra word type có tồn tại không
       const existingWordType = await this.wordTypeRepository.findById(id)
       if (!existingWordType) {
-        throw WordTypeNotFoundException
+        throw new WordTypeNotFoundException()
       }
 
       await this.wordTypeRepository.delete(id)
@@ -239,9 +238,9 @@ export class WordTypeService implements OnModuleInit {
    */
   private toWordTypeError(error: unknown): HttpException {
     if (error instanceof HttpException) return error
-    if (isUniqueConstraintPrismaError(error)) return WordTypeAlreadyExistsException
-    if (isNotFoundPrismaError(error)) return WordTypeNotFoundException
-    return InvalidWordTypeDataException
+    if (isUniqueConstraintPrismaError(error)) return new WordTypeAlreadyExistsException()
+    if (isNotFoundPrismaError(error)) return new WordTypeNotFoundException()
+    return new InvalidWordTypeDataException()
   }
 
   async getStats(lang: string = 'vi') {
@@ -357,13 +356,16 @@ export class WordTypeService implements OnModuleInit {
         }
       }
 
+      // Also repairs databases seeded before create() kept the sequence in sync
+      await this.wordTypeRepository.syncIdSequence()
+
       this.logger.log('Default word types creation completed')
       return {
         message: this.i18nService.translate(WordTypeMessage.CREATE_DEFAULT_SUCCESS, lang)
       }
     } catch (error) {
       this.logger.error('Error creating default word types:', error)
-      throw InvalidWordTypeDataException
+      throw new InvalidWordTypeDataException()
     }
   }
 

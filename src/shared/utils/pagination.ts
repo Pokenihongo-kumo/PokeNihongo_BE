@@ -1,4 +1,5 @@
-import { PaginationMeta } from '../models/response.model'
+import { z } from 'zod'
+import { PaginationMeta, PaginationMetaSchema } from '../models/response.model'
 
 // Offset pagination shared by list endpoints. Each feature keeps its own query
 // names/defaults (page/limit or currentPage/pageSize) and maps them here.
@@ -21,4 +22,16 @@ export function toPaginationMeta(
     totalPage: Math.ceil(totalItem / pageSize),
     totalItem
   }
+}
+
+/** { statusCode, message, data: { results: T[], pagination } } */
+export function paginatedResSchema<T extends z.ZodTypeAny>(itemSchema: T) {
+  return z.object({
+    statusCode: z.number(),
+    message: z.string(),
+    data: z.object({
+      results: z.array(itemSchema),
+      pagination: PaginationMetaSchema
+    })
+  })
 }

@@ -102,7 +102,7 @@ export {
   GetWordTypeByIdParamsDTO,
   GetWordTypeListQueryDTO,
   GetWordTypeByNameKeyParamsDTO,
-  WordTypeResponseDTO,
+  WordTypeResDTO,
   WordTypeListResDTO
 } from './wordtype.zod-dto'
 
