@@ -25,7 +25,6 @@ import {
   CreateWordTypeBodyDTO,
   UpdateWordTypeBodyDTO,
   WordTypeResponseDTO,
-  WordTypeListResponseDTO,
   GetWordTypeListQueryDTO,
   GetWordTypeByIdParamsDTO,
   CreateWordTypeSwaggerDTO,

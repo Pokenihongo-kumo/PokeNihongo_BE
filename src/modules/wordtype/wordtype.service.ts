@@ -5,7 +5,8 @@ import {
   WordType
 } from './entities/wordtype.entities'
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
+import { HttpException, Injectable, Logger, OnModuleInit } from '@nestjs/common'
+import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from '@/shared/helpers'
 import { WordTypeRepository } from './wordtype.repo'
 import {
   WordTypeNotFoundException,
@@ -172,10 +173,7 @@ export class WordTypeService implements OnModuleInit {
       }
     } catch (error) {
       this.logger.error('Error creating word type:', error)
-      if (error.message.includes('đã tồn tại')) {
-        throw error
-      }
-      throw InvalidWordTypeDataException
+      throw this.toWordTypeError(error)
     }
   }
 
@@ -208,13 +206,7 @@ export class WordTypeService implements OnModuleInit {
       }
     } catch (error) {
       this.logger.error('Error updating word type:', error)
-      if (
-        error.message.includes('không tồn tại') ||
-        error.message.includes('đã tồn tại')
-      ) {
-        throw error
-      }
-      throw InvalidWordTypeDataException
+      throw this.toWordTypeError(error)
     }
   }
 
@@ -235,11 +227,21 @@ export class WordTypeService implements OnModuleInit {
       }
     } catch (error) {
       this.logger.error('Error deleting word type:', error)
-      if (error.message.includes('không tồn tại')) {
-        throw error
-      }
-      throw InvalidWordTypeDataException
+      throw this.toWordTypeError(error)
     }
+  }
+
+  /**
+   * Error to answer for a failed write. Decided by type, not by message text:
+   * our own HTTP errors pass through, Prisma unique/not-found become 409/404
+   * (e.g. a nameKey taken by a concurrent request), anything else stays the
+   * generic "invalid data" 400 it was before.
+   */
+  private toWordTypeError(error: unknown): HttpException {
+    if (error instanceof HttpException) return error
+    if (isUniqueConstraintPrismaError(error)) return WordTypeAlreadyExistsException
+    if (isNotFoundPrismaError(error)) return WordTypeNotFoundException
+    return InvalidWordTypeDataException
   }
 
   async getStats(lang: string = 'vi') {
