@@ -50,6 +50,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseBoolPipe,
   Post,
   Put,
   Query,
@@ -113,7 +114,10 @@ export class VocabularyController {
     @Body() body: UpdateVocabularyMultipartSwaggerDTO,
     @UploadedFiles()
     files?: { imageUrl?: Express.Multer.File[]; audioUrl?: Express.Multer.File[] },
-    @Query('regenerateAudio') regenerateAudio?: boolean,
+    // A query value is a string: without the pipe "false" was truthy and every
+    // update without an audio file regenerated the audio with TTS
+    @Query('regenerateAudio', new ParseBoolPipe({ optional: true }))
+    regenerateAudio?: boolean,
     @ActiveUser('userId') userId?: number
   ) {
     const imageFile = files?.imageUrl?.[0]
