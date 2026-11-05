@@ -12,5 +12,6 @@
   },
   "setupFiles": ["<rootDir>/test/setup-e2e.ts"],
   "testTimeout": 60000,
-  "forceExit": true
+  "forceExit": true,
+  "maxWorkers": 1
 }
