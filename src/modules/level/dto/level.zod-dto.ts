@@ -8,7 +8,7 @@ import {
   UpdateLevelResSchema
 } from '../entities/level.entity'
 
-export class CreatedLevelBodyDTO extends createZodDto(CreateLevelBodySchema) {}
+export class CreateLevelBodyDTO extends createZodDto(CreateLevelBodySchema) {}
 
 export class CreateLevelResDTO extends createZodDto(CreateLevelResSchema) {}
 
