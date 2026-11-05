@@ -1,9 +1,8 @@
 import { ApiExceptionFilter } from '@/common/filters/api-exception.filter'
-import { RequestContextMiddleware } from '@/common/middleware/request-context.middleware'
 import CustomZodValidationPipe from '@/common/pipes/custom-zod-validation.pipe'
 import { I18nModule } from '@/i18n/i18n.module'
 import { BullModule } from '@nestjs/bull'
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
+import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core'
 import { ScheduleModule } from '@nestjs/schedule'
@@ -228,8 +227,4 @@ import { WebsocketsModule } from './websockets/websockets.module'
     }
   ]
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(RequestContextMiddleware).forRoutes('*')
-  }
-}
+export class AppModule {}

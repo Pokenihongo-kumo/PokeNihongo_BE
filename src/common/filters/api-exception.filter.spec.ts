@@ -68,6 +68,27 @@ describe('ApiExceptionFilter', () => {
     })
   })
 
+  it('translates validation field keys with the language of the request it answers', () => {
+    const exception = () =>
+      new UnprocessableEntityException({
+        message: 'validation.INVALID_DATA',
+        errorKey: 'validation.INVALID_DATA',
+        errors: [
+          { field: 'name', messageKey: 'validation.REQUIRED' },
+          { field: 'code', message: 'already a message' }
+        ]
+      })
+
+    expect(run(exception(), 'ja').body.errors).toEqual([
+      { field: 'name', message: 'ja:validation.REQUIRED' },
+      { field: 'code', message: 'already a message' }
+    ])
+    expect(run(exception(), 'en').body.errors[0]).toEqual({
+      field: 'name',
+      message: 'en:validation.REQUIRED'
+    })
+  })
+
   it('joins an array message so message is always a string', () => {
     const { body } = run(new BadRequestException(['first', 'second']))
 
