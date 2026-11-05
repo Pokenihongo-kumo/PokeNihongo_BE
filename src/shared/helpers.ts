@@ -23,6 +23,15 @@ export function isForeignKeyConstraintPrismaError(
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003'
 }
 
+// A delete blocked by an `onDelete: Restrict` relation. Postgres reports it as
+// 23001, which Prisma does not map to P2003 but to an unknown request error.
+export function isRestrictViolationPrismaError(error: unknown): boolean {
+  return (
+    error instanceof Prisma.PrismaClientUnknownRequestError &&
+    /code: "23001"|violates RESTRICT setting of foreign key/.test(error.message)
+  )
+}
+
 export const generateOTP = () => {
   return String(randomInt(100000, 1000000))
 }

@@ -219,8 +219,9 @@ export class TranslationRepository {
     })
   }
 
-  async deleteByKey(key: string): Promise<{ count: number }> {
-    return await this.prismaService.translation.deleteMany({
+  async deleteByKey(key: string, prismaTx?: PrismaClient): Promise<{ count: number }> {
+    const client = prismaTx || this.prismaService
+    return await client.translation.deleteMany({
       where: { key }
     })
   }

@@ -107,7 +107,7 @@ export class RewardRepo {
   ): Promise<RewardType> {
     const client = prismaTx || this.prismaService
     const result = isHard
-      ? await this.prismaService.reward.delete({
+      ? await client.reward.delete({
           where: {
             id
           }

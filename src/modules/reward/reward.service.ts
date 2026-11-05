@@ -9,6 +9,7 @@ import {
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError,
+  isRestrictViolationPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
@@ -247,8 +248,7 @@ export class RewardService {
     },
     lang: string = 'vi'
   ) {
-    let createdReward: any = null
-
+    // Every write runs in this transaction: a failure leaves no reward behind
     try {
       return await this.rewardRepo.withTransaction(async (prismaTx) => {
         const nameKey = `reward.name.${Date.now()}`
@@ -261,7 +261,7 @@ export class RewardService {
           rewardTarget: data.rewardTarget
         }
 
-        createdReward = await this.rewardRepo.create(
+        const createdReward = await this.rewardRepo.create(
           {
             createdById,
             data: dataCreate
@@ -330,19 +330,6 @@ export class RewardService {
         }
       })
     } catch (error) {
-      // Rollback: Delete reward if created
-      if (createdReward?.id) {
-        try {
-          await this.rewardRepo.delete(
-            {
-              id: createdReward.id,
-              deletedById: createdById
-            },
-            true
-          )
-        } catch (rollbackError) {}
-      }
-
       if (isUniqueConstraintPrismaError(error)) {
         throw new RewardAlreadyExistsException()
       }
@@ -465,18 +452,17 @@ export class RewardService {
         throw new NotFoundRecordException()
       }
 
-      await Promise.all([
-        this.rewardRepo.delete(
-          {
-            id,
-            deletedById
-          },
-          existingReward.deletedAt ? true : false
-        ),
-        ...(existingReward.deletedAt
-          ? [this.translationRepo.deleteByKey(existingReward.nameKey)]
-          : [])
-      ])
+      if (existingReward.deletedAt) {
+        // Already soft-deleted: hard delete the name translations and the reward
+        // together, so a failure (e.g. a Restrict FK from UserRewardHistory)
+        // leaves both in place
+        await this.rewardRepo.withTransaction(async (prismaTx) => {
+          await this.translationRepo.deleteByKey(existingReward.nameKey, prismaTx)
+          await this.rewardRepo.delete({ id, deletedById }, true, prismaTx)
+        })
+      } else {
+        await this.rewardRepo.delete({ id, deletedById }, false)
+      }
 
       return {
         statusCode: HttpStatus.OK,
@@ -491,6 +477,10 @@ export class RewardService {
         throw new InvalidForeignKeyConstraintException(
           (error.meta?.constraint as string) ?? ''
         )
+      // Hard delete blocked by a Restrict relation (e.g. UserRewardHistory)
+      if (isRestrictViolationPrismaError(error)) {
+        throw new InvalidForeignKeyConstraintException()
+      }
 
       throw error
     }
