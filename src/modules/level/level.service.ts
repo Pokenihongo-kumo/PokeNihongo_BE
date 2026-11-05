@@ -2,13 +2,13 @@ import { LevelTypeType } from '@/common/constants/level.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { LevelMessage } from '@/i18n/message-keys'
 import { NotFoundRecordException } from '@/shared/error'
+import { PaginationQueryType } from '@/shared/models/request.model'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
-} from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
-import { Injectable } from '@nestjs/common'
+} from '@/shared/utils/prisma-errors'
+import { Injectable, Logger } from '@nestjs/common'
 import {
   ConflictTypeNextLevelException,
   LevelAlreadyExistsException
@@ -18,8 +18,10 @@ import { LevelRepo } from './level.repo'
 
 @Injectable()
 export class LevelService {
+  private readonly logger = new Logger(LevelService.name)
+
   constructor(
-    private levelRepo: LevelRepo,
+    private readonly levelRepo: LevelRepo,
     private readonly i18nService: I18nService
   ) {}
 
@@ -186,8 +188,11 @@ export class LevelService {
         await this.levelRepo.updateNextLevel(prevLevel.id, levelId)
       }
     } catch (error) {
-      console.error('Error in autoLinkLevels:', error)
-      // Không throw error để không ảnh hưởng đến việc tạo/update level chính
+      // Best effort: the level itself is already saved; a missing link is logged
+      this.logger.error(
+        'Error in autoLinkLevels',
+        error instanceof Error ? error.stack : error
+      )
     }
   }
 }
