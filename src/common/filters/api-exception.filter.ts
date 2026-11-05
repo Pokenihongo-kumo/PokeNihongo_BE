@@ -1,5 +1,6 @@
 import { I18nService } from '@/i18n/i18n.service'
 import { CommonMessage } from '@/i18n/message-keys'
+import { resolveLanguage } from '@/i18n/resolve-language'
 import {
   ArgumentsHost,
   Catch,
@@ -13,20 +14,6 @@ import { Response } from 'express'
 type FieldError = { field: string; message: string }
 // Validation errors carry an i18n key instead of a message (custom-zod-validation.pipe)
 type FieldErrorInput = FieldError | { field: string; messageKey: string }
-
-// Picks the first supported language (vi/en/ja) from Accept-Language; default vi.
-function resolveLanguage(acceptLanguage?: string): string {
-  if (!acceptLanguage) return 'vi'
-  const languages = acceptLanguage
-    .split(',')
-    .map((l) => {
-      const [locale, q] = l.trim().split(';q=')
-      return { locale: locale.split('-')[0], quality: q ? parseFloat(q) : 1.0 }
-    })
-    .sort((a, b) => b.quality - a.quality)
-  const supported = ['vi', 'en', 'ja']
-  return languages.find((l) => supported.includes(l.locale))?.locale ?? 'vi'
-}
 
 // One error shape for every HTTP error (docs/standardization/response-contract.md):
 // { statusCode, error, message: string, errors?: FieldError[], data? }

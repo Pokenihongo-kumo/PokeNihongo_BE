@@ -4,33 +4,14 @@ import { randomInt } from 'crypto'
 import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
 
-// Type Predicate
-export function isUniqueConstraintPrismaError(
-  error: any
-): error is Prisma.PrismaClientKnownRequestError {
-  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002'
-}
-
-export function isNotFoundPrismaError(
-  error: any
-): error is Prisma.PrismaClientKnownRequestError {
-  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025'
-}
-
-export function isForeignKeyConstraintPrismaError(
-  error: any
-): error is Prisma.PrismaClientKnownRequestError {
-  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003'
-}
-
-// A delete blocked by an `onDelete: Restrict` relation. Postgres reports it as
-// 23001, which Prisma does not map to P2003 but to an unknown request error.
-export function isRestrictViolationPrismaError(error: unknown): boolean {
-  return (
-    error instanceof Prisma.PrismaClientUnknownRequestError &&
-    /code: "23001"|violates RESTRICT setting of foreign key/.test(error.message)
-  )
-}
+// Prisma error predicates live in ./utils/prisma-errors; re-exported so the
+// existing imports keep working while modules migrate
+export {
+  isForeignKeyConstraintPrismaError,
+  isNotFoundPrismaError,
+  isRestrictViolationPrismaError,
+  isUniqueConstraintPrismaError
+} from './utils/prisma-errors'
 
 export const generateOTP = () => {
   return String(randomInt(100000, 1000000))
