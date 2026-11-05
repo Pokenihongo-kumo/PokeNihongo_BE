@@ -2,12 +2,14 @@ import {
   WordType,
   CreateWordTypeBodyType,
   UpdateWordTypeBodyType
-} from './entities/wordtype.entities'
+} from './entities/wordtype.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
+import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
+import { Prisma, WordType as WordTypeRow } from '@prisma/client'
 
 @Injectable()
-export class WordTypeRepository {
+export class WordTypeRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(params: {
@@ -17,27 +19,16 @@ export class WordTypeRepository {
     sortOrder?: 'asc' | 'desc'
   }) {
     const { page, limit, sortBy = 'id', sortOrder = 'asc' } = params
-    const skip = (page - 1) * limit
-
-    const where: any = {}
 
     const [data, total] = await Promise.all([
       this.prismaService.wordType.findMany({
-        where,
-        skip,
-        take: limit,
+        ...toSkipTake(page, limit),
         orderBy: { [sortBy]: sortOrder }
       }),
-      this.prismaService.wordType.count({ where })
+      this.prismaService.wordType.count()
     ])
 
-    return {
-      data: data.map((item) => this.transformWordType(item)),
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit)
-    }
+    return { data: data.map((item) => this.transformWordType(item)), total }
   }
 
   async findById(id: number): Promise<WordType | null> {
@@ -63,20 +54,31 @@ export class WordTypeRepository {
   }
 
   async create(data: CreateWordTypeBodyType): Promise<WordType> {
-    const createData: any = {
-      nameKey: data.nameKey
-    }
-
-    // Nếu có ID, thêm vào data
-    if (data.id) {
-      createData.id = data.id
+    const createData: Prisma.WordTypeCreateInput = {
+      nameKey: data.nameKey,
+      ...(data.id && { id: data.id })
     }
 
     const result = await this.prismaService.wordType.create({
       data: createData
     })
 
+    // An explicit id (startup seed, admin) does not move the id sequence; without
+    // this the next create without id collides on the primary key
+    if (data.id) {
+      await this.syncIdSequence()
+    }
+
     return this.transformWordType(result)
+  }
+
+  // Moves the id sequence past the highest id (rows inserted with explicit ids)
+  async syncIdSequence(): Promise<void> {
+    await this.prismaService.$executeRaw`
+      SELECT setval(
+        pg_get_serial_sequence('"WordType"', 'id'),
+        GREATEST((SELECT MAX(id) FROM "WordType"), 1)
+      )`
   }
 
   async update(id: number, data: UpdateWordTypeBodyType): Promise<WordType> {
@@ -96,7 +98,7 @@ export class WordTypeRepository {
     })
   }
 
-  async count(where?: any): Promise<number> {
+  async count(where?: Prisma.WordTypeWhereInput): Promise<number> {
     return this.prismaService.wordType.count({ where })
   }
 
@@ -118,7 +120,7 @@ export class WordTypeRepository {
     }
   }
 
-  private transformWordType(wordType: any): WordType {
+  private transformWordType(wordType: WordTypeRow): WordType {
     return {
       id: wordType.id,
       nameKey: wordType.nameKey,

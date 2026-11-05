@@ -62,6 +62,19 @@ export const jaMessages = {
     INVALID_DATA: '無効な報酬データです',
     NAME_REQUIRED: '報酬名は必須です'
   },
+  wordtype: {
+    CREATE_SUCCESS: '品詞を作成しました',
+    UPDATE_SUCCESS: '品詞を更新しました',
+    DELETE_SUCCESS: '品詞を削除しました',
+    GET_SUCCESS: '品詞を取得しました',
+    GET_LIST_SUCCESS: '品詞一覧を取得しました',
+    GET_STATS_SUCCESS: '品詞の統計を取得しました',
+    CREATE_DEFAULT_SUCCESS: '既定の品詞を作成しました',
+    NOT_FOUND: '品詞が見つかりません',
+    ALREADY_EXISTS: '品詞は既に存在します',
+    INVALID_DATA: '品詞のデータが無効です',
+    INVALID_ID: '品詞IDが無効です'
+  },
   system: {
     NOT_FOUND: 'レコードが見つかりません',
     INVALID_NEW_PASSWORD_CONFIRM_PASSWORD:

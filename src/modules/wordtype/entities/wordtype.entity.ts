@@ -1,3 +1,6 @@
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { WordTypeMessage } from '@/i18n/message-keys'
+import { paginatedResSchema } from '@/shared/utils/pagination'
 import { z } from 'zod'
 
 // Validation functions
@@ -50,7 +53,7 @@ export const UpdateWordTypeSchema = z.object({
 
 // Get WordType by ID params schema
 export const GetWordTypeByIdParamsSchema = z.object({
-  id: z.string().transform((val) => parseInt(val, 10))
+  id: checkIdSchema(WordTypeMessage.INVALID_ID)
 })
 
 // Get WordType list query schema
@@ -81,21 +84,14 @@ export const WordTypeViewSchema = z.object({
   updatedAt: z.date()
 })
 
-export const WordTypeListResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(WordTypeViewSchema),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
+export const WordTypeListResSchema = paginatedResSchema(WordTypeViewSchema)
+
+// Detail/create/update response envelope
+export const WordTypeResSchema = z.object({
+  statusCode: z.number(),
+  message: z.string(),
+  data: WordTypeSchema
+})
 
 // Type exports
 export type WordType = z.infer<typeof WordTypeSchema>

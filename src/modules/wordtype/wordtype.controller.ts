@@ -24,7 +24,7 @@ import { WordTypeService } from './wordtype.service'
 import {
   CreateWordTypeBodyDTO,
   UpdateWordTypeBodyDTO,
-  WordTypeResponseDTO,
+  WordTypeResDTO,
   GetWordTypeListQueryDTO,
   GetWordTypeByIdParamsDTO,
   CreateWordTypeSwaggerDTO,
@@ -94,7 +94,7 @@ export class WordTypeController {
     status: 401,
     description: 'Không có quyền truy cập'
   })
-  @ZodSerializerDto(WordTypeResponseDTO)
+  @ZodSerializerDto(WordTypeResDTO)
   findByNameKey(@Param('nameKey') nameKey: string, @I18nLang() lang: string) {
     return this.wordTypeService.findByNameKey(nameKey, lang)
   }
@@ -122,6 +122,7 @@ export class WordTypeController {
     status: 401,
     description: 'Không có quyền truy cập'
   })
+  @ZodSerializerDto(WordTypeResDTO)
   findById(@Param() params: GetWordTypeByIdParamsDTO, @I18nLang() lang: string) {
     return this.wordTypeService.findById(params.id, lang)
   }
@@ -152,6 +153,7 @@ export class WordTypeController {
     status: 401,
     description: 'Không có quyền truy cập'
   })
+  @ZodSerializerDto(WordTypeResDTO)
   create(@Body() body: CreateWordTypeBodyDTO, @I18nLang() lang: string) {
     return this.wordTypeService.create(body, lang)
   }
@@ -191,6 +193,7 @@ export class WordTypeController {
     status: 401,
     description: 'Không có quyền truy cập'
   })
+  @ZodSerializerDto(WordTypeResDTO)
   update(
     @Param() params: GetWordTypeByIdParamsDTO,
     @Body() body: UpdateWordTypeBodyDTO,

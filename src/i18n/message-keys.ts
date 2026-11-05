@@ -67,7 +67,11 @@ export const WordTypeMessage = {
   GET_SUCCESS: 'wordtype.GET_SUCCESS',
   GET_LIST_SUCCESS: 'wordtype.GET_LIST_SUCCESS',
   GET_STATS_SUCCESS: 'wordtype.GET_STATS_SUCCESS',
-  CREATE_DEFAULT_SUCCESS: 'wordtype.CREATE_DEFAULT_SUCCESS'
+  CREATE_DEFAULT_SUCCESS: 'wordtype.CREATE_DEFAULT_SUCCESS',
+  NOT_FOUND: 'wordtype.NOT_FOUND',
+  ALREADY_EXISTS: 'wordtype.ALREADY_EXISTS',
+  INVALID_DATA: 'wordtype.INVALID_DATA',
+  INVALID_ID: 'wordtype.INVALID_ID'
 } as const
 
 export const SystemMessage = {

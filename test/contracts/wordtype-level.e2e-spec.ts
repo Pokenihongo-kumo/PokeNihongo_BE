@@ -43,13 +43,6 @@ describe('WordType and Level contract (e2e)', () => {
     app.enableVersioning({ type: VersioningType.URI })
     await app.init()
     prisma = app.get(PrismaService)
-    // Known bug (fixed in the WordType task): the startup seed inserts word
-    // types with explicit ids without moving the id sequence, so the next
-    // POST /wordtype collides on the primary key. Sync it so this baseline
-    // does not depend on how far the sequence happens to be.
-    await prisma.$executeRawUnsafe(
-      `SELECT setval(pg_get_serial_sequence('"WordType"', 'id'), (SELECT MAX(id) FROM "WordType"))`
-    )
     token = await loginAsTestAdmin(app, [
       { method: 'GET', path: '/wordtype' },
       { method: 'GET', path: '/wordtype/stats' },

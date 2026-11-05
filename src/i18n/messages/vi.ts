@@ -68,7 +68,11 @@ export const viMessages = {
     GET_SUCCESS: 'Lấy thông tin loại từ thành công',
     GET_LIST_SUCCESS: 'Lấy danh sách loại từ thành công',
     GET_STATS_SUCCESS: 'Lấy thống kê loại từ thành công',
-    CREATE_DEFAULT_SUCCESS: 'Tạo loại từ mặc định thành công'
+    CREATE_DEFAULT_SUCCESS: 'Tạo loại từ mặc định thành công',
+    NOT_FOUND: 'Loại từ không tồn tại',
+    ALREADY_EXISTS: 'Loại từ đã tồn tại',
+    INVALID_DATA: 'Dữ liệu loại từ không hợp lệ',
+    INVALID_ID: 'ID loại từ không hợp lệ'
   },
   system: {
     NOT_FOUND: 'Không tìm thấy bản ghi',
