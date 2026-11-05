@@ -10,8 +10,11 @@ import {
   BadRequestException,
   Patch,
   Put,
-  ForbiddenException
+  ForbiddenException,
+  HttpCode,
+  HttpStatus
 } from '@nestjs/common'
+import { ZodSerializerDto } from 'nestjs-zod'
 import {
   ApiTags,
   ApiOperation,
@@ -46,6 +49,12 @@ import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { SharedUserSubscriptionService } from '@/shared/services/user-subscription.service'
 import { FeatureKey } from '@/common/constants/subscription.constant'
+import {
+  PRONUNCIATION_AUDIO_MAX_BYTES,
+  PRONUNCIATION_AUDIO_MIME_TYPES,
+  PronunciationAssessmentBodyDTO,
+  PronunciationAssessmentResDTO
+} from './dto/pronunciation-assessment.dto'
 
 @ApiTags('Gemini')
 @Controller('gemini')
@@ -306,6 +315,35 @@ export class GeminiController {
       data: result,
       message: 'Chat với Gemini thành công'
     }
+  }
+
+  @Post('pronunciation-assessment')
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(
+    FileInterceptor('audio', {
+      limits: { fileSize: PRONUNCIATION_AUDIO_MAX_BYTES },
+      fileFilter: (_req, file, callback) =>
+        PRONUNCIATION_AUDIO_MIME_TYPES.includes(file.mimetype)
+          ? callback(null, true)
+          : callback(new BadRequestException('File audio không hợp lệ'), false)
+    })
+  )
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({
+    summary: 'Chấm phát âm một câu tiếng Nhật so với câu mẫu',
+    description:
+      'multipart: audio (file ghi âm) + referenceText. Trả về JSON đánh giá của Gemini: Overall, TranscribedText, MatchScore, Syllables.'
+  })
+  @ZodSerializerDto(PronunciationAssessmentResDTO)
+  async assessPronunciation(
+    @Body() body: PronunciationAssessmentBodyDTO,
+    @UploadedFile() audio?: Express.Multer.File
+  ) {
+    if (!audio) {
+      throw new BadRequestException('Thiếu file audio')
+    }
+    const data = await this.geminiService.assessPronunciation(audio, body.referenceText)
+    return { data, message: 'Đánh giá phát âm thành công' }
   }
 
   // Saved recommendations

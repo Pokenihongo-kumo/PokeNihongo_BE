@@ -1,4 +1,10 @@
-import { Injectable, Logger, BadRequestException, Inject } from '@nestjs/common'
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  BadGatewayException,
+  Inject
+} from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { PrismaService } from '@/shared/services/prisma.service'
@@ -25,6 +31,10 @@ import {
 import { v4 as uuidv4 } from 'uuid'
 import axios from 'axios'
 import { GEMINI_DEFAULT_CONFIGS } from './config/gemini-default-configs'
+import {
+  PRONUNCIATION_MODELS,
+  PRONUNCIATION_SYSTEM_INSTRUCTION
+} from './dto/pronunciation-assessment.dto'
 import { GeminiConfigType, RecommendationTargetType } from '@prisma/client'
 import * as crypto from 'crypto'
 import { Redis } from 'ioredis'
@@ -1307,6 +1317,55 @@ export class GeminiService {
    * Test model gemini-2.5-flash-native-audio-dialog
    * Hàm cơ bản để test model native audio dialog
    */
+  /**
+   * Scores a short Japanese recording against referenceText. The API key stays
+   * on the server (it used to ship inside the mobile app). Returns the model's
+   * JSON as is, or {} when it is not valid JSON, like the app did.
+   */
+  async assessPronunciation(
+    audio: Express.Multer.File,
+    referenceText: string
+  ): Promise<Record<string, unknown>> {
+    const parts = [
+      { text: `Reference Text (Japanese): ${referenceText}` },
+      { inlineData: { mimeType: audio.mimetype, data: audio.buffer.toString('base64') } }
+    ]
+
+    let lastError: unknown
+    for (const modelName of PRONUNCIATION_MODELS) {
+      try {
+        const model = this.getGenAIForModel(modelName).getGenerativeModel({
+          model: modelName,
+          systemInstruction: PRONUNCIATION_SYSTEM_INSTRUCTION,
+          generationConfig: { responseMimeType: 'application/json', temperature: 0.3 }
+        })
+        const result = await model.generateContent({
+          contents: [{ role: 'user', parts }]
+        })
+        const raw = result.response.text()
+        try {
+          const parsed: unknown = raw ? JSON.parse(raw) : {}
+          return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+            ? (parsed as Record<string, unknown>)
+            : {}
+        } catch {
+          return {}
+        }
+      } catch (error) {
+        lastError = error
+        const status = (error as { status?: number })?.status
+        if (status === 404) {
+          this.logger.warn(`Pronunciation model ${modelName} unavailable, trying next`)
+          continue
+        }
+        break
+      }
+    }
+
+    this.logger.error('Pronunciation assessment failed', lastError as Error)
+    throw new BadGatewayException('Không thể đánh giá phát âm lúc này, vui lòng thử lại')
+  }
+
   async testNativeAudioDialog(
     userId: number,
     data: TestNativeAudioDialogDto
