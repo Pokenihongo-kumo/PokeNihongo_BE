@@ -1,0 +1,443 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`WordType and Level contract (e2e) Level create 1`] = `
+{
+  "body": {
+    "data": {
+      "createdAt": "string",
+      "createdById": "number",
+      "deletedAt": "null",
+      "deletedById": "null",
+      "id": "number",
+      "levelNumber": "number",
+      "levelType": "string",
+      "nextLevelId": "null",
+      "requiredExp": "number",
+      "rewardId": "null",
+      "updatedAt": "string",
+      "updatedById": "null",
+    },
+    "message": "Tạo cấp độ thành công",
+    "statusCode": 201,
+  },
+  "httpStatus": 201,
+}
+`;
+
+exports[`WordType and Level contract (e2e) Level delete, then delete again 1`] = `
+{
+  "again": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Record not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bản ghi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "first": {
+    "body": {
+      "data": "null",
+      "message": "Xóa cấp độ thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`WordType and Level contract (e2e) Level detail 1`] = `
+{
+  "body": {
+    "data": {
+      "createdAt": "string",
+      "createdById": "number",
+      "deletedAt": "null",
+      "deletedById": "null",
+      "id": "number",
+      "levelNumber": "number",
+      "levelType": "string",
+      "nextLevel": "null",
+      "nextLevelId": "null",
+      "requiredExp": "number",
+      "reward": "null",
+      "rewardId": "null",
+      "updatedAt": "string",
+      "updatedById": "null",
+    },
+    "message": "Lấy thông tin cấp độ thành công",
+    "statusCode": 200,
+  },
+  "httpStatus": 200,
+}
+`;
+
+exports[`WordType and Level contract (e2e) Level errors: duplicate, wrong next level, invalid id, invalid body 1`] = `
+{
+  "duplicate": {
+    "en": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Level already exists",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+    "vi": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Cấp độ đã tồn tại",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+  },
+  "invalidBody": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Level number must be greater than or equal to 1",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Số cấp độ phải lớn hơn hoặc bằng 1",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "invalidId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid level data",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Dữ liệu cấp độ không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "wrongNextLevel": {
+    "en": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Invalid next level (must be same type and consecutive level number)",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+    "vi": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Cấp độ tiếp theo không hợp lệ (phải cùng loại và số cấp độ phải là số liền kề)",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+  },
+}
+`;
+
+exports[`WordType and Level contract (e2e) Level update 1`] = `
+{
+  "body": {
+    "data": {
+      "createdAt": "string",
+      "createdById": "number",
+      "deletedAt": "null",
+      "deletedById": "null",
+      "id": "number",
+      "levelNumber": "number",
+      "levelType": "string",
+      "nextLevelId": "null",
+      "requiredExp": "number",
+      "rewardId": "null",
+      "updatedAt": "string",
+      "updatedById": "number",
+    },
+    "message": "Cập nhật cấp độ thành công",
+    "statusCode": 200,
+  },
+  "httpStatus": 200,
+}
+`;
+
+exports[`WordType and Level contract (e2e) WordType create 1`] = `
+{
+  "body": {
+    "data": {
+      "createdAt": "string",
+      "id": "number",
+      "nameKey": "string",
+      "updatedAt": "string",
+    },
+    "message": "Tạo loại từ thành công",
+    "statusCode": 201,
+  },
+  "httpStatus": 201,
+}
+`;
+
+exports[`WordType and Level contract (e2e) WordType delete, then delete again 1`] = `
+{
+  "again": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Loại từ không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Loại từ không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "first": {
+    "body": {
+      "data": {
+        "message": "Xóa loại từ thành công",
+      },
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`WordType and Level contract (e2e) WordType detail by id and by nameKey 1`] = `
+{
+  "byId": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "id": "number",
+        "nameKey": "string",
+        "updatedAt": "string",
+      },
+      "message": "Lấy thông tin loại từ thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "byNameKey": {
+    "body": {
+      "error": "INTERNAL_SERVER_ERROR",
+      "message": "Internal Server Error",
+      "statusCode": 500,
+    },
+    "httpStatus": 500,
+  },
+}
+`;
+
+exports[`WordType and Level contract (e2e) WordType errors: duplicate, not found, invalid body, invalid id 1`] = `
+{
+  "duplicate": {
+    "en": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Loại từ đã tồn tại",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+    "vi": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Loại từ đã tồn tại",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+  },
+  "invalidBody": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid data provided",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Dữ liệu không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "invalidId": {
+    "en": {
+      "body": {
+        "error": "INTERNAL_SERVER_ERROR",
+        "message": "An error occurred",
+        "statusCode": 500,
+      },
+      "httpStatus": 500,
+    },
+    "vi": {
+      "body": {
+        "error": "INTERNAL_SERVER_ERROR",
+        "message": "Đã xảy ra lỗi",
+        "statusCode": 500,
+      },
+      "httpStatus": 500,
+    },
+  },
+  "notFound": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Loại từ không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Loại từ không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "notFoundByNameKey": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Loại từ không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Loại từ không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+}
+`;
+
+exports[`WordType and Level contract (e2e) WordType list 1`] = `
+{
+  "body": {
+    "data": {
+      "pagination": {
+        "current": "number",
+        "pageSize": "number",
+        "totalItem": "number",
+        "totalPage": "number",
+      },
+      "results": [
+        {
+          "createdAt": "string",
+          "id": "number",
+          "name": "string",
+          "updatedAt": "string",
+        },
+      ],
+    },
+    "message": "Lấy danh sách loại từ thành công",
+    "statusCode": 200,
+  },
+  "httpStatus": 200,
+}
+`;
+
+exports[`WordType and Level contract (e2e) WordType stats 1`] = `
+{
+  "body": {
+    "data": {
+      "total": "number",
+    },
+    "message": "Lấy thống kê loại từ thành công",
+    "statusCode": 200,
+  },
+  "httpStatus": 200,
+}
+`;
+
+exports[`WordType and Level contract (e2e) WordType update 1`] = `
+{
+  "body": {
+    "data": {
+      "createdAt": "string",
+      "id": "number",
+      "nameKey": "string",
+      "updatedAt": "string",
+    },
+    "message": "Cập nhật loại từ thành công",
+    "statusCode": 200,
+  },
+  "httpStatus": 200,
+}
+`;
