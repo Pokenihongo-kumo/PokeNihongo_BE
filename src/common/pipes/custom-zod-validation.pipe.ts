@@ -1,45 +1,7 @@
-import { I18nService } from '@/i18n/i18n.service'
 import { ValidationMessage } from '@/i18n/message-keys'
 import { UnprocessableEntityException } from '@nestjs/common'
 import { createZodValidationPipe } from 'nestjs-zod'
 import { ZodError, ZodIssue } from 'zod'
-
-// Simple function to get language from request
-function getLanguageFromRequest(): string {
-  const request = (global as any).currentRequest
-  let lang = 'vi'
-
-  if (request?.headers?.['accept-language']) {
-    const acceptLanguage = request.headers['accept-language']
-    const languages = acceptLanguage
-      .split(',')
-      .map((l: string) => {
-        const [locale, q] = l.trim().split(';q=')
-        return {
-          locale: locale.split('-')[0],
-          quality: q ? parseFloat(q) : 1.0
-        }
-      })
-      .sort((a: any, b: any) => b.quality - a.quality)
-
-    const supportedLanguages = ['vi', 'en', 'ja']
-    for (const language of languages) {
-      if (supportedLanguages.includes(language.locale)) {
-        lang = language.locale
-        break
-      }
-    }
-  }
-
-  return lang
-}
-
-// Global variable to store I18nService instance
-let globalI18nService: I18nService
-
-export function setGlobalI18nService(service: I18nService) {
-  globalI18nService = service
-}
 
 function fieldMessageKey(issue: ZodIssue): string {
   // Schemas may already use an i18n key as their message
@@ -56,19 +18,16 @@ function fieldMessageKey(issue: ZodIssue): string {
   return ValidationMessage.INVALID_DATA
 }
 
-// 422 body: a translated summary in `message` (via errorKey in the exception
-// filter) and one entry per invalid field in `errors`.
+// 422 body: a summary key (errorKey) and one i18n key per invalid field.
+// ApiExceptionFilter translates both with the language of the request being
+// answered, so nothing here depends on which request is "current".
 export function createValidationException(error: ZodError) {
-  const lang = getLanguageFromRequest()
-  const translate = (key: string) =>
-    globalI18nService ? globalI18nService.translate(key, lang) : key
-
   return new UnprocessableEntityException({
     message: ValidationMessage.INVALID_DATA,
     errorKey: ValidationMessage.INVALID_DATA,
     errors: error.errors.map((issue) => ({
       field: issue.path.join('.'),
-      message: translate(fieldMessageKey(issue))
+      messageKey: fieldMessageKey(issue)
     }))
   })
 }

@@ -11,6 +11,8 @@ import {
 import { Response } from 'express'
 
 type FieldError = { field: string; message: string }
+// Validation errors carry an i18n key instead of a message (custom-zod-validation.pipe)
+type FieldErrorInput = FieldError | { field: string; messageKey: string }
 
 // Picks the first supported language (vi/en/ja) from Accept-Language; default vi.
 function resolveLanguage(acceptLanguage?: string): string {
@@ -72,7 +74,11 @@ export class ApiExceptionFilter implements ExceptionFilter {
           .join(', ')
       }
       if (Array.isArray(responseObj.errors)) {
-        errors = responseObj.errors
+        errors = (responseObj.errors as FieldErrorInput[]).map((e) =>
+          'messageKey' in e
+            ? { field: e.field, message: this.i18nService.translate(e.messageKey, lang) }
+            : e
+        )
       }
       if (responseObj.data) {
         // Only text details are appended; objects used to render "[object Object]"
