@@ -7,7 +7,7 @@ import { PaginationResponseSchema } from '@/shared/models/response.model'
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common'
 import { ZodSerializerDto } from 'nestjs-zod'
 import {
-  CreatedLevelBodyDTO,
+  CreateLevelBodyDTO,
   CreateLevelResDTO,
   GetLevelDetailResDTO,
   GetLevelParamsDTO,
@@ -37,7 +37,7 @@ export class LevelController {
   @Post()
   @ZodSerializerDto(CreateLevelResDTO)
   create(
-    @Body() body: CreatedLevelBodyDTO,
+    @Body() body: CreateLevelBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {

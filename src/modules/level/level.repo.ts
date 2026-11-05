@@ -1,10 +1,10 @@
-import { PaginationQueryType } from '@/shared/models/request.model'
-import { Injectable } from '@nestjs/common'
-
 import { LEVEL_TYPE, LevelTypeType } from '@/common/constants/level.constant'
 import { parseQs } from '@/common/utils/qs-parser'
+import { PaginationQueryType } from '@/shared/models/request.model'
+import { PrismaService } from '@/shared/services/prisma.service'
 import { toPaginationMeta, toSkipTake } from '@/shared/utils/pagination'
-import { PrismaService } from 'src/shared/services/prisma.service'
+import { Injectable } from '@nestjs/common'
+import { Prisma } from '@prisma/client'
 import {
   CreateLevelBodyType,
   LEVEL_FIELDS,
@@ -12,9 +12,15 @@ import {
   UpdateLevelBodyType
 } from './entities/level.entity'
 
+// Detail and list rows carry their reward and next level
+const WITH_RELATIONS = { reward: true, nextLevel: true } satisfies Prisma.LevelInclude
+export type LevelWithRelations = Prisma.LevelGetPayload<{
+  include: typeof WITH_RELATIONS
+}>
+
 @Injectable()
 export class LevelRepo {
-  constructor(private prismaService: PrismaService) {}
+  constructor(private readonly prismaService: PrismaService) {}
 
   create({
     createdById,
@@ -91,10 +97,7 @@ export class LevelRepo {
       }),
       this.prismaService.level.findMany({
         where: { deletedAt: null, ...where },
-        include: {
-          reward: true,
-          nextLevel: true
-        },
+        include: WITH_RELATIONS,
         orderBy,
         skip,
         take
@@ -111,16 +114,13 @@ export class LevelRepo {
     }
   }
 
-  findById(id: number): Promise<LevelType | null> {
+  findById(id: number): Promise<LevelWithRelations | null> {
     return this.prismaService.level.findUnique({
       where: {
         id,
         deletedAt: null
       },
-      include: {
-        reward: true,
-        nextLevel: true
-      }
+      include: WITH_RELATIONS
     })
   }
 
