@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 
 // Swagger DTOs for API documentation. They mirror the Zod schemas in
-// entities/wordtype.entities.ts and the envelope the API really returns.
+// entities/wordtype.entity.ts and the envelope the API really returns.
 const NAME_KEY = {
   example: 'wordtype.noun.name',
   description: 'Translation key of the word type name',
@@ -104,7 +104,7 @@ export {
   GetWordTypeByNameKeyParamsDTO,
   WordTypeResponseDTO,
   WordTypeListResDTO
-} from './zod/wordtype-zod.dto'
+} from './wordtype.zod-dto'
 
 // Query Swagger DTO
 export class GetWordTypeListQuerySwaggerDTO {

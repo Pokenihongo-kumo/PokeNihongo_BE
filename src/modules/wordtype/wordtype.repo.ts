@@ -2,12 +2,12 @@ import {
   WordType,
   CreateWordTypeBodyType,
   UpdateWordTypeBodyType
-} from './entities/wordtype.entities'
+} from './entities/wordtype.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
 
 @Injectable()
-export class WordTypeRepository {
+export class WordTypeRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(params: {

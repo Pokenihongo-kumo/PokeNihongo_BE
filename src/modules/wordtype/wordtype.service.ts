@@ -3,11 +3,11 @@ import {
   UpdateWordTypeBodyType,
   GetWordTypeListQueryType,
   WordType
-} from './entities/wordtype.entities'
+} from './entities/wordtype.entity'
 
 import { HttpException, Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from '@/shared/helpers'
-import { WordTypeRepository } from './wordtype.repo'
+import { WordTypeRepo } from './wordtype.repo'
 import {
   WordTypeNotFoundException,
   WordTypeAlreadyExistsException,
@@ -23,7 +23,7 @@ export class WordTypeService implements OnModuleInit {
   private readonly logger = new Logger(WordTypeService.name)
 
   constructor(
-    private readonly wordTypeRepository: WordTypeRepository,
+    private readonly wordTypeRepository: WordTypeRepo,
     private readonly translationService: TranslationService,
     private readonly languagesService: LanguagesService,
     private readonly i18nService: I18nService
