@@ -438,6 +438,19 @@ Ghi chú chuyển workflow: dòng trên ghi nhận nhánh đã bắt đầu trư
 - [x] Gate giai đoạn 1: rollback/không mất dữ liệu khi xóa cứng bị chặn đã chứng minh trên DB test; validation đúng locale với request xen kẽ; client parse/status/error tests pass. Checks trên `dev` @ `d243b7b`: typecheck 0, unit 37/37, e2e 33/33 (12 snapshot), format sạch. Không có sự cố production nào được quan sát; đây là lỗi tái hiện bằng test.
   - Note: message lỗi của WordType/Vocabulary vẫn là hằng số tiếng Việt → giai đoạn 2/3. `test/jest-e2e.json` chạy `maxWorkers: 1` vì các spec dùng chung DB test.
 
+### Giai đoạn 2 — Convention và hai feature mẫu
+
+Convention + checklist giai đoạn 3: [docs/standardization/backend-convention.md](docs/standardization/backend-convention.md).
+
+- [x] Contract baseline WordType + Level (mọi route, thành công/lỗi, lỗi vi/en, 12 snapshot) — `c150a2d`; kèm `bfcd072` `PrismaService` `$disconnect` khi tắt app (trước đó mỗi app đóng vẫn giữ pool, e2e hết connection Postgres ở spec thứ 8). Merge `dev` @ `570767e`.
+- [x] 1. Helpers có consumer thật — `831656e` → merge `dev` @ `02afea2`: `shared/utils/pagination` (`toSkipTake`, `toPaginationMeta`; `paginatedResSchema` thêm ở task WordType khi có consumer), `i18n/resolve-language` (gộp 2 bản parse `Accept-Language` của decorator và filter), `shared/utils/prisma-errors` (predicates nhận `unknown`, `helpers.ts` re-export cho ~135 import cũ).
+- [x] 2–3. Level (kiểu A) — `f51127d` rename `CreateLevelBodyDTO`, `f2a3085` type `LevelWithRelations` từ Prisma, `private readonly`, import `@/`, `Logger`, unit test 4 (liên kết level, best effort, nextLevel sai 409, map lỗi). Không đổi contract. Merge `dev` @ `50549b8`.
+- [x] 2–3. WordType (kiểu B) — `161bcbb` rename (`WordTypeRepo`, `.entity.ts`, `dto/wordtype.zod-dto.ts`), `bed7a56` sửa 4 bug baseline: name-key luôn 500 (serializer entity trần), id sai 500 → 422 (`checkIdSchema`), `POST /wordtype` 409 vì seed id cố định không đẩy sequence (create + seed lúc khởi động đồng bộ sequence, sửa cả DB cũ), lỗi singleton tiếng Việt → class + key i18n vi/en/ja (ja trước không có mục `wordtype`). Type Prisma thay `any`, pagination helper. Web chỉ đọc `GET /wordtype` (id, name): không đổi. Merge `dev` @ `706e231`.
+- [x] 4. Giữ seed WordType lúc khởi động (nay còn sửa sequence); tách seed để giai đoạn ownership.
+- [x] 5. Convention/checklist viết từ code đang chạy (tài liệu trên).
+- [x] Gate giai đoạn 2: hai kiểu dùng chung primitives thật (pagination, prisma-errors, resolveLanguage); contract/Swagger/client tests pass; không thêm `any`; chỉ đổi contract có chủ đích (3 snapshot WordType). Checks trên `dev` @ `706e231`: typecheck 0, unit 45/45, e2e 47/47 (24 snapshot), format sạch.
+  - Note: còn để lại — WordType list dịch tên N+1; Level tạo/sửa và auto-link hai lần ghi riêng; `helpers.ts` còn re-export predicates.
+
 ### Baseline (2026-11-02, trước mọi thay đổi)
 
 | Repo | Typecheck | Build | Lint | Format |
