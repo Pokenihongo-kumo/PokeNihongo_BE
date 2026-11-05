@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common'
 
 import { LEVEL_TYPE, LevelTypeType } from '@/common/constants/level.constant'
 import { parseQs } from '@/common/utils/qs-parser'
+import { toPaginationMeta, toSkipTake } from '@/shared/utils/pagination'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
   CreateLevelBodyType,
@@ -82,8 +83,7 @@ export class LevelRepo {
   async list(pagination: PaginationQueryType) {
     const { where, orderBy } = parseQs(pagination.qs, LEVEL_FIELDS)
 
-    const skip = (pagination.currentPage - 1) * pagination.pageSize
-    const take = pagination.pageSize
+    const { skip, take } = toSkipTake(pagination.currentPage, pagination.pageSize)
 
     const [totalItems, data] = await Promise.all([
       this.prismaService.level.count({
@@ -103,12 +103,11 @@ export class LevelRepo {
 
     return {
       results: data,
-      pagination: {
-        current: pagination.currentPage,
-        pageSize: pagination.pageSize,
-        totalPage: Math.ceil(totalItems / pagination.pageSize),
-        totalItem: totalItems
-      }
+      pagination: toPaginationMeta(
+        pagination.currentPage,
+        pagination.pageSize,
+        totalItems
+      )
     }
   }
 
