@@ -324,7 +324,9 @@ export const viMessages = {
     GET_SUCCESS: 'Lấy chi tiết cấu hình điểm danh thành công',
     GET_LIST_SUCCESS: 'Lấy danh sách cấu hình điểm danh thành công',
     NOT_FOUND: 'Không tìm thấy cấu hình điểm danh',
-    ALREADY_EXISTS: 'Cấu hình điểm danh đã tồn tại'
+    ALREADY_EXISTS: 'Cấu hình điểm danh đã tồn tại',
+    INVALID_DATA: 'Dữ liệu cấu hình điểm danh không hợp lệ',
+    INVALID_DAY_OF_WEEK: 'Ngày trong tuần không hợp lệ'
   },
   attendance: {
     CREATE_SUCCESS: 'Điểm danh thành công',

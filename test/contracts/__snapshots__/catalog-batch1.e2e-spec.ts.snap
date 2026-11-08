@@ -35,7 +35,7 @@ exports[`Catalog batch 1 contract (e2e) attendence-config create, list (as mobil
         "updatedAt": "string",
         "updatedById": "null",
       },
-      "message": "Lấy danh sách cấu hình điểm danh thành công",
+      "message": "Lấy chi tiết cấu hình điểm danh thành công",
       "statusCode": 200,
     },
     "httpStatus": 200,
@@ -64,7 +64,7 @@ exports[`Catalog batch 1 contract (e2e) attendence-config create, list (as mobil
           },
         ],
       },
-      "message": "Lấy chi tiết cấu hình điểm danh thành công",
+      "message": "Lấy danh sách cấu hình điểm danh thành công",
       "statusCode": 200,
     },
     "httpStatus": 200,
@@ -83,7 +83,7 @@ exports[`Catalog batch 1 contract (e2e) attendence-config create, list (as mobil
         "updatedAt": "string",
         "updatedById": "number",
       },
-      "message": "Lấy chi tiết cấu hình điểm danh thành công",
+      "message": "Cập nhật cấu hình điểm danh thành công",
       "statusCode": 200,
     },
     "httpStatus": 200,
@@ -96,7 +96,7 @@ exports[`Catalog batch 1 contract (e2e) attendence-config errors: duplicate day,
   "delete": {
     "body": {
       "data": "null",
-      "message": "Lấy chi tiết cấu hình điểm danh thành công",
+      "message": "Xóa cấu hình điểm danh thành công",
       "statusCode": 200,
     },
     "httpStatus": 200,
@@ -123,7 +123,7 @@ exports[`Catalog batch 1 contract (e2e) attendence-config errors: duplicate day,
     "en": {
       "body": {
         "error": "CONFLICT",
-        "message": "Record already exists",
+        "message": "Attendance configuration already exists",
         "statusCode": 409,
       },
       "httpStatus": 409,
@@ -131,7 +131,7 @@ exports[`Catalog batch 1 contract (e2e) attendence-config errors: duplicate day,
     "vi": {
       "body": {
         "error": "CONFLICT",
-        "message": "Bản ghi đã tồn tại",
+        "message": "Cấu hình điểm danh đã tồn tại",
         "statusCode": 409,
       },
       "httpStatus": 409,
@@ -144,7 +144,7 @@ exports[`Catalog batch 1 contract (e2e) attendence-config errors: duplicate day,
         "errors": [
           {
             "field": "string",
-            "message": "Invalid enum value. Expected 'SUNDAY' | 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY', received 'FUNDAY'",
+            "message": "Invalid day of the week",
           },
         ],
         "message": "Invalid data provided",
@@ -158,7 +158,7 @@ exports[`Catalog batch 1 contract (e2e) attendence-config errors: duplicate day,
         "errors": [
           {
             "field": "string",
-            "message": "Invalid enum value. Expected 'SUNDAY' | 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY', received 'FUNDAY'",
+            "message": "Ngày trong tuần không hợp lệ",
           },
         ],
         "message": "Dữ liệu không hợp lệ",
@@ -215,6 +215,38 @@ exports[`Catalog batch 1 contract (e2e) attendence-config errors: duplicate day,
       "httpStatus": 404,
     },
   },
+}
+`;
+
+exports[`Catalog batch 1 contract (e2e) attendence-config list in a language that has no Languages row (ja) 1`] = `
+{
+  "body": {
+    "data": {
+      "pagination": {
+        "current": "number",
+        "pageSize": "number",
+        "totalItem": "number",
+        "totalPage": "number",
+      },
+      "results": [
+        {
+          "baseCoin": "number",
+          "bonusCoin": "number",
+          "createdAt": "string",
+          "createdById": "number",
+          "dayOfWeek": "string",
+          "deletedAt": "null",
+          "deletedById": "null",
+          "id": "number",
+          "updatedAt": "string",
+          "updatedById": "number",
+        },
+      ],
+    },
+    "message": "出席設定一覧を取得しました",
+    "statusCode": 200,
+  },
+  "httpStatus": 200,
 }
 `;
 

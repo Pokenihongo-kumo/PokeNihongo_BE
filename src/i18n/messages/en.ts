@@ -326,7 +326,9 @@ export const enMessages = {
     GET_SUCCESS: 'Attendance configuration retrieved successfully',
     GET_LIST_SUCCESS: 'Attendance configuration list retrieved successfully',
     NOT_FOUND: 'Attendance configuration not found',
-    ALREADY_EXISTS: 'Attendance configuration already exists'
+    ALREADY_EXISTS: 'Attendance configuration already exists',
+    INVALID_DATA: 'Invalid attendance configuration data',
+    INVALID_DAY_OF_WEEK: 'Invalid day of the week'
   },
   attendance: {
     CREATE_SUCCESS: 'Attendance record created successfully',

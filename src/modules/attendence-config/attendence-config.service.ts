@@ -1,11 +1,12 @@
-import { PaginationQueryType } from '@/shared/models/request.model'
-import { HttpStatus, Injectable } from '@nestjs/common'
-
 import { I18nService } from '@/i18n/i18n.service'
 import { AttendenceConfigMessage } from '@/i18n/message-keys'
-import { NotFoundRecordException } from 'src/shared/error'
-import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared/helpers'
-import { LanguagesRepository } from '../languages/languages.repo'
+import { NotFoundRecordException } from '@/shared/error'
+import { PaginationQueryType } from '@/shared/models/request.model'
+import {
+  isNotFoundPrismaError,
+  isUniqueConstraintPrismaError
+} from '@/shared/utils/prisma-errors'
+import { HttpStatus, Injectable } from '@nestjs/common'
 import { AttendenceConfigRepo } from './attendence-config.repo'
 import { AttendenceConfigAlreadyExistsException } from './dto/attendence-config.error'
 import {
@@ -16,23 +17,20 @@ import {
 @Injectable()
 export class AttendenceConfigService {
   constructor(
-    private attendenceConfigRepo: AttendenceConfigRepo,
-    private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepository
+    private readonly attendenceConfigRepo: AttendenceConfigRepo,
+    private readonly i18nService: I18nService
   ) {}
 
   async list(pagination: PaginationQueryType, lang: string = 'vi') {
-    await this.getLand(lang)
     const data = await this.attendenceConfigRepo.list(pagination)
     return {
       statusCode: HttpStatus.OK,
       data,
-      message: this.i18nService.translate(AttendenceConfigMessage.GET_SUCCESS, lang)
+      message: this.i18nService.translate(AttendenceConfigMessage.GET_LIST_SUCCESS, lang)
     }
   }
 
   async findById(id: number, lang: string = 'vi') {
-    await this.getLand(lang)
     const attendenceConfig = await this.attendenceConfigRepo.findById(id)
     if (!attendenceConfig) {
       throw new NotFoundRecordException()
@@ -40,7 +38,7 @@ export class AttendenceConfigService {
     return {
       statusCode: HttpStatus.OK,
       data: attendenceConfig,
-      message: this.i18nService.translate(AttendenceConfigMessage.GET_LIST_SUCCESS, lang)
+      message: this.i18nService.translate(AttendenceConfigMessage.GET_SUCCESS, lang)
     }
   }
 
@@ -55,7 +53,6 @@ export class AttendenceConfigService {
     lang: string = 'vi'
   ) {
     try {
-      await this.getLand(lang)
       const attendenceConfig = await this.attendenceConfigRepo.create({
         createdById,
         data
@@ -86,7 +83,6 @@ export class AttendenceConfigService {
     lang: string = 'vi'
   ) {
     try {
-      await this.getLand(lang)
       const updatedAttendenceConfig = await this.attendenceConfigRepo.update({
         id,
         updatedById,
@@ -95,7 +91,7 @@ export class AttendenceConfigService {
       return {
         statusCode: HttpStatus.OK,
         data: updatedAttendenceConfig,
-        message: this.i18nService.translate(AttendenceConfigMessage.GET_SUCCESS, lang)
+        message: this.i18nService.translate(AttendenceConfigMessage.UPDATE_SUCCESS, lang)
       }
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
@@ -113,7 +109,6 @@ export class AttendenceConfigService {
     lang: string = 'vi'
   ) {
     try {
-      await this.getLand(lang)
       await this.attendenceConfigRepo.delete({
         id,
         deletedById
@@ -121,7 +116,7 @@ export class AttendenceConfigService {
       return {
         statusCode: HttpStatus.OK,
         data: null,
-        message: this.i18nService.translate(AttendenceConfigMessage.GET_SUCCESS, lang)
+        message: this.i18nService.translate(AttendenceConfigMessage.DELETE_SUCCESS, lang)
       }
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
@@ -129,13 +124,5 @@ export class AttendenceConfigService {
       }
       throw error
     }
-  }
-
-  async getLand(lang: string) {
-    const langId = await this.languageRepo.getIdByCode(lang)
-    if (!langId) {
-      throw new NotFoundRecordException()
-    }
-    return langId
   }
 }
