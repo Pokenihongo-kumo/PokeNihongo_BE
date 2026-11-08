@@ -451,6 +451,19 @@ Convention + checklist giai đoạn 3: [docs/standardization/backend-convention.
 - [x] Gate giai đoạn 2: hai kiểu dùng chung primitives thật (pagination, prisma-errors, resolveLanguage); contract/Swagger/client tests pass; không thêm `any`; chỉ đổi contract có chủ đích (3 snapshot WordType). Checks trên `dev` @ `706e231`: typecheck 0, unit 45/45, e2e 47/47 (24 snapshot), format sạch.
   - Note: còn để lại — WordType list dịch tên N+1; Level tạo/sửa và auto-link hai lần ghi riêng; `helpers.ts` còn re-export predicates.
 
+### Giai đoạn 3 — Chuẩn hóa theo chiều rộng
+
+- [x] Batch 1 — Danh mục: languages, elemental-type, type-effectiveness, attendence-config. Consumer: web `GET /elemental-type` (qs), mobile `GET /elemental-type` (sort) + `GET /attendence-config` — không đổi với client.
+  - [x] Baseline contract `test/contracts/catalog-batch1.e2e-spec.ts` (spec tạo vi/en và dọn dữ liệu) — `7b64138` → merge `dev` @ `028e952`.
+  - [x] elemental-type + type-effectiveness — `5e28bfe` rename dto, `7018e37`: `/elemental-type/active` luôn 500 (serializer phân trang cho mảng); type-effectiveness PUT chỉ `multiplier` bị 422 (refine `undefined === undefined`), DELETE 500 (thiếu `data` → bọc lại → serializer lỗi), `/weaknesses|resistances/abc` 500 → 422, body multi-type có Zod DTO, list bỏ qua `Accept-Language`; multi-type 1 query thay N; include dùng chung + type Prisma. Merge `dev` @ `b81f168`.
+  - [x] attendence-config — `a8dddac`: `getLand` (tra `Languages`, không dùng kết quả) làm cả module 404 khi thiếu bản ghi ngôn ngữ (snapshot `ja`: 404 → 200); message list/detail tráo, update/delete sai key; lỗi `dayOfWeek` từ câu Zod tiếng Anh → key i18n; ja thiếu mục `attendence_config`. Merge `dev` @ `a4252c7`.
+  - [x] languages — `a3330bf` rename (`LanguagesRepo` ở ~30 module, `.entity.ts`, `dto/languages.zod-dto.ts`), `bb447d6`: id sai 500 → 422; delete/deleteByCode/updateByCode đổi mọi lỗi thành 400 (cả not found) → 404 theo loại lỗi; delete trả message lồng trong `data`; `flag` không có cột → tạo có flag + `create-default` 500 (repo bỏ qua flag, đồng bộ sequence khi id cố định); message/validation tiếng Việt cứng → `LanguagesMessage` vi/en/ja. Merge `dev` @ `c4a88d9`.
+  - [x] Gate batch 1: consumer không đổi (snapshot các route client giữ nguyên); message vi/en/ja có snapshot vi/en; không còn hai cách xử lý lỗi trong 4 module. Checks trên `dev` @ `c4a88d9`: typecheck 0, unit 53/53, e2e 60/60 (37 snapshot), format sạch.
+  - Việc mở ra từ batch 1:
+    - [ ] `TransformInterceptor` chỉ coi là envelope khi có cả `data` và `message`: service trả `{ message }` bị bọc lại (500 nếu route có serializer, body lồng nếu không). Cần đếm các service còn trả như vậy và chọn sửa interceptor hay từng service — có thể đổi contract, làm task riêng có snapshot.
+    - [ ] `modules/attendance` (điểm danh của mobile) còn `getLand` giống attendence-config → sửa ở batch user/progress.
+    - [ ] DB mới cần seed `Languages` (vi/en/ja): `POST /languages/create-default` nay chạy được.
+
 ### Baseline (2026-11-02, trước mọi thay đổi)
 
 | Repo | Typecheck | Build | Lint | Format |
