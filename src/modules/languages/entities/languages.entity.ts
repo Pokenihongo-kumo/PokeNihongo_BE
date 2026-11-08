@@ -1,5 +1,8 @@
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { LanguagesMessage } from '@/i18n/message-keys'
+import { paginatedResSchema } from '@/shared/utils/pagination'
 import { z } from 'zod'
 
 extendZodWithOpenApi(z)
@@ -19,27 +22,21 @@ const isValidLanguageName = (name: string): boolean => {
   return nameRegex.test(name)
 }
 
-// Custom error messages
-const LANGUAGE_CODE_ERROR =
-  'Mã ngôn ngữ phải là 2-3 ký tự chữ cái thường (ISO 639-1/639-2)'
-const LANGUAGE_NAME_ERROR =
-  'Tên ngôn ngữ chỉ được chứa chữ cái (bao gồm Unicode), khoảng trắng, dấu gạch ngang và dấu chấm'
-
 export const LanguagesSchema = z.object({
   id: z.number(),
   code: z
     .string()
-    .min(2, 'Mã ngôn ngữ phải có ít nhất 2 ký tự')
-    .max(10, 'Mã ngôn ngữ quá dài (tối đa 10 ký tự)')
+    .min(2, LanguagesMessage.CODE_TOO_SHORT)
+    .max(10, LanguagesMessage.CODE_TOO_LONG)
     .refine(isValidLanguageCode, {
-      message: LANGUAGE_CODE_ERROR
+      message: LanguagesMessage.CODE_INVALID
     }),
   name: z
     .string()
-    .min(1, 'Tên ngôn ngữ không được để trống')
-    .max(100, 'Tên ngôn ngữ quá dài (tối đa 100 ký tự)')
+    .min(1, LanguagesMessage.NAME_REQUIRED)
+    .max(100, LanguagesMessage.NAME_TOO_LONG)
     .refine(isValidLanguageName, {
-      message: LANGUAGE_NAME_ERROR
+      message: LanguagesMessage.NAME_INVALID
     }),
   createdAt: z.date(),
   updatedAt: z.date()
@@ -49,17 +46,17 @@ export const CreateLanguagesSchema = z.object({
   id: z.number().optional(),
   code: z
     .string()
-    .min(2, 'Mã ngôn ngữ phải có ít nhất 2 ký tự')
-    .max(10, 'Mã ngôn ngữ quá dài (tối đa 10 ký tự)')
+    .min(2, LanguagesMessage.CODE_TOO_SHORT)
+    .max(10, LanguagesMessage.CODE_TOO_LONG)
     .refine(isValidLanguageCode, {
-      message: LANGUAGE_CODE_ERROR
+      message: LanguagesMessage.CODE_INVALID
     }),
   name: z
     .string()
-    .min(1, 'Tên ngôn ngữ không được để trống')
-    .max(100, 'Tên ngôn ngữ quá dài (tối đa 100 ký tự)')
+    .min(1, LanguagesMessage.NAME_REQUIRED)
+    .max(100, LanguagesMessage.NAME_TOO_LONG)
     .refine(isValidLanguageName, {
-      message: LANGUAGE_NAME_ERROR
+      message: LanguagesMessage.NAME_INVALID
     }),
   flag: z.string().optional()
 })
@@ -67,24 +64,24 @@ export const CreateLanguagesSchema = z.object({
 export const UpdateLanguagesSchema = z.object({
   code: z
     .string()
-    .min(2, 'Mã ngôn ngữ phải có ít nhất 2 ký tự')
-    .max(10, 'Mã ngôn ngữ quá dài (tối đa 10 ký tự)')
+    .min(2, LanguagesMessage.CODE_TOO_SHORT)
+    .max(10, LanguagesMessage.CODE_TOO_LONG)
     .refine(isValidLanguageCode, {
-      message: LANGUAGE_CODE_ERROR
+      message: LanguagesMessage.CODE_INVALID
     })
     .optional(),
   name: z
     .string()
-    .min(1, 'Tên ngôn ngữ không được để trống')
-    .max(100, 'Tên ngôn ngữ quá dài (tối đa 100 ký tự)')
+    .min(1, LanguagesMessage.NAME_REQUIRED)
+    .max(100, LanguagesMessage.NAME_TOO_LONG)
     .refine(isValidLanguageName, {
-      message: LANGUAGE_NAME_ERROR
+      message: LanguagesMessage.NAME_INVALID
     })
     .optional()
 })
 
 export const GetLanguagesByIdParamsSchema = z.object({
-  id: z.string().transform((val) => parseInt(val, 10))
+  id: checkIdSchema(LanguagesMessage.INVALID_ID)
 })
 
 export const GetLanguagesListQuerySchema = z.object({
@@ -101,16 +98,7 @@ export const GetLanguagesListQuerySchema = z.object({
 })
 
 export const GetLanguagesByCodeParamsSchema = z.object({
-  code: z.string().min(2, 'Mã ngôn ngữ không được để trống')
-})
-
-// List Response Schema (internal use)
-export const LanguagesListResponseSchema = z.object({
-  data: z.array(LanguagesSchema),
-  total: z.number(),
-  page: z.number(),
-  limit: z.number(),
-  totalPages: z.number()
+  code: z.string().min(2, LanguagesMessage.CODE_REQUIRED)
 })
 
 // Standard Response Schemas (like vocabulary pattern)
@@ -122,21 +110,7 @@ export const LanguagesResSchema = z
   })
   .strict()
 
-export const LanguagesListResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(LanguagesSchema),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
+export const LanguagesListResSchema = paginatedResSchema(LanguagesSchema)
 
 // Type exports
 export type LanguagesType = z.infer<typeof LanguagesSchema>

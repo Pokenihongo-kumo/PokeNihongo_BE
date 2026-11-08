@@ -1,13 +1,15 @@
 import { PrismaService } from '@/shared/services/prisma.service'
+import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
+import { Languages, Prisma } from '@prisma/client'
 import {
   CreateLanguagesBodyType,
   LanguagesType,
   UpdateLanguagesBodyType
-} from './entities/languages.entities'
+} from './entities/languages.entity'
 
 @Injectable()
-export class LanguagesRepository {
+export class LanguagesRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(params: {
@@ -15,85 +17,56 @@ export class LanguagesRepository {
     pageSize: number
     search?: string
     code?: string
-  }) {
+  }): Promise<{ data: LanguagesType[]; total: number }> {
     const { currentPage, pageSize, search, code } = params
-    const skip = (currentPage - 1) * pageSize
 
-    const where: any = {}
-
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { code: { contains: search, mode: 'insensitive' } }
-      ]
-    }
-
-    if (code) {
-      where.code = { contains: code, mode: 'insensitive' }
+    const where: Prisma.LanguagesWhereInput = {
+      ...(search && {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { code: { contains: search, mode: 'insensitive' } }
+        ]
+      }),
+      ...(code && { code: { contains: code, mode: 'insensitive' } })
     }
 
     const [data, total] = await Promise.all([
       this.prismaService.languages.findMany({
         where,
-        skip,
-        take: pageSize,
+        ...toSkipTake(currentPage, pageSize),
         orderBy: { code: 'asc' }
       }),
       this.prismaService.languages.count({ where })
     ])
 
-    return {
-      data: data.map((item) => this.transformLanguages(item)),
-      total,
-      page: currentPage,
-      limit: pageSize,
-      totalPages: Math.ceil(total / pageSize)
-    }
+    return { data: data.map((item) => this.transformLanguages(item)), total }
   }
 
   async findById(id: number): Promise<LanguagesType | null> {
-    const languages = await this.prismaService.languages.findUnique({
-      where: { id }
-    })
-
-    if (!languages) {
-      return null
-    }
-
-    return this.transformLanguages(languages)
+    const languages = await this.prismaService.languages.findUnique({ where: { id } })
+    return languages ? this.transformLanguages(languages) : null
   }
 
   async findByCode(code: string): Promise<LanguagesType | null> {
-    const languages = await this.prismaService.languages.findUnique({
-      where: { code }
-    })
-
-    if (!languages) {
-      return null
-    }
-
-    return this.transformLanguages(languages)
+    const languages = await this.prismaService.languages.findUnique({ where: { code } })
+    return languages ? this.transformLanguages(languages) : null
   }
 
   async create(data: CreateLanguagesBodyType): Promise<LanguagesType> {
-    const createData: any = {
+    // `flag` is accepted by the body but Languages has no such column; passing it
+    // made Prisma reject every create that sent it (500)
+    const createData: Prisma.LanguagesCreateInput = {
       code: data.code,
-      name: data.name
+      name: data.name,
+      ...(data.id && { id: data.id })
     }
 
-    // Nếu có ID, thêm vào data
+    const result = await this.prismaService.languages.create({ data: createData })
+
+    // An explicit id (default languages) does not move the id sequence
     if (data.id) {
-      createData.id = data.id
+      await this.syncIdSequence()
     }
-
-    // Nếu có flag, thêm vào data
-    if (data.flag) {
-      createData.flag = data.flag
-    }
-
-    const result = await this.prismaService.languages.create({
-      data: createData
-    })
 
     return this.transformLanguages(result)
   }
@@ -101,12 +74,8 @@ export class LanguagesRepository {
   async update(id: number, data: UpdateLanguagesBodyType): Promise<LanguagesType> {
     const result = await this.prismaService.languages.update({
       where: { id },
-      data: {
-        code: data.code,
-        name: data.name
-      }
+      data: { code: data.code, name: data.name }
     })
-
     return this.transformLanguages(result)
   }
 
@@ -116,32 +85,33 @@ export class LanguagesRepository {
   ): Promise<LanguagesType> {
     const result = await this.prismaService.languages.update({
       where: { code },
-      data: {
-        code: data.code,
-        name: data.name
-      }
+      data: { code: data.code, name: data.name }
     })
-
     return this.transformLanguages(result)
   }
 
   async delete(id: number): Promise<void> {
-    await this.prismaService.languages.delete({
-      where: { id }
-    })
+    await this.prismaService.languages.delete({ where: { id } })
   }
 
   async deleteByCode(code: string): Promise<void> {
-    await this.prismaService.languages.delete({
-      where: { code }
-    })
+    await this.prismaService.languages.delete({ where: { code } })
   }
 
-  async count(where?: any): Promise<number> {
+  async count(where?: Prisma.LanguagesWhereInput): Promise<number> {
     return this.prismaService.languages.count({ where })
   }
 
-  private transformLanguages(languages: any): LanguagesType {
+  // Moves the id sequence past the highest id (rows inserted with explicit ids)
+  async syncIdSequence(): Promise<void> {
+    await this.prismaService.$executeRaw`
+      SELECT setval(
+        pg_get_serial_sequence('"Languages"', 'id'),
+        GREATEST((SELECT MAX(id) FROM "Languages"), 1)
+      )`
+  }
+
+  private transformLanguages(languages: Languages): LanguagesType {
     return {
       id: languages.id,
       code: languages.code,
@@ -150,34 +120,24 @@ export class LanguagesRepository {
       updatedAt: languages.updatedAt
     }
   }
+
   async checkExistWithListCode(codes: string[]): Promise<boolean> {
     if (!codes || codes.length === 0) return true
 
     const count = await this.prismaService.languages.count({
-      where: {
-        code: { in: codes }
-      }
+      where: { code: { in: codes } }
     })
 
     return count === codes.length
   }
 
-  async getWithListCode(
-    codes: string[]
-  ): Promise<Pick<LanguagesType, 'id' | 'code'>[] | []> {
+  async getWithListCode(codes: string[]): Promise<Pick<LanguagesType, 'id' | 'code'>[]> {
     if (!codes || codes.length === 0) return []
 
-    const languages = await this.prismaService.languages.findMany({
-      where: {
-        code: { in: codes }
-      },
-      select: {
-        id: true,
-        code: true
-      }
+    return this.prismaService.languages.findMany({
+      where: { code: { in: codes } },
+      select: { id: true, code: true }
     })
-
-    return languages
   }
 
   async getIdByCode(code: string): Promise<number | null> {
@@ -192,11 +152,9 @@ export class LanguagesRepository {
   async getWithListId(ids: number[]): Promise<Array<Pick<LanguagesType, 'id' | 'code'>>> {
     if (!ids || ids.length === 0) return []
 
-    const languages = await this.prismaService.languages.findMany({
+    return this.prismaService.languages.findMany({
       where: { id: { in: ids } },
       select: { id: true, code: true }
     })
-
-    return languages
   }
 }

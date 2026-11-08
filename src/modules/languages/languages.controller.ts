@@ -1,12 +1,10 @@
-import { ActiveUser } from '@/common/decorators/active-user.decorator'
+import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import {
   CreateLanguagesBodyDTO,
   UpdateLanguagesBodyDTO,
   GetLanguagesByIdParamsDTO,
   GetLanguagesListQueryDTO,
   GetLanguagesByCodeParamsDTO,
-  LanguagesResponseDTO,
-  LanguagesListResponseDTO,
   LanguagesResDTO,
   LanguagesListResDTO,
   CreateLanguagesSwaggerDTO,
@@ -14,7 +12,6 @@ import {
   LanguagesSwaggerResponseDTO,
   LanguagesListSwaggerResponseDTO
 } from './dto/languages.dto'
-import { MessageResDTO } from '@/shared/dtos/response.dto'
 import {
   Body,
   Controller,
@@ -78,8 +75,8 @@ export class LanguagesController {
     type: LanguagesListSwaggerResponseDTO
   })
   @ZodSerializerDto(LanguagesListResDTO)
-  findMany(@Query() query: GetLanguagesListQueryDTO) {
-    return this.languagesService.findMany(query)
+  findMany(@Query() query: GetLanguagesListQueryDTO, @I18nLang() lang: string) {
+    return this.languagesService.findMany(query, lang)
   }
 
   @Get('check/:code')
@@ -132,8 +129,8 @@ export class LanguagesController {
     description: 'Ngôn ngữ không tồn tại'
   })
   @ZodSerializerDto(LanguagesResDTO)
-  findById(@Param() params: GetLanguagesByIdParamsDTO) {
-    return this.languagesService.findById(params.id)
+  findById(@Param() params: GetLanguagesByIdParamsDTO, @I18nLang() lang: string) {
+    return this.languagesService.findById(params.id, lang)
   }
 
   @Get('by-code/:code')
@@ -157,8 +154,8 @@ export class LanguagesController {
     description: 'Ngôn ngữ không tồn tại'
   })
   @ZodSerializerDto(LanguagesResDTO)
-  findByCode(@Param() params: GetLanguagesByCodeParamsDTO) {
-    return this.languagesService.findByCode(params)
+  findByCode(@Param() params: GetLanguagesByCodeParamsDTO, @I18nLang() lang: string) {
+    return this.languagesService.findByCode(params, lang)
   }
 
   @Post()
@@ -185,8 +182,8 @@ export class LanguagesController {
     description: 'Ngôn ngữ với mã này đã tồn tại'
   })
   @ZodSerializerDto(LanguagesResDTO)
-  create(@Body() body: CreateLanguagesBodyDTO) {
-    return this.languagesService.create(body)
+  create(@Body() body: CreateLanguagesBodyDTO, @I18nLang() lang: string) {
+    return this.languagesService.create(body, lang)
   }
 
   @Put(':id')
@@ -224,9 +221,10 @@ export class LanguagesController {
   @ZodSerializerDto(LanguagesResDTO)
   update(
     @Param() params: GetLanguagesByIdParamsDTO,
-    @Body() body: UpdateLanguagesBodyDTO
+    @Body() body: UpdateLanguagesBodyDTO,
+    @I18nLang() lang: string
   ) {
-    return this.languagesService.update(params.id, body)
+    return this.languagesService.update(params.id, body, lang)
   }
 
   @Put('by-code/:code')
@@ -264,9 +262,10 @@ export class LanguagesController {
   @ZodSerializerDto(LanguagesResDTO)
   updateByCode(
     @Param() params: GetLanguagesByCodeParamsDTO,
-    @Body() body: UpdateLanguagesBodyDTO
+    @Body() body: UpdateLanguagesBodyDTO,
+    @I18nLang() lang: string
   ) {
-    return this.languagesService.updateByCode(params.code, body)
+    return this.languagesService.updateByCode(params.code, body, lang)
   }
 
   @Delete(':id')
@@ -289,8 +288,8 @@ export class LanguagesController {
     status: 404,
     description: 'Ngôn ngữ không tồn tại'
   })
-  delete(@Param() params: GetLanguagesByIdParamsDTO) {
-    return this.languagesService.delete(params.id)
+  delete(@Param() params: GetLanguagesByIdParamsDTO, @I18nLang() lang: string) {
+    return this.languagesService.delete(params.id, lang)
   }
 
   @Delete('by-code/:code')
@@ -313,8 +312,8 @@ export class LanguagesController {
     status: 404,
     description: 'Ngôn ngữ không tồn tại'
   })
-  deleteByCode(@Param() params: GetLanguagesByCodeParamsDTO) {
-    return this.languagesService.deleteByCode(params.code)
+  deleteByCode(@Param() params: GetLanguagesByCodeParamsDTO, @I18nLang() lang: string) {
+    return this.languagesService.deleteByCode(params.code, lang)
   }
 
   @Post('create-default')

@@ -3,7 +3,7 @@ import { AccessTokenGuard } from '@/common/guards/access-token.guard'
 import { APIKeyGuard } from '@/common/guards/api-key.guard'
 import { AuthenticationGuard } from '@/common/guards/authentication.guard'
 import { InvoiceRepo } from '@/modules/invoice/invoice.repo'
-import { LanguagesRepository } from '@/modules/languages/languages.repo'
+import { LanguagesRepo } from '@/modules/languages/languages.repo'
 import { PokemonRepo } from '@/modules/pokemon/pokemon.repo'
 import { QuestionBankRepository } from '@/modules/question-bank/question-bank.repo'
 import { UserSubscriptionRepo } from '@/modules/user-subscription/user-subscription.repo'
@@ -32,7 +32,7 @@ const sharedServices = [
   TokenService,
   SharedUserSubscriptionService,
   SharedNotificationService,
-  LanguagesRepository,
+  LanguagesRepo,
   // EmailService,
   SharedUserRepository,
   SharedRoleRepository,

@@ -4,7 +4,7 @@ import { GeminiConfigType as PrismaGeminiConfigType } from '@prisma/client'
 import { I18nService } from '@/i18n/i18n.service'
 import { NotFoundRecordException } from 'src/shared/error'
 import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared/helpers'
-import { LanguagesRepository } from '../languages/languages.repo'
+import { LanguagesRepo } from '../languages/languages.repo'
 import { GeminiConfigRepo, GeminiPresetRepo } from './gemini-config.repo'
 import { GeminiConfigAlreadyExistsException } from './dto/gemini-config.error'
 import {
@@ -19,7 +19,7 @@ export class GeminiConfigService {
     private geminiConfigRepo: GeminiConfigRepo,
     private readonly geminiPresetRepo: GeminiPresetRepo,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepository
+    private readonly languageRepo: LanguagesRepo
   ) {}
 
   async list(pagination: PaginationQueryType, lang: string = 'vi') {

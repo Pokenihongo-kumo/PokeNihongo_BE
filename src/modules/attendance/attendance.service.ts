@@ -31,7 +31,7 @@ import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
 import { SharedNotificationService } from '@/shared/services/shared-notification.service'
 import { SharedUserSubscriptionService } from '@/shared/services/user-subscription.service'
 import { AttendenceConfigRepo } from '../attendence-config/attendence-config.repo'
-import { LanguagesRepository } from '../languages/languages.repo'
+import { LanguagesRepo } from '../languages/languages.repo'
 import { WalletTransactionRepo } from '../wallet-transaction/wallet-transaction.repo'
 import { WalletRepo } from '../wallet/wallet.repo'
 import { AttendanceRepo } from './attendence.repo'
@@ -49,7 +49,7 @@ export class AttendanceService {
     private attendanceConfigRepo: AttendenceConfigRepo,
     private shareUserRepo: SharedUserRepository,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepository,
+    private readonly languageRepo: LanguagesRepo,
     private readonly userDailyRequestService: UserDailyRequestService,
     private readonly walletRepo: WalletRepo,
     private readonly walletTransactionRepo: WalletTransactionRepo,

@@ -12,7 +12,7 @@ import {
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
-import { LanguagesRepository } from '../languages/languages.repo'
+import { LanguagesRepo } from '../languages/languages.repo'
 import { SubscriptionPlanNotFoundException } from '../subscription-plan/dto/subscription-plan.error'
 import { SubscriptionPlanRepo } from '../subscription-plan/subscription-plan.repo'
 import {
@@ -32,7 +32,7 @@ export class UserSubscriptionService {
     private userSubscriptionRepo: UserSubscriptionRepo,
     private readonly subscriptionPlanRepo: SubscriptionPlanRepo,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepository,
+    private readonly languageRepo: LanguagesRepo,
     private readonly prismaService: PrismaService
   ) {}
 

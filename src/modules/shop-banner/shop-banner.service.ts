@@ -16,7 +16,7 @@ import {
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { LanguagesRepository } from '../languages/languages.repo'
+import { LanguagesRepo } from '../languages/languages.repo'
 import { PokemonRepo } from '../pokemon/pokemon.repo'
 import { ShopItemRepo } from '../shop-item/shop-item.repo'
 import { ShopPurchaseRepo } from '../shop-purchase/shop-purchase.repo'
@@ -42,7 +42,7 @@ export class ShopBannerService {
   constructor(
     private shopBannerRepo: ShopBannerRepo,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepository,
+    private readonly languageRepo: LanguagesRepo,
     private readonly translationRepo: TranslationRepository,
     private readonly shopPurchaseRepo: ShopPurchaseRepo,
     private readonly userPokemonRepo: UserPokemonRepo,

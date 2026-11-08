@@ -152,8 +152,6 @@ export {
   GetLanguagesByIdParamsDTO,
   GetLanguagesListQueryDTO,
   GetLanguagesByCodeParamsDTO,
-  LanguagesResponseDTO,
-  LanguagesListResponseDTO,
   LanguagesResDTO,
   LanguagesListResDTO
-} from './zod/languages-zod.dto'
+} from './languages.zod-dto'

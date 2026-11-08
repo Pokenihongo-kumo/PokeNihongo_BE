@@ -22,7 +22,7 @@ import {
   UserRewardSourceType,
   WalletType
 } from '@prisma/client'
-import { LanguagesRepository } from '../languages/languages.repo'
+import { LanguagesRepo } from '../languages/languages.repo'
 import { PokemonRepo } from '../pokemon/pokemon.repo'
 import { CreateTranslationBodyType } from '../translation/entities/translation.entities'
 import { TranslationRepository } from '../translation/translation.repo'
@@ -46,7 +46,7 @@ export class RewardService {
   constructor(
     private rewardRepo: RewardRepo,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepository,
+    private readonly languageRepo: LanguagesRepo,
     private readonly translationRepo: TranslationRepository,
     private readonly userService: UserService,
     private readonly walletRepo: WalletRepo,

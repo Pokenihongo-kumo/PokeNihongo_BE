@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { TranslationService } from './translation.service'
-import { LanguagesRepository } from '@/modules/languages/languages.repo'
+import { LanguagesRepo } from '@/modules/languages/languages.repo'
 
 @Injectable()
 export class TranslationHelperService {
@@ -8,7 +8,7 @@ export class TranslationHelperService {
 
   constructor(
     private readonly translationService: TranslationService,
-    private readonly languagesRepository: LanguagesRepository
+    private readonly languagesRepository: LanguagesRepo
   ) {}
 
   /**

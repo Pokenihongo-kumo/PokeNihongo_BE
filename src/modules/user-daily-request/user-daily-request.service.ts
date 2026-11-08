@@ -13,7 +13,7 @@ import {
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { DailyRequestRepo } from '../daily-request/daily-request.repo'
-import { LanguagesRepository } from '../languages/languages.repo'
+import { LanguagesRepo } from '../languages/languages.repo'
 import { TranslationRepository } from '../translation/translation.repo'
 import { UserDailyRequestAlreadyExistsException } from './dto/user-daily-request.error'
 import {
@@ -28,7 +28,7 @@ export class UserDailyRequestService {
     private userDailyRequestRepo: UserDailyRequestRepo,
     private readonly i18nService: I18nService,
     private readonly dailyReqRepo: DailyRequestRepo,
-    private readonly langRepo: LanguagesRepository,
+    private readonly langRepo: LanguagesRepo,
     private readonly translationRepo: TranslationRepository,
     private readonly userService: UserService
   ) {}

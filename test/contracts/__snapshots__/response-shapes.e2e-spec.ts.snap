@@ -37,7 +37,7 @@ exports[`Response contract baseline (e2e) errors not found, style B (GET /langua
   "en": {
     "body": {
       "error": "NOT_FOUND",
-      "message": "Ngôn ngữ không tồn tại",
+      "message": "Language not found",
       "statusCode": 404,
     },
     "httpStatus": 404,

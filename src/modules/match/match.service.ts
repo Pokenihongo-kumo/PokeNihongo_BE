@@ -10,7 +10,7 @@ import {
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { LanguagesRepository } from '../languages/languages.repo'
+import { LanguagesRepo } from '../languages/languages.repo'
 import { LeaderboardSeasonRepo } from '../leaderboard-season/leaderboard-season.repo'
 import { QuestionBankRepository } from '../question-bank/question-bank.repo'
 import {
@@ -25,7 +25,7 @@ export class MatchService {
   constructor(
     private matchRepo: MatchRepo,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepository,
+    private readonly languageRepo: LanguagesRepo,
     private readonly leaderboardSeasonRepo: LeaderboardSeasonRepo,
     private readonly prismaService: PrismaService,
     private readonly questionBankRepo: QuestionBankRepository

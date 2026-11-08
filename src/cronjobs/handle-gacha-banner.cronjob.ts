@@ -4,7 +4,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { GachaStarType } from '@prisma/client'
 import { GachaItemService } from 'src/modules/gacha-item/gacha-item.service'
-import { LanguagesRepository } from 'src/modules/languages/languages.repo'
+import { LanguagesRepo } from 'src/modules/languages/languages.repo'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
 @Injectable()
@@ -13,7 +13,7 @@ export class HandleGachaBannerCronjob {
   constructor(
     private prismaService: PrismaService,
     private gachaItemService: GachaItemService,
-    private languageRepo: LanguagesRepository
+    private languageRepo: LanguagesRepo
   ) {}
 
   // Chạy mỗi ngày lúc 00:00

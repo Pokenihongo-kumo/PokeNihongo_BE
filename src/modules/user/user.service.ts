@@ -15,7 +15,7 @@ import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
 import { HttpStatus, Injectable, Logger } from '@nestjs/common'
 import { UserStatus } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
-import { LanguagesRepository } from '../languages/languages.repo'
+import { LanguagesRepo } from '../languages/languages.repo'
 import { NotStartedLeaderboardSeasonException } from '../leaderboard-season/dto/leaderboard-season.error'
 import { LeaderboardSeasonRepo } from '../leaderboard-season/leaderboard-season.repo'
 import { MatchRepo } from '../match/match.repo'
@@ -46,7 +46,7 @@ export class UserService {
     private readonly leaderboardSeasonRepo: LeaderboardSeasonRepo,
     private readonly matchRepo: MatchRepo,
     private readonly userSeaHistoryRepo: UserSeasonHistoryRepo,
-    private readonly langRepo: LanguagesRepository,
+    private readonly langRepo: LanguagesRepo,
     private readonly userProgressService: UserProgressService
   ) {}
 

@@ -11,7 +11,7 @@ import {
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { LanguagesRepository } from '../languages/languages.repo'
+import { LanguagesRepo } from '../languages/languages.repo'
 import { CreateTranslationBodyType } from '../translation/entities/translation.entities'
 import { TranslationRepository } from '../translation/translation.repo'
 import { DailyRequestRepo } from './daily-request.repo'
@@ -28,7 +28,7 @@ export class DailyRequestService {
   constructor(
     private dailyRequestRepo: DailyRequestRepo,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepository,
+    private readonly languageRepo: LanguagesRepo,
     private readonly translationRepo: TranslationRepository
   ) {}
 

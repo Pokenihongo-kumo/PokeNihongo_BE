@@ -134,6 +134,15 @@ describe('Catalog batch 1 contract (e2e)', () => {
       }).toMatchSnapshot()
     })
 
+    it('create with the optional flag field', async () => {
+      // The body accepts `flag` but the table has no such column (used to be 500)
+      const res = await http()
+        .post('/languages')
+        .send({ code: 'zqy', name: 'Cờ', flag: 'x' })
+      if (res.body.data?.id) created.languages.push(res.body.data.id)
+      expect(capture(res)).toMatchSnapshot()
+    })
+
     it('delete by code, then by id again', async () => {
       expect({
         byCode: capture(await http().delete(`/languages/by-code/${code}`)),

@@ -15,7 +15,7 @@ import {
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { InvoiceRepo } from '../invoice/invoice.repo'
-import { LanguagesRepository } from '../languages/languages.repo'
+import { LanguagesRepo } from '../languages/languages.repo'
 import { SubscriptionPlanRepo } from '../subscription-plan/subscription-plan.repo'
 import { CreateTranslationBodyType } from '../translation/entities/translation.entities'
 import { TranslationRepository } from '../translation/translation.repo'
@@ -34,7 +34,7 @@ export class SubscriptionService {
     private subscriptionRepo: SubscriptionRepo,
     private subscriptionPlanRepo: SubscriptionPlanRepo,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepository,
+    private readonly languageRepo: LanguagesRepo,
     private readonly translationRepo: TranslationRepository,
     private readonly invoiceRepo: InvoiceRepo
   ) {}
