@@ -61,6 +61,25 @@ export const viMessages = {
     INVALID_DATA: 'Dữ liệu phần thưởng không hợp lệ',
     NAME_REQUIRED: 'Tên phần thưởng không được để trống'
   },
+  languages: {
+    CREATE_SUCCESS: 'Tạo ngôn ngữ thành công',
+    UPDATE_SUCCESS: 'Cập nhật ngôn ngữ thành công',
+    DELETE_SUCCESS: 'Xóa ngôn ngữ thành công',
+    GET_SUCCESS: 'Lấy thông tin ngôn ngữ thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách ngôn ngữ thành công',
+    NOT_FOUND: 'Ngôn ngữ không tồn tại',
+    ALREADY_EXISTS: 'Ngôn ngữ đã tồn tại',
+    INVALID_DATA: 'Dữ liệu ngôn ngữ không hợp lệ',
+    INVALID_ID: 'ID ngôn ngữ không hợp lệ',
+    CODE_TOO_SHORT: 'Mã ngôn ngữ phải có ít nhất 2 ký tự',
+    CODE_TOO_LONG: 'Mã ngôn ngữ quá dài (tối đa 10 ký tự)',
+    CODE_INVALID: 'Mã ngôn ngữ phải là 2-3 ký tự chữ cái thường (ISO 639-1/639-2)',
+    CODE_REQUIRED: 'Mã ngôn ngữ không được để trống',
+    NAME_REQUIRED: 'Tên ngôn ngữ không được để trống',
+    NAME_TOO_LONG: 'Tên ngôn ngữ quá dài (tối đa 100 ký tự)',
+    NAME_INVALID:
+      'Tên ngôn ngữ chỉ được chứa chữ cái (bao gồm Unicode), khoảng trắng, dấu gạch ngang và dấu chấm'
+  },
   wordtype: {
     CREATE_SUCCESS: 'Tạo loại từ thành công',
     UPDATE_SUCCESS: 'Cập nhật loại từ thành công',

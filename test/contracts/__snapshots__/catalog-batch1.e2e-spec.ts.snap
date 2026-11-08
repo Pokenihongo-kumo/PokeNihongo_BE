@@ -944,6 +944,23 @@ exports[`Catalog batch 1 contract (e2e) elemental-type and type-effectiveness ty
 }
 `;
 
+exports[`Catalog batch 1 contract (e2e) languages create with the optional flag field 1`] = `
+{
+  "body": {
+    "data": {
+      "code": "string",
+      "createdAt": "string",
+      "id": "number",
+      "name": "string",
+      "updatedAt": "string",
+    },
+    "message": "Tạo ngôn ngữ thành công",
+    "statusCode": 201,
+  },
+  "httpStatus": 201,
+}
+`;
+
 exports[`Catalog batch 1 contract (e2e) languages create, list, check, detail by id and by code 1`] = `
 {
   "byCode": {
@@ -1029,26 +1046,25 @@ exports[`Catalog batch 1 contract (e2e) languages delete by code, then by id aga
   "again": {
     "en": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu ngôn ngữ không hợp lệ",
-        "statusCode": 400,
+        "error": "NOT_FOUND",
+        "message": "Language not found",
+        "statusCode": 404,
       },
-      "httpStatus": 400,
+      "httpStatus": 404,
     },
     "vi": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu ngôn ngữ không hợp lệ",
-        "statusCode": 400,
+        "error": "NOT_FOUND",
+        "message": "Ngôn ngữ không tồn tại",
+        "statusCode": 404,
       },
-      "httpStatus": 400,
+      "httpStatus": 404,
     },
   },
   "byCode": {
     "body": {
-      "data": {
-        "message": "Xóa ngôn ngữ thành công",
-      },
+      "data": "null",
+      "message": "Xóa ngôn ngữ thành công",
       "statusCode": 200,
     },
     "httpStatus": 200,
@@ -1062,7 +1078,7 @@ exports[`Catalog batch 1 contract (e2e) languages errors: duplicate, not found, 
     "en": {
       "body": {
         "error": "CONFLICT",
-        "message": "Ngôn ngữ đã tồn tại",
+        "message": "Language already exists",
         "statusCode": 409,
       },
       "httpStatus": 409,
@@ -1083,7 +1099,7 @@ exports[`Catalog batch 1 contract (e2e) languages errors: duplicate, not found, 
         "errors": [
           {
             "field": "string",
-            "message": "Invalid data provided",
+            "message": "Language code must be 2-3 lowercase letters (ISO 639-1/639-2)",
           },
         ],
         "message": "Invalid data provided",
@@ -1097,7 +1113,7 @@ exports[`Catalog batch 1 contract (e2e) languages errors: duplicate, not found, 
         "errors": [
           {
             "field": "string",
-            "message": "Dữ liệu không hợp lệ",
+            "message": "Mã ngôn ngữ phải là 2-3 ký tự chữ cái thường (ISO 639-1/639-2)",
           },
         ],
         "message": "Dữ liệu không hợp lệ",
@@ -1109,26 +1125,38 @@ exports[`Catalog batch 1 contract (e2e) languages errors: duplicate, not found, 
   "invalidId": {
     "en": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "An error occurred",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid language ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "Đã xảy ra lỗi",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID ngôn ngữ không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
   },
   "notFound": {
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Ngôn ngữ không tồn tại",
+        "message": "Language not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -1146,7 +1174,7 @@ exports[`Catalog batch 1 contract (e2e) languages errors: duplicate, not found, 
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Ngôn ngữ không tồn tại",
+        "message": "Language not found",
         "statusCode": 404,
       },
       "httpStatus": 404,

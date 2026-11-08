@@ -179,23 +179,6 @@ export const LEVEL_MESSAGE = {
     'Cấp độ tiếp theo không hợp lệ (phải cùng loại và số cấp độ phải là số liền kề)'
 }
 
-export const LANGUAGES_MESSAGE = {
-  CREATE_SUCCESS: 'Tạo ngôn ngữ thành công',
-  UPDATE_SUCCESS: 'Cập nhật ngôn ngữ thành công',
-  DELETE_SUCCESS: 'Xóa ngôn ngữ thành công',
-  GET_SUCCESS: 'Lấy thông tin ngôn ngữ thành công',
-  GET_LIST_SUCCESS: 'Lấy danh sách ngôn ngữ thành công',
-  NOT_FOUND: 'Không tìm thấy ngôn ngữ',
-  ALREADY_EXISTS: 'Ngôn ngữ đã tồn tại',
-  INVALID_DATA: 'Dữ liệu ngôn ngữ không hợp lệ',
-  CODE_REQUIRED: 'Mã ngôn ngữ không được để trống',
-  NAME_REQUIRED: 'Tên ngôn ngữ không được để trống',
-  CODE_TOO_LONG: 'Mã ngôn ngữ quá dài (tối đa 10 ký tự)',
-  NAME_TOO_LONG: 'Tên ngôn ngữ quá dài (tối đa 100 ký tự)',
-  CODE_TOO_SHORT: 'Mã ngôn ngữ quá ngắn (tối thiểu 2 ký tự)',
-  LANGUAGE_NOT_SUPPORTED: 'Ngôn ngữ không được hỗ trợ'
-}
-
 export const KANJI_MESSAGE = {
   CREATE_SUCCESS: 'Tạo kanji thành công',
   CREATE_WITH_READINGS_SUCCESS: 'Tạo Kanji cùng với cách đọc thành công',

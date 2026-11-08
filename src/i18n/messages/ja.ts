@@ -73,6 +73,24 @@ export const jaMessages = {
     INVALID_DATA: '出席設定のデータが無効です',
     INVALID_DAY_OF_WEEK: '曜日が無効です'
   },
+  languages: {
+    CREATE_SUCCESS: '言語を作成しました',
+    UPDATE_SUCCESS: '言語を更新しました',
+    DELETE_SUCCESS: '言語を削除しました',
+    GET_SUCCESS: '言語を取得しました',
+    GET_LIST_SUCCESS: '言語一覧を取得しました',
+    NOT_FOUND: '言語が見つかりません',
+    ALREADY_EXISTS: '言語は既に存在します',
+    INVALID_DATA: '言語のデータが無効です',
+    INVALID_ID: '言語IDが無効です',
+    CODE_TOO_SHORT: '言語コードは2文字以上必要です',
+    CODE_TOO_LONG: '言語コードが長すぎます（最大10文字）',
+    CODE_INVALID: '言語コードは小文字2〜3文字（ISO 639-1/639-2）にしてください',
+    CODE_REQUIRED: '言語コードは必須です',
+    NAME_REQUIRED: '言語名は必須です',
+    NAME_TOO_LONG: '言語名が長すぎます（最大100文字）',
+    NAME_INVALID: '言語名には文字、スペース、ハイフン、ピリオドのみ使用できます'
+  },
   wordtype: {
     CREATE_SUCCESS: '品詞を作成しました',
     UPDATE_SUCCESS: '品詞を更新しました',

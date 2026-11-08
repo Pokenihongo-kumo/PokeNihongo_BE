@@ -5,8 +5,6 @@ import {
   GetLanguagesByIdParamsSchema,
   GetLanguagesListQuerySchema,
   GetLanguagesByCodeParamsSchema,
-  LanguagesSchema,
-  LanguagesListResponseSchema,
   LanguagesResSchema,
   LanguagesListResSchema
 } from '../entities/languages.entity'
@@ -21,7 +19,5 @@ export class GetLanguagesListQueryDTO extends createZodDto(GetLanguagesListQuery
 export class GetLanguagesByCodeParamsDTO extends createZodDto(
   GetLanguagesByCodeParamsSchema
 ) {}
-export class LanguagesResponseDTO extends createZodDto(LanguagesSchema) {}
-export class LanguagesListResponseDTO extends createZodDto(LanguagesListResponseSchema) {}
 export class LanguagesResDTO extends createZodDto(LanguagesResSchema) {}
 export class LanguagesListResDTO extends createZodDto(LanguagesListResSchema) {}

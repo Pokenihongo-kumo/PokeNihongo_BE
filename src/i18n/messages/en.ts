@@ -62,6 +62,24 @@ export const enMessages = {
     INVALID_DATA: 'Invalid reward data',
     NAME_REQUIRED: 'Reward name is required'
   },
+  languages: {
+    CREATE_SUCCESS: 'Language created successfully',
+    UPDATE_SUCCESS: 'Language updated successfully',
+    DELETE_SUCCESS: 'Language deleted successfully',
+    GET_SUCCESS: 'Language retrieved successfully',
+    GET_LIST_SUCCESS: 'Language list retrieved successfully',
+    NOT_FOUND: 'Language not found',
+    ALREADY_EXISTS: 'Language already exists',
+    INVALID_DATA: 'Invalid language data',
+    INVALID_ID: 'Invalid language ID',
+    CODE_TOO_SHORT: 'Language code must have at least 2 characters',
+    CODE_TOO_LONG: 'Language code is too long (at most 10 characters)',
+    CODE_INVALID: 'Language code must be 2-3 lowercase letters (ISO 639-1/639-2)',
+    CODE_REQUIRED: 'Language code is required',
+    NAME_REQUIRED: 'Language name is required',
+    NAME_TOO_LONG: 'Language name is too long (at most 100 characters)',
+    NAME_INVALID: 'Language name may only contain letters, spaces, hyphens and dots'
+  },
   wordtype: {
     CREATE_SUCCESS: 'Word type created successfully',
     UPDATE_SUCCESS: 'Word type updated successfully',

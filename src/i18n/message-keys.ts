@@ -60,6 +60,25 @@ export const RewardMessage = {
   NAME_REQUIRED: 'reward.NAME_REQUIRED'
 } as const
 
+export const LanguagesMessage = {
+  CREATE_SUCCESS: 'languages.CREATE_SUCCESS',
+  UPDATE_SUCCESS: 'languages.UPDATE_SUCCESS',
+  DELETE_SUCCESS: 'languages.DELETE_SUCCESS',
+  GET_SUCCESS: 'languages.GET_SUCCESS',
+  GET_LIST_SUCCESS: 'languages.GET_LIST_SUCCESS',
+  NOT_FOUND: 'languages.NOT_FOUND',
+  ALREADY_EXISTS: 'languages.ALREADY_EXISTS',
+  INVALID_DATA: 'languages.INVALID_DATA',
+  INVALID_ID: 'languages.INVALID_ID',
+  CODE_TOO_SHORT: 'languages.CODE_TOO_SHORT',
+  CODE_TOO_LONG: 'languages.CODE_TOO_LONG',
+  CODE_INVALID: 'languages.CODE_INVALID',
+  CODE_REQUIRED: 'languages.CODE_REQUIRED',
+  NAME_REQUIRED: 'languages.NAME_REQUIRED',
+  NAME_TOO_LONG: 'languages.NAME_TOO_LONG',
+  NAME_INVALID: 'languages.NAME_INVALID'
+} as const
+
 export const WordTypeMessage = {
   CREATE_SUCCESS: 'wordtype.CREATE_SUCCESS',
   UPDATE_SUCCESS: 'wordtype.UPDATE_SUCCESS',
