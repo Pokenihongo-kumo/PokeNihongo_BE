@@ -9,7 +9,7 @@ import {
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
-import { LanguagesRepository } from '../languages/languages.repo'
+import { LanguagesRepo } from '../languages/languages.repo'
 import { WalletRepo } from '../wallet/wallet.repo'
 import { SubscriptionPlanNotFoundException } from './dto/subscription-plan.error'
 import {
@@ -23,7 +23,7 @@ export class SubscriptionPlanService {
   constructor(
     private subscriptionPlanRepo: SubscriptionPlanRepo,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepository,
+    private readonly languageRepo: LanguagesRepo,
     private readonly walletRepo: WalletRepo
   ) {}
 

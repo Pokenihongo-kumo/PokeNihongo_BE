@@ -9,7 +9,7 @@ import {
   LanguagesListResponseSchema,
   LanguagesResSchema,
   LanguagesListResSchema
-} from '../../entities/languages.entities'
+} from '../entities/languages.entity'
 
 // Zod DTOs
 export class CreateLanguagesBodyDTO extends createZodDto(CreateLanguagesSchema) {}

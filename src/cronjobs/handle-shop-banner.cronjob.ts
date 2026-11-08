@@ -2,7 +2,7 @@ import { ShopBannerStatus } from '@/common/constants/shop-banner.constant'
 import { addDaysUTC0000, todayUTCWith0000 } from '@/shared/helpers'
 import { Injectable, Logger } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
-import { LanguagesRepository } from 'src/modules/languages/languages.repo'
+import { LanguagesRepo } from 'src/modules/languages/languages.repo'
 import { ShopItemService } from 'src/modules/shop-item/shop-item.service'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
@@ -12,7 +12,7 @@ export class HandleShopBannerCronjob {
   constructor(
     private prismaService: PrismaService,
     private shopItemService: ShopItemService,
-    private languageRepo: LanguagesRepository
+    private languageRepo: LanguagesRepo
   ) {}
 
   // Chạy mỗi ngày lúc 00:00

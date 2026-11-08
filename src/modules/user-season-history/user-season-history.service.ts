@@ -11,7 +11,7 @@ import { PaginationQueryType } from '@/shared/models/request.model'
 import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { UserRewardSourceType } from '@prisma/client'
-import { LanguagesRepository } from '../languages/languages.repo'
+import { LanguagesRepo } from '../languages/languages.repo'
 import { NotStartedLeaderboardSeasonException } from '../leaderboard-season/dto/leaderboard-season.error'
 import { LeaderboardSeasonRepo } from '../leaderboard-season/leaderboard-season.repo'
 import { RewardService } from '../reward/reward.service'
@@ -34,7 +34,7 @@ export class UserSeasonHistoryService {
     private readonly leaderboardSeasonRepo: LeaderboardSeasonRepo,
     private readonly rewardService: RewardService,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepository,
+    private readonly languageRepo: LanguagesRepo,
     private readonly sharedUserRepo: SharedUserRepository
   ) {}
 

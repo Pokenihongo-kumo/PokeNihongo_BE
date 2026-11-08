@@ -4,10 +4,10 @@ import {
   CreateLanguagesBodyType,
   LanguagesType,
   UpdateLanguagesBodyType
-} from './entities/languages.entities'
+} from './entities/languages.entity'
 
 @Injectable()
-export class LanguagesRepository {
+export class LanguagesRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(params: {

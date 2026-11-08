@@ -3,14 +3,14 @@ import { convertEloToRank } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable, NotFoundException } from '@nestjs/common'
-import { LanguagesRepository } from '../languages/languages.repo'
+import { LanguagesRepo } from '../languages/languages.repo'
 import { DashboardRepo } from './dashboard.repo'
 
 @Injectable()
 export class DashboardService {
   constructor(
     private dashboardRepo: DashboardRepo,
-    private readonly langRepo: LanguagesRepository,
+    private readonly langRepo: LanguagesRepo,
     private readonly prisma: PrismaService
   ) {}
 

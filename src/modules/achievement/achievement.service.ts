@@ -13,7 +13,7 @@ import {
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { LanguagesRepository } from '../languages/languages.repo'
+import { LanguagesRepo } from '../languages/languages.repo'
 import { CreateTranslationBodyType } from '../translation/entities/translation.entities'
 import { TranslationRepository } from '../translation/translation.repo'
 import { AchievementRepo } from './achievement.repo'
@@ -30,7 +30,7 @@ export class AchievementService {
   constructor(
     private achievementRepo: AchievementRepo,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepository,
+    private readonly languageRepo: LanguagesRepo,
     private readonly translationRepo: TranslationRepository,
     private readonly prismaService: PrismaService
   ) {}

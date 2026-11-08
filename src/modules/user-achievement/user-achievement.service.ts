@@ -15,7 +15,7 @@ import { HttpStatus, Injectable } from '@nestjs/common'
 import { UserRewardSourceType } from '@prisma/client'
 import { AchievementGroupRepo } from '../achievement-group/achievement-group.repo'
 import { AchievementRepo } from '../achievement/achievement.repo'
-import { LanguagesRepository } from '../languages/languages.repo'
+import { LanguagesRepo } from '../languages/languages.repo'
 import { RewardService } from '../reward/reward.service'
 import { UserProgressService } from '../user-progress/user-progress.service'
 import {
@@ -34,7 +34,7 @@ export class UserAchievementService {
     private userAchievementRepo: UserAchievementRepo,
     private achievementGroupRepo: AchievementGroupRepo,
     private achievementRepo: AchievementRepo,
-    private readonly languageRepo: LanguagesRepository,
+    private readonly languageRepo: LanguagesRepo,
     private readonly prismaService: PrismaService,
     private readonly i18nService: I18nService,
     private readonly userProgressService: UserProgressService,

@@ -1,6 +1,6 @@
 import { I18nService } from '@/i18n/i18n.service'
 import { NotificationMessage } from '@/i18n/message-keys'
-import { LanguagesRepository } from '@/modules/languages/languages.repo'
+import { LanguagesRepo } from '@/modules/languages/languages.repo'
 import { NotificationNotFoundException } from '@/modules/notification/dto/notification.error'
 import {
   CreateNotificationBodyType,
@@ -19,7 +19,7 @@ export class SharedNotificationService {
   constructor(
     private notificationRepo: SharedNotificationRepo,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepository,
+    private readonly languageRepo: LanguagesRepo,
     private readonly userGateway: UserGateway
   ) {}
 

@@ -4,8 +4,8 @@ import {
   GetLanguagesListQueryType,
   GetLanguagesByCodeParamsType,
   LanguagesType
-} from './entities/languages.entities'
-import { LanguagesRepository } from './languages.repo'
+} from './entities/languages.entity'
+import { LanguagesRepo } from './languages.repo'
 import {
   LanguagesNotFoundException,
   LanguagesAlreadyExistsException,
@@ -20,7 +20,7 @@ import { Injectable, Logger, HttpException } from '@nestjs/common'
 export class LanguagesService {
   private readonly logger = new Logger(LanguagesService.name)
 
-  constructor(private readonly languagesRepository: LanguagesRepository) {}
+  constructor(private readonly languagesRepository: LanguagesRepo) {}
 
   async findMany(params: GetLanguagesListQueryType) {
     try {
