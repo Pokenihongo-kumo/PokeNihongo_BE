@@ -9,6 +9,7 @@ import { ZodSerializerDto } from 'nestjs-zod'
 import {
   CreateElementalTypeBodyDTO,
   CreateElementalTypeResDTO,
+  GetActiveElementalTypesResDTO,
   GetElementalTypeDetailResDTO,
   GetElementalTypeParamsDTO,
   UpdateElementalTypeBodyDTO,
@@ -29,7 +30,8 @@ export class ElementalTypeController {
 
   @Get('active')
   @IsPublic()
-  @ZodSerializerDto(PaginationResponseSchema)
+  // Was PaginationResponseSchema while the data is an array: always 500
+  @ZodSerializerDto(GetActiveElementalTypesResDTO)
   getAllActiveTypes(@I18nLang() lang: string) {
     return this.elementalTypeService.getAllActiveTypes(lang)
   }

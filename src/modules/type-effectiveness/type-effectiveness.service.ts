@@ -1,14 +1,13 @@
 import { I18nService } from '@/i18n/i18n.service'
 import { TypeEffectivenessMessage } from '@/i18n/message-keys'
 import { NotFoundRecordException } from '@/shared/error'
+import { PaginationQueryType } from '@/shared/models/request.model'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
-} from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+} from '@/shared/utils/prisma-errors'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { PrismaService } from 'src/shared/services/prisma.service'
 import { TypeEffectivenessAlreadyExistsException } from './dto/type-effectiveness.error'
 import {
   CreateTypeEffectivenessBodyType,
@@ -19,8 +18,7 @@ import { TypeEffectivenessRepo } from './type-effectiveness.repo'
 @Injectable()
 export class TypeEffectivenessService {
   constructor(
-    private typeEffectivenessRepo: TypeEffectivenessRepo,
-    private prismaService: PrismaService,
+    private readonly typeEffectivenessRepo: TypeEffectivenessRepo,
     private readonly i18nService: I18nService
   ) {}
 
@@ -154,8 +152,11 @@ export class TypeEffectivenessService {
       }
 
       await this.typeEffectivenessRepo.delete({ id, deletedById })
+      // data: null keeps this an envelope for TransformInterceptor (without it
+      // the body was wrapped again and failed the serializer: 500)
       return {
         statusCode: HttpStatus.OK,
+        data: null,
         message: this.i18nService.translate(TypeEffectivenessMessage.DELETE_SUCCESS, lang)
       }
     } catch (error) {
@@ -218,15 +219,8 @@ export class TypeEffectivenessService {
     const attackerTypes = Object.keys(matrix)
 
     // Lấy thông tin defender types
-    const defenderTypes: string[] = []
-    for (const defenderId of defenderTypeIds) {
-      const elementalType = await this.prismaService.elementalType.findFirst({
-        where: { id: defenderId, deletedAt: null }
-      })
-      if (elementalType) {
-        defenderTypes.push(elementalType.type_name)
-      }
-    }
+    const defenderTypes =
+      await this.typeEffectivenessRepo.findActiveTypeNames(defenderTypeIds)
 
     // Tính toán multiplier cho từng attacker type
     attackerTypes.forEach((attackerType) => {

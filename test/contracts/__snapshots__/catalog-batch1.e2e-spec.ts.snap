@@ -222,11 +222,28 @@ exports[`Catalog batch 1 contract (e2e) elemental-type and type-effectiveness el
 {
   "active": {
     "body": {
-      "error": "INTERNAL_SERVER_ERROR",
-      "message": "Internal Server Error",
-      "statusCode": 500,
+      "data": [
+        {
+          "color_hex": "string",
+          "createdAt": "string",
+          "createdById": "number",
+          "deletedAt": "null",
+          "deletedById": "null",
+          "display_name": {
+            "en": "string",
+            "ja": "string",
+            "vi": "string",
+          },
+          "id": "number",
+          "type_name": "string",
+          "updatedAt": "string",
+          "updatedById": "null",
+        },
+      ],
+      "message": "Lấy danh sách loại hệ thành công",
+      "statusCode": 200,
     },
-    "httpStatus": 500,
+    "httpStatus": 200,
   },
   "create": {
     "body": {
@@ -723,11 +740,11 @@ exports[`Catalog batch 1 contract (e2e) elemental-type and type-effectiveness ty
   },
   "delete": {
     "body": {
-      "error": "INTERNAL_SERVER_ERROR",
-      "message": "Internal Server Error",
-      "statusCode": 500,
+      "data": "null",
+      "message": "Xóa hiệu quả hệ thành công",
+      "statusCode": 200,
     },
-    "httpStatus": 500,
+    "httpStatus": 200,
   },
   "deleteAgain": {
     "en": {
@@ -845,34 +862,51 @@ exports[`Catalog batch 1 contract (e2e) elemental-type and type-effectiveness ty
   },
   "update": {
     "body": {
-      "error": "UNPROCESSABLE_ENTITY",
-      "errors": [
-        {
-          "field": "string",
-          "message": "Attack Type và Defense Type không được giống nhau",
-        },
-      ],
-      "message": "Dữ liệu không hợp lệ",
-      "statusCode": 422,
+      "data": {
+        "attackerId": "number",
+        "createdAt": "string",
+        "createdById": "number",
+        "defenderId": "number",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "id": "number",
+        "multiplier": "number",
+        "updatedAt": "string",
+        "updatedById": "number",
+      },
+      "message": "Cập nhật hiệu quả hệ thành công",
+      "statusCode": 200,
     },
-    "httpStatus": 422,
+    "httpStatus": 200,
   },
   "weaknessesInvalidId": {
     "en": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "An error occurred",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "Đã xảy ra lỗi",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
   },
 }

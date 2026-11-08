@@ -1,7 +1,9 @@
 import { createZodDto } from 'nestjs-zod'
 import {
+  CalculateMultiTypeBodySchema,
   CreateTypeEffectivenessBodySchema,
   CreateTypeEffectivenessResSchema,
+  GetDefenderParamsSchema,
   GetTypeEffectivenessDetailResSchema,
   GetTypeEffectivenessParamsSchema,
   UpdateTypeEffectivenessBodySchema,
@@ -29,4 +31,10 @@ export class GetTypeEffectivenessParamsDTO extends createZodDto(
 
 export class GetTypeEffectivenessDetailResDTO extends createZodDto(
   GetTypeEffectivenessDetailResSchema
+) {}
+
+export class GetDefenderParamsDTO extends createZodDto(GetDefenderParamsSchema) {}
+
+export class CalculateMultiTypeBodyDTO extends createZodDto(
+  CalculateMultiTypeBodySchema
 ) {}
