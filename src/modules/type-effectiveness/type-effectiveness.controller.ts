@@ -23,7 +23,7 @@ import {
   GetTypeEffectivenessParamsDTO,
   UpdateTypeEffectivenessBodyDTO,
   UpdateTypeEffectivenessResDTO
-} from './dto/type-effectiveness.dto'
+} from './dto/type-effectiveness.zod-dto'
 import { TypeEffectivenessService } from './type-effectiveness.service'
 
 @Controller('type-effectiveness')
