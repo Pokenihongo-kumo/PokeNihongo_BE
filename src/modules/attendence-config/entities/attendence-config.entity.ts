@@ -1,7 +1,7 @@
 import { WeekDay } from '@/common/constants/attendence-config.constant'
 
 import { checkIdSchema } from '@/common/utils/id.validation'
-import { ENTITY_MESSAGE } from '@/i18n/message-keys'
+import { AttendenceConfigMessage, ENTITY_MESSAGE } from '@/i18n/message-keys'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -10,15 +10,19 @@ patchNestJsSwagger()
 
 export const AttendanceConfigSchema = z.object({
   id: z.number(),
-  dayOfWeek: z.enum([
-    WeekDay.SUNDAY,
-    WeekDay.MONDAY,
-    WeekDay.TUESDAY,
-    WeekDay.WEDNESDAY,
-    WeekDay.THURSDAY,
-    WeekDay.FRIDAY,
-    WeekDay.SATURDAY
-  ]),
+  dayOfWeek: z.enum(
+    [
+      WeekDay.SUNDAY,
+      WeekDay.MONDAY,
+      WeekDay.TUESDAY,
+      WeekDay.WEDNESDAY,
+      WeekDay.THURSDAY,
+      WeekDay.FRIDAY,
+      WeekDay.SATURDAY
+    ],
+    // i18n key instead of Zod's English enum message
+    { errorMap: () => ({ message: AttendenceConfigMessage.INVALID_DAY_OF_WEEK }) }
+  ),
   baseCoin: z.number().min(0).default(0),
   bonusCoin: z.number().min(0).default(0),
 

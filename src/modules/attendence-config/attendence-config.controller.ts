@@ -11,10 +11,10 @@ import {
   GetParamsAttendanceConfigDTO,
   UpdateAttendanceConfigBodyDTO,
   UpdateAttendanceConfigResDTO
-} from 'src/modules/attendence-config/dto/attendence-config.zod-dto'
+} from './dto/attendence-config.zod-dto'
 
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
-import { MessageResDTO } from 'src/shared/dtos/response.dto'
+import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { AttendenceConfigService } from './attendence-config.service'
 
 @Controller('attendence-config')

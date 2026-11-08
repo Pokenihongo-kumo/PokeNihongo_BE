@@ -293,6 +293,11 @@ describe('Catalog batch 1 contract (e2e)', () => {
       }).toMatchSnapshot()
     })
 
+    it('list in a language that has no Languages row (ja)', async () => {
+      // Used to be 404 for every route (getLand looked the language up)
+      expect(capture(await http('ja').get('/attendence-config'))).toMatchSnapshot()
+    })
+
     it('errors: duplicate day, not found, invalid body, invalid id; delete, then again', async () => {
       expect({
         duplicate: await both((l) =>

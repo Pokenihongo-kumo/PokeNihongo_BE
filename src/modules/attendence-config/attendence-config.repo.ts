@@ -1,9 +1,9 @@
-import { PaginationQueryType } from '@/shared/models/request.model'
-import { Injectable } from '@nestjs/common'
-
 import { WeekDayType } from '@/common/constants/attendence-config.constant'
 import { parseQs } from '@/common/utils/qs-parser'
-import { PrismaService } from 'src/shared/services/prisma.service'
+import { PaginationQueryType } from '@/shared/models/request.model'
+import { PrismaService } from '@/shared/services/prisma.service'
+import { toPaginationMeta, toSkipTake } from '@/shared/utils/pagination'
+import { Injectable } from '@nestjs/common'
 import {
   ATTENDANCE_CONFIG_FIELDS,
   AttendanceConfigType,
@@ -13,7 +13,7 @@ import {
 
 @Injectable()
 export class AttendenceConfigRepo {
-  constructor(private prismaService: PrismaService) {}
+  constructor(private readonly prismaService: PrismaService) {}
 
   create({
     createdById,
@@ -82,8 +82,7 @@ export class AttendenceConfigRepo {
   async list(pagination: PaginationQueryType) {
     const { where, orderBy } = parseQs(pagination.qs, ATTENDANCE_CONFIG_FIELDS)
 
-    const skip = (pagination.currentPage - 1) * pagination.pageSize
-    const take = pagination.pageSize
+    const { skip, take } = toSkipTake(pagination.currentPage, pagination.pageSize)
 
     const [totalItems, data] = await Promise.all([
       this.prismaService.attendanceConfig.count({
@@ -100,12 +99,11 @@ export class AttendenceConfigRepo {
 
     return {
       results: data,
-      pagination: {
-        current: pagination.currentPage,
-        pageSize: pagination.pageSize,
-        totalPage: Math.ceil(totalItems / pagination.pageSize),
-        totalItem: totalItems
-      }
+      pagination: toPaginationMeta(
+        pagination.currentPage,
+        pagination.pageSize,
+        totalItems
+      )
     }
   }
 

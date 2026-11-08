@@ -343,7 +343,8 @@ export const AttendenceConfigMessage = {
   GET_LIST_SUCCESS: 'attendence_config.GET_LIST_SUCCESS',
   NOT_FOUND: 'attendence_config.NOT_FOUND',
   ALREADY_EXISTS: 'attendence_config.ALREADY_EXISTS',
-  INVALID_DATA: 'attendence_config.INVALID_DATA'
+  INVALID_DATA: 'attendence_config.INVALID_DATA',
+  INVALID_DAY_OF_WEEK: 'attendence_config.INVALID_DAY_OF_WEEK'
 } as const
 export const AttendanceMessage = {
   CREATE_SUCCESS: 'attendance.CREATE_SUCCESS',

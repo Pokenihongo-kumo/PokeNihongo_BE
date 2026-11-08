@@ -62,6 +62,17 @@ export const jaMessages = {
     INVALID_DATA: '無効な報酬データです',
     NAME_REQUIRED: '報酬名は必須です'
   },
+  attendence_config: {
+    CREATE_SUCCESS: '出席設定を作成しました',
+    UPDATE_SUCCESS: '出席設定を更新しました',
+    DELETE_SUCCESS: '出席設定を削除しました',
+    GET_SUCCESS: '出席設定を取得しました',
+    GET_LIST_SUCCESS: '出席設定一覧を取得しました',
+    NOT_FOUND: '出席設定が見つかりません',
+    ALREADY_EXISTS: '出席設定は既に存在します',
+    INVALID_DATA: '出席設定のデータが無効です',
+    INVALID_DAY_OF_WEEK: '曜日が無効です'
+  },
   wordtype: {
     CREATE_SUCCESS: '品詞を作成しました',
     UPDATE_SUCCESS: '品詞を更新しました',
