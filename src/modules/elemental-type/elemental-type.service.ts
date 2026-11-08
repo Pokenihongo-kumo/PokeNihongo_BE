@@ -1,12 +1,12 @@
 import { I18nService } from '@/i18n/i18n.service'
 import { ElementalTypeMessage } from '@/i18n/message-keys'
 import { NotFoundRecordException } from '@/shared/error'
+import { PaginationQueryType } from '@/shared/models/request.model'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
-} from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+} from '@/shared/utils/prisma-errors'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { ElementalTypeAlreadyExistsException } from './dto/elemental-type.error'
 import { ElementalTypeRepo } from './elemental-type.repo'
@@ -18,7 +18,7 @@ import {
 @Injectable()
 export class ElementalTypeService {
   constructor(
-    private elementalTypeRepo: ElementalTypeRepo,
+    private readonly elementalTypeRepo: ElementalTypeRepo,
     private readonly i18nService: I18nService
   ) {}
 

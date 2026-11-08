@@ -57,6 +57,13 @@ export const GetElementalTypeDetailResSchema = z.object({
   message: z.string()
 })
 
+// GET /elemental-type/active: every active type, not paginated
+export const GetActiveElementalTypesResSchema = z.object({
+  statusCode: z.number(),
+  data: z.array(ElementalTypeSchema),
+  message: z.string()
+})
+
 // Types
 export type ElementalTypeType = z.infer<typeof ElementalTypeSchema>
 export type CreateElementalTypeBodyType = z.infer<typeof CreateElementalTypeBodySchema>

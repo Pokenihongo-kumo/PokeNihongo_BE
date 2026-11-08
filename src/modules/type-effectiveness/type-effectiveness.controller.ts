@@ -17,13 +17,15 @@ import {
 } from '@nestjs/common'
 import { ZodSerializerDto } from 'nestjs-zod'
 import {
+  CalculateMultiTypeBodyDTO,
   CreateTypeEffectivenessBodyDTO,
   CreateTypeEffectivenessResDTO,
+  GetDefenderParamsDTO,
   GetTypeEffectivenessDetailResDTO,
   GetTypeEffectivenessParamsDTO,
   UpdateTypeEffectivenessBodyDTO,
   UpdateTypeEffectivenessResDTO
-} from './dto/type-effectiveness.dto'
+} from './dto/type-effectiveness.zod-dto'
 import { TypeEffectivenessService } from './type-effectiveness.service'
 
 @Controller('type-effectiveness')
@@ -33,8 +35,8 @@ export class TypeEffectivenessController {
   @Get()
   @IsPublic()
   @ZodSerializerDto(PaginationResponseDTO)
-  list(@Query() query: PaginationQueryDTO) {
-    return this.typeEffectivenessService.list(query)
+  list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
+    return this.typeEffectivenessService.list(query, lang)
   }
 
   @Get('matrix')
@@ -45,23 +47,23 @@ export class TypeEffectivenessController {
 
   @Get('weaknesses/:defenderId')
   @IsPublic()
-  getWeaknesses(@Param('defenderId') defenderId: string, @I18nLang() lang: string) {
-    return this.typeEffectivenessService.getWeaknessesForDefender(+defenderId, lang)
+  getWeaknesses(@Param() params: GetDefenderParamsDTO, @I18nLang() lang: string) {
+    return this.typeEffectivenessService.getWeaknessesForDefender(params.defenderId, lang)
   }
 
   @Get('resistances/:defenderId')
   @IsPublic()
-  getResistances(@Param('defenderId') defenderId: string, @I18nLang() lang: string) {
-    return this.typeEffectivenessService.getResistancesForDefender(+defenderId, lang)
+  getResistances(@Param() params: GetDefenderParamsDTO, @I18nLang() lang: string) {
+    return this.typeEffectivenessService.getResistancesForDefender(
+      params.defenderId,
+      lang
+    )
   }
 
   @Post('calculate-multi-type')
   @HttpCode(HttpStatus.OK)
   @IsPublic()
-  calculateMultiType(
-    @Body() body: { defenderTypeIds: number[] },
-    @I18nLang() lang: string
-  ) {
+  calculateMultiType(@Body() body: CalculateMultiTypeBodyDTO, @I18nLang() lang: string) {
     return this.typeEffectivenessService.calculateMultiTypeEffectiveness(
       body.defenderTypeIds,
       lang

@@ -2,6 +2,7 @@ import { createZodDto } from 'nestjs-zod'
 import {
   CreateElementalTypeBodySchema,
   CreateElementalTypeResSchema,
+  GetActiveElementalTypesResSchema,
   GetElementalTypeDetailResSchema,
   GetElementalTypeParamsSchema,
   UpdateElementalTypeBodySchema,
@@ -26,6 +27,10 @@ export class UpdateElementalTypeResDTO extends createZodDto(
 
 export class GetElementalTypeParamsDTO extends createZodDto(
   GetElementalTypeParamsSchema
+) {}
+
+export class GetActiveElementalTypesResDTO extends createZodDto(
+  GetActiveElementalTypesResSchema
 ) {}
 
 export class GetElementalTypeDetailResDTO extends createZodDto(

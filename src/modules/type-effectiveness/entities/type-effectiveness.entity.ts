@@ -56,10 +56,18 @@ export const UpdateTypeEffectivenessBodySchema = TypeEffectivenessSchema.pick({
 })
   .partial()
   .strict()
-  .refine((data) => data.attackerId !== data.defenderId, {
-    message: TypeEffectivenessMessage.CONFLICT_ATTACK_DEFENSE_TYPE,
-    path: ['attackerId']
-  })
+  // Only when both are sent: a body with just `multiplier` used to fail here
+  // (undefined === undefined)
+  .refine(
+    (data) =>
+      data.attackerId === undefined ||
+      data.defenderId === undefined ||
+      data.attackerId !== data.defenderId,
+    {
+      message: TypeEffectivenessMessage.CONFLICT_ATTACK_DEFENSE_TYPE,
+      path: ['attackerId']
+    }
+  )
 
 export const UpdateTypeEffectivenessResSchema = CreateTypeEffectivenessResSchema
 
@@ -67,6 +75,18 @@ export const UpdateTypeEffectivenessResSchema = CreateTypeEffectivenessResSchema
 export const GetTypeEffectivenessParamsSchema = z.object({
   typeEffectivenessId: checkIdSchema(TypeEffectivenessMessage.INVALID_ID)
 })
+
+// /weaknesses/:defenderId, /resistances/:defenderId
+export const GetDefenderParamsSchema = z.object({
+  defenderId: checkIdSchema(TypeEffectivenessMessage.INVALID_ID)
+})
+
+// POST /calculate-multi-type
+export const CalculateMultiTypeBodySchema = z
+  .object({
+    defenderTypeIds: z.array(checkIdSchema(TypeEffectivenessMessage.INVALID_ID))
+  })
+  .strict()
 
 export const GetTypeEffectivenessDetailResSchema = z.object({
   statusCode: z.number(),
@@ -76,7 +96,7 @@ export const GetTypeEffectivenessDetailResSchema = z.object({
       .object({
         id: z.number(),
         type_name: z.string(),
-        display_name: z.any(),
+        display_name: z.unknown(),
         color_hex: z.string()
       })
       .optional()
@@ -85,7 +105,7 @@ export const GetTypeEffectivenessDetailResSchema = z.object({
       .object({
         id: z.number(),
         type_name: z.string(),
-        display_name: z.any(),
+        display_name: z.unknown(),
         color_hex: z.string()
       })
       .optional()
@@ -100,7 +120,7 @@ export const TypeEffectivenessResponseSchema = TypeEffectivenessSchema.extend({
     .object({
       id: z.number(),
       type_name: z.string(),
-      display_name: z.any(),
+      display_name: z.unknown(),
       color_hex: z.string()
     })
     .optional(),
@@ -108,7 +128,7 @@ export const TypeEffectivenessResponseSchema = TypeEffectivenessSchema.extend({
     .object({
       id: z.number(),
       type_name: z.string(),
-      display_name: z.any(),
+      display_name: z.unknown(),
       color_hex: z.string()
     })
     .optional()
@@ -122,6 +142,7 @@ export type CreateTypeEffectivenessBodyType = z.infer<
 export type UpdateTypeEffectivenessBodyType = z.infer<
   typeof UpdateTypeEffectivenessBodySchema
 >
+export type CalculateMultiTypeBodyType = z.infer<typeof CalculateMultiTypeBodySchema>
 export type GetTypeEffectivenessParamsType = z.infer<
   typeof GetTypeEffectivenessParamsSchema
 >
