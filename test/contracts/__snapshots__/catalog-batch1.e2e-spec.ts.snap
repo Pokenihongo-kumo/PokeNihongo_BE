@@ -1,0 +1,1131 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Catalog batch 1 contract (e2e) attendence-config create, list (as mobile), detail, update 1`] = `
+{
+  "create": {
+    "body": {
+      "data": {
+        "baseCoin": "number",
+        "bonusCoin": "number",
+        "createdAt": "string",
+        "createdById": "number",
+        "dayOfWeek": "string",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "id": "number",
+        "updatedAt": "string",
+        "updatedById": "null",
+      },
+      "message": "Tạo cấu hình điểm danh thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "detail": {
+    "body": {
+      "data": {
+        "baseCoin": "number",
+        "bonusCoin": "number",
+        "createdAt": "string",
+        "createdById": "number",
+        "dayOfWeek": "string",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "id": "number",
+        "updatedAt": "string",
+        "updatedById": "null",
+      },
+      "message": "Lấy danh sách cấu hình điểm danh thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "list": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "baseCoin": "number",
+            "bonusCoin": "number",
+            "createdAt": "string",
+            "createdById": "number",
+            "dayOfWeek": "string",
+            "deletedAt": "null",
+            "deletedById": "null",
+            "id": "number",
+            "updatedAt": "string",
+            "updatedById": "null",
+          },
+        ],
+      },
+      "message": "Lấy chi tiết cấu hình điểm danh thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "update": {
+    "body": {
+      "data": {
+        "baseCoin": "number",
+        "bonusCoin": "number",
+        "createdAt": "string",
+        "createdById": "number",
+        "dayOfWeek": "string",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "id": "number",
+        "updatedAt": "string",
+        "updatedById": "number",
+      },
+      "message": "Lấy chi tiết cấu hình điểm danh thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Catalog batch 1 contract (e2e) attendence-config errors: duplicate day, not found, invalid body, invalid id; delete, then again 1`] = `
+{
+  "delete": {
+    "body": {
+      "data": "null",
+      "message": "Lấy chi tiết cấu hình điểm danh thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "deleteAgain": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Record not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bản ghi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "duplicate": {
+    "en": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Record already exists",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+    "vi": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Bản ghi đã tồn tại",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+  },
+  "invalidBody": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid enum value. Expected 'SUNDAY' | 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY', received 'FUNDAY'",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid enum value. Expected 'SUNDAY' | 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY', received 'FUNDAY'",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "invalidId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "notFound": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Record not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bản ghi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+}
+`;
+
+exports[`Catalog batch 1 contract (e2e) elemental-type and type-effectiveness elemental-type: create, list (public), active, detail 1`] = `
+{
+  "active": {
+    "body": {
+      "error": "INTERNAL_SERVER_ERROR",
+      "message": "Internal Server Error",
+      "statusCode": 500,
+    },
+    "httpStatus": 500,
+  },
+  "create": {
+    "body": {
+      "data": {
+        "color_hex": "string",
+        "createdAt": "string",
+        "createdById": "number",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "display_name": {
+          "en": "string",
+          "ja": "string",
+          "vi": "string",
+        },
+        "id": "number",
+        "type_name": "string",
+        "updatedAt": "string",
+        "updatedById": "null",
+      },
+      "message": "Tạo loại hệ thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "detail": {
+    "body": {
+      "data": {
+        "color_hex": "string",
+        "createdAt": "string",
+        "createdById": "number",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "display_name": {
+          "en": "string",
+          "ja": "string",
+          "vi": "string",
+        },
+        "id": "number",
+        "type_name": "string",
+        "updatedAt": "string",
+        "updatedById": "null",
+      },
+      "message": "Lấy thông tin loại hệ thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "listMobile": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "color_hex": "string",
+            "createdAt": "string",
+            "createdById": "number",
+            "created_at": "string",
+            "deletedAt": "null",
+            "deletedById": "null",
+            "display_name": {
+              "en": "string",
+              "ja": "string",
+              "vi": "string",
+            },
+            "id": "number",
+            "type_name": "string",
+            "updatedAt": "string",
+            "updatedById": "null",
+            "updated_at": "string",
+          },
+        ],
+      },
+      "message": "Lấy danh sách loại hệ thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "listWeb": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "color_hex": "string",
+            "createdAt": "string",
+            "createdById": "number",
+            "created_at": "string",
+            "deletedAt": "null",
+            "deletedById": "null",
+            "display_name": {
+              "en": "string",
+              "ja": "string",
+              "vi": "string",
+            },
+            "id": "number",
+            "type_name": "string",
+            "updatedAt": "string",
+            "updatedById": "null",
+            "updated_at": "string",
+          },
+        ],
+      },
+      "message": "Lấy danh sách loại hệ thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Catalog batch 1 contract (e2e) elemental-type and type-effectiveness elemental-type: delete, then again 1`] = `
+{
+  "again": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Record not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bản ghi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "delete": {
+    "body": {
+      "data": "null",
+      "message": "Xóa loại hệ thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Catalog batch 1 contract (e2e) elemental-type and type-effectiveness elemental-type: update, errors 1`] = `
+{
+  "duplicate": {
+    "en": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Elemental type already exists",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+    "vi": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Loại hệ đã tồn tại",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+  },
+  "invalidBody": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Type name is required",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Tên loại hệ không được để trống",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "invalidId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid elemental type data",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Dữ liệu loại hệ không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "notFound": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Record not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bản ghi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "update": {
+    "body": {
+      "data": {
+        "color_hex": "string",
+        "createdAt": "string",
+        "createdById": "number",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "display_name": {
+          "en": "string",
+          "ja": "string",
+          "vi": "string",
+        },
+        "id": "number",
+        "type_name": "string",
+        "updatedAt": "string",
+        "updatedById": "number",
+      },
+      "message": "Cập nhật loại hệ thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Catalog batch 1 contract (e2e) elemental-type and type-effectiveness type-effectiveness: create, list, matrix, weaknesses, resistances, multi-type, detail 1`] = `
+{
+  "create": {
+    "body": {
+      "data": {
+        "attackerId": "number",
+        "createdAt": "string",
+        "createdById": "number",
+        "defenderId": "number",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "id": "number",
+        "multiplier": "number",
+        "updatedAt": "string",
+        "updatedById": "null",
+      },
+      "message": "Tạo hiệu quả hệ thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "detail": {
+    "body": {
+      "data": {
+        "attacker": {
+          "color_hex": "string",
+          "display_name": {
+            "en": "string",
+            "ja": "string",
+            "vi": "string",
+          },
+          "id": "number",
+          "type_name": "string",
+        },
+        "attackerId": "number",
+        "createdAt": "string",
+        "createdById": "number",
+        "defender": {
+          "color_hex": "string",
+          "display_name": {
+            "en": "string",
+            "ja": "string",
+            "vi": "string",
+          },
+          "id": "number",
+          "type_name": "string",
+        },
+        "defenderId": "number",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "id": "number",
+        "multiplier": "number",
+        "updatedAt": "string",
+        "updatedById": "null",
+      },
+      "message": "Lấy thông tin hiệu quả hệ thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "list": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "attacker": {
+              "color_hex": "string",
+              "display_name": {
+                "en": "string",
+                "ja": "string",
+                "vi": "string",
+              },
+              "id": "number",
+              "type_name": "string",
+            },
+            "attackerId": "number",
+            "createdAt": "string",
+            "createdById": "number",
+            "defender": {
+              "color_hex": "string",
+              "display_name": {
+                "en": "string",
+                "ja": "string",
+                "vi": "string",
+              },
+              "id": "number",
+              "type_name": "string",
+            },
+            "defenderId": "number",
+            "deletedAt": "null",
+            "deletedById": "null",
+            "id": "number",
+            "multiplier": "number",
+            "updatedAt": "string",
+            "updatedById": "null",
+          },
+        ],
+      },
+      "message": "Lấy danh sách hiệu quả hệ thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "matrix": {
+    "body": {
+      "data": {
+        "ctwater": {
+          "ctfire": "number",
+        },
+      },
+      "message": "Lấy thông tin hiệu quả hệ thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "multiType": {
+    "body": {
+      "data": {
+        "immunities": {},
+        "resistances": {},
+        "weaknesses": {
+          "ctwater": "number",
+        },
+      },
+      "message": "Lấy thông tin hiệu quả hệ thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "resistances": {
+    "body": {
+      "data": [],
+      "message": "Lấy danh sách hiệu quả hệ thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "weaknesses": {
+    "body": {
+      "data": [
+        {
+          "attacker": {
+            "color_hex": "string",
+            "display_name": {
+              "en": "string",
+              "ja": "string",
+              "vi": "string",
+            },
+            "id": "number",
+            "type_name": "string",
+          },
+          "attackerId": "number",
+          "createdAt": "string",
+          "createdById": "number",
+          "defender": {
+            "color_hex": "string",
+            "display_name": {
+              "en": "string",
+              "ja": "string",
+              "vi": "string",
+            },
+            "id": "number",
+            "type_name": "string",
+          },
+          "defenderId": "number",
+          "deletedAt": "null",
+          "deletedById": "null",
+          "id": "number",
+          "multiplier": "number",
+          "updatedAt": "string",
+          "updatedById": "null",
+        },
+      ],
+      "message": "Lấy danh sách hiệu quả hệ thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Catalog batch 1 contract (e2e) elemental-type and type-effectiveness type-effectiveness: update, errors, delete 1`] = `
+{
+  "badMultiplier": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Multiplier must be one of the following values: 0, 0.25, 0.5, 1, 2, or 4",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Multiplier chỉ được phép là 0, 0.25, 0.5, 1, 2, hoặc 4",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "delete": {
+    "body": {
+      "error": "INTERNAL_SERVER_ERROR",
+      "message": "Internal Server Error",
+      "statusCode": 500,
+    },
+    "httpStatus": 500,
+  },
+  "deleteAgain": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Record not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bản ghi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "duplicate": {
+    "en": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Type effectiveness already exists",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+    "vi": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Hiệu quả hệ đã tồn tại",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+  },
+  "invalidId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "notFound": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Record not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bản ghi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "sameType": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Attack type and defense type cannot be the same",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Attack Type và Defense Type không được giống nhau",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "update": {
+    "body": {
+      "error": "UNPROCESSABLE_ENTITY",
+      "errors": [
+        {
+          "field": "string",
+          "message": "Attack Type và Defense Type không được giống nhau",
+        },
+      ],
+      "message": "Dữ liệu không hợp lệ",
+      "statusCode": 422,
+    },
+    "httpStatus": 422,
+  },
+  "weaknessesInvalidId": {
+    "en": {
+      "body": {
+        "error": "INTERNAL_SERVER_ERROR",
+        "message": "An error occurred",
+        "statusCode": 500,
+      },
+      "httpStatus": 500,
+    },
+    "vi": {
+      "body": {
+        "error": "INTERNAL_SERVER_ERROR",
+        "message": "Đã xảy ra lỗi",
+        "statusCode": 500,
+      },
+      "httpStatus": 500,
+    },
+  },
+}
+`;
+
+exports[`Catalog batch 1 contract (e2e) languages create, list, check, detail by id and by code 1`] = `
+{
+  "byCode": {
+    "body": {
+      "data": {
+        "code": "string",
+        "createdAt": "string",
+        "id": "number",
+        "name": "string",
+        "updatedAt": "string",
+      },
+      "message": "Lấy thông tin ngôn ngữ thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "byId": {
+    "body": {
+      "data": {
+        "code": "string",
+        "createdAt": "string",
+        "id": "number",
+        "name": "string",
+        "updatedAt": "string",
+      },
+      "message": "Lấy thông tin ngôn ngữ thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "check": {
+    "body": {
+      "data": {
+        "supported": "boolean",
+      },
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "create": {
+    "body": {
+      "data": {
+        "code": "string",
+        "createdAt": "string",
+        "id": "number",
+        "name": "string",
+        "updatedAt": "string",
+      },
+      "message": "Tạo ngôn ngữ thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "list": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "code": "string",
+            "createdAt": "string",
+            "id": "number",
+            "name": "string",
+            "updatedAt": "string",
+          },
+        ],
+      },
+      "message": "Lấy danh sách ngôn ngữ thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Catalog batch 1 contract (e2e) languages delete by code, then by id again 1`] = `
+{
+  "again": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu ngôn ngữ không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu ngôn ngữ không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+  "byCode": {
+    "body": {
+      "data": {
+        "message": "Xóa ngôn ngữ thành công",
+      },
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Catalog batch 1 contract (e2e) languages errors: duplicate, not found, invalid body, invalid id 1`] = `
+{
+  "duplicate": {
+    "en": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Ngôn ngữ đã tồn tại",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+    "vi": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Ngôn ngữ đã tồn tại",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+  },
+  "invalidBody": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid data provided",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Dữ liệu không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "invalidId": {
+    "en": {
+      "body": {
+        "error": "INTERNAL_SERVER_ERROR",
+        "message": "An error occurred",
+        "statusCode": 500,
+      },
+      "httpStatus": 500,
+    },
+    "vi": {
+      "body": {
+        "error": "INTERNAL_SERVER_ERROR",
+        "message": "Đã xảy ra lỗi",
+        "statusCode": 500,
+      },
+      "httpStatus": 500,
+    },
+  },
+  "notFound": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Ngôn ngữ không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Ngôn ngữ không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "notFoundByCode": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Ngôn ngữ không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Ngôn ngữ không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+}
+`;
+
+exports[`Catalog batch 1 contract (e2e) languages update by id and by code 1`] = `
+{
+  "byCode": {
+    "body": {
+      "data": {
+        "code": "string",
+        "createdAt": "string",
+        "id": "number",
+        "name": "string",
+        "updatedAt": "string",
+      },
+      "message": "Cập nhật ngôn ngữ thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "byId": {
+    "body": {
+      "data": {
+        "code": "string",
+        "createdAt": "string",
+        "id": "number",
+        "name": "string",
+        "updatedAt": "string",
+      },
+      "message": "Cập nhật ngôn ngữ thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
