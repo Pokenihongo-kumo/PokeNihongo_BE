@@ -1,15 +1,14 @@
-import { ActiveUser } from '@/common/decorators/active-user.decorator'
+import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import {
   CreateTranslationBodyDTO,
-  UpdateTranslationBodyDTO,
+  CreateTranslationsBodyDTO,
+  DeleteTranslationsByKeyParamsDTO,
   GetTranslationByIdParamsDTO,
   GetTranslationListQueryDTO,
   GetTranslationsByKeyQueryDTO,
   GetTranslationsByLanguageQueryDTO,
-  TranslationResponseDTO,
-  TranslationListResponseDTO,
-  TranslationByKeyResponseDTO
-} from './dto/translation.dto'
+  UpdateTranslationBodyDTO
+} from './dto/translation.zod-dto'
 import {
   CreateTranslationSwaggerDTO,
   UpdateTranslationSwaggerDTO,
@@ -18,7 +17,6 @@ import {
   TranslationByKeySwaggerResponseDTO,
   GetTranslationListQuerySwaggerDTO
 } from './dto/translation.dto'
-import { MessageResDTO } from '@/shared/dtos/response.dto'
 import {
   Body,
   Controller,
@@ -40,7 +38,6 @@ import {
   ApiResponse,
   ApiTags
 } from '@nestjs/swagger'
-import { ZodSerializerDto } from 'nestjs-zod'
 import { TranslationService } from './translation.service'
 
 @ApiTags('Translation')
@@ -60,8 +57,8 @@ export class TranslationController {
     description: 'Lấy danh sách bản dịch thành công',
     type: TranslationListSwaggerResponseDTO
   })
-  findMany(@Query() query: GetTranslationListQueryDTO) {
-    return this.translationService.findMany(query)
+  findMany(@Query() query: GetTranslationListQueryDTO, @I18nLang() lang: string) {
+    return this.translationService.findMany(query, lang)
   }
 
   @Get('by-key')
@@ -80,8 +77,8 @@ export class TranslationController {
     description: 'Lấy bản dịch theo key thành công',
     type: TranslationByKeySwaggerResponseDTO
   })
-  findByKey(@Query() query: GetTranslationsByKeyQueryDTO) {
-    return this.translationService.findByKey(query)
+  findByKey(@Query() query: GetTranslationsByKeyQueryDTO, @I18nLang() lang: string) {
+    return this.translationService.getByKey(query, lang)
   }
 
   @Get('by-language')
@@ -112,8 +109,11 @@ export class TranslationController {
     description: 'Lấy bản dịch theo ngôn ngữ thành công',
     type: TranslationListSwaggerResponseDTO
   })
-  findByLanguage(@Query() query: GetTranslationsByLanguageQueryDTO) {
-    return this.translationService.findByLanguage(query)
+  findByLanguage(
+    @Query() query: GetTranslationsByLanguageQueryDTO,
+    @I18nLang() lang: string
+  ) {
+    return this.translationService.findByLanguage(query, lang)
   }
 
   @Get(':id')
@@ -136,8 +136,8 @@ export class TranslationController {
     status: 404,
     description: 'Bản dịch không tồn tại'
   })
-  findById(@Param() params: GetTranslationByIdParamsDTO) {
-    return this.translationService.findById(params.id)
+  findById(@Param() params: GetTranslationByIdParamsDTO, @I18nLang() lang: string) {
+    return this.translationService.getById(params.id, lang)
   }
 
   @Post()
@@ -155,8 +155,8 @@ export class TranslationController {
     description: 'Tạo bản dịch thành công',
     type: TranslationSwaggerResponseDTO
   })
-  create(@Body() body: CreateTranslationBodyDTO) {
-    return this.translationService.create(body)
+  create(@Body() body: CreateTranslationBodyDTO, @I18nLang() lang: string) {
+    return this.translationService.createTranslation(body, lang)
   }
 
   @Post('bulk')
@@ -182,8 +182,8 @@ export class TranslationController {
       }
     }
   })
-  createMany(@Body() body: CreateTranslationBodyDTO[]) {
-    return this.translationService.createMany(body)
+  createMany(@Body() body: CreateTranslationsBodyDTO, @I18nLang() lang: string) {
+    return this.translationService.createTranslations(body, lang)
   }
 
   @Put(':id')
@@ -203,9 +203,10 @@ export class TranslationController {
   })
   update(
     @Param() params: GetTranslationByIdParamsDTO,
-    @Body() body: UpdateTranslationBodyDTO
+    @Body() body: UpdateTranslationBodyDTO,
+    @I18nLang() lang: string
   ) {
-    return this.translationService.update(params.id, body)
+    return this.translationService.updateTranslation(params.id, body, lang)
   }
 
   @Delete(':id')
@@ -240,7 +241,7 @@ export class TranslationController {
     status: 204,
     description: 'Xóa tất cả bản dịch theo key thành công'
   })
-  deleteByKey(@Param('key') key: string) {
-    return this.translationService.deleteByKey(key)
+  async deleteByKey(@Param() params: DeleteTranslationsByKeyParamsDTO) {
+    await this.translationService.deleteByKey(params.key)
   }
 }

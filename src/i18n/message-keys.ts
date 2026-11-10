@@ -396,7 +396,21 @@ export const DailyRequestMessage = {
 export const TranslationMessage = {
   DUPLICATE_LANGUAGE: 'translation.DUPLICATE_LANGUAGE',
   ALREADY_EXISTS: 'translation.ALREADY_EXISTS',
-  DUPLICATE_VALUE: 'translation.DUPLICATE_VALUE'
+  DUPLICATE_VALUE: 'translation.DUPLICATE_VALUE',
+  GET_LIST_SUCCESS: 'translation.GET_LIST_SUCCESS',
+  GET_SUCCESS: 'translation.GET_SUCCESS',
+  CREATE_SUCCESS: 'translation.CREATE_SUCCESS',
+  UPDATE_SUCCESS: 'translation.UPDATE_SUCCESS',
+  NOT_FOUND: 'translation.NOT_FOUND',
+  INVALID_DATA: 'translation.INVALID_DATA',
+  INVALID_ID: 'translation.INVALID_ID',
+  LANGUAGE_NOT_FOUND: 'translation.LANGUAGE_NOT_FOUND',
+  LANGUAGE_ID_INVALID: 'translation.LANGUAGE_ID_INVALID',
+  KEY_REQUIRED: 'translation.KEY_REQUIRED',
+  KEY_TOO_LONG: 'translation.KEY_TOO_LONG',
+  KEY_FORMAT: 'translation.KEY_FORMAT',
+  VALUE_REQUIRED: 'translation.VALUE_REQUIRED',
+  VALUE_TOO_LONG: 'translation.VALUE_TOO_LONG'
 } as const
 
 export const UserDailyRequestMessage = {

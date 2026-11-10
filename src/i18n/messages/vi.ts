@@ -381,7 +381,21 @@ export const viMessages = {
   translation: {
     DUPLICATE_LANGUAGE: 'Ngôn ngữ bị trùng lặp',
     ALREADY_EXISTS: 'Bản dịch đã tồn tại',
-    DUPLICATE_VALUE: 'Giá trị bản dịch bị trùng lặp'
+    DUPLICATE_VALUE: 'Giá trị bản dịch bị trùng lặp',
+    GET_LIST_SUCCESS: 'Lấy danh sách bản dịch thành công',
+    GET_SUCCESS: 'Lấy bản dịch thành công',
+    CREATE_SUCCESS: 'Tạo bản dịch thành công',
+    UPDATE_SUCCESS: 'Cập nhật bản dịch thành công',
+    NOT_FOUND: 'Bản dịch không tồn tại',
+    INVALID_DATA: 'Dữ liệu bản dịch không hợp lệ',
+    INVALID_ID: 'ID bản dịch không hợp lệ',
+    LANGUAGE_NOT_FOUND: 'Ngôn ngữ không tồn tại',
+    LANGUAGE_ID_INVALID: 'Language ID phải lớn hơn 0',
+    KEY_REQUIRED: 'Key dịch không được để trống',
+    KEY_TOO_LONG: 'Key dịch quá dài (tối đa 500 ký tự)',
+    KEY_FORMAT: 'Key dịch phải theo định dạng: module.id.field (ví dụ: lesson.1.title)',
+    VALUE_REQUIRED: 'Nội dung dịch không được để trống',
+    VALUE_TOO_LONG: 'Nội dung dịch quá dài (tối đa 2000 ký tự)'
   },
   user_daily_request: {
     CREATE_SUCCESS: 'Tạo yêu cầu hàng ngày cho người dùng thành công',

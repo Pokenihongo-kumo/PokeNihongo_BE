@@ -501,6 +501,7 @@ exports[`Catalog batch 3 contract (e2e) translation create, bulk, list, by key, 
       "data": {
         "count": "number",
       },
+      "message": "Tạo bản dịch thành công",
       "statusCode": 201,
     },
     "httpStatus": 201,
@@ -534,6 +535,7 @@ exports[`Catalog batch 3 contract (e2e) translation create, bulk, list, by key, 
           },
         ],
       },
+      "message": "Lấy bản dịch thành công",
       "statusCode": 200,
     },
     "httpStatus": 200,
@@ -541,7 +543,13 @@ exports[`Catalog batch 3 contract (e2e) translation create, bulk, list, by key, 
   "byLanguage": {
     "body": {
       "data": {
-        "data": [
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
           {
             "achievementConditionTextKey": "null",
             "achievementDescriptionKey": "null",
@@ -565,11 +573,8 @@ exports[`Catalog batch 3 contract (e2e) translation create, bulk, list, by key, 
             "value": "string",
           },
         ],
-        "limit": "number",
-        "page": "number",
-        "total": "number",
-        "totalPages": "number",
       },
+      "message": "Lấy danh sách bản dịch thành công",
       "statusCode": 200,
     },
     "httpStatus": 200,
@@ -598,6 +603,7 @@ exports[`Catalog batch 3 contract (e2e) translation create, bulk, list, by key, 
         "updatedAt": "string",
         "value": "string",
       },
+      "message": "Tạo bản dịch thành công",
       "statusCode": 201,
     },
     "httpStatus": 201,
@@ -626,6 +632,7 @@ exports[`Catalog batch 3 contract (e2e) translation create, bulk, list, by key, 
         "updatedAt": "string",
         "value": "string",
       },
+      "message": "Lấy bản dịch thành công",
       "statusCode": 200,
     },
     "httpStatus": 200,
@@ -693,6 +700,7 @@ exports[`Catalog batch 3 contract (e2e) translation create, bulk, list, by key, 
         "updatedAt": "string",
         "value": "string",
       },
+      "message": "Cập nhật bản dịch thành công",
       "statusCode": 200,
     },
     "httpStatus": 200,
@@ -739,19 +747,19 @@ exports[`Catalog batch 3 contract (e2e) translation errors, delete, delete by ke
   "deleteAgain": {
     "en": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu bản dịch không hợp lệ",
-        "statusCode": 400,
+        "error": "NOT_FOUND",
+        "message": "Translation not found",
+        "statusCode": 404,
       },
-      "httpStatus": 400,
+      "httpStatus": 404,
     },
     "vi": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu bản dịch không hợp lệ",
-        "statusCode": 400,
+        "error": "NOT_FOUND",
+        "message": "Bản dịch không tồn tại",
+        "statusCode": 404,
       },
-      "httpStatus": 400,
+      "httpStatus": 404,
     },
   },
   "deleteByKey": {
@@ -761,19 +769,19 @@ exports[`Catalog batch 3 contract (e2e) translation errors, delete, delete by ke
   "duplicate": {
     "en": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu bản dịch không hợp lệ",
-        "statusCode": 400,
+        "error": "CONFLICT",
+        "message": "Translation already exists",
+        "statusCode": 409,
       },
-      "httpStatus": 400,
+      "httpStatus": 409,
     },
     "vi": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu bản dịch không hợp lệ",
-        "statusCode": 400,
+        "error": "CONFLICT",
+        "message": "Bản dịch đã tồn tại",
+        "statusCode": 409,
       },
-      "httpStatus": 400,
+      "httpStatus": 409,
     },
   },
   "invalidBody": {
@@ -783,7 +791,7 @@ exports[`Catalog batch 3 contract (e2e) translation errors, delete, delete by ke
         "errors": [
           {
             "field": "string",
-            "message": "Invalid data provided",
+            "message": "Language ID must be greater than 0",
           },
         ],
         "message": "Invalid data provided",
@@ -797,7 +805,7 @@ exports[`Catalog batch 3 contract (e2e) translation errors, delete, delete by ke
         "errors": [
           {
             "field": "string",
-            "message": "Dữ liệu không hợp lệ",
+            "message": "Language ID phải lớn hơn 0",
           },
         ],
         "message": "Dữ liệu không hợp lệ",
@@ -809,26 +817,38 @@ exports[`Catalog batch 3 contract (e2e) translation errors, delete, delete by ke
   "invalidId": {
     "en": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "An error occurred",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid translation ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "Đã xảy ra lỗi",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID bản dịch không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
   },
   "notFound": {
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Bản dịch không tồn tại",
+        "message": "Translation not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -849,7 +869,7 @@ exports[`Catalog batch 3 contract (e2e) translation errors, delete, delete by ke
         "errors": [
           {
             "field": "string",
-            "message": "Key dịch phải theo định dạng: module.id.field (ví dụ: lesson.1.title)",
+            "message": "Translation key must look like module.id.field (e.g. lesson.1.title)",
           },
         ],
         "message": "Invalid data provided",
