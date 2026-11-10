@@ -460,7 +460,8 @@ Convention + checklist giai đoạn 3: [docs/standardization/backend-convention.
   - [x] languages — `a3330bf` rename (`LanguagesRepo` ở ~30 module, `.entity.ts`, `dto/languages.zod-dto.ts`), `bb447d6`: id sai 500 → 422; delete/deleteByCode/updateByCode đổi mọi lỗi thành 400 (cả not found) → 404 theo loại lỗi; delete trả message lồng trong `data`; `flag` không có cột → tạo có flag + `create-default` 500 (repo bỏ qua flag, đồng bộ sequence khi id cố định); message/validation tiếng Việt cứng → `LanguagesMessage` vi/en/ja. Merge `dev` @ `c4a88d9`.
   - [x] Gate batch 1: consumer không đổi (snapshot các route client giữ nguyên); message vi/en/ja có snapshot vi/en; không còn hai cách xử lý lỗi trong 4 module. Checks trên `dev` @ `c4a88d9`: typecheck 0, unit 53/53, e2e 60/60 (37 snapshot), format sạch.
   - Việc mở ra từ batch 1:
-    - [ ] `TransformInterceptor` chỉ coi là envelope khi có cả `data` và `message`: service trả `{ message }` bị bọc lại (500 nếu route có serializer, body lồng nếu không). Cần đếm các service còn trả như vậy và chọn sửa interceptor hay từng service — có thể đổi contract, làm task riêng có snapshot.
+    - [x] `TransformInterceptor` bọc lại kết quả chỉ có `{ message }`: quét được 9 route. Interceptor coi object chỉ gồm `message` (+`statusCode`) là envelope, `data: null`. 5 DELETE có `MessageResDTO` (answers, grammars, grammar-usages, lessons, lesson-categories — web gọi 2 route đầu) từ 500 → 204 đã khai báo; 4 route bỏ body lồng. Object có `message` là nội dung kèm field khác vẫn bọc như cũ. BE `fix/transform-message-only` → merge `dev`; e2e `test/contracts/message-only-response.e2e-spec.ts`.
+    - [ ] `POST /lesson-categories` trả 500 (serializer của module) → batch nội dung học.
     - [ ] `modules/attendance` (điểm danh của mobile) còn `getLand` giống attendence-config → sửa ở batch user/progress.
     - [ ] DB mới cần seed `Languages` (vi/en/ja): `POST /languages/create-default` nay chạy được.
 
