@@ -6,7 +6,7 @@ import {
   GetGrammarByIdParamsType,
   GetGrammarListQueryType,
   GrammarListResSchema
-} from '../entities/grammar.entities'
+} from '../entities/grammar.entity'
 
 export class CreateGrammarBodyDTO extends createZodDto(CreateGrammarBodyType) {}
 export class UpdateGrammarBodyDTO extends createZodDto(UpdateGrammarBodyType) {}

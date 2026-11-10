@@ -1,14 +1,16 @@
+import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
+import { Prisma } from '@prisma/client'
 import { PrismaService } from '@/shared/services/prisma.service'
 import {
   CreateGrammarUsageBodyType,
   UpdateGrammarUsageBodyType,
   GetGrammarUsageListQueryType
-} from './entities/grammar-usage.entities'
+} from './entities/grammar-usage.entity'
 import { GrammarUsageSortField, SortOrder } from '@/common/enum/enum'
 
 @Injectable()
-export class GrammarUsageRepository {
+export class GrammarUsageRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(params: GetGrammarUsageListQueryType) {
@@ -19,13 +21,8 @@ export class GrammarUsageRepository {
       sortBy = GrammarUsageSortField.CREATED_AT,
       sort = SortOrder.DESC
     } = params
-    const skip = (page - 1) * limit
 
-    const where: any = {}
-
-    if (grammarId) {
-      where.grammarId = grammarId
-    }
+    const where: Prisma.GrammarUsageWhereInput = grammarId ? { grammarId } : {}
 
     const [data, total] = await Promise.all([
       this.prismaService.grammarUsage.findMany({
@@ -40,19 +37,12 @@ export class GrammarUsageRepository {
           }
         },
         orderBy: { [sortBy]: sort },
-        skip,
-        take: limit
+        ...toSkipTake(page, limit)
       }),
       this.prismaService.grammarUsage.count({ where })
     ])
 
-    return {
-      data,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit)
-    }
+    return { data, total }
   }
 
   async findById(id: number) {
@@ -127,15 +117,9 @@ export class GrammarUsageRepository {
     explanationKey: string,
     excludeId?: number
   ) {
-    const where: any = {
-      grammarId,
-      explanationKey
-    }
-    if (excludeId) {
-      where.id = { not: excludeId }
-    }
-
-    const count = await this.prismaService.grammarUsage.count({ where })
+    const count = await this.prismaService.grammarUsage.count({
+      where: { grammarId, explanationKey, ...(excludeId && { id: { not: excludeId } }) }
+    })
     return count > 0
   }
 }

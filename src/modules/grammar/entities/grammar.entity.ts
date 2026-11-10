@@ -2,6 +2,8 @@ import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
 import { GrammarSortField, SortOrder } from '@/common/enum/enum'
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { GrammarMessage } from '@/i18n/message-keys'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
@@ -19,18 +21,18 @@ export const GrammarType = z.object({
 export const CreateGrammarBodyType = z.object({
   structure: z
     .string()
-    .min(1, 'Cấu trúc ngữ pháp không được để trống')
-    .max(500, 'Cấu trúc ngữ pháp không được vượt quá 500 ký tự'),
+    .min(1, GrammarMessage.STRUCTURE_REQUIRED)
+    .max(500, GrammarMessage.STRUCTURE_TOO_LONG),
   level: z
     .string()
-    .min(1, 'Cấp độ không được để trống')
-    .max(10, 'Cấp độ không được vượt quá 10 ký tự'),
+    .min(1, GrammarMessage.LEVEL_REQUIRED)
+    .max(10, GrammarMessage.LEVEL_TOO_LONG),
   usage: z
     .object({
       exampleSentenceJp: z
         .string()
-        .min(1, 'Câu ví dụ tiếng Nhật không được để trống')
-        .max(1000, 'Câu ví dụ tiếng Nhật không được vượt quá 1000 ký tự')
+        .min(1, GrammarMessage.EXAMPLE_JP_REQUIRED)
+        .max(1000, GrammarMessage.EXAMPLE_JP_TOO_LONG)
     })
     .optional(),
   translations: z
@@ -40,16 +42,16 @@ export const CreateGrammarBodyType = z.object({
           z.object({
             language_code: z
               .string()
-              .min(2, 'Mã ngôn ngữ phải có ít nhất 2 ký tự')
-              .max(5, 'Mã ngôn ngữ không được vượt quá 5 ký tự'),
+              .min(2, GrammarMessage.LANGUAGE_CODE_TOO_SHORT)
+              .max(5, GrammarMessage.LANGUAGE_CODE_TOO_LONG),
             explanation: z
               .string()
-              .min(1, 'Giải thích không được để trống')
-              .max(2000, 'Giải thích không được vượt quá 2000 ký tự'),
+              .min(1, GrammarMessage.EXPLANATION_REQUIRED)
+              .max(2000, GrammarMessage.EXPLANATION_TOO_LONG),
             example: z
               .string()
-              .min(1, 'Ví dụ không được để trống')
-              .max(1000, 'Ví dụ không được vượt quá 1000 ký tự')
+              .min(1, GrammarMessage.EXAMPLE_REQUIRED)
+              .max(1000, GrammarMessage.EXAMPLE_TOO_LONG)
           })
         )
         .optional()
@@ -60,29 +62,29 @@ export const CreateGrammarBodyType = z.object({
 export const UpdateGrammarBodyType = z.object({
   structure: z
     .string()
-    .min(1, 'Cấu trúc ngữ pháp không được để trống')
-    .max(500, 'Cấu trúc ngữ pháp không được vượt quá 500 ký tự')
+    .min(1, GrammarMessage.STRUCTURE_REQUIRED)
+    .max(500, GrammarMessage.STRUCTURE_TOO_LONG)
     .optional(),
   level: z
     .string()
-    .min(1, 'Cấp độ không được để trống')
-    .max(10, 'Cấp độ không được vượt quá 10 ký tự')
+    .min(1, GrammarMessage.LEVEL_REQUIRED)
+    .max(10, GrammarMessage.LEVEL_TOO_LONG)
     .optional()
 })
 
 export const CreateGrammarBasicBodyType = z.object({
   structure: z
     .string()
-    .min(1, 'Cấu trúc ngữ pháp không được để trống')
-    .max(500, 'Cấu trúc ngữ pháp không được vượt quá 500 ký tự'),
+    .min(1, GrammarMessage.STRUCTURE_REQUIRED)
+    .max(500, GrammarMessage.STRUCTURE_TOO_LONG),
   level: z
     .string()
-    .min(1, 'Cấp độ không được để trống')
-    .max(10, 'Cấp độ không được vượt quá 10 ký tự')
+    .min(1, GrammarMessage.LEVEL_REQUIRED)
+    .max(10, GrammarMessage.LEVEL_TOO_LONG)
 })
 
 export const GetGrammarByIdParamsType = z.object({
-  id: z.string().transform(Number)
+  id: checkIdSchema(GrammarMessage.INVALID_ID)
 })
 
 export const GetGrammarListQueryType = z.object({

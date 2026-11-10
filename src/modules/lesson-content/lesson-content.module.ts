@@ -5,7 +5,7 @@ import { LessonContentRepository } from './lesson-content.repo'
 import { SharedModule } from '@/shared/shared.module'
 import { VocabularyModule } from '../vocabulary/vocabulary.module'
 import { GrammarModule } from '../grammar/grammar.module'
-import { GrammarRepository } from '../grammar/grammar.repo'
+import { GrammarRepo } from '../grammar/grammar.repo'
 import { KanjiModule } from '../kanji/kanji.module'
 import { TranslationModule } from '../translation/translation.module'
 import { LanguagesModule } from '../languages/languages.module'
@@ -28,7 +28,7 @@ import { ExercisesModule } from '../exercises/exercises.module'
     ExercisesModule
   ],
   controllers: [LessonContentController],
-  providers: [LessonContentService, LessonContentRepository, GrammarRepository],
+  providers: [LessonContentService, LessonContentRepository, GrammarRepo],
   exports: [LessonContentService, LessonContentRepository]
 })
 export class LessonContentModule {}

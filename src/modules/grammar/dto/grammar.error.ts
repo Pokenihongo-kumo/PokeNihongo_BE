@@ -1,40 +1,26 @@
-import { HttpException, HttpStatus } from '@nestjs/common'
+import { GrammarMessage } from '@/i18n/message-keys'
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common'
 
-export class GrammarNotFoundException extends HttpException {
+// A new instance per throw; `message` is translated from errorKey by
+// ApiExceptionFilter (Accept-Language), the old Vietnamese text is the vi value
+
+export class GrammarNotFoundException extends NotFoundException {
   constructor() {
-    super(
-      {
-        statusCode: HttpStatus.NOT_FOUND,
-        message: 'Ngữ pháp không tồn tại',
-        error: 'GRAMMAR_NOT_FOUND'
-      },
-      HttpStatus.NOT_FOUND
-    )
+    super({ message: GrammarMessage.NOT_FOUND, errorKey: GrammarMessage.NOT_FOUND })
   }
 }
 
-export class GrammarAlreadyExistsException extends HttpException {
+export class GrammarAlreadyExistsException extends ConflictException {
   constructor() {
-    super(
-      {
-        statusCode: HttpStatus.CONFLICT,
-        message: 'Ngữ pháp đã tồn tại',
-        error: 'GRAMMAR_ALREADY_EXISTS'
-      },
-      HttpStatus.CONFLICT
-    )
+    super({
+      message: GrammarMessage.ALREADY_EXISTS,
+      errorKey: GrammarMessage.ALREADY_EXISTS
+    })
   }
 }
 
-export class InvalidGrammarDataException extends HttpException {
-  constructor(message: string) {
-    super(
-      {
-        statusCode: HttpStatus.BAD_REQUEST,
-        message: `Dữ liệu ngữ pháp không hợp lệ: ${message}`,
-        error: 'INVALID_GRAMMAR_DATA'
-      },
-      HttpStatus.BAD_REQUEST
-    )
+export class InvalidGrammarDataException extends BadRequestException {
+  constructor() {
+    super({ message: GrammarMessage.INVALID_DATA, errorKey: GrammarMessage.INVALID_DATA })
   }
 }
