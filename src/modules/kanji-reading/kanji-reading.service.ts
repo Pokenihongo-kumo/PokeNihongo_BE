@@ -1,261 +1,187 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { KanjiReadingMessage } from '@/i18n/message-keys'
+import { toPaginationMeta } from '@/shared/utils/pagination'
+import {
+  isForeignKeyConstraintPrismaError,
+  isNotFoundPrismaError,
+  isUniqueConstraintPrismaError
+} from '@/shared/utils/prisma-errors'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
+import {
+  InvalidKanjiReadingDataException,
+  KanjiReadingAlreadyExistsException,
+  KanjiReadingKanjiNotFoundException,
+  KanjiReadingNotFoundException
+} from './dto/kanji-reading.error'
 import {
   CreateKanjiReadingBodyType,
-  UpdateKanjiReadingBodyType,
   GetKanjiReadingListQueryType,
-  KanjiReading
+  KanjiReading,
+  UpdateKanjiReadingBodyType
 } from './entities/kanji-reading.entity'
-
-import {
-  KanjiReadingNotFoundException,
-  KanjiReadingAlreadyExistsException,
-  InvalidKanjiReadingDataException
-} from './dto/kanji-reading.error'
-import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from '@/shared/helpers'
-import { Injectable, Logger } from '@nestjs/common'
 import { KanjiReadingRepo } from './kanji-reading.repo'
 
 @Injectable()
 export class KanjiReadingService {
   private readonly logger = new Logger(KanjiReadingService.name)
 
-  constructor(private readonly kanjiReadingRepository: KanjiReadingRepo) {}
+  constructor(
+    private readonly kanjiReadingRepository: KanjiReadingRepo,
+    private readonly i18nService: I18nService
+  ) {}
 
-  async findMany(params: GetKanjiReadingListQueryType) {
-    try {
-      this.logger.log(`Finding kanji readings with params: ${JSON.stringify(params)}`)
-
-      // Set default values
-      const queryParams = {
-        page: params.page || 1,
-        limit: params.limit || 10,
-        search: params.search,
-        kanjiId: params.kanjiId,
-        readingType: params.readingType,
-        sortBy: params.sortBy,
-        sort: params.sort
+  //#region HTTP routes (envelope + translated message)
+  async findMany(params: GetKanjiReadingListQueryType, lang: string = 'vi') {
+    const result = await this.kanjiReadingRepository.findMany(params)
+    return {
+      statusCode: 200,
+      message: this.i18nService.translate(KanjiReadingMessage.GET_LIST_SUCCESS, lang),
+      data: {
+        results: result.data,
+        pagination: toPaginationMeta(params.page, params.limit, result.total)
       }
+    }
+  }
 
-      const result = await this.kanjiReadingRepository.findMany(queryParams)
+  async findById(id: number, lang: string = 'vi') {
+    const reading = await this.kanjiReadingRepository.findById(id)
+    if (!reading) {
+      throw new KanjiReadingNotFoundException()
+    }
+    return {
+      data: reading,
+      message: this.i18nService.translate(KanjiReadingMessage.GET_SUCCESS, lang)
+    }
+  }
 
+  async findByKanjiId(kanjiId: number, lang: string = 'vi') {
+    return {
+      data: await this.kanjiReadingRepository.findByKanjiId(kanjiId),
+      message: this.i18nService.translate(KanjiReadingMessage.GET_LIST_SUCCESS, lang)
+    }
+  }
+
+  async findByReadingType(readingType: string, lang: string = 'vi') {
+    return {
+      data: await this.kanjiReadingRepository.findByReadingType(readingType),
+      message: this.i18nService.translate(KanjiReadingMessage.GET_LIST_SUCCESS, lang)
+    }
+  }
+
+  async createReading(data: CreateKanjiReadingBodyType, lang: string = 'vi') {
+    return {
+      data: await this.create(data),
+      message: this.i18nService.translate(KanjiReadingMessage.CREATE_SUCCESS, lang)
+    }
+  }
+
+  async updateReading(id: number, data: UpdateKanjiReadingBodyType, lang: string = 'vi') {
+    return {
+      data: await this.update(id, data),
+      message: this.i18nService.translate(KanjiReadingMessage.UPDATE_SUCCESS, lang)
+    }
+  }
+
+  async delete(id: number, lang: string = 'vi') {
+    try {
+      if (!(await this.kanjiReadingRepository.findById(id))) {
+        throw new KanjiReadingNotFoundException()
+      }
+      await this.kanjiReadingRepository.delete(id)
       return {
-        statusCode: 200,
-        message: 'Lấy danh sách cách đọc kanji thành công',
-        data: {
-          results: result.data,
-          pagination: {
-            current: result.page,
-            pageSize: result.limit,
-            totalPage: result.totalPages,
-            totalItem: result.total
-          }
-        }
+        message: this.i18nService.translate(KanjiReadingMessage.DELETE_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error('Error finding kanji readings:', error)
-      throw error
+      throw this.toKanjiReadingError(error)
     }
   }
 
-  async findById(id: number) {
-    try {
-      this.logger.log(`Finding kanji reading by id: ${id}`)
-      const reading = await this.kanjiReadingRepository.findById(id)
-
-      if (!reading) {
-        throw KanjiReadingNotFoundException
-      }
-
-      return reading
-    } catch (error) {
-      this.logger.error('Error finding kanji reading by id:', error)
-      throw error
+  async deleteByKanjiId(kanjiId: number, lang: string = 'vi') {
+    await this.kanjiReadingRepository.deleteByKanjiId(kanjiId)
+    return {
+      message: this.i18nService.translate(KanjiReadingMessage.DELETE_SUCCESS, lang)
     }
   }
 
-  async findByKanjiId(kanjiId: number): Promise<KanjiReading[]> {
-    try {
-      this.logger.log(`Finding kanji readings by kanji id: ${kanjiId}`)
-      return await this.kanjiReadingRepository.findByKanjiId(kanjiId)
-    } catch (error) {
-      this.logger.error('Error finding kanji readings by kanji id:', error)
-      throw error
+  async getStats(lang: string = 'vi') {
+    return {
+      data: await this.kanjiReadingRepository.getStats(),
+      message: this.i18nService.translate(KanjiReadingMessage.GET_STATS_SUCCESS, lang)
     }
   }
 
-  async findByReadingType(readingType: string): Promise<KanjiReading[]> {
-    try {
-      this.logger.log(`Finding kanji readings by type: ${readingType}`)
-      return await this.kanjiReadingRepository.findByReadingType(readingType)
-    } catch (error) {
-      this.logger.error('Error finding kanji readings by type:', error)
-      throw error
+  async getReadingTypeStats(lang: string = 'vi') {
+    const stats = await this.kanjiReadingRepository.getStats()
+    return {
+      data: stats.byReadingType,
+      message: this.i18nService.translate(KanjiReadingMessage.GET_STATS_SUCCESS, lang)
     }
   }
+  //#endregion
 
+  //#region Used by kanji too (plain data, unchanged shapes)
   async create(data: CreateKanjiReadingBodyType): Promise<KanjiReading> {
     try {
-      this.logger.log(`Creating kanji reading for kanji: ${data.kanjiId}`)
-
-      // Kiểm tra cách đọc đã tồn tại chưa (kiểm tra cả reading cụ thể)
-      const readingExists = await this.kanjiReadingRepository.existsByKanjiTypeAndReading(
-        data.kanjiId,
-        data.readingType,
-        data.reading
-      )
-      if (readingExists) {
-        throw KanjiReadingAlreadyExistsException
+      if (
+        await this.kanjiReadingRepository.existsByKanjiTypeAndReading(
+          data.kanjiId,
+          data.readingType,
+          data.reading
+        )
+      ) {
+        throw new KanjiReadingAlreadyExistsException()
       }
-
-      const reading = await this.kanjiReadingRepository.create(data)
-      this.logger.log(`Kanji reading created successfully: ${reading.id}`)
-      return reading
+      return await this.kanjiReadingRepository.create(data)
     } catch (error) {
-      this.logger.error('Error creating kanji reading:', error)
-      if (error.message.includes('đã tồn tại')) {
-        throw error
-      }
-      throw InvalidKanjiReadingDataException
+      throw this.toKanjiReadingError(error)
     }
   }
 
   async update(id: number, data: UpdateKanjiReadingBodyType): Promise<KanjiReading> {
     try {
-      this.logger.log(`Updating kanji reading: ${id}`)
-
-      // Kiểm tra cách đọc có tồn tại không
-      const existingReading = await this.kanjiReadingRepository.findById(id)
-      if (!existingReading) {
-        throw KanjiReadingNotFoundException
+      const existing = await this.kanjiReadingRepository.findById(id)
+      if (!existing) {
+        throw new KanjiReadingNotFoundException()
       }
 
-      // Kiểm tra cách đọc mới đã tồn tại chưa (nếu có thay đổi)
+      // A changed reading must not repeat another reading of the same kanji
       if (
         (data.readingType || data.reading) &&
-        (data.readingType !== existingReading.readingType ||
-          data.reading !== existingReading.reading)
+        (data.readingType !== existing.readingType ||
+          data.reading !== existing.reading) &&
+        (await this.kanjiReadingRepository.existsByKanjiTypeAndReading(
+          existing.kanjiId,
+          data.readingType || existing.readingType,
+          data.reading || existing.reading
+        ))
       ) {
-        const readingExists =
-          await this.kanjiReadingRepository.existsByKanjiTypeAndReading(
-            existingReading.kanjiId,
-            data.readingType || existingReading.readingType,
-            data.reading || existingReading.reading
-          )
-        if (readingExists) {
-          throw KanjiReadingAlreadyExistsException
-        }
+        throw new KanjiReadingAlreadyExistsException()
       }
 
-      const reading = await this.kanjiReadingRepository.update(id, data)
-      this.logger.log(`Kanji reading updated successfully: ${reading.id}`)
-      return reading
+      return await this.kanjiReadingRepository.update(id, data)
     } catch (error) {
-      this.logger.error('Error updating kanji reading:', error)
-      if (
-        error.message.includes('không tồn tại') ||
-        error.message.includes('đã tồn tại')
-      ) {
-        throw error
-      }
-      throw InvalidKanjiReadingDataException
+      throw this.toKanjiReadingError(error)
     }
   }
+  //#endregion
 
-  async delete(id: number): Promise<void> {
-    try {
-      this.logger.log(`Deleting kanji reading: ${id}`)
-
-      // Kiểm tra cách đọc có tồn tại không
-      const existingReading = await this.kanjiReadingRepository.findById(id)
-      if (!existingReading) {
-        throw KanjiReadingNotFoundException
-      }
-
-      await this.kanjiReadingRepository.delete(id)
-      this.logger.log(`Kanji reading deleted successfully: ${id}`)
-    } catch (error) {
-      this.logger.error('Error deleting kanji reading:', error)
-      if (error.message.includes('không tồn tại')) {
-        throw error
-      }
-      throw InvalidKanjiReadingDataException
+  /**
+   * Error to answer, decided by type (was by message text): our HTTP errors
+   * pass through, a missing kanji (foreign key) is 404, unique 409, a missing
+   * reading 404, anything else the generic "invalid data" 400 as before.
+   */
+  private toKanjiReadingError(error: unknown): HttpException {
+    if (error instanceof HttpException) return error
+    this.logger.error(
+      'Kanji reading request failed',
+      error instanceof Error ? error.stack : error
+    )
+    if (isForeignKeyConstraintPrismaError(error)) {
+      return new KanjiReadingKanjiNotFoundException()
     }
-  }
-
-  async deleteByKanjiId(kanjiId: number): Promise<void> {
-    try {
-      this.logger.log(`Deleting kanji readings by kanji id: ${kanjiId}`)
-      await this.kanjiReadingRepository.deleteByKanjiId(kanjiId)
-      this.logger.log(`Kanji readings deleted successfully for kanji: ${kanjiId}`)
-    } catch (error) {
-      this.logger.error('Error deleting kanji readings by kanji id:', error)
-      throw error
-    }
-  }
-
-  async getStats() {
-    try {
-      this.logger.log('Getting kanji reading statistics')
-      return await this.kanjiReadingRepository.getStats()
-    } catch (error) {
-      this.logger.error('Error getting kanji reading statistics:', error)
-      throw error
-    }
-  }
-
-  async getReadingsByKanjiIds(kanjiIds: number[]): Promise<KanjiReading[]> {
-    try {
-      this.logger.log(`Getting readings for kanji ids: ${kanjiIds.join(', ')}`)
-      return await this.kanjiReadingRepository.getReadingsByKanjiIds(kanjiIds)
-    } catch (error) {
-      this.logger.error('Error getting readings by kanji ids:', error)
-      throw error
-    }
-  }
-
-  async existsByKanjiId(kanjiId: number): Promise<boolean> {
-    try {
-      this.logger.log(`Checking if readings exist for kanji: ${kanjiId}`)
-      return await this.kanjiReadingRepository.existsByKanjiId(kanjiId)
-    } catch (error) {
-      this.logger.error('Error checking readings existence by kanji id:', error)
-      throw error
-    }
-  }
-
-  // Utility methods
-  async getReadingsByType(readingType: string): Promise<KanjiReading[]> {
-    try {
-      this.logger.log(`Getting readings by type: ${readingType}`)
-      return await this.kanjiReadingRepository.findByReadingType(readingType)
-    } catch (error) {
-      this.logger.error('Error getting readings by type:', error)
-      throw error
-    }
-  }
-
-  async getReadingsByKanji(kanjiId: number): Promise<KanjiReading[]> {
-    try {
-      this.logger.log(`Getting readings for kanji: ${kanjiId}`)
-      return await this.kanjiReadingRepository.findByKanjiId(kanjiId)
-    } catch (error) {
-      this.logger.error('Error getting readings by kanji:', error)
-      throw error
-    }
-  }
-
-  async validateReadingType(readingType: string): Promise<boolean> {
-    const validTypes = ['onyomi', 'kunyomi', 'nanori', 'irregular']
-    return validTypes.includes(readingType.toLowerCase())
-  }
-
-  async getReadingTypeStats(): Promise<{ readingType: string; count: number }[]> {
-    try {
-      this.logger.log('Getting reading type statistics')
-      const stats = await this.kanjiReadingRepository.getStats()
-      return stats.byReadingType
-    } catch (error) {
-      this.logger.error('Error getting reading type statistics:', error)
-      throw error
-    }
+    if (isUniqueConstraintPrismaError(error))
+      return new KanjiReadingAlreadyExistsException()
+    if (isNotFoundPrismaError(error)) return new KanjiReadingNotFoundException()
+    return new InvalidKanjiReadingDataException()
   }
 }

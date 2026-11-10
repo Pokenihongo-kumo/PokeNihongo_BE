@@ -1,96 +1,58 @@
+import { KanjiReadingSortField, SortOrder } from '@/common/enum/enum'
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { KanjiReadingMessage } from '@/i18n/message-keys'
+import { paginatedResSchema } from '@/shared/utils/pagination'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
-import { KanjiReadingSortField, SortOrder } from '@/common/enum/enum'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
 
-// Custom validation functions for Kanji Reading
-const isOnyomiKunyomi = (text: string): boolean => {
-  // Onyomi and Kunyomi contain Hiragana, Katakana, and some punctuation
-  const onyomiKunyomiRegex = /^[\u3040-\u309F\u30A0-\u30FF\s\-\.\,\!\?\'\"]+$/
-  return onyomiKunyomiRegex.test(text)
-}
+// Onyomi/Kunyomi: Hiragana, Katakana and basic punctuation only
+const isOnyomiKunyomi = (text: string): boolean =>
+  /^[\u3040-\u309F\u30A0-\u30FF\s\-.,!?'"]+$/.test(text)
 
-const isValidReadingType = (readingType: string): boolean => {
-  // Valid reading types: onyomi, kunyomi, nanori, etc.
-  const validTypes = ['onyomi', 'kunyomi', 'nanori', 'irregular']
-  return validTypes.includes(readingType.toLowerCase())
-}
+const READING_TYPES = ['onyomi', 'kunyomi', 'nanori', 'irregular']
+const isValidReadingType = (readingType: string): boolean =>
+  READING_TYPES.includes(readingType.toLowerCase())
 
-// Custom error messages
-const ONYOMI_KUNYOMI_ERROR =
-  'Phải là cách đọc Onyomi/Kunyomi (chỉ chứa Hiragana, Katakana và dấu câu cơ bản)'
-const READING_TYPE_ERROR = 'Loại cách đọc phải là onyomi, kunyomi, nanori, hoặc irregular'
+const readingType = z
+  .string()
+  .min(1, KanjiReadingMessage.READING_TYPE_REQUIRED)
+  .max(20, KanjiReadingMessage.READING_TYPE_TOO_LONG)
+  .refine(isValidReadingType, { message: KanjiReadingMessage.READING_TYPE_INVALID })
+const reading = z
+  .string()
+  .min(1, KanjiReadingMessage.READING_REQUIRED)
+  .max(100, KanjiReadingMessage.READING_TOO_LONG)
+  .refine(isOnyomiKunyomi, { message: KanjiReadingMessage.READING_NOT_KANA })
 
-// Base Kanji Reading schema
+// Also validates the readings in kanji's update body
 export const KanjiReadingSchema = z.object({
   id: z.number(),
   kanjiId: z.number(),
-  readingType: z
-    .string()
-    .min(1, 'Loại cách đọc không được để trống')
-    .max(20, 'Loại cách đọc quá dài (tối đa 20 ký tự)')
-    .refine(isValidReadingType, {
-      message: READING_TYPE_ERROR
-    }),
-  reading: z
-    .string()
-    .min(1, 'Cách đọc không được để trống')
-    .max(100, 'Cách đọc quá dài (tối đa 100 ký tự)')
-    .refine(isOnyomiKunyomi, {
-      message: ONYOMI_KUNYOMI_ERROR
-    }),
+  readingType,
+  reading,
   createdAt: z.date(),
   updatedAt: z.date()
 })
 
-// Create Kanji Reading schema
 export const CreateKanjiReadingSchema = z.object({
-  kanjiId: z.number().min(1, 'Kanji ID phải lớn hơn 0'),
-  readingType: z
-    .string()
-    .min(1, 'Loại cách đọc không được để trống')
-    .max(20, 'Loại cách đọc quá dài (tối đa 20 ký tự)')
-    .refine(isValidReadingType, {
-      message: READING_TYPE_ERROR
-    }),
-  reading: z
-    .string()
-    .min(1, 'Cách đọc không được để trống')
-    .max(100, 'Cách đọc quá dài (tối đa 100 ký tự)')
-    .refine(isOnyomiKunyomi, {
-      message: ONYOMI_KUNYOMI_ERROR
-    })
+  kanjiId: z.number().min(1, KanjiReadingMessage.KANJI_ID_INVALID),
+  readingType,
+  reading
 })
 
-// Update Kanji Reading schema
 export const UpdateKanjiReadingSchema = z.object({
-  readingType: z
-    .string()
-    .min(1, 'Loại cách đọc không được để trống')
-    .max(20, 'Loại cách đọc quá dài (tối đa 20 ký tự)')
-    .refine(isValidReadingType, {
-      message: READING_TYPE_ERROR
-    })
-    .optional(),
-  reading: z
-    .string()
-    .min(1, 'Cách đọc không được để trống')
-    .max(100, 'Cách đọc quá dài (tối đa 100 ký tự)')
-    .refine(isOnyomiKunyomi, {
-      message: ONYOMI_KUNYOMI_ERROR
-    })
-    .optional()
+  readingType: readingType.optional(),
+  reading: reading.optional()
 })
 
-// Get Kanji Reading by ID params schema
 export const GetKanjiReadingByIdParamsSchema = z.object({
-  id: z.string().transform((val) => parseInt(val, 10))
+  id: checkIdSchema(KanjiReadingMessage.INVALID_ID)
 })
 
-// Get Kanji Reading list query schema
 export const GetKanjiReadingListQuerySchema = z.object({
   page: z
     .string()
@@ -115,52 +77,35 @@ export const GetKanjiReadingListQuerySchema = z.object({
   readingType: z.string().optional()
 })
 
-// Get Kanji Readings by Kanji ID params schema
 export const GetKanjiReadingsByKanjiIdParamsSchema = z.object({
-  kanjiId: z.string().transform((val) => parseInt(val, 10))
+  kanjiId: checkIdSchema(KanjiReadingMessage.KANJI_ID_INVALID)
 })
 
-// Get Kanji Readings by Type params schema
 export const GetKanjiReadingsByTypeParamsSchema = z.object({
   readingType: z.string()
 })
 
-// List Response Schema (internal use)
-export const KanjiReadingListResponseSchema = z.object({
-  data: z.array(KanjiReadingSchema),
-  total: z.number(),
-  page: z.number(),
-  limit: z.number(),
-  totalPages: z.number()
+// Responses: stored rows, no input rules (a stored reading the rules reject
+// must not turn the answer into a 500)
+const KanjiReadingResItemSchema = z.object({
+  id: z.number(),
+  kanjiId: z.number(),
+  readingType: z.string(),
+  reading: z.string(),
+  createdAt: z.date(),
+  updatedAt: z.date()
 })
 
-// Standard Response Schemas (like vocabulary pattern)
-export const KanjiReadingResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: KanjiReadingSchema,
-    message: z.string()
-  })
-  .strict()
+// statusCode is part of the envelope, else the serializer drops it
+export const KanjiReadingResSchema = z.object({
+  statusCode: z.number(),
+  data: KanjiReadingResItemSchema,
+  message: z.string()
+})
 
-export const KanjiReadingListResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(KanjiReadingSchema),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
+export const KanjiReadingListResSchema = paginatedResSchema(KanjiReadingResItemSchema)
 
-// Type exports
-export type KanjiReading = z.infer<typeof KanjiReadingSchema>
+export type KanjiReading = z.infer<typeof KanjiReadingResItemSchema>
 export type CreateKanjiReadingBodyType = z.infer<typeof CreateKanjiReadingSchema>
 export type UpdateKanjiReadingBodyType = z.infer<typeof UpdateKanjiReadingSchema>
 export type GetKanjiReadingByIdParamsType = z.infer<
@@ -173,5 +118,3 @@ export type GetKanjiReadingsByKanjiIdParamsType = z.infer<
 export type GetKanjiReadingsByTypeParamsType = z.infer<
   typeof GetKanjiReadingsByTypeParamsSchema
 >
-export type KanjiReadingResType = z.infer<typeof KanjiReadingResSchema>
-export type KanjiReadingListResType = z.infer<typeof KanjiReadingListResSchema>

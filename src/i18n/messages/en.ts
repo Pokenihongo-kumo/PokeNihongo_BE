@@ -120,6 +120,27 @@ export const enMessages = {
     EXAMPLE_JP_TOO_LONG: 'Japanese example sentence is too long (max 1000 characters)',
     EXAMPLE_JP_NOT_JAPANESE: 'Must be Japanese text (Hiragana, Katakana or Kanji)'
   },
+  kanji_reading: {
+    GET_LIST_SUCCESS: 'Kanji reading list retrieved successfully',
+    GET_SUCCESS: 'Kanji reading retrieved successfully',
+    GET_STATS_SUCCESS: 'Kanji reading statistics retrieved successfully',
+    CREATE_SUCCESS: 'Kanji reading created successfully',
+    UPDATE_SUCCESS: 'Kanji reading updated successfully',
+    DELETE_SUCCESS: 'Kanji reading deleted successfully',
+    NOT_FOUND: 'Kanji reading not found',
+    ALREADY_EXISTS: 'Kanji reading already exists',
+    INVALID_DATA: 'Invalid kanji reading data',
+    INVALID_ID: 'Invalid kanji reading ID',
+    KANJI_NOT_FOUND: 'Kanji not found',
+    KANJI_ID_INVALID: 'Kanji ID must be greater than 0',
+    READING_TYPE_REQUIRED: 'Reading type is required',
+    READING_TYPE_TOO_LONG: 'Reading type is too long (max 20 characters)',
+    READING_TYPE_INVALID: 'Reading type must be onyomi, kunyomi, nanori or irregular',
+    READING_REQUIRED: 'Reading is required',
+    READING_TOO_LONG: 'Reading is too long (max 100 characters)',
+    READING_NOT_KANA:
+      'Must be an onyomi/kunyomi reading (Hiragana, Katakana and basic punctuation only)'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Lesson category created successfully',
     UPDATE_SUCCESS: 'Lesson category updated successfully',

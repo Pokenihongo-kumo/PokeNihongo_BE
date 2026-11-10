@@ -1,18 +1,15 @@
 import { createZodDto } from 'nestjs-zod'
 import {
   CreateKanjiReadingSchema,
-  UpdateKanjiReadingSchema,
   GetKanjiReadingByIdParamsSchema,
   GetKanjiReadingListQuerySchema,
   GetKanjiReadingsByKanjiIdParamsSchema,
   GetKanjiReadingsByTypeParamsSchema,
-  KanjiReadingSchema,
-  KanjiReadingListResponseSchema,
+  KanjiReadingListResSchema,
   KanjiReadingResSchema,
-  KanjiReadingListResSchema
+  UpdateKanjiReadingSchema
 } from '../entities/kanji-reading.entity'
 
-// Zod DTOs
 export class CreateKanjiReadingBodyDTO extends createZodDto(CreateKanjiReadingSchema) {}
 export class UpdateKanjiReadingBodyDTO extends createZodDto(UpdateKanjiReadingSchema) {}
 export class GetKanjiReadingByIdParamsDTO extends createZodDto(
@@ -26,10 +23,6 @@ export class GetKanjiReadingsByKanjiIdParamsDTO extends createZodDto(
 ) {}
 export class GetKanjiReadingsByTypeParamsDTO extends createZodDto(
   GetKanjiReadingsByTypeParamsSchema
-) {}
-export class KanjiReadingResponseDTO extends createZodDto(KanjiReadingSchema) {}
-export class KanjiReadingListResponseDTO extends createZodDto(
-  KanjiReadingListResponseSchema
 ) {}
 export class KanjiReadingResDTO extends createZodDto(KanjiReadingResSchema) {}
 export class KanjiReadingListResDTO extends createZodDto(KanjiReadingListResSchema) {}
