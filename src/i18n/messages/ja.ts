@@ -73,6 +73,22 @@ export const jaMessages = {
     INVALID_DATA: '出席設定のデータが無効です',
     INVALID_DAY_OF_WEEK: '曜日が無効です'
   },
+  lesson_category: {
+    CREATE_SUCCESS: 'レッスンカテゴリを作成しました',
+    UPDATE_SUCCESS: 'レッスンカテゴリを更新しました',
+    DELETE_SUCCESS: 'レッスンカテゴリを削除しました',
+    GET_SUCCESS: 'レッスンカテゴリを取得しました',
+    GET_LIST_SUCCESS: 'レッスンカテゴリ一覧を取得しました',
+    CREATE_DEFAULT_SUCCESS: '既定のレッスンカテゴリを作成しました',
+    NOT_FOUND: 'レッスンカテゴリが見つかりません',
+    ALREADY_EXISTS: 'レッスンカテゴリは既に存在します',
+    INVALID_DATA: 'レッスンカテゴリのデータが無効です',
+    INVALID_ID: 'レッスンカテゴリIDが無効です',
+    NAME_KEY_REQUIRED: 'ネームキーは必須です',
+    NAME_KEY_TOO_LONG: 'ネームキーが長すぎます（最大200文字）',
+    SLUG_REQUIRED: 'スラッグは必須です',
+    SLUG_TOO_LONG: 'スラッグが長すぎます（最大200文字）'
+  },
   languages: {
     CREATE_SUCCESS: '言語を作成しました',
     UPDATE_SUCCESS: '言語を更新しました',
