@@ -381,7 +381,21 @@ export const enMessages = {
   translation: {
     DUPLICATE_LANGUAGE: 'Duplicate language',
     ALREADY_EXISTS: 'Translation already exists',
-    DUPLICATE_VALUE: 'Duplicate translation value'
+    DUPLICATE_VALUE: 'Duplicate translation value',
+    GET_LIST_SUCCESS: 'Translation list retrieved successfully',
+    GET_SUCCESS: 'Translation retrieved successfully',
+    CREATE_SUCCESS: 'Translation created successfully',
+    UPDATE_SUCCESS: 'Translation updated successfully',
+    NOT_FOUND: 'Translation not found',
+    INVALID_DATA: 'Invalid translation data',
+    INVALID_ID: 'Invalid translation ID',
+    LANGUAGE_NOT_FOUND: 'Language not found',
+    LANGUAGE_ID_INVALID: 'Language ID must be greater than 0',
+    KEY_REQUIRED: 'Translation key is required',
+    KEY_TOO_LONG: 'Translation key is too long (max 500 characters)',
+    KEY_FORMAT: 'Translation key must look like module.id.field (e.g. lesson.1.title)',
+    VALUE_REQUIRED: 'Translation value is required',
+    VALUE_TOO_LONG: 'Translation value is too long (max 2000 characters)'
   },
   user_daily_request: {
     CREATE_SUCCESS: 'User daily request created successfully',

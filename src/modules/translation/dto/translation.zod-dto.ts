@@ -1,22 +1,25 @@
 import { createZodDto } from 'nestjs-zod'
 import {
   CreateTranslationSchema,
-  UpdateTranslationSchema,
+  CreateTranslationsSchema,
+  DeleteTranslationsByKeyParamsSchema,
   GetTranslationByIdParamsSchema,
   GetTranslationListQuerySchema,
   GetTranslationsByKeyQuerySchema,
   GetTranslationsByLanguageQuerySchema,
-  TranslationSchema,
-  TranslationListResponseSchema,
-  TranslationResSchema,
-  TranslationListResSchema
-} from '../../entities/translation.entities'
+  UpdateTranslationSchema
+} from '../entities/translation.entity'
 
-// Zod DTOs - automatically validated
+// No response serializers: rows carry the other modules' *Key columns and a
+// serializer schema would strip them from the answer
 export class CreateTranslationBodyDTO extends createZodDto(CreateTranslationSchema) {}
+export class CreateTranslationsBodyDTO extends createZodDto(CreateTranslationsSchema) {}
 export class UpdateTranslationBodyDTO extends createZodDto(UpdateTranslationSchema) {}
 export class GetTranslationByIdParamsDTO extends createZodDto(
   GetTranslationByIdParamsSchema
+) {}
+export class DeleteTranslationsByKeyParamsDTO extends createZodDto(
+  DeleteTranslationsByKeyParamsSchema
 ) {}
 export class GetTranslationListQueryDTO extends createZodDto(
   GetTranslationListQuerySchema
@@ -27,9 +30,3 @@ export class GetTranslationsByKeyQueryDTO extends createZodDto(
 export class GetTranslationsByLanguageQueryDTO extends createZodDto(
   GetTranslationsByLanguageQuerySchema
 ) {}
-export class TranslationResponseDTO extends createZodDto(TranslationSchema) {}
-export class TranslationListResponseDTO extends createZodDto(
-  TranslationListResponseSchema
-) {}
-export class TranslationResDTO extends createZodDto(TranslationResSchema) {}
-export class TranslationListResDTO extends createZodDto(TranslationListResSchema) {}

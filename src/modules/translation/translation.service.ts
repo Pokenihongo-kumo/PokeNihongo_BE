@@ -1,98 +1,135 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { TranslationMessage } from '@/i18n/message-keys'
+import { toPaginationMeta } from '@/shared/utils/pagination'
+import {
+  isForeignKeyConstraintPrismaError,
+  isNotFoundPrismaError,
+  isUniqueConstraintPrismaError
+} from '@/shared/utils/prisma-errors'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
+import {
+  InvalidTranslationDataException,
+  TranslationAlreadyExistsException,
+  TranslationLanguageNotFoundException,
+  TranslationNotFoundException
+} from './dto/translation.error'
 import {
   CreateTranslationBodyType,
-  UpdateTranslationBodyType,
   GetTranslationListQueryType,
   GetTranslationsByKeyQueryType,
   GetTranslationsByLanguageQueryType,
-  TranslationType
-} from './entities/translation.entities'
-import { TranslationRepository } from './translation.repo'
-import { Injectable, Logger } from '@nestjs/common'
-import {
-  TranslationNotFoundException,
-  TranslationAlreadyExistsException,
-  InvalidTranslationDataException
-} from './dto/translation.error'
+  TranslationType,
+  UpdateTranslationBodyType
+} from './entities/translation.entity'
+import { TranslationRepo } from './translation.repo'
 
 @Injectable()
 export class TranslationService {
   private readonly logger = new Logger(TranslationService.name)
 
-  constructor(private readonly translationRepository: TranslationRepository) {}
+  constructor(
+    private readonly translationRepository: TranslationRepo,
+    private readonly i18nService: I18nService
+  ) {}
 
-  async findMany(params: GetTranslationListQueryType) {
-    try {
-      this.logger.log(`Finding translations with params: ${JSON.stringify(params)}`)
-      const result = await this.translationRepository.findMany(params)
-
-      return {
-        statusCode: 200,
-        message: 'Lấy danh sách bản dịch thành công',
-        data: {
-          results: result.data,
-          pagination: {
-            current: result.page,
-            pageSize: result.limit,
-            totalPage: result.totalPages,
-            totalItem: result.total
-          }
-        }
+  //#region HTTP routes (envelope + translated message)
+  async findMany(params: GetTranslationListQueryType, lang: string = 'vi') {
+    const result = await this.translationRepository.findMany(params)
+    return {
+      statusCode: 200,
+      message: this.i18nService.translate(TranslationMessage.GET_LIST_SUCCESS, lang),
+      data: {
+        results: result.data,
+        pagination: toPaginationMeta(params.page, params.limit, result.total)
       }
-    } catch (error) {
-      this.logger.error('Error finding translations:', error)
-      throw error
     }
   }
 
-  async findById(id: number): Promise<TranslationType> {
-    try {
-      this.logger.log(`Finding translation by id: ${id}`)
-      const translation = await this.translationRepository.findById(id)
-
-      if (!translation) {
-        throw TranslationNotFoundException
+  // { results, pagination } like every list (was { data[], total, page, limit, totalPages })
+  async findByLanguage(params: GetTranslationsByLanguageQueryType, lang: string = 'vi') {
+    const result = await this.translationRepository.findByLanguage(params.languageId, {
+      page: params.page,
+      limit: params.limit
+    })
+    return {
+      statusCode: 200,
+      message: this.i18nService.translate(TranslationMessage.GET_LIST_SUCCESS, lang),
+      data: {
+        results: result.data,
+        pagination: toPaginationMeta(params.page, params.limit, result.total)
       }
-
-      return translation
-    } catch (error) {
-      this.logger.error('Error finding translation by id:', error)
-      throw error
     }
+  }
+
+  async getByKey(params: GetTranslationsByKeyQueryType, lang: string = 'vi') {
+    return {
+      data: await this.findByKey(params),
+      message: this.i18nService.translate(TranslationMessage.GET_SUCCESS, lang)
+    }
+  }
+
+  async getById(id: number, lang: string = 'vi') {
+    return {
+      data: await this.findById(id),
+      message: this.i18nService.translate(TranslationMessage.GET_SUCCESS, lang)
+    }
+  }
+
+  async createTranslation(data: CreateTranslationBodyType, lang: string = 'vi') {
+    return {
+      data: await this.create(data),
+      message: this.i18nService.translate(TranslationMessage.CREATE_SUCCESS, lang)
+    }
+  }
+
+  async createTranslations(data: CreateTranslationBodyType[], lang: string = 'vi') {
+    return {
+      data: await this.createMany(data),
+      message: this.i18nService.translate(TranslationMessage.CREATE_SUCCESS, lang)
+    }
+  }
+
+  async updateTranslation(
+    id: number,
+    data: UpdateTranslationBodyType,
+    lang: string = 'vi'
+  ) {
+    return {
+      data: await this.update(id, data),
+      message: this.i18nService.translate(TranslationMessage.UPDATE_SUCCESS, lang)
+    }
+  }
+  //#endregion
+
+  //#region Used by other modules too (plain data, unchanged shapes)
+  async findById(id: number): Promise<TranslationType> {
+    const translation = await this.translationRepository.findById(id)
+    if (!translation) {
+      throw new TranslationNotFoundException()
+    }
+    return translation
   }
 
   async findByKeyAndLanguage(
     key: string,
     languageId: number
   ): Promise<TranslationType | null> {
-    try {
-      // Kiểm tra key có tồn tại không
-      if (!key || key.trim() === '') {
-        this.logger.warn(`Translation key is empty or undefined: ${key}`)
-        return null
-      }
-
-      this.logger.log(`Finding translation by key: ${key} and languageId: ${languageId}`)
-      return await this.translationRepository.findByKeyAndLanguage(key, languageId)
-    } catch (error) {
-      this.logger.error('Error finding translation by key and language:', error)
-      throw error
+    if (!key || key.trim() === '') {
+      this.logger.warn(`Translation key is empty or undefined: ${key}`)
+      return null
     }
+    return this.translationRepository.findByKeyAndLanguage(key, languageId)
   }
 
-  async findByKeyOrMeaningPrefix(key: string, languageId: number) {
-    try {
-      if (!key || key.trim() === '') {
-        this.logger.warn(`Translation key is empty or undefined: ${key}`)
-        return []
-      }
-      this.logger.log(
-        `Finding translations by key or meaning prefix: ${key}, languageId: ${languageId}`
-      )
-      return await this.translationRepository.findByKeyOrMeaningPrefix(key, languageId)
-    } catch (error) {
-      this.logger.error('Error finding translation by key or meaning prefix:', error)
-      throw error
+  async findByKeyOrMeaningPrefix(
+    key: string,
+    languageId: number
+  ): Promise<TranslationType[]> {
+    if (!key || key.trim() === '') {
+      this.logger.warn(`Translation key is empty or undefined: ${key}`)
+      return []
     }
+    return this.translationRepository.findByKeyOrMeaningPrefix(key, languageId)
   }
 
   async resolvePreferredTranslationValue(
@@ -113,112 +150,62 @@ export class TranslationService {
   }
 
   async findByKey(params: GetTranslationsByKeyQueryType) {
-    try {
-      this.logger.log(`Finding translations by key: ${params.key}`)
-      const translations = await this.translationRepository.findByKey(params.key)
-
-      return {
-        key: params.key,
-        translations
-      }
-    } catch (error) {
-      this.logger.error('Error finding translations by key:', error)
-      throw error
-    }
-  }
-
-  async findByLanguage(params: GetTranslationsByLanguageQueryType) {
-    try {
-      this.logger.log(`Finding translations by languageId: ${params.languageId}`)
-      return await this.translationRepository.findByLanguage(params.languageId, {
-        page: params.page,
-        limit: params.limit
-      })
-    } catch (error) {
-      this.logger.error('Error finding translations by language:', error)
-      throw error
-    }
+    const translations = await this.translationRepository.findByKey(params.key)
+    return { key: params.key, translations }
   }
 
   async create(data: CreateTranslationBodyType): Promise<TranslationType> {
     try {
-      this.logger.log(
-        `Creating translation: ${data.key} - languageId: ${data.languageId}`
-      )
-
-      // Kiểm tra bản dịch đã tồn tại chưa
-      const existingTranslation = await this.translationRepository.findByKeyAndLanguage(
-        data.key,
-        data.languageId
-      )
-      if (existingTranslation) {
-        throw TranslationAlreadyExistsException
+      if (
+        await this.translationRepository.findByKeyAndLanguage(data.key, data.languageId)
+      ) {
+        throw new TranslationAlreadyExistsException()
       }
-
-      const translation = await this.translationRepository.create(data)
-      this.logger.log(`Translation created successfully: ${translation.id}`)
-      return translation
+      return await this.translationRepository.create(data)
     } catch (error) {
-      this.logger.error('Error creating translation:', error)
-      throw InvalidTranslationDataException
+      throw this.toTranslationError(error)
     }
   }
 
   async createMany(data: CreateTranslationBodyType[]): Promise<{ count: number }> {
     try {
-      this.logger.log(`Creating ${data.length} translations`)
-
-      // Kiểm tra từng bản dịch có trùng không
       for (const item of data) {
-        const existingTranslation = await this.translationRepository.findByKeyAndLanguage(
-          item.key,
-          item.languageId
-        )
-        if (existingTranslation) {
-          throw TranslationAlreadyExistsException
+        if (
+          await this.translationRepository.findByKeyAndLanguage(item.key, item.languageId)
+        ) {
+          throw new TranslationAlreadyExistsException()
         }
       }
-
-      const result = await this.translationRepository.createMany(data)
-      this.logger.log(`${result.count} translations created successfully`)
-      return result
+      return await this.translationRepository.createMany(data)
     } catch (error) {
-      this.logger.error('Error creating multiple translations:', error)
-      throw InvalidTranslationDataException
+      throw this.toTranslationError(error)
     }
   }
 
   async update(id: number, data: UpdateTranslationBodyType): Promise<TranslationType> {
     try {
-      this.logger.log(`Updating translation: ${id}`)
-
-      // Kiểm tra bản dịch có tồn tại không
-      const existingTranslation = await this.translationRepository.findById(id)
-      if (!existingTranslation) {
-        throw TranslationNotFoundException
+      const existing = await this.translationRepository.findById(id)
+      if (!existing) {
+        throw new TranslationNotFoundException()
       }
 
-      // Nếu thay đổi key hoặc languageId, kiểm tra trùng lặp
+      // Changing key or language must not collide with another row
       if (
-        (data.key && data.key !== existingTranslation.key) ||
-        (data.languageId && data.languageId !== existingTranslation.languageId)
+        (data.key && data.key !== existing.key) ||
+        (data.languageId && data.languageId !== existing.languageId)
       ) {
-        const duplicateTranslation =
-          await this.translationRepository.findByKeyAndLanguage(
-            data.key || existingTranslation.key,
-            data.languageId || existingTranslation.languageId
-          )
-        if (duplicateTranslation && duplicateTranslation.id !== id) {
-          throw TranslationAlreadyExistsException
+        const duplicate = await this.translationRepository.findByKeyAndLanguage(
+          data.key || existing.key,
+          data.languageId || existing.languageId
+        )
+        if (duplicate && duplicate.id !== id) {
+          throw new TranslationAlreadyExistsException()
         }
       }
 
-      const translation = await this.translationRepository.update(id, data)
-      this.logger.log(`Translation updated successfully: ${translation.id}`)
-      return translation
+      return await this.translationRepository.update(id, data)
     } catch (error) {
-      this.logger.error('Error updating translation:', error)
-      throw InvalidTranslationDataException
+      throw this.toTranslationError(error)
     }
   }
 
@@ -228,80 +215,68 @@ export class TranslationService {
     data: UpdateTranslationBodyType
   ): Promise<TranslationType> {
     try {
-      this.logger.log(`Updating translation by key: ${key} and languageId: ${languageId}`)
-
-      // Kiểm tra bản dịch có tồn tại không
-      const existingTranslation = await this.translationRepository.findByKeyAndLanguage(
-        key,
-        languageId
-      )
-      if (!existingTranslation) {
-        throw TranslationNotFoundException
+      if (!(await this.translationRepository.findByKeyAndLanguage(key, languageId))) {
+        throw new TranslationNotFoundException()
       }
-
-      const translation = await this.translationRepository.updateByKeyAndLanguage(
+      return await this.translationRepository.updateByKeyAndLanguage(
         key,
         languageId,
         data
       )
-      this.logger.log(`Translation updated successfully: ${translation.id}`)
-      return translation
     } catch (error) {
-      this.logger.error('Error updating translation by key and language:', error)
-      throw InvalidTranslationDataException
+      throw this.toTranslationError(error)
     }
   }
 
   async delete(id: number): Promise<void> {
     try {
-      this.logger.log(`Deleting translation: ${id}`)
-
-      // Kiểm tra bản dịch có tồn tại không
-      const existingTranslation = await this.translationRepository.findById(id)
-      if (!existingTranslation) {
-        throw TranslationNotFoundException
+      if (!(await this.translationRepository.findById(id))) {
+        throw new TranslationNotFoundException()
       }
-
       await this.translationRepository.delete(id)
-      this.logger.log(`Translation deleted successfully: ${id}`)
     } catch (error) {
-      this.logger.error('Error deleting translation:', error)
-      throw InvalidTranslationDataException
+      throw this.toTranslationError(error)
     }
   }
 
   async deleteByKeyAndLanguage(key: string, languageId: number): Promise<void> {
     try {
-      this.logger.log(`Deleting translation by key: ${key} and languageId: ${languageId}`)
-
-      // Kiểm tra bản dịch có tồn tại không
-      const existingTranslation = await this.translationRepository.findByKeyAndLanguage(
-        key,
-        languageId
-      )
-      if (!existingTranslation) {
-        throw TranslationNotFoundException
+      if (!(await this.translationRepository.findByKeyAndLanguage(key, languageId))) {
+        throw new TranslationNotFoundException()
       }
-
       await this.translationRepository.deleteByKeyAndLanguage(key, languageId)
-      this.logger.log(
-        `Translation deleted successfully: ${key} - languageId: ${languageId}`
-      )
     } catch (error) {
-      this.logger.error('Error deleting translation by key and language:', error)
-      throw InvalidTranslationDataException
+      throw this.toTranslationError(error)
     }
   }
 
   async deleteByKey(key: string): Promise<{ count: number }> {
     try {
-      this.logger.log(`Deleting all translations by key: ${key}`)
-      const result = await this.translationRepository.deleteByKey(key)
-      this.logger.log(`${result.count} translations deleted successfully for key: ${key}`)
-      return result
+      return await this.translationRepository.deleteByKey(key)
     } catch (error) {
-      this.logger.error('Error deleting translations by key:', error)
-      throw InvalidTranslationDataException
+      throw this.toTranslationError(error)
     }
+  }
+  //#endregion
+
+  /**
+   * Error to answer, decided by type (not message text): our HTTP errors pass
+   * through (they were all turned into 400 before), duplicate (languageId, key)
+   * is 409, a missing language 404, a missing row 404, anything else the
+   * generic "invalid data" 400 these methods answered before.
+   */
+  private toTranslationError(error: unknown): HttpException {
+    if (error instanceof HttpException) return error
+    this.logger.error(
+      'Translation request failed',
+      error instanceof Error ? error.stack : error
+    )
+    if (isUniqueConstraintPrismaError(error))
+      return new TranslationAlreadyExistsException()
+    if (isForeignKeyConstraintPrismaError(error)) {
+      return new TranslationLanguageNotFoundException()
+    }
+    if (isNotFoundPrismaError(error)) return new TranslationNotFoundException()
+    return new InvalidTranslationDataException()
   }
 }

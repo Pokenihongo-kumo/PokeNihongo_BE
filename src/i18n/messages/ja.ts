@@ -391,7 +391,21 @@ export const jaMessages = {
   translation: {
     DUPLICATE_LANGUAGE: '言語が重複しています',
     ALREADY_EXISTS: '翻訳は既に存在します',
-    DUPLICATE_VALUE: '翻訳値が重複しています'
+    DUPLICATE_VALUE: '翻訳値が重複しています',
+    GET_LIST_SUCCESS: '翻訳一覧を取得しました',
+    GET_SUCCESS: '翻訳を取得しました',
+    CREATE_SUCCESS: '翻訳を作成しました',
+    UPDATE_SUCCESS: '翻訳を更新しました',
+    NOT_FOUND: '翻訳が見つかりません',
+    INVALID_DATA: '翻訳のデータが無効です',
+    INVALID_ID: '翻訳IDが無効です',
+    LANGUAGE_NOT_FOUND: '言語が見つかりません',
+    LANGUAGE_ID_INVALID: '言語IDは0より大きくなければなりません',
+    KEY_REQUIRED: '翻訳キーは必須です',
+    KEY_TOO_LONG: '翻訳キーが長すぎます（最大500文字）',
+    KEY_FORMAT: '翻訳キーは module.id.field の形式にしてください（例: lesson.1.title）',
+    VALUE_REQUIRED: '翻訳内容は必須です',
+    VALUE_TOO_LONG: '翻訳内容が長すぎます（最大2000文字）'
   },
   user_daily_request: {
     CREATE_SUCCESS: 'ユーザーデイリーリクエストの作成が完了しました',

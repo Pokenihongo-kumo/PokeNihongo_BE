@@ -1,20 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { TranslationSortField, SortOrder } from '@/common/enum/enum'
 
-// Export Zod DTOs from subfolder
-export {
-  CreateTranslationBodyDTO,
-  UpdateTranslationBodyDTO,
-  GetTranslationByIdParamsDTO,
-  GetTranslationListQueryDTO,
-  GetTranslationsByKeyQueryDTO,
-  GetTranslationsByLanguageQueryDTO,
-  TranslationResponseDTO,
-  TranslationListResponseDTO,
-  TranslationResDTO,
-  TranslationListResDTO
-} from './zod/translation.zod-dto'
-
 // Swagger DTOs - for API documentation only
 export class CreateTranslationSwaggerDTO {
   @ApiProperty({ example: 'vi', description: 'Mã ngôn ngữ' })

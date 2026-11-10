@@ -20,8 +20,8 @@ import { LanguagesRepo } from '../languages/languages.repo'
 import { PokemonRepo } from '../pokemon/pokemon.repo'
 import { ShopItemRepo } from '../shop-item/shop-item.repo'
 import { ShopPurchaseRepo } from '../shop-purchase/shop-purchase.repo'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entities'
-import { TranslationRepository } from '../translation/translation.repo'
+import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
+import { TranslationRepo } from '../translation/translation.repo'
 import { UserPokemonRepo } from '../user-pokemon/user-pokemon.repo'
 import {
   InvalidMinMaxShopBannerException,
@@ -43,7 +43,7 @@ export class ShopBannerService {
     private shopBannerRepo: ShopBannerRepo,
     private readonly i18nService: I18nService,
     private readonly languageRepo: LanguagesRepo,
-    private readonly translationRepo: TranslationRepository,
+    private readonly translationRepo: TranslationRepo,
     private readonly shopPurchaseRepo: ShopPurchaseRepo,
     private readonly userPokemonRepo: UserPokemonRepo,
     private readonly pokemonRepo: PokemonRepo,

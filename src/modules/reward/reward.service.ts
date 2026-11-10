@@ -24,8 +24,8 @@ import {
 } from '@prisma/client'
 import { LanguagesRepo } from '../languages/languages.repo'
 import { PokemonRepo } from '../pokemon/pokemon.repo'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entities'
-import { TranslationRepository } from '../translation/translation.repo'
+import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
+import { TranslationRepo } from '../translation/translation.repo'
 import { UserPokemonRepo } from '../user-pokemon/user-pokemon.repo'
 import { CreateUserRewardHistoryBodyType } from '../user-reward-history/entities/user-reward-history.entities'
 import { UserRewardHistoryService } from '../user-reward-history/user-reward-history.service'
@@ -47,7 +47,7 @@ export class RewardService {
     private rewardRepo: RewardRepo,
     private readonly i18nService: I18nService,
     private readonly languageRepo: LanguagesRepo,
-    private readonly translationRepo: TranslationRepository,
+    private readonly translationRepo: TranslationRepo,
     private readonly userService: UserService,
     private readonly walletRepo: WalletRepo,
     private readonly pokemonRepo: PokemonRepo,

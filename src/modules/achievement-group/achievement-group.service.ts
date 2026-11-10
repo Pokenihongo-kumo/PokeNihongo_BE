@@ -14,8 +14,8 @@ import { PaginationQueryType } from '@/shared/models/request.model'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { LanguagesRepo } from '../languages/languages.repo'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entities'
-import { TranslationRepository } from '../translation/translation.repo'
+import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
+import { TranslationRepo } from '../translation/translation.repo'
 import { AchievementGroupRepo } from './achievement-group.repo'
 import { AchievementGroupAlreadyExistsException } from './dto/achievement-group.error'
 import {
@@ -31,7 +31,7 @@ export class AchievementGroupService {
     private achievementGroupRepo: AchievementGroupRepo,
     private readonly i18nService: I18nService,
     private readonly languageRepo: LanguagesRepo,
-    private readonly translationRepo: TranslationRepository,
+    private readonly translationRepo: TranslationRepo,
     private readonly prismaService: PrismaService
   ) {}
 
