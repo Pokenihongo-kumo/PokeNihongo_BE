@@ -4,13 +4,13 @@ import {
   UpdateGrammarBodyType,
   GetGrammarByIdParamsType,
   GetGrammarListQueryType
-} from './entities/grammar.entities'
+} from './entities/grammar.entity'
 import {
   GrammarNotFoundException,
   GrammarAlreadyExistsException,
   InvalidGrammarDataException
 } from './dto/grammar.error'
-import { GrammarRepository } from './grammar.repo'
+import { GrammarRepo } from './grammar.repo'
 import { GrammarUsageService } from '../grammar-usage/grammar-usage.service'
 import { TranslationService } from '../translation/translation.service'
 import { LanguagesService } from '../languages/languages.service'
@@ -22,7 +22,7 @@ export class GrammarService {
   private readonly logger = new Logger(GrammarService.name)
 
   constructor(
-    private readonly grammarRepository: GrammarRepository,
+    private readonly grammarRepository: GrammarRepo,
     private readonly grammarUsageService: GrammarUsageService,
     private readonly translationService: TranslationService,
     private readonly languagesService: LanguagesService,

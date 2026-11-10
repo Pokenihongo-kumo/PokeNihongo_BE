@@ -1,6 +1,6 @@
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
-import { GrammarType, GetGrammarListQueryType } from '../entities/grammar.entities'
+import { GrammarType, GetGrammarListQueryType } from '../entities/grammar.entity'
 import { CurrentUser } from '@/common/decorators/user.decorator'
 
 export const GrammarResponseSchema = z.object({

@@ -4,11 +4,11 @@ import {
   CreateGrammarBodyType,
   UpdateGrammarBodyType,
   GetGrammarListQueryType
-} from './entities/grammar.entities'
+} from './entities/grammar.entity'
 import { GrammarSortField, SortOrder } from '@/common/enum/enum'
 
 @Injectable()
-export class GrammarRepository {
+export class GrammarRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(params: GetGrammarListQueryType) {

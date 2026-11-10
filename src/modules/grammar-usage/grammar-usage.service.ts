@@ -4,21 +4,21 @@ import {
   UpdateGrammarUsageBodyType,
   GetGrammarUsageByIdParamsType,
   GetGrammarUsageListQueryType
-} from './entities/grammar-usage.entities'
+} from './entities/grammar-usage.entity'
 import {
   GrammarUsageNotFoundException,
   GrammarUsageAlreadyExistsException,
   InvalidGrammarUsageDataException,
   GrammarNotFoundException
 } from './dto/grammar-usage.error'
-import { GrammarUsageRepository } from './grammar-usage.repo'
+import { GrammarUsageRepo } from './grammar-usage.repo'
 import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from '@/shared/helpers'
 
 @Injectable()
 export class GrammarUsageService {
   private readonly logger = new Logger(GrammarUsageService.name)
 
-  constructor(private readonly grammarUsageRepository: GrammarUsageRepository) {}
+  constructor(private readonly grammarUsageRepository: GrammarUsageRepo) {}
 
   async getGrammarUsageList(params: GetGrammarUsageListQueryType) {
     try {

@@ -3,7 +3,7 @@ import { z } from 'zod'
 import {
   GrammarUsageType,
   GrammarUsageWithGrammarType
-} from '../entities/grammar-usage.entities'
+} from '../entities/grammar-usage.entity'
 
 export const GrammarUsageResponseSchema = z.object({
   data: GrammarUsageType,

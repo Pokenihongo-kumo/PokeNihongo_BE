@@ -27,7 +27,7 @@ import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from '@/shared/h
 import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { LessonContentSortField, SortOrder } from '@/common/enum/enum'
 import { VocabularyService } from '../vocabulary/vocabulary.service'
-import { GrammarRepository } from '../grammar/grammar.repo'
+import { GrammarRepo } from '../grammar/grammar.repo'
 import { KanjiService } from '../kanji/kanji.service'
 import { TranslationService } from '../translation/translation.service'
 import { LanguagesService } from '../languages/languages.service'
@@ -43,7 +43,7 @@ export class LessonContentService {
   constructor(
     private readonly lessonContentRepository: LessonContentRepository,
     private readonly vocabularyService: VocabularyService,
-    private readonly grammarRepository: GrammarRepository,
+    private readonly grammarRepository: GrammarRepo,
     private readonly kanjiService: KanjiService,
     private readonly translationService: TranslationService,
     private readonly languagesService: LanguagesService,

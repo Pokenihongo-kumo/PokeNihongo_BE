@@ -4,7 +4,7 @@ import {
   UpdateGrammarUsageBodyType,
   GetGrammarUsageByIdParamsType,
   GetGrammarUsageListQueryType
-} from '../entities/grammar-usage.entities'
+} from '../entities/grammar-usage.entity'
 
 export class CreateGrammarUsageBodyDTO extends createZodDto(CreateGrammarUsageBodyType) {}
 export class UpdateGrammarUsageBodyDTO extends createZodDto(UpdateGrammarUsageBodyType) {}
