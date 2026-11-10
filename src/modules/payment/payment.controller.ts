@@ -1,7 +1,16 @@
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { IsPublic } from '@/common/decorators/auth.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
-import { Body, Controller, Get, Post, Query, Res } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Query,
+  Res
+} from '@nestjs/common'
 import { ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { CreatePayOSPaymentDto } from './entities/payment.model'
 import { PaymentService } from './payment.service'
@@ -25,25 +34,14 @@ export class PaymentController {
   @IsPublic()
   @ApiOperation({ summary: 'PayOS return URL handler' })
   @ApiResponse({ status: 302, description: 'Redirect về frontend' })
+  // code/status/cancel in the query are ignored: the state comes from PayOS
   async handlePayOSReturn(
-    @Query('paymentId') paymentId: string,
-    @Query('code') code: string,
-    @Query('id') paymentLinkId: string,
-    @Query('cancel') cancel: string,
-    @Query('status') status: string,
     @Query('orderCode') orderCode: string,
     @Res() res: any,
     @I18nLang() lang: string
   ) {
     const result = await this.paymentService.handlePayOSReturn(
-      {
-        paymentId: parseInt(paymentId),
-        code,
-        paymentLinkId,
-        cancel: cancel === 'true',
-        status,
-        orderCode: parseInt(orderCode)
-      },
+      { orderCode: parseInt(orderCode) },
       lang
     )
 
@@ -56,27 +54,26 @@ export class PaymentController {
   @ApiOperation({ summary: 'PayOS cancel URL handler' })
   @ApiResponse({ status: 302, description: 'Redirect về frontend' })
   async handlePayOSCancel(
-    @Query('paymentId') paymentId: string,
-    @Query('code') code: string,
-    @Query('id') paymentLinkId: string,
-    @Query('cancel') cancel: string,
-    @Query('status') status: string,
     @Query('orderCode') orderCode: string,
     @Res() res: any,
     @I18nLang() lang: string
   ) {
     const result = await this.paymentService.handlePayOSCancel(
-      {
-        paymentId: parseInt(paymentId),
-        code,
-        paymentLinkId,
-        cancel: cancel === 'true',
-        status,
-        orderCode: parseInt(orderCode)
-      },
+      { orderCode: parseInt(orderCode) },
       lang
     )
     // Redirect về frontend
     return res.redirect(result.redirect)
+  }
+
+  // Payment notifications from PayOS; the body is trusted only after the SDK
+  // verifies its signature with PAYOS_CHECKSUM_KEY
+  @Post('/payos/webhook')
+  @IsPublic()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'PayOS webhook' })
+  @ApiResponse({ status: 200, description: 'Webhook xử lý thành công' })
+  async handlePayOSWebhook(@Body() body: unknown, @I18nLang() lang: string) {
+    return this.paymentService.handlePayOSWebhook(body, lang)
   }
 }

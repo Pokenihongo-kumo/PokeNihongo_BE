@@ -41,21 +41,35 @@ export class PaymentRepo {
     })
   }
 
-  async markInvoicePaid(paymentId: number, invoiceId: number): Promise<void> {
-    await this.prisma.$transaction(async (tx) => {
-      await tx.payment.update({
-        where: { id: paymentId },
-        data: {
-          status: 'PAID',
-          paidAt: new Date()
-        }
+  /**
+   * PAID once: the payment moves to PAID only from a state that is not already
+   * PAID/REFUNDED, in the same transaction as its invoice. Returns false when
+   * another request got there first, so the caller grants nothing twice.
+   */
+  async markInvoicePaidOnce(paymentId: number, invoiceId: number): Promise<boolean> {
+    return this.prisma.$transaction(async (tx) => {
+      const { count } = await tx.payment.updateMany({
+        where: { id: paymentId, status: { notIn: ['PAID', 'REFUNDED'] } },
+        data: { status: 'PAID', paidAt: new Date() }
       })
+      if (count === 0) return false
       await tx.invoice.update({
         where: { id: invoiceId },
-        data: {
-          status: InvoiceStatus.PAID
-        }
+        data: { status: InvoiceStatus.PAID }
       })
+      return true
     })
+  }
+
+  // PENDING -> CANCELLED/FAILED only; never overrides a payment already PAID
+  async closePendingPayment(
+    id: number,
+    data: { status: 'CANCELLED' | 'FAILED' | 'EXPIRED'; failureReason: string }
+  ): Promise<boolean> {
+    const { count } = await this.prisma.payment.updateMany({
+      where: { id, status: 'PENDING' },
+      data
+    })
+    return count === 1
   }
 }
