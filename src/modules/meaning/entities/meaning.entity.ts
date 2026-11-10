@@ -1,3 +1,6 @@
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { MeaningMessage } from '@/i18n/message-keys'
+import { paginatedResSchema } from '@/shared/utils/pagination'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -5,25 +8,23 @@ import { z } from 'zod'
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
 
-// Custom validation functions for Meaning
-const isValidTranslationKey = (key: string): boolean => {
-  // Translation keys should follow pattern: module.id.field (e.g., meaning.1.definition)
-  const keyRegex = /^[a-zA-Z][a-zA-Z0-9]*(\.[a-zA-Z][a-zA-Z0-9]*)*$/
-  return keyRegex.test(key)
-}
+// Translation keys follow module.id.field, e.g. meaning.example.definition
+const isValidTranslationKey = (key: string): boolean =>
+  /^[a-zA-Z][a-zA-Z0-9]*(\.[a-zA-Z][a-zA-Z0-9]*)*$/.test(key)
 
-const isValidJapaneseText = (text: string): boolean => {
-  // Japanese text contains Hiragana, Katakana, Kanji, and some punctuation
-  const japaneseRegex =
-    /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\u3400-\u4DBF\u20000-\u2A6DF\u2A700-\u2B73F\u2B740-\u2B81F\u2B820-\u2CEAF\uF900-\uFAFF\u2F800-\u2FA1F\s\-\.\,\!\?\'\"]/
-  return japaneseRegex.test(text)
-}
+// Contains Hiragana, Katakana or Kanji (or basic punctuation)
+const isValidJapaneseText = (text: string): boolean =>
+  /[぀-ゟ゠-ヿ一-龯㐀-䶿 0-⩭F⩰0-⭳F⭴0-⮁F⮂0-⳪F豈-﫿⾀0-⾡F\s\-.,!?'"]/.test(text)
 
-// Custom error messages
-const TRANSLATION_KEY_ERROR =
-  'Key dịch phải theo định dạng: module.id.field (ví dụ: meaning.1.definition)'
-const JAPANESE_TEXT_ERROR =
-  'Phải là văn bản tiếng Nhật (chứa Hiragana, Katakana, hoặc Kanji)'
+const translationKey = (required: string, tooLong: string) =>
+  z
+    .string()
+    .min(1, required)
+    .max(500, tooLong)
+    .refine(isValidTranslationKey, { message: MeaningMessage.TRANSLATION_KEY_FORMAT })
+
+const vocabularyId = z.number().min(1, MeaningMessage.VOCABULARY_ID_INVALID)
+const wordTypeId = z.number().min(1, MeaningMessage.WORD_TYPE_ID_INVALID)
 
 export const MeaningSchema = z.object({
   id: z.number(),
@@ -38,72 +39,53 @@ export const MeaningSchema = z.object({
 })
 
 export const CreateMeaningSchema = z.object({
-  vocabularyId: z.number().min(1, 'Vocabulary ID phải lớn hơn 0'),
-  wordTypeId: z.number().min(1, 'WordType ID phải lớn hơn 0').optional(),
+  vocabularyId,
+  wordTypeId: wordTypeId.optional(),
   exampleSentenceJp: z
     .string()
-    .max(1000, 'Câu ví dụ tiếng Nhật quá dài (tối đa 1000 ký tự)')
+    .max(1000, MeaningMessage.EXAMPLE_JP_TOO_LONG)
     .refine((val) => !val || isValidJapaneseText(val), {
-      message: JAPANESE_TEXT_ERROR
+      message: MeaningMessage.EXAMPLE_JP_NOT_JAPANESE
     })
     .optional()
 })
 
-// Schema cho service layer (bao gồm auto-generated keys)
-export const CreateMeaningServiceSchema = z.object({
-  vocabularyId: z.number().min(1, 'Vocabulary ID phải lớn hơn 0'),
-  wordTypeId: z.number().min(1, 'WordType ID phải lớn hơn 0').optional(),
+// Service input: the body plus the keys the service generates
+export const CreateMeaningServiceSchema = CreateMeaningSchema.extend({
   meaningKey: z.string().optional(),
   exampleSentenceKey: z.string().optional(),
-  explanationKey: z.string().optional(),
-  exampleSentenceJp: z
-    .string()
-    .max(1000, 'Câu ví dụ tiếng Nhật quá dài (tối đa 1000 ký tự)')
-    .refine((val) => !val || isValidJapaneseText(val), {
-      message: JAPANESE_TEXT_ERROR
-    })
-    .optional()
+  explanationKey: z.string().optional()
 })
 
 export const UpdateMeaningSchema = z.object({
-  vocabularyId: z.number().min(1, 'Vocabulary ID phải lớn hơn 0').optional(),
-  wordTypeId: z.number().min(1, 'WordType ID phải lớn hơn 0').optional(),
-  meaningKey: z
-    .string()
-    .min(1, 'Meaning key không được để trống')
-    .max(500, 'Meaning key quá dài (tối đa 500 ký tự)')
-    .refine(isValidTranslationKey, {
-      message: TRANSLATION_KEY_ERROR
-    })
-    .optional(),
-  exampleSentenceKey: z
-    .string()
-    .min(1, 'Example sentence key không được để trống')
-    .max(500, 'Example sentence key quá dài (tối đa 500 ký tự)')
-    .refine(isValidTranslationKey, {
-      message: TRANSLATION_KEY_ERROR
-    })
-    .optional(),
-  explanationKey: z
-    .string()
-    .min(1, 'Explanation key không được để trống')
-    .max(500, 'Explanation key quá dài (tối đa 500 ký tự)')
-    .refine(isValidTranslationKey, {
-      message: TRANSLATION_KEY_ERROR
-    })
-    .optional(),
+  vocabularyId: vocabularyId.optional(),
+  wordTypeId: wordTypeId.optional(),
+  meaningKey: translationKey(
+    MeaningMessage.MEANING_KEY_REQUIRED,
+    MeaningMessage.MEANING_KEY_TOO_LONG
+  ).optional(),
+  exampleSentenceKey: translationKey(
+    MeaningMessage.EXAMPLE_KEY_REQUIRED,
+    MeaningMessage.EXAMPLE_KEY_TOO_LONG
+  ).optional(),
+  explanationKey: translationKey(
+    MeaningMessage.EXPLANATION_KEY_REQUIRED,
+    MeaningMessage.EXPLANATION_KEY_TOO_LONG
+  ).optional(),
   exampleSentenceJp: z
     .string()
-    .min(1, 'Câu ví dụ tiếng Nhật không được để trống')
-    .max(1000, 'Câu ví dụ tiếng Nhật quá dài (tối đa 1000 ký tự)')
-    .refine(isValidJapaneseText, {
-      message: JAPANESE_TEXT_ERROR
-    })
+    .min(1, MeaningMessage.EXAMPLE_JP_REQUIRED)
+    .max(1000, MeaningMessage.EXAMPLE_JP_TOO_LONG)
+    .refine(isValidJapaneseText, { message: MeaningMessage.EXAMPLE_JP_NOT_JAPANESE })
     .optional()
 })
 
 export const GetMeaningByIdParamsSchema = z.object({
-  id: z.string().transform((val) => parseInt(val, 10))
+  id: checkIdSchema(MeaningMessage.INVALID_ID)
+})
+
+export const GetMeaningsByVocabularyParamsSchema = z.object({
+  vocabularyId: checkIdSchema(MeaningMessage.VOCABULARY_ID_INVALID)
 })
 
 export const GetMeaningListQuerySchema = z.object({
@@ -126,29 +108,24 @@ export const GetMeaningListQuerySchema = z.object({
     .optional()
 })
 
-export const GetMeaningsByVocabularyParamsSchema = z.object({
-  vocabularyId: z.string().transform((val) => parseInt(val, 10))
+// Response envelopes: statusCode is part of them, else the serializer drops it
+export const MeaningResSchema = z.object({
+  statusCode: z.number(),
+  data: MeaningSchema,
+  message: z.string()
 })
 
-// Response schemas
-export const MeaningListResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(MeaningSchema),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
+export const MeaningListResSchema = paginatedResSchema(MeaningSchema)
 
-// Type exports
+// The detail route adds the translations of meaningKey and exampleSentenceKey
+const TranslationItemSchema = z.object({ language_code: z.string(), value: z.string() })
+export const MeaningWithTranslationsSchema = MeaningSchema.extend({
+  meaningTranslations: z.array(TranslationItemSchema),
+  exampleTranslations: z.array(TranslationItemSchema)
+})
+
 export type MeaningType = z.infer<typeof MeaningSchema>
+export type MeaningWithTranslationsType = z.infer<typeof MeaningWithTranslationsSchema>
 export type CreateMeaningBodyType = z.infer<typeof CreateMeaningSchema>
 export type CreateMeaningServiceType = z.infer<typeof CreateMeaningServiceSchema>
 export type UpdateMeaningBodyType = z.infer<typeof UpdateMeaningSchema>
@@ -157,4 +134,3 @@ export type GetMeaningListQueryType = z.infer<typeof GetMeaningListQuerySchema>
 export type GetMeaningsByVocabularyParamsType = z.infer<
   typeof GetMeaningsByVocabularyParamsSchema
 >
-export type MeaningListResType = z.infer<typeof MeaningListResSchema>

@@ -1,28 +1,33 @@
-import { HttpException, HttpStatus } from '@nestjs/common'
+import { MeaningMessage, WordTypeMessage } from '@/i18n/message-keys'
+import { BadRequestException, NotFoundException } from '@nestjs/common'
 
-export const MeaningNotFoundException = new HttpException(
-  {
-    statusCode: HttpStatus.NOT_FOUND,
-    message: 'Nghĩa không tồn tại',
-    error: 'MEANING_NOT_FOUND'
-  },
-  HttpStatus.NOT_FOUND
-)
+// A new instance per throw; `message` is translated from errorKey by
+// ApiExceptionFilter (Accept-Language), the old Vietnamese text is the vi value
 
-export const MeaningAlreadyExistsException = new HttpException(
-  {
-    statusCode: HttpStatus.CONFLICT,
-    message: 'Nghĩa đã tồn tại',
-    error: 'MEANING_ALREADY_EXISTS'
-  },
-  HttpStatus.CONFLICT
-)
+export class MeaningNotFoundException extends NotFoundException {
+  constructor() {
+    super({ message: MeaningMessage.NOT_FOUND, errorKey: MeaningMessage.NOT_FOUND })
+  }
+}
 
-export const InvalidMeaningDataException = new HttpException(
-  {
-    statusCode: HttpStatus.BAD_REQUEST,
-    message: 'Dữ liệu nghĩa không hợp lệ',
-    error: 'INVALID_MEANING_DATA'
-  },
-  HttpStatus.BAD_REQUEST
-)
+export class InvalidMeaningDataException extends BadRequestException {
+  constructor() {
+    super({ message: MeaningMessage.INVALID_DATA, errorKey: MeaningMessage.INVALID_DATA })
+  }
+}
+
+// The vocabulary or word type the meaning points to does not exist
+export class MeaningVocabularyNotFoundException extends NotFoundException {
+  constructor() {
+    super({
+      message: MeaningMessage.VOCABULARY_NOT_FOUND,
+      errorKey: MeaningMessage.VOCABULARY_NOT_FOUND
+    })
+  }
+}
+
+export class MeaningWordTypeNotFoundException extends NotFoundException {
+  constructor() {
+    super({ message: WordTypeMessage.NOT_FOUND, errorKey: WordTypeMessage.NOT_FOUND })
+  }
+}
