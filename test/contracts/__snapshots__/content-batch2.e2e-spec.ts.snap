@@ -12,6 +12,7 @@ exports[`Content batch 2 contract (e2e) grammar create (as the web form sends it
         "updatedAt": "string",
       },
       "message": "Tạo ngữ pháp thành công",
+      "statusCode": 201,
     },
     "httpStatus": 201,
   },
@@ -92,7 +93,7 @@ exports[`Content batch 2 contract (e2e) grammar delete delete, then again 1`] = 
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Ngữ pháp không tồn tại",
+        "message": "Grammar not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -122,7 +123,7 @@ exports[`Content batch 2 contract (e2e) grammar update, errors 1`] = `
         "errors": [
           {
             "field": "string",
-            "message": "Invalid data provided",
+            "message": "Grammar structure is required",
           },
         ],
         "message": "Invalid data provided",
@@ -136,7 +137,7 @@ exports[`Content batch 2 contract (e2e) grammar update, errors 1`] = `
         "errors": [
           {
             "field": "string",
-            "message": "Dữ liệu không hợp lệ",
+            "message": "Cấu trúc ngữ pháp không được để trống",
           },
         ],
         "message": "Dữ liệu không hợp lệ",
@@ -148,26 +149,38 @@ exports[`Content batch 2 contract (e2e) grammar update, errors 1`] = `
   "invalidId": {
     "en": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu ngữ pháp không hợp lệ: Lỗi khi lấy thông tin ngữ pháp",
-        "statusCode": 400,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid grammar ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 400,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu ngữ pháp không hợp lệ: Lỗi khi lấy thông tin ngữ pháp",
-        "statusCode": 400,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID ngữ pháp không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 400,
+      "httpStatus": 422,
     },
   },
   "notFound": {
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Ngữ pháp không tồn tại",
+        "message": "Grammar not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -199,7 +212,7 @@ exports[`Content batch 2 contract (e2e) grammar update, errors 1`] = `
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Ngữ pháp không tồn tại",
+        "message": "Grammar not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -235,6 +248,7 @@ exports[`Content batch 2 contract (e2e) grammar-usage create, list, detail, upda
         "updatedAt": "string",
       },
       "message": "Tạo cách sử dụng ngữ pháp thành công",
+      "statusCode": 201,
     },
     "httpStatus": 201,
   },
@@ -255,27 +269,38 @@ exports[`Content batch 2 contract (e2e) grammar-usage create, list, detail, upda
         "updatedAt": "string",
       },
       "message": "Lấy thông tin cách sử dụng ngữ pháp thành công",
+      "statusCode": 200,
     },
     "httpStatus": 200,
   },
   "list": {
     "body": {
-      "data": [
-        {
-          "createdAt": "string",
-          "exampleSentenceJp": "string",
-          "exampleSentenceKey": "string",
-          "explanationKey": "string",
-          "grammarId": "number",
-          "id": "number",
-          "updatedAt": "string",
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
         },
-      ],
-      "limit": "number",
+        "results": [
+          {
+            "createdAt": "string",
+            "exampleSentenceJp": "string",
+            "exampleSentenceKey": "string",
+            "explanationKey": "string",
+            "grammar": {
+              "id": "number",
+              "level": "string",
+              "structure": "string",
+            },
+            "grammarId": "number",
+            "id": "number",
+            "updatedAt": "string",
+          },
+        ],
+      },
       "message": "Lấy danh sách cách sử dụng ngữ pháp thành công",
-      "page": "number",
-      "total": "number",
-      "totalPages": "number",
+      "statusCode": 200,
     },
     "httpStatus": 200,
   },
@@ -296,6 +321,7 @@ exports[`Content batch 2 contract (e2e) grammar-usage create, list, detail, upda
         "updatedAt": "string",
       },
       "message": "Cập nhật cách sử dụng ngữ pháp thành công",
+      "statusCode": 200,
     },
     "httpStatus": 200,
   },
@@ -312,7 +338,7 @@ exports[`Content batch 2 contract (e2e) grammar-usage errors, delete, delete aga
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Cách sử dụng ngữ pháp không tồn tại",
+        "message": "Grammar usage not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -359,26 +385,38 @@ exports[`Content batch 2 contract (e2e) grammar-usage errors, delete, delete aga
   "invalidId": {
     "en": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu cách sử dụng ngữ pháp không hợp lệ: Lỗi khi lấy thông tin cách sử dụng ngữ pháp",
-        "statusCode": 400,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid grammar usage ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 400,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu cách sử dụng ngữ pháp không hợp lệ: Lỗi khi lấy thông tin cách sử dụng ngữ pháp",
-        "statusCode": 400,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID cách sử dụng ngữ pháp không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 400,
+      "httpStatus": 422,
     },
   },
   "missingGrammar": {
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Ngữ pháp không tồn tại",
+        "message": "Grammar not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -396,7 +434,7 @@ exports[`Content batch 2 contract (e2e) grammar-usage errors, delete, delete aga
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Cách sử dụng ngữ pháp không tồn tại",
+        "message": "Grammar usage not found",
         "statusCode": 404,
       },
       "httpStatus": 404,

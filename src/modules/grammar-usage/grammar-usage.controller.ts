@@ -1,3 +1,4 @@
+import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import {
   Body,
   Controller,
@@ -62,8 +63,11 @@ export class GrammarUsageController {
   @ApiResponse({ status: 404, description: 'Không tìm thấy ngữ pháp' })
   @ApiResponse({ status: 409, description: 'Cách sử dụng ngữ pháp đã tồn tại' })
   @ZodSerializerDto(GrammarUsageWithGrammarResponseDTO)
-  async createGrammarUsage(@Body() body: CreateGrammarUsageBodyDTO) {
-    return await this.grammarUsageService.createGrammarUsage(body)
+  async createGrammarUsage(
+    @Body() body: CreateGrammarUsageBodyDTO,
+    @I18nLang() lang: string
+  ) {
+    return await this.grammarUsageService.createGrammarUsage(body, lang)
   }
 
   @Get()
@@ -75,8 +79,11 @@ export class GrammarUsageController {
     type: GrammarUsageListResponseSwaggerDTO
   })
   @ZodSerializerDto(GrammarUsageListResponseDTO)
-  async getGrammarUsageList(@Query() query: GetGrammarUsageListQueryDTO) {
-    return await this.grammarUsageService.getGrammarUsageList(query)
+  async getGrammarUsageList(
+    @Query() query: GetGrammarUsageListQueryDTO,
+    @I18nLang() lang: string
+  ) {
+    return await this.grammarUsageService.getGrammarUsageList(query, lang)
   }
 
   @Get(':id')
@@ -88,8 +95,11 @@ export class GrammarUsageController {
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy cách sử dụng ngữ pháp' })
   @ZodSerializerDto(GrammarUsageWithGrammarResponseDTO)
-  async getGrammarUsageById(@Param() params: GetGrammarUsageByIdParamsDTO) {
-    return await this.grammarUsageService.getGrammarUsageById(params)
+  async getGrammarUsageById(
+    @Param() params: GetGrammarUsageByIdParamsDTO,
+    @I18nLang() lang: string
+  ) {
+    return await this.grammarUsageService.getGrammarUsageById(params, lang)
   }
 
   @Put(':id')
@@ -105,9 +115,10 @@ export class GrammarUsageController {
   @ZodSerializerDto(GrammarUsageWithGrammarResponseDTO)
   async updateGrammarUsage(
     @Param() params: GetGrammarUsageByIdParamsDTO,
-    @Body() body: UpdateGrammarUsageBodyDTO
+    @Body() body: UpdateGrammarUsageBodyDTO,
+    @I18nLang() lang: string
   ) {
-    return await this.grammarUsageService.updateGrammarUsage(params.id, body)
+    return await this.grammarUsageService.updateGrammarUsage(params.id, body, lang)
   }
 
   @Delete(':id')
@@ -116,7 +127,10 @@ export class GrammarUsageController {
   @ApiResponse({ status: 204, description: 'Xóa cách sử dụng ngữ pháp thành công' })
   @ApiResponse({ status: 404, description: 'Không tìm thấy cách sử dụng ngữ pháp' })
   @ZodSerializerDto(MessageResDTO)
-  async deleteGrammarUsage(@Param() params: GetGrammarUsageByIdParamsDTO) {
-    return await this.grammarUsageService.deleteGrammarUsage(params.id)
+  async deleteGrammarUsage(
+    @Param() params: GetGrammarUsageByIdParamsDTO,
+    @I18nLang() lang: string
+  ) {
+    return await this.grammarUsageService.deleteGrammarUsage(params.id, lang)
   }
 }

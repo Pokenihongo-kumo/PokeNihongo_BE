@@ -1,53 +1,39 @@
-import { HttpException, HttpStatus } from '@nestjs/common'
+import { GrammarMessage, GrammarUsageMessage } from '@/i18n/message-keys'
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common'
 
-export class GrammarUsageNotFoundException extends HttpException {
+// A new instance per throw; `message` is translated from errorKey by
+// ApiExceptionFilter (Accept-Language), the old Vietnamese text is the vi value
+
+export class GrammarUsageNotFoundException extends NotFoundException {
   constructor() {
-    super(
-      {
-        statusCode: HttpStatus.NOT_FOUND,
-        message: 'Cách sử dụng ngữ pháp không tồn tại',
-        error: 'GRAMMAR_USAGE_NOT_FOUND'
-      },
-      HttpStatus.NOT_FOUND
-    )
+    super({
+      message: GrammarUsageMessage.NOT_FOUND,
+      errorKey: GrammarUsageMessage.NOT_FOUND
+    })
   }
 }
 
-export class GrammarUsageAlreadyExistsException extends HttpException {
+export class GrammarUsageAlreadyExistsException extends ConflictException {
   constructor() {
-    super(
-      {
-        statusCode: HttpStatus.CONFLICT,
-        message: 'Cách sử dụng ngữ pháp đã tồn tại',
-        error: 'GRAMMAR_USAGE_ALREADY_EXISTS'
-      },
-      HttpStatus.CONFLICT
-    )
+    super({
+      message: GrammarUsageMessage.ALREADY_EXISTS,
+      errorKey: GrammarUsageMessage.ALREADY_EXISTS
+    })
   }
 }
 
-export class InvalidGrammarUsageDataException extends HttpException {
-  constructor(message: string) {
-    super(
-      {
-        statusCode: HttpStatus.BAD_REQUEST,
-        message: `Dữ liệu cách sử dụng ngữ pháp không hợp lệ: ${message}`,
-        error: 'INVALID_GRAMMAR_USAGE_DATA'
-      },
-      HttpStatus.BAD_REQUEST
-    )
+export class InvalidGrammarUsageDataException extends BadRequestException {
+  constructor() {
+    super({
+      message: GrammarUsageMessage.INVALID_DATA,
+      errorKey: GrammarUsageMessage.INVALID_DATA
+    })
   }
 }
 
-export class GrammarNotFoundException extends HttpException {
+// The usage's grammar does not exist
+export class GrammarNotFoundException extends NotFoundException {
   constructor() {
-    super(
-      {
-        statusCode: HttpStatus.NOT_FOUND,
-        message: 'Ngữ pháp không tồn tại',
-        error: 'GRAMMAR_NOT_FOUND'
-      },
-      HttpStatus.NOT_FOUND
-    )
+    super({ message: GrammarMessage.NOT_FOUND, errorKey: GrammarMessage.NOT_FOUND })
   }
 }

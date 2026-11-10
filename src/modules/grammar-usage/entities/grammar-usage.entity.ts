@@ -2,6 +2,8 @@ import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
 import { GrammarUsageSortField, SortOrder } from '@/common/enum/enum'
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { GrammarUsageMessage } from '@/i18n/message-keys'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
@@ -42,7 +44,7 @@ export const UpdateGrammarUsageBodyType = z.object({
 })
 
 export const GetGrammarUsageByIdParamsType = z.object({
-  id: z.string().transform(Number)
+  id: checkIdSchema(GrammarUsageMessage.INVALID_ID)
 })
 
 export const GetGrammarUsageListQueryType = z.object({

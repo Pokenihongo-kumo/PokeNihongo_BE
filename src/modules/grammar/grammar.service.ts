@@ -1,21 +1,23 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { I18nService } from '@/i18n/i18n.service'
+import { GrammarMessage } from '@/i18n/message-keys'
+import { toPaginationMeta } from '@/shared/utils/pagination'
 import {
-  CreateGrammarBodyType,
-  UpdateGrammarBodyType,
-  GetGrammarByIdParamsType,
-  GetGrammarListQueryType
-} from './entities/grammar.entity'
+  isNotFoundPrismaError,
+  isUniqueConstraintPrismaError
+} from '@/shared/utils/prisma-errors'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
 import {
-  GrammarNotFoundException,
   GrammarAlreadyExistsException,
+  GrammarNotFoundException,
   InvalidGrammarDataException
 } from './dto/grammar.error'
+import {
+  CreateGrammarBasicBodyType,
+  CreateGrammarBodyType,
+  GetGrammarListQueryType,
+  UpdateGrammarBodyType
+} from './entities/grammar.entity'
 import { GrammarRepo } from './grammar.repo'
-import { GrammarUsageService } from '../grammar-usage/grammar-usage.service'
-import { TranslationService } from '../translation/translation.service'
-import { LanguagesService } from '../languages/languages.service'
-import { PrismaService } from '@/shared/services/prisma.service'
-import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from '@/shared/helpers'
 
 @Injectable()
 export class GrammarService {
@@ -23,191 +25,50 @@ export class GrammarService {
 
   constructor(
     private readonly grammarRepository: GrammarRepo,
-    private readonly grammarUsageService: GrammarUsageService,
-    private readonly translationService: TranslationService,
-    private readonly languagesService: LanguagesService,
-    private readonly prismaService: PrismaService
+    private readonly i18nService: I18nService
   ) {}
+
   //#region Get Grammar
-  async getGrammarList(params: GetGrammarListQueryType) {
-    try {
-      this.logger.log('Getting grammar list with params:', params)
-
-      const result = await this.grammarRepository.findMany(params)
-
-      this.logger.log(`Found ${result.data.length} grammar entries`)
-      return {
-        statusCode: 200,
-        message: 'Lấy danh sách ngữ pháp thành công',
-        data: {
-          results: result.data,
-          pagination: {
-            current: result.current,
-            pageSize: result.pageSize,
-            totalPage: result.totalPages,
-            totalItem: result.total
-          }
-        }
+  async getGrammarList(params: GetGrammarListQueryType, lang: string = 'vi') {
+    const result = await this.grammarRepository.findMany(params)
+    return {
+      statusCode: 200,
+      message: this.i18nService.translate(GrammarMessage.GET_LIST_SUCCESS, lang),
+      data: {
+        results: result.data,
+        pagination: toPaginationMeta(params.currentPage, params.pageSize, result.total)
       }
-    } catch (error) {
-      this.logger.error('Error getting grammar list:', error)
-      throw error
     }
   }
 
-  async getGrammarById(id: number) {
+  async getGrammarById(id: number, lang: string = 'vi') {
     try {
-      this.logger.log(`Getting grammar by id: ${id}`)
-
       const grammar = await this.grammarRepository.findByIdWithTranslations(id)
-
       if (!grammar) {
         throw new GrammarNotFoundException()
       }
-
-      this.logger.log(`Found grammar: ${grammar.id}`)
       return {
         data: grammar,
-        message: 'Lấy thông tin ngữ pháp thành công'
+        message: this.i18nService.translate(GrammarMessage.GET_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error(`Error getting grammar by id ${id}:`, error)
-
-      if (error instanceof GrammarNotFoundException) {
-        throw error
-      }
-
-      throw new InvalidGrammarDataException('Lỗi khi lấy thông tin ngữ pháp')
+      throw this.toGrammarError(error)
     }
   }
   //#endregion
 
   //#region Create Grammar
-  async createGrammar(data: CreateGrammarBodyType) {
+  // Grammar + optional first usage + its translations, in one transaction (repo)
+  async createGrammar(data: CreateGrammarBodyType, lang: string = 'vi') {
     try {
-      this.logger.log('Creating grammar with data:', data)
-
-      // Check if structure already exists
-      const structureExists = await this.grammarRepository.checkStructureExists(
-        data.structure
-      )
-      if (structureExists) {
+      if (await this.grammarRepository.checkStructureExists(data.structure)) {
         throw new GrammarAlreadyExistsException()
       }
 
-      // Use transaction to create grammar, usage, and translations
-      const result = await this.prismaService.$transaction(async (tx) => {
-        // 1. Create Grammar
-        const grammar = await tx.grammar.create({
-          data: {
-            structure: data.structure,
-            level: data.level
-          }
-        })
-
-        this.logger.log(`Created grammar: ${grammar.id}`)
-
-        let grammarUsage: any = null
-        let translationsCreated = 0
-
-        // 2. Create GrammarUsage if provided
-        if (data.usage) {
-          // Generate keys first
-          const tempId = Date.now() // Use timestamp as temporary ID
-          const explanationKey = `grammar.${grammar.id}.usage.${tempId}.explanation`
-          const exampleSentenceKey = `grammar.${grammar.id}.usage.${tempId}.example`
-
-          grammarUsage = await tx.grammarUsage.create({
-            data: {
-              grammarId: grammar.id,
-              explanationKey: explanationKey,
-              exampleSentenceJp: data.usage.exampleSentenceJp,
-              exampleSentenceKey: exampleSentenceKey
-            }
-          })
-          this.logger.log(`Created grammar usage: ${grammarUsage.id}`)
-
-          // Update keys with actual GrammarUsage ID
-          const finalExplanationKey = `grammar.${grammar.id}.usage.${grammarUsage.id}.explanation`
-          const finalExampleSentenceKey = `grammar.${grammar.id}.usage.${grammarUsage.id}.example`
-
-          await tx.grammarUsage.update({
-            where: { id: grammarUsage.id },
-            data: {
-              explanationKey: finalExplanationKey,
-              exampleSentenceKey: finalExampleSentenceKey
-            }
-          })
-
-          // Update the keys for translation creation
-          grammarUsage.explanationKey = finalExplanationKey
-          grammarUsage.exampleSentenceKey = finalExampleSentenceKey
-        }
-
-        // 3. Create translations if provided
-        if (data.translations && grammarUsage && data.translations.usage) {
-          const allTranslations: any[] = []
-
-          // Get language mappings
-          const languages = await tx.languages.findMany()
-          const languageMap = Object.fromEntries(
-            languages.map((lang) => [lang.code, lang.id])
-          )
-          this.logger.log('Available languages:', languageMap)
-
-          this.logger.log(`Creating translations for grammar usage ${grammarUsage.id}`)
-          this.logger.log('Usage translations:', data.translations.usage)
-
-          for (const translation of data.translations.usage) {
-            const languageId = languageMap[translation.language_code]
-            this.logger.log(`Processing ${translation.language_code}:`, {
-              languageId,
-              explanation: translation.explanation,
-              example: translation.example
-            })
-
-            if (languageId) {
-              // Explanation translation
-              allTranslations.push({
-                key: grammarUsage.explanationKey,
-                value: translation.explanation,
-                languageId: languageId
-              })
-              // Example translation
-              allTranslations.push({
-                key: grammarUsage.exampleSentenceKey,
-                value: translation.example,
-                languageId: languageId
-              })
-            } else {
-              this.logger.warn(
-                `Language ${translation.language_code} not found in database`
-              )
-            }
-          }
-
-          // Bulk create translations
-          if (allTranslations.length > 0) {
-            this.logger.log(`Creating ${allTranslations.length} translations`)
-            const createResult = await tx.translation.createMany({
-              data: allTranslations,
-              skipDuplicates: true
-            })
-            translationsCreated = createResult.count
-            this.logger.log(`Successfully created ${translationsCreated} translations`)
-          } else {
-            this.logger.log('No translations to create')
-          }
-        }
-
-        return {
-          grammar,
-          grammarUsage,
-          translationsCreated
-        }
-      })
-
-      this.logger.log(`Grammar creation completed: ${result.grammar.id}`)
+      const result = await this.grammarRepository.createWithUsage(data)
+      this.logger.log(
+        `Created grammar ${result.grammar.id} (${result.translationsCreated} translations)`
+      )
 
       return {
         data: {
@@ -215,137 +76,84 @@ export class GrammarService {
           usage: result.grammarUsage,
           translationsCreated: result.translationsCreated
         },
-        message: 'Tạo ngữ pháp thành công'
+        message: this.i18nService.translate(GrammarMessage.CREATE_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error('Error creating grammar:', error)
-
-      if (error instanceof GrammarAlreadyExistsException) {
-        throw error
-      }
-
-      if (isUniqueConstraintPrismaError(error)) {
-        throw new GrammarAlreadyExistsException()
-      }
-
-      throw new InvalidGrammarDataException('Lỗi khi tạo ngữ pháp')
+      throw this.toGrammarError(error)
     }
   }
 
-  async createGrammarBasic(data: { structure: string; level: string }) {
+  async createGrammarBasic(data: CreateGrammarBasicBodyType, lang: string = 'vi') {
     try {
-      this.logger.log('Creating basic grammar with data:', data)
-
-      // Check if structure already exists
-      const structureExists = await this.grammarRepository.checkStructureExists(
-        data.structure
-      )
-      if (structureExists) {
+      if (await this.grammarRepository.checkStructureExists(data.structure)) {
         throw new GrammarAlreadyExistsException()
       }
-
-      // Create grammar without usage
-      const grammar = await this.grammarRepository.create({
-        structure: data.structure,
-        level: data.level
-      })
-
-      this.logger.log(`Created basic grammar: ${grammar.id}`)
-
+      const grammar = await this.grammarRepository.create(data)
       return {
         data: grammar,
-        message: 'Tạo ngữ pháp cơ bản thành công'
+        message: this.i18nService.translate(GrammarMessage.CREATE_BASIC_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error('Error creating basic grammar:', error)
-
-      if (error instanceof GrammarAlreadyExistsException) {
-        throw error
-      }
-
-      if (isUniqueConstraintPrismaError(error)) {
-        throw new GrammarAlreadyExistsException()
-      }
-
-      throw new InvalidGrammarDataException('Lỗi khi tạo ngữ pháp cơ bản')
+      throw this.toGrammarError(error)
     }
   }
   //#endregion
 
   //#region Update Grammar
-  async updateGrammar(id: number, data: UpdateGrammarBodyType) {
+  async updateGrammar(id: number, data: UpdateGrammarBodyType, lang: string = 'vi') {
     try {
-      this.logger.log(`Updating grammar ${id} with data:`, data)
-
-      // Check if grammar exists
       const grammar = await this.grammarRepository.findById(id)
       if (!grammar) {
         throw new GrammarNotFoundException()
       }
-
-      // Check if new structure already exists (if updating structure)
-      if (data.structure && data.structure !== grammar.structure) {
-        const structureExists = await this.grammarRepository.checkStructureExists(
-          data.structure,
-          id
-        )
-        if (structureExists) {
-          throw new GrammarAlreadyExistsException()
-        }
+      if (
+        data.structure &&
+        data.structure !== grammar.structure &&
+        (await this.grammarRepository.checkStructureExists(data.structure, id))
+      ) {
+        throw new GrammarAlreadyExistsException()
       }
 
       const updatedGrammar = await this.grammarRepository.update(id, data)
-
-      this.logger.log(`Updated grammar: ${updatedGrammar.id}`)
       return {
         data: updatedGrammar,
-        message: 'Cập nhật ngữ pháp thành công'
+        message: this.i18nService.translate(GrammarMessage.UPDATE_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error(`Error updating grammar ${id}:`, error)
-
-      if (
-        error instanceof GrammarNotFoundException ||
-        error instanceof GrammarAlreadyExistsException
-      ) {
-        throw error
-      }
-
-      throw new InvalidGrammarDataException('Lỗi khi cập nhật ngữ pháp')
+      throw this.toGrammarError(error)
     }
   }
   //#endregion
 
   //#region Delete Grammar
-  async deleteGrammar(id: number) {
+  async deleteGrammar(id: number, lang: string = 'vi') {
     try {
-      this.logger.log(`Deleting grammar ${id}`)
-
-      // Check if grammar exists
-      const grammar = await this.grammarRepository.findById(id)
-      if (!grammar) {
+      if (!(await this.grammarRepository.findById(id))) {
         throw new GrammarNotFoundException()
       }
-
       await this.grammarRepository.delete(id)
-
-      this.logger.log(`Deleted grammar ${id}`)
       return {
-        message: 'Xóa ngữ pháp thành công'
+        message: this.i18nService.translate(GrammarMessage.DELETE_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error(`Error deleting grammar ${id}:`, error)
-
-      if (error instanceof GrammarNotFoundException) {
-        throw error
-      }
-
-      if (isNotFoundPrismaError(error)) {
-        throw new GrammarNotFoundException()
-      }
-
-      throw new InvalidGrammarDataException('Lỗi khi xóa ngữ pháp')
+      throw this.toGrammarError(error)
     }
   }
   //#endregion
+
+  /**
+   * Error to answer, decided by type (not message text): our HTTP errors pass
+   * through, Prisma unique/not-found become 409/404, anything else is the
+   * generic "invalid data" 400 these methods answered before.
+   */
+  private toGrammarError(error: unknown): HttpException {
+    if (error instanceof HttpException) return error
+    this.logger.error(
+      'Grammar request failed',
+      error instanceof Error ? error.stack : error
+    )
+    if (isUniqueConstraintPrismaError(error)) return new GrammarAlreadyExistsException()
+    if (isNotFoundPrismaError(error)) return new GrammarNotFoundException()
+    return new InvalidGrammarDataException()
+  }
 }

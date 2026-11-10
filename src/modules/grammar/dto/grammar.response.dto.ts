@@ -1,21 +1,12 @@
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
-import { GrammarType, GetGrammarListQueryType } from '../entities/grammar.entity'
-import { CurrentUser } from '@/common/decorators/user.decorator'
+import { GrammarType } from '../entities/grammar.entity'
 
+// statusCode is part of the envelope: without it the serializer dropped it
 export const GrammarResponseSchema = z.object({
+  statusCode: z.number(),
   data: GrammarType,
   message: z.string()
 })
 
-export const GrammarListResponseSchema = z.object({
-  data: z.array(GrammarType),
-  total: z.number(),
-  current: z.number(),
-  pageSize: z.number(),
-  totalPages: z.number(),
-  message: z.string()
-})
-
 export class GrammarResponseDTO extends createZodDto(GrammarResponseSchema) {}
-export class GrammarListResponseDTO extends createZodDto(GrammarListResponseSchema) {}
