@@ -244,9 +244,8 @@ exports[`WordType and Level contract (e2e) WordType delete, then delete again 1`
   },
   "first": {
     "body": {
-      "data": {
-        "message": "Xóa loại từ thành công",
-      },
+      "data": "null",
+      "message": "Xóa loại từ thành công",
       "statusCode": 200,
     },
     "httpStatus": 200,
