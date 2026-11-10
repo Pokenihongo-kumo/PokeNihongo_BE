@@ -1,22 +1,21 @@
-import { ActiveUser } from '@/common/decorators/active-user.decorator'
+import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import {
   CreateKanjiReadingBodyDTO,
-  UpdateKanjiReadingBodyDTO,
   GetKanjiReadingByIdParamsDTO,
   GetKanjiReadingListQueryDTO,
   GetKanjiReadingsByKanjiIdParamsDTO,
   GetKanjiReadingsByTypeParamsDTO,
-  KanjiReadingResponseDTO,
-  KanjiReadingListResponseDTO,
-  GetKanjiReadingListQuerySwaggerDTO
-} from './dto/kanji-reading.dto'
+  KanjiReadingListResDTO,
+  KanjiReadingResDTO,
+  UpdateKanjiReadingBodyDTO
+} from './dto/kanji-reading.zod-dto'
 import {
+  GetKanjiReadingListQuerySwaggerDTO,
   CreateKanjiReadingSwaggerDTO,
   UpdateKanjiReadingSwaggerDTO,
   KanjiReadingSwaggerResponseDTO,
   KanjiReadingListSwaggerResponseDTO
 } from './dto/kanji-reading.dto'
-import { MessageResDTO } from '@/shared/dtos/response.dto'
 import {
   Body,
   Controller,
@@ -58,8 +57,9 @@ export class KanjiReadingController {
     description: 'Lấy danh sách cách đọc thành công',
     type: KanjiReadingListSwaggerResponseDTO
   })
-  findMany(@Query() query: GetKanjiReadingListQueryDTO) {
-    return this.kanjiReadingService.findMany(query)
+  @ZodSerializerDto(KanjiReadingListResDTO)
+  findMany(@Query() query: GetKanjiReadingListQueryDTO, @I18nLang() lang: string) {
+    return this.kanjiReadingService.findMany(query, lang)
   }
 
   @Get('stats')
@@ -71,8 +71,8 @@ export class KanjiReadingController {
     status: 200,
     description: 'Lấy thống kê thành công'
   })
-  getStats() {
-    return this.kanjiReadingService.getStats()
+  getStats(@I18nLang() lang: string) {
+    return this.kanjiReadingService.getStats(lang)
   }
 
   @Get('kanji/:kanjiId')
@@ -90,8 +90,11 @@ export class KanjiReadingController {
     description: 'Lấy cách đọc thành công',
     type: [KanjiReadingSwaggerResponseDTO]
   })
-  findByKanjiId(@Param() params: GetKanjiReadingsByKanjiIdParamsDTO) {
-    return this.kanjiReadingService.findByKanjiId(params.kanjiId)
+  findByKanjiId(
+    @Param() params: GetKanjiReadingsByKanjiIdParamsDTO,
+    @I18nLang() lang: string
+  ) {
+    return this.kanjiReadingService.findByKanjiId(params.kanjiId, lang)
   }
 
   @Get('type/:readingType')
@@ -111,8 +114,11 @@ export class KanjiReadingController {
     description: 'Lấy cách đọc thành công',
     type: [KanjiReadingSwaggerResponseDTO]
   })
-  findByReadingType(@Param() params: GetKanjiReadingsByTypeParamsDTO) {
-    return this.kanjiReadingService.findByReadingType(params.readingType)
+  findByReadingType(
+    @Param() params: GetKanjiReadingsByTypeParamsDTO,
+    @I18nLang() lang: string
+  ) {
+    return this.kanjiReadingService.findByReadingType(params.readingType, lang)
   }
 
   @Get(':id')
@@ -130,9 +136,9 @@ export class KanjiReadingController {
     description: 'Lấy cách đọc thành công',
     type: KanjiReadingSwaggerResponseDTO
   })
-  @ZodSerializerDto(KanjiReadingResponseDTO)
-  findById(@Param() params: GetKanjiReadingByIdParamsDTO) {
-    return this.kanjiReadingService.findById(params.id)
+  @ZodSerializerDto(KanjiReadingResDTO)
+  findById(@Param() params: GetKanjiReadingByIdParamsDTO, @I18nLang() lang: string) {
+    return this.kanjiReadingService.findById(params.id, lang)
   }
 
   @Post()
@@ -149,9 +155,9 @@ export class KanjiReadingController {
     description: 'Tạo cách đọc thành công',
     type: KanjiReadingSwaggerResponseDTO
   })
-  @ZodSerializerDto(KanjiReadingResponseDTO)
-  create(@Body() body: CreateKanjiReadingBodyDTO) {
-    return this.kanjiReadingService.create(body)
+  @ZodSerializerDto(KanjiReadingResDTO)
+  create(@Body() body: CreateKanjiReadingBodyDTO, @I18nLang() lang: string) {
+    return this.kanjiReadingService.createReading(body, lang)
   }
 
   @Put(':id')
@@ -173,12 +179,13 @@ export class KanjiReadingController {
     description: 'Cập nhật cách đọc thành công',
     type: KanjiReadingSwaggerResponseDTO
   })
-  @ZodSerializerDto(KanjiReadingResponseDTO)
+  @ZodSerializerDto(KanjiReadingResDTO)
   update(
     @Param() params: GetKanjiReadingByIdParamsDTO,
-    @Body() body: UpdateKanjiReadingBodyDTO
+    @Body() body: UpdateKanjiReadingBodyDTO,
+    @I18nLang() lang: string
   ) {
-    return this.kanjiReadingService.update(params.id, body)
+    return this.kanjiReadingService.updateReading(params.id, body, lang)
   }
 
   @Delete(':id')
@@ -196,8 +203,8 @@ export class KanjiReadingController {
     description: 'Xóa cách đọc thành công'
   })
   @HttpCode(HttpStatus.OK)
-  delete(@Param() params: GetKanjiReadingByIdParamsDTO) {
-    return this.kanjiReadingService.delete(params.id)
+  delete(@Param() params: GetKanjiReadingByIdParamsDTO, @I18nLang() lang: string) {
+    return this.kanjiReadingService.delete(params.id, lang)
   }
 
   @Delete('kanji/:kanjiId')
@@ -215,8 +222,11 @@ export class KanjiReadingController {
     description: 'Xóa cách đọc thành công'
   })
   @HttpCode(HttpStatus.OK)
-  deleteByKanjiId(@Param() params: GetKanjiReadingsByKanjiIdParamsDTO) {
-    return this.kanjiReadingService.deleteByKanjiId(params.kanjiId)
+  deleteByKanjiId(
+    @Param() params: GetKanjiReadingsByKanjiIdParamsDTO,
+    @I18nLang() lang: string
+  ) {
+    return this.kanjiReadingService.deleteByKanjiId(params.kanjiId, lang)
   }
 
   @Get('stats/reading-types')
@@ -228,7 +238,7 @@ export class KanjiReadingController {
     status: 200,
     description: 'Lấy thống kê loại cách đọc thành công'
   })
-  getReadingTypeStats() {
-    return this.kanjiReadingService.getReadingTypeStats()
+  getReadingTypeStats(@I18nLang() lang: string) {
+    return this.kanjiReadingService.getReadingTypeStats(lang)
   }
 }

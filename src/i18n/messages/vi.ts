@@ -120,6 +120,27 @@ export const viMessages = {
     EXAMPLE_JP_NOT_JAPANESE:
       'Phải là văn bản tiếng Nhật (chứa Hiragana, Katakana, hoặc Kanji)'
   },
+  kanji_reading: {
+    GET_LIST_SUCCESS: 'Lấy danh sách cách đọc kanji thành công',
+    GET_SUCCESS: 'Lấy thông tin cách đọc kanji thành công',
+    GET_STATS_SUCCESS: 'Lấy thống kê cách đọc kanji thành công',
+    CREATE_SUCCESS: 'Tạo cách đọc kanji thành công',
+    UPDATE_SUCCESS: 'Cập nhật cách đọc kanji thành công',
+    DELETE_SUCCESS: 'Xóa cách đọc kanji thành công',
+    NOT_FOUND: 'Cách đọc Kanji không tồn tại',
+    ALREADY_EXISTS: 'Cách đọc Kanji đã tồn tại',
+    INVALID_DATA: 'Dữ liệu cách đọc Kanji không hợp lệ',
+    INVALID_ID: 'ID cách đọc kanji không hợp lệ',
+    KANJI_NOT_FOUND: 'Kanji không tồn tại',
+    KANJI_ID_INVALID: 'Kanji ID phải lớn hơn 0',
+    READING_TYPE_REQUIRED: 'Loại cách đọc không được để trống',
+    READING_TYPE_TOO_LONG: 'Loại cách đọc quá dài (tối đa 20 ký tự)',
+    READING_TYPE_INVALID: 'Loại cách đọc phải là onyomi, kunyomi, nanori, hoặc irregular',
+    READING_REQUIRED: 'Cách đọc không được để trống',
+    READING_TOO_LONG: 'Cách đọc quá dài (tối đa 100 ký tự)',
+    READING_NOT_KANA:
+      'Phải là cách đọc Onyomi/Kunyomi (chỉ chứa Hiragana, Katakana và dấu câu cơ bản)'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Tạo danh mục bài học thành công',
     UPDATE_SUCCESS: 'Cập nhật danh mục bài học thành công',

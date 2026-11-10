@@ -120,6 +120,27 @@ export const MeaningMessage = {
   EXAMPLE_JP_NOT_JAPANESE: 'meaning.EXAMPLE_JP_NOT_JAPANESE'
 } as const
 
+export const KanjiReadingMessage = {
+  GET_LIST_SUCCESS: 'kanji_reading.GET_LIST_SUCCESS',
+  GET_SUCCESS: 'kanji_reading.GET_SUCCESS',
+  GET_STATS_SUCCESS: 'kanji_reading.GET_STATS_SUCCESS',
+  CREATE_SUCCESS: 'kanji_reading.CREATE_SUCCESS',
+  UPDATE_SUCCESS: 'kanji_reading.UPDATE_SUCCESS',
+  DELETE_SUCCESS: 'kanji_reading.DELETE_SUCCESS',
+  NOT_FOUND: 'kanji_reading.NOT_FOUND',
+  ALREADY_EXISTS: 'kanji_reading.ALREADY_EXISTS',
+  INVALID_DATA: 'kanji_reading.INVALID_DATA',
+  INVALID_ID: 'kanji_reading.INVALID_ID',
+  KANJI_NOT_FOUND: 'kanji_reading.KANJI_NOT_FOUND',
+  KANJI_ID_INVALID: 'kanji_reading.KANJI_ID_INVALID',
+  READING_TYPE_REQUIRED: 'kanji_reading.READING_TYPE_REQUIRED',
+  READING_TYPE_TOO_LONG: 'kanji_reading.READING_TYPE_TOO_LONG',
+  READING_TYPE_INVALID: 'kanji_reading.READING_TYPE_INVALID',
+  READING_REQUIRED: 'kanji_reading.READING_REQUIRED',
+  READING_TOO_LONG: 'kanji_reading.READING_TOO_LONG',
+  READING_NOT_KANA: 'kanji_reading.READING_NOT_KANA'
+} as const
+
 export const LessonCategoryMessage = {
   CREATE_SUCCESS: 'lesson_category.CREATE_SUCCESS',
   UPDATE_SUCCESS: 'lesson_category.UPDATE_SUCCESS',

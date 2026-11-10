@@ -1,28 +1,43 @@
-import { HttpException, HttpStatus } from '@nestjs/common'
+import { KanjiReadingMessage } from '@/i18n/message-keys'
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common'
 
-export const KanjiReadingNotFoundException = new HttpException(
-  {
-    statusCode: HttpStatus.NOT_FOUND,
-    message: 'Cách đọc Kanji không tồn tại',
-    error: 'KANJI_READING_NOT_FOUND'
-  },
-  HttpStatus.NOT_FOUND
-)
+// A new instance per throw; `message` is translated from errorKey by
+// ApiExceptionFilter (Accept-Language), the old Vietnamese text is the vi value
 
-export const KanjiReadingAlreadyExistsException = new HttpException(
-  {
-    statusCode: HttpStatus.CONFLICT,
-    message: 'Cách đọc Kanji đã tồn tại',
-    error: 'KANJI_READING_ALREADY_EXISTS'
-  },
-  HttpStatus.CONFLICT
-)
+export class KanjiReadingNotFoundException extends NotFoundException {
+  constructor() {
+    super({
+      message: KanjiReadingMessage.NOT_FOUND,
+      errorKey: KanjiReadingMessage.NOT_FOUND
+    })
+  }
+}
 
-export const InvalidKanjiReadingDataException = new HttpException(
-  {
-    statusCode: HttpStatus.BAD_REQUEST,
-    message: 'Dữ liệu cách đọc Kanji không hợp lệ',
-    error: 'INVALID_KANJI_READING_DATA'
-  },
-  HttpStatus.BAD_REQUEST
-)
+// Same kanji, reading type and reading
+export class KanjiReadingAlreadyExistsException extends ConflictException {
+  constructor() {
+    super({
+      message: KanjiReadingMessage.ALREADY_EXISTS,
+      errorKey: KanjiReadingMessage.ALREADY_EXISTS
+    })
+  }
+}
+
+export class InvalidKanjiReadingDataException extends BadRequestException {
+  constructor() {
+    super({
+      message: KanjiReadingMessage.INVALID_DATA,
+      errorKey: KanjiReadingMessage.INVALID_DATA
+    })
+  }
+}
+
+// The kanji the reading points to does not exist
+export class KanjiReadingKanjiNotFoundException extends NotFoundException {
+  constructor() {
+    super({
+      message: KanjiReadingMessage.KANJI_NOT_FOUND,
+      errorKey: KanjiReadingMessage.KANJI_NOT_FOUND
+    })
+  }
+}

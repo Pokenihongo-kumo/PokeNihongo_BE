@@ -93,16 +93,6 @@ export class KanjiReadingListSwaggerResponseDTO {
   totalPages: number
 }
 
-// Export Zod DTOs
-export {
-  CreateKanjiReadingBodyDTO,
-  UpdateKanjiReadingBodyDTO,
-  GetKanjiReadingByIdParamsDTO,
-  GetKanjiReadingListQueryDTO,
-  GetKanjiReadingsByKanjiIdParamsDTO,
-  GetKanjiReadingsByTypeParamsDTO,
-  KanjiReadingResponseDTO
-} from './zod/kanji-reading-zod.dto'
 // Query parameter DTOs
 export class GetKanjiReadingListQuerySwaggerDTO {
   @ApiProperty({ example: 1, description: 'Số trang hiện tại', required: false })
@@ -144,13 +134,4 @@ export class GetKanjiReadingListQuerySwaggerDTO {
     required: false
   })
   sort?: SortOrder
-}
-
-// List Response DTO (not Zod)
-export class KanjiReadingListResponseDTO {
-  data: any[]
-  total: number
-  page: number
-  limit: number
-  totalPages: number
 }

@@ -131,6 +131,28 @@ export const jaMessages = {
     EXAMPLE_JP_TOO_LONG: '日本語の例文が長すぎます（最大1000文字）',
     EXAMPLE_JP_NOT_JAPANESE: '日本語（ひらがな・カタカナ・漢字）で入力してください'
   },
+  kanji_reading: {
+    GET_LIST_SUCCESS: '漢字の読み一覧を取得しました',
+    GET_SUCCESS: '漢字の読みを取得しました',
+    GET_STATS_SUCCESS: '漢字の読みの統計を取得しました',
+    CREATE_SUCCESS: '漢字の読みを作成しました',
+    UPDATE_SUCCESS: '漢字の読みを更新しました',
+    DELETE_SUCCESS: '漢字の読みを削除しました',
+    NOT_FOUND: '漢字の読みが見つかりません',
+    ALREADY_EXISTS: '漢字の読みは既に存在します',
+    INVALID_DATA: '漢字の読みのデータが無効です',
+    INVALID_ID: '漢字の読みIDが無効です',
+    KANJI_NOT_FOUND: '漢字が見つかりません',
+    KANJI_ID_INVALID: '漢字IDは0より大きくなければなりません',
+    READING_TYPE_REQUIRED: '読みの種類は必須です',
+    READING_TYPE_TOO_LONG: '読みの種類が長すぎます（最大20文字）',
+    READING_TYPE_INVALID:
+      '読みの種類は onyomi、kunyomi、nanori、irregular のいずれかにしてください',
+    READING_REQUIRED: '読みは必須です',
+    READING_TOO_LONG: '読みが長すぎます（最大100文字）',
+    READING_NOT_KANA:
+      '音読み・訓読み（ひらがな・カタカナと基本的な記号のみ）で入力してください'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'レッスンカテゴリを作成しました',
     UPDATE_SUCCESS: 'レッスンカテゴリを更新しました',
