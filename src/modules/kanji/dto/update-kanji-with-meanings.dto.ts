@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { ApiProperty } from '@nestjs/swagger'
 import { createZodDto } from 'nestjs-zod'
 import { KanjiSchema } from '../entities/kanji.entities'
-import { KanjiReadingSchema } from '@/modules/kanji-reading/entities/kanji-reading.entities'
+import { KanjiReadingSchema } from '@/modules/kanji-reading/entities/kanji-reading.entity'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()

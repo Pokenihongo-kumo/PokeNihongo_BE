@@ -2,13 +2,13 @@ import {
   KanjiReading,
   CreateKanjiReadingBodyType,
   UpdateKanjiReadingBodyType
-} from './entities/kanji-reading.entities'
+} from './entities/kanji-reading.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
 import { KanjiReadingSortField, SortOrder } from '@/common/enum/enum'
 
 @Injectable()
-export class KanjiReadingRepository {
+export class KanjiReadingRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(params: {

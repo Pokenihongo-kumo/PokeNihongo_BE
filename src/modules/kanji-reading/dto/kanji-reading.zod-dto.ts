@@ -10,7 +10,7 @@ import {
   KanjiReadingListResponseSchema,
   KanjiReadingResSchema,
   KanjiReadingListResSchema
-} from '../../entities/kanji-reading.entities'
+} from '../entities/kanji-reading.entity'
 
 // Zod DTOs
 export class CreateKanjiReadingBodyDTO extends createZodDto(CreateKanjiReadingSchema) {}

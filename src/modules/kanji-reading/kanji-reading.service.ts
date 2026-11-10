@@ -3,7 +3,7 @@ import {
   UpdateKanjiReadingBodyType,
   GetKanjiReadingListQueryType,
   KanjiReading
-} from './entities/kanji-reading.entities'
+} from './entities/kanji-reading.entity'
 
 import {
   KanjiReadingNotFoundException,
@@ -12,13 +12,13 @@ import {
 } from './dto/kanji-reading.error'
 import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from '@/shared/helpers'
 import { Injectable, Logger } from '@nestjs/common'
-import { KanjiReadingRepository } from './kanji-reading.repo'
+import { KanjiReadingRepo } from './kanji-reading.repo'
 
 @Injectable()
 export class KanjiReadingService {
   private readonly logger = new Logger(KanjiReadingService.name)
 
-  constructor(private readonly kanjiReadingRepository: KanjiReadingRepository) {}
+  constructor(private readonly kanjiReadingRepository: KanjiReadingRepo) {}
 
   async findMany(params: GetKanjiReadingListQueryType) {
     try {

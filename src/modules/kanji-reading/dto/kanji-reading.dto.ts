@@ -102,7 +102,7 @@ export {
   GetKanjiReadingsByKanjiIdParamsDTO,
   GetKanjiReadingsByTypeParamsDTO,
   KanjiReadingResponseDTO
-} from './zod/kanji-reading-zod.dto'
+} from './kanji-reading.zod-dto'
 // Query parameter DTOs
 export class GetKanjiReadingListQuerySwaggerDTO {
   @ApiProperty({ example: 1, description: 'Số trang hiện tại', required: false })
