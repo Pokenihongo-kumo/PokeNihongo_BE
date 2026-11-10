@@ -218,172 +218,159 @@ export class PaymentService {
     }
   }
 
-  // Handle PayOS return URL
-  async handlePayOSReturn(
-    returnData: {
-      paymentId: number
-      code: string
-      paymentLinkId: string
-      cancel: boolean
-      status: string
-      orderCode: number
-    },
-    lang: string = 'vi'
-  ) {
-    const feUrl = envConfig.FE_URL || 'http://localhost:3000'
-    try {
-      const { paymentId, code, paymentLinkId, cancel, status, orderCode } = returnData
+  // ---- PayOS callbacks -------------------------------------------------
+  // The return and cancel URLs are opened by the user's browser, so their query
+  // string (code/status/cancel) proves nothing: anyone could open
+  // /payos/return?code=00&status=PAID&orderCode=... and used to get the plan
+  // without paying. The payment state now comes only from PayOS: a
+  // server-to-server lookup of the order (return/cancel) or a webhook whose
+  // signature the SDK verifies.
 
-      console.log('return: ', returnData)
+  // Handle PayOS return URL (UX redirect; state from PayOS)
+  async handlePayOSReturn(returnData: { orderCode: number }, lang: string = 'vi') {
+    return this.syncFromBrowserCallback(returnData.orderCode, lang)
+  }
 
-      // Tìm payment theo orderCode
-      const payment = (await this.paymentRepo.findPaymentByPayOSOrderId(
-        orderCode.toString()
-      )) as PaymentType | null
+  // Handle PayOS cancel URL (UX redirect; state from PayOS)
+  async handlePayOSCancel(cancelData: { orderCode: number }, lang: string = 'vi') {
+    return this.syncFromBrowserCallback(cancelData.orderCode, lang)
+  }
 
-      if (!payment) {
-        // Redirect về frontend với error
-        return {
-          success: false,
-          message: this.i18nService.translate(PaymentMessage.NOT_FOUND, lang),
-          redirect: `${feUrl}/payment/failed?error=payment_not_found&orderCode=${orderCode}`
-        }
-      }
-
-      // Nếu đã thanh toán thành công trước đó
-      if (payment.status === PAYMENT_STATUS.PAID) {
-        // Lấy thêm thông tin subscription và service plan cho redirect
-        const invoice = await this.invoiceRepo.findById(payment.invoiceId)
-        const plan = invoice
-          ? await this.subscriptionPlanRepo.getById(invoice.subscriptionPlanId)
-          : null
-
-        return {
-          success: true,
-          message: this.i18nService.translate(PaymentMessage.ALREADY_PAID, lang),
-          redirect: `${feUrl}/payment/success?orderId=${payment.payosOrderId}&amount=${payment.amount}&plan=${encodeURIComponent(plan ? (plan.type === 'LIFETIME' ? 'Lifetime' : `Recurring`) : '')}`
-        }
-      }
-
-      // Xử lý theo code trả về từ PayOS
-      if (code === '00' && status === 'PAID' && !cancel) {
-        // Lấy thông tin subscription và service plan
-        const invoice = await this.invoiceRepo.findById(payment.invoiceId)
-        const plan = invoice
-          ? await this.subscriptionPlanRepo.getById(invoice.subscriptionPlanId)
-          : null
-
-        // Thanh toán thành công: cập nhật payment + invoice
-        await this.paymentRepo.markInvoicePaid(payment.id, payment.invoiceId)
-
-        // Delegate subscription creation + job cleanup to invoice service
-        await this.invoiceService.updateInvoiceWhenPaymentSuccess(payment.invoiceId)
-        //todo mail
-        // Gửi mail (tạm thời no-op)
-        this.sendMailPayment(payment.invoiceId)
-
-        return {
-          success: true,
-          message: this.i18nService.translate(PaymentMessage.PAY_SUCCESS, lang),
-          redirect: `${feUrl}/payment/success?orderId=${payment.payosOrderId}&amount=${payment.amount}&plan=${encodeURIComponent(plan ? (plan.type === 'LIFETIME' ? 'Lifetime' : `Recurring`) : '')}`
-        }
-      } else {
-        // Thanh toán thất bại hoặc bị hủy
-        const failureReason = cancel
-          ? this.i18nService.translate(PaymentMessage.PAY_CANCELLED, lang)
-          : this.i18nService.translate(PaymentMessage.PAY_FAILED, lang)
-
-        await this.paymentRepo.updatePayment(payment.id, {
-          status: cancel ? PAYMENT_STATUS.CANCELLED : PAYMENT_STATUS.FAILED,
-          failureReason,
-          gatewayResponse: returnData as any
-        })
-
-        return {
-          success: false,
-          message: failureReason,
-          redirect: `${feUrl}/payment/failed?error=payment_failed&orderCode=${orderCode}&reason=${encodeURIComponent(failureReason)}`
-        }
-      }
-    } catch (error) {
-      console.error('PayOS Return Handler Error:', error)
-      return {
-        success: false,
-        message: this.i18nService.translate(PaymentMessage.ERROR_UNKNOWN_PAY, lang),
-        redirect: `${feUrl}/payment/failed?error=system_error&orderCode=${returnData.orderCode}`
-      }
+  /**
+   * PayOS webhook. Answers 400 when the signature does not verify (the SDK
+   * throws); otherwise 200, also for unknown orders (PayOS sends a test event
+   * when the webhook URL is confirmed).
+   */
+  async handlePayOSWebhook(body: unknown, lang: string = 'vi') {
+    const data = await this.payosService.verifyPaymentWebhookData(body)
+    const payment = await this.paymentRepo.findPaymentByPayOSOrderId(
+      String(data.orderCode)
+    )
+    if (payment && data.code === '00' && Number(data.amount) === Number(payment.amount)) {
+      await this.grantPaidPayment(payment)
+    }
+    return {
+      data: null,
+      message: this.i18nService.translate(PaymentMessage.UPDATE_SUCCESS, lang)
     }
   }
 
-  // Handle PayOS cancel URL
-  async handlePayOSCancel(
-    cancelData: {
-      paymentId: number
-      code: string
-      paymentLinkId: string
-      cancel: boolean
-      status: string
-      orderCode: number
-    },
-    lang: string = 'vi'
-  ) {
+  // Return/cancel: look the order up at PayOS, apply its state, pick the redirect
+  private async syncFromBrowserCallback(orderCode: number, lang: string) {
     const feUrl = envConfig.FE_URL || 'http://localhost:3000'
+    const failed = (error: string, message: string) => ({
+      success: false,
+      message,
+      redirect: `${feUrl}/payment/failed?error=${error}&orderCode=${orderCode}`
+    })
+
     try {
-      const { paymentId, orderCode } = cancelData
-      console.log(
-        'Handling PayOS cancel for paymentId:',
-        paymentId,
-        'orderCode:',
-        orderCode
-      )
+      const payment = Number.isFinite(orderCode)
+        ? await this.paymentRepo.findPaymentByPayOSOrderId(String(orderCode))
+        : null
+      if (!payment) {
+        return failed(
+          'payment_not_found',
+          this.i18nService.translate(PaymentMessage.NOT_FOUND, lang)
+        )
+      }
 
-      // Tìm payment theo orderCode
-      const payment = await this.paymentRepo.findPaymentByPayOSOrderId(
-        orderCode.toString()
-      )
+      if (payment.status !== PAYMENT_STATUS.PAID) {
+        const info = await this.payosService.getPaymentLinkInformation(
+          Number(payment.payosOrderId)
+        )
+        const fullyPaid =
+          info.status === 'PAID' &&
+          Number(info.orderCode) === Number(payment.payosOrderId) &&
+          Number(info.amount) === Number(payment.amount)
 
-      if (payment && payment.status === PAYMENT_STATUS.PENDING) {
-        // Cập nhật trạng thái hủy
-        await this.paymentRepo.updatePayment(payment.id, {
-          status: PAYMENT_STATUS.CANCELLED,
-          failureReason: this.i18nService.translate(PaymentMessage.PAY_CANCELLED, lang),
-          gatewayResponse: cancelData as any
-        })
-        // dong thoi cập nhật invoice hủy luôn
-        const invoice = await this.invoiceRepo.findById(payment.invoiceId)
-        if (invoice) {
-          await this.invoiceRepo.update({
-            id: payment.invoiceId,
-            data: {
-              status: InvoiceStatus.CANCELLED
-            }
-          })
-          // Fetch user subscription by invoice's subscription plan and user
-          const userSubscription = await this.userSubscriptionSer.findByUserAndInvoice(
-            payment.userId,
-            invoice.id
+        if (fullyPaid) {
+          await this.grantPaidPayment(payment)
+        } else if (info.status === 'FAILED') {
+          await this.closeCancelledPayment(payment, 'FAILED', lang)
+          return failed(
+            'payment_failed',
+            this.i18nService.translate(PaymentMessage.PAY_FAILED, lang)
           )
-          if (userSubscription) {
-            await this.userSubscriptionSer.update({
-              id: userSubscription.id,
-              data: { status: 'PAYMENT_FAILED' }
-            })
-          }
+        } else if (info.status === 'CANCELLED' || info.status === 'EXPIRED') {
+          await this.closeCancelledPayment(payment, info.status, lang)
+          return failed(
+            'payment_cancelled',
+            this.i18nService.translate(PaymentMessage.PAY_CANCELLED, lang)
+          )
+        } else {
+          // Not paid yet at PayOS (pending/processing, or an amount that does not
+          // match): change nothing, the webhook settles it later
+          return failed(
+            'payment_pending',
+            this.i18nService.translate(PaymentMessage.INVALID_STATUS_PENDING, lang)
+          )
         }
       }
 
+      const invoice = await this.invoiceRepo.findById(payment.invoiceId)
+      const plan = invoice
+        ? await this.subscriptionPlanRepo.getById(invoice.subscriptionPlanId)
+        : null
       return {
-        success: false,
-        message: this.i18nService.translate(PaymentMessage.PAY_CANCELLED, lang),
-        redirect: `${feUrl}/payment/failed?error=payment_cancelled&orderCode=${orderCode}`
+        success: true,
+        message: this.i18nService.translate(PaymentMessage.PAY_SUCCESS, lang),
+        redirect: `${feUrl}/payment/success?orderId=${payment.payosOrderId}&amount=${payment.amount}&plan=${encodeURIComponent(plan ? (plan.type === 'LIFETIME' ? 'Lifetime' : `Recurring`) : '')}`
       }
     } catch (error) {
-      console.error('PayOS Cancel Handler Error:', error)
-      return {
-        success: false,
-        message: this.i18nService.translate(PaymentMessage.ERROR_UNKNOWN_PAY, lang),
-        redirect: `${feUrl}/payment/failed?error=system_error&orderCode=${cancelData.orderCode}`
-      }
+      console.error('PayOS callback error:', error)
+      return failed(
+        'system_error',
+        this.i18nService.translate(PaymentMessage.ERROR_UNKNOWN_PAY, lang)
+      )
+    }
+  }
+
+  // PAID + subscription exactly once, whichever callback (return, cancel, webhook) arrives first
+  private async grantPaidPayment(payment: PaymentType) {
+    const claimed = await this.paymentRepo.markInvoicePaidOnce(
+      payment.id,
+      payment.invoiceId
+    )
+    if (!claimed) return
+    // Delegate subscription creation + job cleanup to invoice service
+    await this.invoiceService.updateInvoiceWhenPaymentSuccess(payment.invoiceId)
+    // Gửi mail (tạm thời no-op)
+    this.sendMailPayment(payment.invoiceId)
+  }
+
+  // PayOS says the order was cancelled/expired/failed: close it if it is still pending
+  private async closeCancelledPayment(
+    payment: PaymentType,
+    payosStatus: 'CANCELLED' | 'EXPIRED' | 'FAILED',
+    lang: string
+  ) {
+    const closed = await this.paymentRepo.closePendingPayment(payment.id, {
+      status: payosStatus,
+      failureReason: this.i18nService.translate(
+        payosStatus === 'FAILED'
+          ? PaymentMessage.PAY_FAILED
+          : PaymentMessage.PAY_CANCELLED,
+        lang
+      )
+    })
+    if (!closed) return
+
+    const invoice = await this.invoiceRepo.findById(payment.invoiceId)
+    if (!invoice) return
+    await this.invoiceRepo.update({
+      id: payment.invoiceId,
+      data: { status: InvoiceStatus.CANCELLED }
+    })
+    const userSubscription = await this.userSubscriptionSer.findByUserAndInvoice(
+      payment.userId,
+      invoice.id
+    )
+    if (userSubscription) {
+      await this.userSubscriptionSer.update({
+        id: userSubscription.id,
+        data: { status: 'PAYMENT_FAILED' }
+      })
     }
   }
 
