@@ -97,6 +97,29 @@ export const enMessages = {
     INVALID_DATA: 'Invalid grammar usage data',
     INVALID_ID: 'Invalid grammar usage ID'
   },
+  meaning: {
+    GET_LIST_SUCCESS: 'Meaning list retrieved successfully',
+    GET_SUCCESS: 'Meanings of the vocabulary retrieved successfully',
+    CREATE_SUCCESS: 'Meaning created successfully',
+    UPDATE_SUCCESS: 'Meaning updated successfully',
+    NOT_FOUND: 'Meaning not found',
+    INVALID_DATA: 'Invalid meaning data',
+    INVALID_ID: 'Invalid meaning ID',
+    VOCABULARY_NOT_FOUND: 'Vocabulary not found',
+    VOCABULARY_ID_INVALID: 'Vocabulary ID must be greater than 0',
+    WORD_TYPE_ID_INVALID: 'Word type ID must be greater than 0',
+    MEANING_KEY_REQUIRED: 'Meaning key is required',
+    MEANING_KEY_TOO_LONG: 'Meaning key is too long (max 500 characters)',
+    EXAMPLE_KEY_REQUIRED: 'Example sentence key is required',
+    EXAMPLE_KEY_TOO_LONG: 'Example sentence key is too long (max 500 characters)',
+    EXPLANATION_KEY_REQUIRED: 'Explanation key is required',
+    EXPLANATION_KEY_TOO_LONG: 'Explanation key is too long (max 500 characters)',
+    TRANSLATION_KEY_FORMAT:
+      'Translation key must look like module.id.field (e.g. meaning.1.definition)',
+    EXAMPLE_JP_REQUIRED: 'Japanese example sentence is required',
+    EXAMPLE_JP_TOO_LONG: 'Japanese example sentence is too long (max 1000 characters)',
+    EXAMPLE_JP_NOT_JAPANESE: 'Must be Japanese text (Hiragana, Katakana or Kanji)'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Lesson category created successfully',
     UPDATE_SUCCESS: 'Lesson category updated successfully',

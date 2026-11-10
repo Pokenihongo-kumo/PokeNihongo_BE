@@ -96,6 +96,30 @@ export const viMessages = {
     INVALID_DATA: 'Dữ liệu cách sử dụng ngữ pháp không hợp lệ',
     INVALID_ID: 'ID cách sử dụng ngữ pháp không hợp lệ'
   },
+  meaning: {
+    GET_LIST_SUCCESS: 'Lấy danh sách nghĩa thành công',
+    GET_SUCCESS: 'Lấy tất cả nghĩa theo từ vựng thành công',
+    CREATE_SUCCESS: 'Tạo nghĩa thành công',
+    UPDATE_SUCCESS: 'Cập nhật nghĩa thành công',
+    NOT_FOUND: 'Nghĩa không tồn tại',
+    INVALID_DATA: 'Dữ liệu nghĩa không hợp lệ',
+    INVALID_ID: 'ID nghĩa không hợp lệ',
+    VOCABULARY_NOT_FOUND: 'Từ vựng không tồn tại',
+    VOCABULARY_ID_INVALID: 'Vocabulary ID phải lớn hơn 0',
+    WORD_TYPE_ID_INVALID: 'WordType ID phải lớn hơn 0',
+    MEANING_KEY_REQUIRED: 'Meaning key không được để trống',
+    MEANING_KEY_TOO_LONG: 'Meaning key quá dài (tối đa 500 ký tự)',
+    EXAMPLE_KEY_REQUIRED: 'Example sentence key không được để trống',
+    EXAMPLE_KEY_TOO_LONG: 'Example sentence key quá dài (tối đa 500 ký tự)',
+    EXPLANATION_KEY_REQUIRED: 'Explanation key không được để trống',
+    EXPLANATION_KEY_TOO_LONG: 'Explanation key quá dài (tối đa 500 ký tự)',
+    TRANSLATION_KEY_FORMAT:
+      'Key dịch phải theo định dạng: module.id.field (ví dụ: meaning.1.definition)',
+    EXAMPLE_JP_REQUIRED: 'Câu ví dụ tiếng Nhật không được để trống',
+    EXAMPLE_JP_TOO_LONG: 'Câu ví dụ tiếng Nhật quá dài (tối đa 1000 ký tự)',
+    EXAMPLE_JP_NOT_JAPANESE:
+      'Phải là văn bản tiếng Nhật (chứa Hiragana, Katakana, hoặc Kanji)'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Tạo danh mục bài học thành công',
     UPDATE_SUCCESS: 'Cập nhật danh mục bài học thành công',

@@ -108,6 +108,29 @@ export const jaMessages = {
     INVALID_DATA: '文法の用法のデータが無効です',
     INVALID_ID: '文法の用法IDが無効です'
   },
+  meaning: {
+    GET_LIST_SUCCESS: '意味一覧を取得しました',
+    GET_SUCCESS: '語彙の意味を取得しました',
+    CREATE_SUCCESS: '意味を作成しました',
+    UPDATE_SUCCESS: '意味を更新しました',
+    NOT_FOUND: '意味が見つかりません',
+    INVALID_DATA: '意味のデータが無効です',
+    INVALID_ID: '意味IDが無効です',
+    VOCABULARY_NOT_FOUND: '語彙が見つかりません',
+    VOCABULARY_ID_INVALID: '語彙IDは0より大きくなければなりません',
+    WORD_TYPE_ID_INVALID: '品詞IDは0より大きくなければなりません',
+    MEANING_KEY_REQUIRED: '意味キーは必須です',
+    MEANING_KEY_TOO_LONG: '意味キーが長すぎます（最大500文字）',
+    EXAMPLE_KEY_REQUIRED: '例文キーは必須です',
+    EXAMPLE_KEY_TOO_LONG: '例文キーが長すぎます（最大500文字）',
+    EXPLANATION_KEY_REQUIRED: '説明キーは必須です',
+    EXPLANATION_KEY_TOO_LONG: '説明キーが長すぎます（最大500文字）',
+    TRANSLATION_KEY_FORMAT:
+      '翻訳キーは module.id.field の形式にしてください（例: meaning.1.definition）',
+    EXAMPLE_JP_REQUIRED: '日本語の例文は必須です',
+    EXAMPLE_JP_TOO_LONG: '日本語の例文が長すぎます（最大1000文字）',
+    EXAMPLE_JP_NOT_JAPANESE: '日本語（ひらがな・カタカナ・漢字）で入力してください'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'レッスンカテゴリを作成しました',
     UPDATE_SUCCESS: 'レッスンカテゴリを更新しました',

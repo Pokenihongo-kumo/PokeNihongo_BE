@@ -161,21 +161,3 @@ export class MeaningListSwaggerResponseDTO {
   @ApiProperty({ example: 1, description: 'Tổng số trang' })
   totalPages: number
 }
-
-// Export Zod DTOs
-export {
-  CreateMeaningBodyDTO,
-  UpdateMeaningBodyDTO,
-  GetMeaningByIdParamsDTO,
-  GetMeaningListQueryDTO,
-  MeaningResponseDTO
-} from './zod/meaning-zod.dto'
-
-// List Response DTO (not Zod)
-export class MeaningListResponseDTO {
-  data: any[]
-  total: number
-  page: number
-  limit: number
-  totalPages: number
-}
