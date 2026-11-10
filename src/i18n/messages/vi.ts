@@ -61,6 +61,22 @@ export const viMessages = {
     INVALID_DATA: 'Dữ liệu phần thưởng không hợp lệ',
     NAME_REQUIRED: 'Tên phần thưởng không được để trống'
   },
+  lesson_category: {
+    CREATE_SUCCESS: 'Tạo danh mục bài học thành công',
+    UPDATE_SUCCESS: 'Cập nhật danh mục bài học thành công',
+    DELETE_SUCCESS: 'Xóa danh mục bài học thành công',
+    GET_SUCCESS: 'Lấy thông tin danh mục bài học thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách danh mục bài học thành công',
+    CREATE_DEFAULT_SUCCESS: 'Tạo danh mục bài học mặc định thành công',
+    NOT_FOUND: 'Danh mục bài học không tồn tại',
+    ALREADY_EXISTS: 'Danh mục bài học đã tồn tại',
+    INVALID_DATA: 'Dữ liệu danh mục bài học không hợp lệ',
+    INVALID_ID: 'ID danh mục bài học không hợp lệ',
+    NAME_KEY_REQUIRED: 'Name key không được để trống',
+    NAME_KEY_TOO_LONG: 'Name key quá dài (tối đa 200 ký tự)',
+    SLUG_REQUIRED: 'Slug không được để trống',
+    SLUG_TOO_LONG: 'Slug quá dài (tối đa 200 ký tự)'
+  },
   languages: {
     CREATE_SUCCESS: 'Tạo ngôn ngữ thành công',
     UPDATE_SUCCESS: 'Cập nhật ngôn ngữ thành công',

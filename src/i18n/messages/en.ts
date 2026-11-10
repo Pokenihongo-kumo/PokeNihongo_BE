@@ -62,6 +62,22 @@ export const enMessages = {
     INVALID_DATA: 'Invalid reward data',
     NAME_REQUIRED: 'Reward name is required'
   },
+  lesson_category: {
+    CREATE_SUCCESS: 'Lesson category created successfully',
+    UPDATE_SUCCESS: 'Lesson category updated successfully',
+    DELETE_SUCCESS: 'Lesson category deleted successfully',
+    GET_SUCCESS: 'Lesson category retrieved successfully',
+    GET_LIST_SUCCESS: 'Lesson category list retrieved successfully',
+    CREATE_DEFAULT_SUCCESS: 'Default lesson categories created successfully',
+    NOT_FOUND: 'Lesson category not found',
+    ALREADY_EXISTS: 'Lesson category already exists',
+    INVALID_DATA: 'Invalid lesson category data',
+    INVALID_ID: 'Invalid lesson category ID',
+    NAME_KEY_REQUIRED: 'Name key is required',
+    NAME_KEY_TOO_LONG: 'Name key is too long (at most 200 characters)',
+    SLUG_REQUIRED: 'Slug is required',
+    SLUG_TOO_LONG: 'Slug is too long (at most 200 characters)'
+  },
   languages: {
     CREATE_SUCCESS: 'Language created successfully',
     UPDATE_SUCCESS: 'Language updated successfully',

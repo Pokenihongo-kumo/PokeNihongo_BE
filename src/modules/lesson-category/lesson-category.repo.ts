@@ -1,142 +1,78 @@
-import { Injectable } from '@nestjs/common'
 import { PrismaService } from '@/shared/services/prisma.service'
+import { toSkipTake } from '@/shared/utils/pagination'
+import { Injectable } from '@nestjs/common'
+import { LessonCategory, Prisma } from '@prisma/client'
 import {
   CreateLessonCategoryBodyType,
-  UpdateLessonCategoryBodyType,
-  GetLessonCategoryListQueryType
+  GetLessonCategoryListQueryType,
+  UpdateLessonCategoryBodyType
 } from './entities/lesson-category.entity'
 
 @Injectable()
 export class LessonCategoryRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async findMany(params: GetLessonCategoryListQueryType) {
+  async findMany(
+    params: GetLessonCategoryListQueryType
+  ): Promise<{ data: LessonCategory[]; total: number }> {
     const { page, limit, search } = params
-    const skip = (page - 1) * limit
 
-    const where: any = {}
-
-    if (search) {
-      where.OR = [
-        { nameKey: { contains: search, mode: 'insensitive' } },
-        { slug: { contains: search, mode: 'insensitive' } }
-      ]
-    }
+    const where: Prisma.LessonCategoryWhereInput = search
+      ? {
+          OR: [
+            { nameKey: { contains: search, mode: 'insensitive' } },
+            { slug: { contains: search, mode: 'insensitive' } }
+          ]
+        }
+      : {}
 
     const [data, total] = await Promise.all([
       this.prismaService.lessonCategory.findMany({
         where,
         orderBy: { createdAt: 'desc' },
-        skip,
-        take: limit
+        ...toSkipTake(page, limit)
       }),
       this.prismaService.lessonCategory.count({ where })
     ])
 
-    return {
-      data,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit)
-    }
+    return { data, total }
   }
 
-  async findById(id: number) {
-    return this.prismaService.lessonCategory.findUnique({
-      where: { id },
-      include: {
-        lessons: {
-          select: {
-            id: true,
-            slug: true,
-            titleKey: true,
-            isPublished: true
-          },
-          orderBy: {
-            lessonOrder: 'asc'
-          }
-        }
-      }
-    })
+  findById(id: number): Promise<LessonCategory | null> {
+    return this.prismaService.lessonCategory.findUnique({ where: { id } })
   }
 
-  async findBySlug(slug: string) {
-    return this.prismaService.lessonCategory.findUnique({
-      where: { slug },
-      include: {
-        lessons: {
-          select: {
-            id: true,
-            slug: true,
-            titleKey: true,
-            isPublished: true
-          },
-          orderBy: {
-            lessonOrder: 'asc'
-          }
-        }
-      }
-    })
+  findBySlug(slug: string): Promise<LessonCategory | null> {
+    return this.prismaService.lessonCategory.findUnique({ where: { slug } })
   }
 
-  async create(data: CreateLessonCategoryBodyType & { id?: number; slug: string }) {
-    // Remove id from data if it exists since Prisma doesn't allow explicit id for auto-increment
-    const { id, ...createData } = data
-
+  // Ids always come from the sequence (an `id` in the input is ignored, as before)
+  create(
+    data: CreateLessonCategoryBodyType & { id?: number; slug: string }
+  ): Promise<LessonCategory> {
     return this.prismaService.lessonCategory.create({
-      data: createData,
-      include: {
-        lessons: {
-          select: {
-            id: true,
-            slug: true,
-            titleKey: true,
-            isPublished: true
-          }
-        }
-      }
+      data: { nameKey: data.nameKey, slug: data.slug }
     })
   }
 
-  async update(id: number, data: UpdateLessonCategoryBodyType) {
-    return this.prismaService.lessonCategory.update({
-      where: { id },
-      data,
-      include: {
-        lessons: {
-          select: {
-            id: true,
-            slug: true,
-            titleKey: true,
-            isPublished: true
-          }
-        }
-      }
-    })
+  update(id: number, data: UpdateLessonCategoryBodyType): Promise<LessonCategory> {
+    return this.prismaService.lessonCategory.update({ where: { id }, data })
   }
 
-  async delete(id: number) {
-    return this.prismaService.lessonCategory.delete({
-      where: { id }
-    })
+  delete(id: number): Promise<LessonCategory> {
+    return this.prismaService.lessonCategory.delete({ where: { id } })
   }
 
   // Helper methods
-  async checkCategoryExists(id: number) {
-    const count = await this.prismaService.lessonCategory.count({
-      where: { id }
-    })
+  async checkCategoryExists(id: number): Promise<boolean> {
+    const count = await this.prismaService.lessonCategory.count({ where: { id } })
     return count > 0
   }
 
-  async checkSlugExists(slug: string, excludeId?: number) {
-    const where: any = { slug }
-    if (excludeId) {
-      where.id = { not: excludeId }
-    }
-
-    const count = await this.prismaService.lessonCategory.count({ where })
+  async checkSlugExists(slug: string, excludeId?: number): Promise<boolean> {
+    const count = await this.prismaService.lessonCategory.count({
+      where: { slug, ...(excludeId && { id: { not: excludeId } }) }
+    })
     return count > 0
   }
 }

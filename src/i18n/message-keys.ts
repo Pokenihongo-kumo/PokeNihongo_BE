@@ -60,6 +60,23 @@ export const RewardMessage = {
   NAME_REQUIRED: 'reward.NAME_REQUIRED'
 } as const
 
+export const LessonCategoryMessage = {
+  CREATE_SUCCESS: 'lesson_category.CREATE_SUCCESS',
+  UPDATE_SUCCESS: 'lesson_category.UPDATE_SUCCESS',
+  DELETE_SUCCESS: 'lesson_category.DELETE_SUCCESS',
+  GET_SUCCESS: 'lesson_category.GET_SUCCESS',
+  GET_LIST_SUCCESS: 'lesson_category.GET_LIST_SUCCESS',
+  CREATE_DEFAULT_SUCCESS: 'lesson_category.CREATE_DEFAULT_SUCCESS',
+  NOT_FOUND: 'lesson_category.NOT_FOUND',
+  ALREADY_EXISTS: 'lesson_category.ALREADY_EXISTS',
+  INVALID_DATA: 'lesson_category.INVALID_DATA',
+  INVALID_ID: 'lesson_category.INVALID_ID',
+  NAME_KEY_REQUIRED: 'lesson_category.NAME_KEY_REQUIRED',
+  NAME_KEY_TOO_LONG: 'lesson_category.NAME_KEY_TOO_LONG',
+  SLUG_REQUIRED: 'lesson_category.SLUG_REQUIRED',
+  SLUG_TOO_LONG: 'lesson_category.SLUG_TOO_LONG'
+} as const
+
 export const LanguagesMessage = {
   CREATE_SUCCESS: 'languages.CREATE_SUCCESS',
   UPDATE_SUCCESS: 'languages.UPDATE_SUCCESS',

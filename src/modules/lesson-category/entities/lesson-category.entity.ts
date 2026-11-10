@@ -1,3 +1,5 @@
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { LessonCategoryMessage } from '@/i18n/message-keys'
 import { z } from 'zod'
 
 // Lesson Category Entity Types
@@ -9,6 +11,7 @@ export const LessonCategoryType = z.object({
   updatedAt: z.date()
 })
 
+// What reads return: the name translated for the request language
 export const LessonCategoryWithRelationsType = z.object({
   id: z.number(),
   slug: z.string(),
@@ -19,17 +22,32 @@ export const LessonCategoryWithRelationsType = z.object({
 
 // Request/Response Types
 export const CreateLessonCategoryBodyType = z.object({
-  nameKey: z.string().min(1).max(200),
-  slug: z.string().min(1).max(200).optional()
+  nameKey: z
+    .string()
+    .min(1, LessonCategoryMessage.NAME_KEY_REQUIRED)
+    .max(200, LessonCategoryMessage.NAME_KEY_TOO_LONG),
+  slug: z
+    .string()
+    .min(1, LessonCategoryMessage.SLUG_REQUIRED)
+    .max(200, LessonCategoryMessage.SLUG_TOO_LONG)
+    .optional()
 })
 
 export const UpdateLessonCategoryBodyType = z.object({
-  nameKey: z.string().min(1).max(200).optional(),
-  slug: z.string().min(1).max(200).optional()
+  nameKey: z
+    .string()
+    .min(1, LessonCategoryMessage.NAME_KEY_REQUIRED)
+    .max(200, LessonCategoryMessage.NAME_KEY_TOO_LONG)
+    .optional(),
+  slug: z
+    .string()
+    .min(1, LessonCategoryMessage.SLUG_REQUIRED)
+    .max(200, LessonCategoryMessage.SLUG_TOO_LONG)
+    .optional()
 })
 
 export const GetLessonCategoryByIdParamsType = z.object({
-  id: z.string().transform(Number)
+  id: checkIdSchema(LessonCategoryMessage.INVALID_ID)
 })
 
 export const GetLessonCategoryListQueryType = z.object({
@@ -37,23 +55,6 @@ export const GetLessonCategoryListQueryType = z.object({
   limit: z.string().transform(Number).default('10'),
   search: z.string().optional()
 })
-
-// Response schemas
-export const LessonCategoryListResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(LessonCategoryType),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
 
 // Type exports
 export type LessonCategoryType = z.infer<typeof LessonCategoryType>
@@ -68,4 +69,3 @@ export type GetLessonCategoryByIdParamsType = z.infer<
 export type GetLessonCategoryListQueryType = z.infer<
   typeof GetLessonCategoryListQueryType
 >
-export type LessonCategoryListResType = z.infer<typeof LessonCategoryListResSchema>

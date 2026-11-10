@@ -3,8 +3,7 @@ import {
   CreateLessonCategoryBodyType,
   UpdateLessonCategoryBodyType,
   GetLessonCategoryByIdParamsType,
-  GetLessonCategoryListQueryType,
-  LessonCategoryListResSchema
+  GetLessonCategoryListQueryType
 } from '../entities/lesson-category.entity'
 
 // Lesson Category DTOs
@@ -20,4 +19,3 @@ export class GetLessonCategoryByIdParamsDTO extends createZodDto(
 export class GetLessonCategoryListQueryDTO extends createZodDto(
   GetLessonCategoryListQueryType
 ) {}
-export class LessonCategoryListResDTO extends createZodDto(LessonCategoryListResSchema) {}
