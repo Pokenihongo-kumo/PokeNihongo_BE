@@ -4,13 +4,13 @@ import {
   UpdateLessonCategoryBodyType,
   GetLessonCategoryByIdParamsType,
   GetLessonCategoryListQueryType
-} from './entities/lesson-category.entities'
+} from './entities/lesson-category.entity'
 import {
   LessonCategoryNotFoundException,
   LessonCategoryAlreadyExistsException,
   InvalidLessonCategoryDataException
 } from './dto/lesson-category.error'
-import { LessonCategoryRepository } from './lesson-category.repo'
+import { LessonCategoryRepo } from './lesson-category.repo'
 import { TranslationService } from '../translation/translation.service'
 import { LanguagesService } from '../languages/languages.service'
 import { I18nService } from '@/i18n/i18n.service'
@@ -21,7 +21,7 @@ export class LessonCategoryService {
   private readonly logger = new Logger(LessonCategoryService.name)
 
   constructor(
-    private readonly lessonCategoryRepository: LessonCategoryRepository,
+    private readonly lessonCategoryRepository: LessonCategoryRepo,
     private readonly translationService: TranslationService,
     private readonly languagesService: LanguagesService,
     private readonly i18nService: I18nService

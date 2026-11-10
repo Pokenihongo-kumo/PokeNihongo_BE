@@ -5,7 +5,7 @@ import {
   GetLessonCategoryByIdParamsType,
   GetLessonCategoryListQueryType,
   LessonCategoryListResSchema
-} from '../entities/lesson-category.entities'
+} from '../entities/lesson-category.entity'
 
 // Lesson Category DTOs
 export class CreateLessonCategoryBodyDTO extends createZodDto(

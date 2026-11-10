@@ -4,10 +4,10 @@ import {
   CreateLessonCategoryBodyType,
   UpdateLessonCategoryBodyType,
   GetLessonCategoryListQueryType
-} from './entities/lesson-category.entities'
+} from './entities/lesson-category.entity'
 
 @Injectable()
-export class LessonCategoryRepository {
+export class LessonCategoryRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(params: GetLessonCategoryListQueryType) {
