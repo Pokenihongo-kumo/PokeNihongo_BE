@@ -169,7 +169,7 @@ export {
   GetMeaningByIdParamsDTO,
   GetMeaningListQueryDTO,
   MeaningResponseDTO
-} from './zod/meaning-zod.dto'
+} from './meaning.zod-dto'
 
 // List Response DTO (not Zod)
 export class MeaningListResponseDTO {

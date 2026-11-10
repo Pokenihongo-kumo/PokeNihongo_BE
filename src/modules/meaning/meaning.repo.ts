@@ -3,12 +3,12 @@ import {
   CreateMeaningBodyType,
   UpdateMeaningBodyType,
   CreateMeaningServiceType
-} from './entities/meaning.entities'
+} from './entities/meaning.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
 
 @Injectable()
-export class MeaningRepository {
+export class MeaningRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(params: {

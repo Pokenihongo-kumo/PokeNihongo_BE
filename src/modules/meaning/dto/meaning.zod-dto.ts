@@ -6,7 +6,7 @@ import {
   GetMeaningListQuerySchema,
   MeaningSchema,
   MeaningListResSchema
-} from '../../entities/meaning.entities'
+} from '../entities/meaning.entity'
 
 // Zod DTOs
 export class CreateMeaningBodyDTO extends createZodDto(CreateMeaningSchema) {}

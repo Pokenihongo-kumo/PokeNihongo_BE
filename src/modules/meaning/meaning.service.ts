@@ -5,8 +5,8 @@ import {
   GetMeaningListQueryType,
   GetMeaningsByVocabularyParamsType,
   MeaningType
-} from './entities/meaning.entities'
-import { MeaningRepository } from './meaning.repo'
+} from './entities/meaning.entity'
+import { MeaningRepo } from './meaning.repo'
 import { Injectable, Logger } from '@nestjs/common'
 import {
   MeaningNotFoundException,
@@ -20,7 +20,7 @@ export class MeaningService {
   private readonly logger = new Logger(MeaningService.name)
 
   constructor(
-    private readonly meaningRepository: MeaningRepository,
+    private readonly meaningRepository: MeaningRepo,
     private readonly translationHelper: TranslationHelperService
   ) {}
 
