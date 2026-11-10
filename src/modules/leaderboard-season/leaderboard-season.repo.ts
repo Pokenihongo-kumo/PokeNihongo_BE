@@ -5,7 +5,7 @@ import { parseQs } from '@/common/utils/qs-parser'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import { SeasonRankRewardType } from '../season-rank-reward/entities/season-rank-reward.entity'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entities'
+import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
 import { UserSeasonHistoryType } from '../user-season-history/entities/user-season-history.entity'
 import {
   CreateLeaderboardSeasonBodyType,

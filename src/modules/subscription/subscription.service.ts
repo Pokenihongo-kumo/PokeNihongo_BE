@@ -17,8 +17,8 @@ import { HttpStatus, Injectable } from '@nestjs/common'
 import { InvoiceRepo } from '../invoice/invoice.repo'
 import { LanguagesRepo } from '../languages/languages.repo'
 import { SubscriptionPlanRepo } from '../subscription-plan/subscription-plan.repo'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entities'
-import { TranslationRepository } from '../translation/translation.repo'
+import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
+import { TranslationRepo } from '../translation/translation.repo'
 import { SubscriptionAlreadyExistsException } from './dto/subscription.error'
 import {
   CreateSubscriptionBodyInputType,
@@ -35,7 +35,7 @@ export class SubscriptionService {
     private subscriptionPlanRepo: SubscriptionPlanRepo,
     private readonly i18nService: I18nService,
     private readonly languageRepo: LanguagesRepo,
-    private readonly translationRepo: TranslationRepository,
+    private readonly translationRepo: TranslationRepo,
     private readonly invoiceRepo: InvoiceRepo
   ) {}
 

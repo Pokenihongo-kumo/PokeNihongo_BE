@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common'
 import { parseQs } from '@/common/utils/qs-parser'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entities'
+import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
 import {
   CreateDebuffRoundBodyType,
   DEBUFF_FIELDS,

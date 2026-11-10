@@ -11,10 +11,10 @@ import {
   CreateTranslationBodyType,
   TranslationType,
   UpdateTranslationBodyType
-} from './entities/translation.entities'
+} from './entities/translation.entity'
 
 @Injectable()
-export class TranslationRepository {
+export class TranslationRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(params: {

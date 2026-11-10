@@ -5,8 +5,8 @@ import {
   GetTranslationsByKeyQueryType,
   GetTranslationsByLanguageQueryType,
   TranslationType
-} from './entities/translation.entities'
-import { TranslationRepository } from './translation.repo'
+} from './entities/translation.entity'
+import { TranslationRepo } from './translation.repo'
 import { Injectable, Logger } from '@nestjs/common'
 import {
   TranslationNotFoundException,
@@ -18,7 +18,7 @@ import {
 export class TranslationService {
   private readonly logger = new Logger(TranslationService.name)
 
-  constructor(private readonly translationRepository: TranslationRepository) {}
+  constructor(private readonly translationRepository: TranslationRepo) {}
 
   async findMany(params: GetTranslationListQueryType) {
     try {

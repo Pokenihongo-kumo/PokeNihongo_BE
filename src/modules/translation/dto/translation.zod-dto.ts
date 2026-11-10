@@ -10,7 +10,7 @@ import {
   TranslationListResponseSchema,
   TranslationResSchema,
   TranslationListResSchema
-} from '../../entities/translation.entities'
+} from '../entities/translation.entity'
 
 // Zod DTOs - automatically validated
 export class CreateTranslationBodyDTO extends createZodDto(CreateTranslationSchema) {}

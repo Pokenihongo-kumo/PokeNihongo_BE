@@ -21,7 +21,7 @@ import {
   TestSetAlreadyHasExerciseException
 } from './dto/exercises.error'
 import { LanguagesRepo } from '@/modules/languages/languages.repo'
-import { TranslationRepository } from '@/modules/translation/translation.repo'
+import { TranslationRepo } from '@/modules/translation/translation.repo'
 
 @Injectable()
 export class ExercisesService {
@@ -71,7 +71,7 @@ export class ExercisesService {
   constructor(
     private readonly exercisesRepository: ExercisesRepository,
     private readonly languagesRepository: LanguagesRepo,
-    private readonly translationRepository: TranslationRepository
+    private readonly translationRepository: TranslationRepo
   ) {}
 
   async create(data: CreateExercisesBodyType, userId: number): Promise<MessageResDTO> {

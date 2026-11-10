@@ -13,7 +13,7 @@ export {
   TranslationListResponseDTO,
   TranslationResDTO,
   TranslationListResDTO
-} from './zod/translation.zod-dto'
+} from './translation.zod-dto'
 
 // Swagger DTOs - for API documentation only
 export class CreateTranslationSwaggerDTO {

@@ -12,8 +12,8 @@ import {
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { LanguagesRepo } from '../languages/languages.repo'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entities'
-import { TranslationRepository } from '../translation/translation.repo'
+import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
+import { TranslationRepo } from '../translation/translation.repo'
 import { DailyRequestRepo } from './daily-request.repo'
 import { DailyRequestAlreadyExistsException } from './dto/daily-request.error'
 import {
@@ -29,7 +29,7 @@ export class DailyRequestService {
     private dailyRequestRepo: DailyRequestRepo,
     private readonly i18nService: I18nService,
     private readonly languageRepo: LanguagesRepo,
-    private readonly translationRepo: TranslationRepository
+    private readonly translationRepo: TranslationRepo
   ) {}
 
   async list(pagination: PaginationQueryType, lang: string = 'vi') {

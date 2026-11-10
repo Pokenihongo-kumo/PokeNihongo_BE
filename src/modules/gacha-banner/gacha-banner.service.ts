@@ -18,8 +18,8 @@ import { PaginationQueryType } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { GachaItemRepo } from '../gacha-item/gacha-item.repo'
 import { LanguagesRepo } from '../languages/languages.repo'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entities'
-import { TranslationRepository } from '../translation/translation.repo'
+import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
+import { TranslationRepo } from '../translation/translation.repo'
 import {
   GachaBannerActiveLimitExceededException,
   GachaBannerAlreadyExistsException,
@@ -43,7 +43,7 @@ export class GachaBannerService {
     private gachaBannerRepo: GachaBannerRepo,
     private readonly i18nService: I18nService,
     private readonly languageRepo: LanguagesRepo,
-    private readonly translationRepo: TranslationRepository,
+    private readonly translationRepo: TranslationRepo,
     private readonly gachaItemRepo: GachaItemRepo
   ) {}
 
