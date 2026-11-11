@@ -7,7 +7,7 @@ import {
   GetAnswerByIdParamsType,
   GetAnswerListQueryType,
   CreateMultipleAnswersResponseType
-} from './entities/answer.entities'
+} from './entities/answer.entity'
 import {
   AnswerNotFoundException,
   AnswerAlreadyExistsException,
@@ -16,7 +16,7 @@ import {
   AnswerContentAlreadyExistsException,
   InvalidJapaneseContentException
 } from './dto/answer.error'
-import { AnswerRepository } from './answer.repo'
+import { AnswerRepo } from './answer.repo'
 import { TranslationService } from '@/modules/translation/translation.service'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from '@/shared/helpers'
@@ -26,7 +26,7 @@ export class AnswerService {
   private readonly logger = new Logger(AnswerService.name)
 
   constructor(
-    private readonly answerRepository: AnswerRepository,
+    private readonly answerRepository: AnswerRepo,
     private readonly translationService: TranslationService,
     private readonly languagesService: LanguagesService
   ) {}

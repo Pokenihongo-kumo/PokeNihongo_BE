@@ -4,11 +4,11 @@ import {
   CreateAnswerBodyType,
   UpdateAnswerBodyType,
   GetAnswerListQueryType
-} from './entities/answer.entities'
+} from './entities/answer.entity'
 import { AnswerSortField, SortOrder } from '@/common/enum/enum'
 
 @Injectable()
-export class AnswerRepository {
+export class AnswerRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(params: GetAnswerListQueryType) {
