@@ -43,6 +43,12 @@ exports[`Quiz batch 4a contract (e2e) answer create (as the web form sends it), 
         "id": "number",
         "isCorrect": "boolean",
         "meaning": "string",
+        "meanings": [
+          {
+            "language_code": "string",
+            "value": "string",
+          },
+        ],
         "questionBankId": "number",
         "updatedAt": "string",
       },
@@ -66,7 +72,12 @@ exports[`Quiz batch 4a contract (e2e) answer create (as the web form sends it), 
             "createdAt": "string",
             "id": "number",
             "isCorrect": "boolean",
-            "meanings": [],
+            "meanings": [
+              {
+                "language": "string",
+                "value": "string",
+              },
+            ],
             "questionBank": {
               "id": "number",
               "questionJp": "string",
@@ -110,7 +121,7 @@ exports[`Quiz batch 4a contract (e2e) answer errors, delete, delete again 1`] = 
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Không tìm thấy câu trả lời",
+        "message": "Answer not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -131,7 +142,7 @@ exports[`Quiz batch 4a contract (e2e) answer errors, delete, delete again 1`] = 
         "errors": [
           {
             "field": "string",
-            "message": "Invalid data provided",
+            "message": "At least 1 answer is required",
           },
         ],
         "message": "Invalid data provided",
@@ -145,7 +156,7 @@ exports[`Quiz batch 4a contract (e2e) answer errors, delete, delete again 1`] = 
         "errors": [
           {
             "field": "string",
-            "message": "Dữ liệu không hợp lệ",
+            "message": "Phải có ít nhất 1 câu trả lời",
           },
         ],
         "message": "Dữ liệu không hợp lệ",
@@ -157,26 +168,38 @@ exports[`Quiz batch 4a contract (e2e) answer errors, delete, delete again 1`] = 
   "invalidId": {
     "en": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Lỗi khi lấy thông tin câu trả lời",
-        "statusCode": 400,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid answer ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 400,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Lỗi khi lấy thông tin câu trả lời",
-        "statusCode": 400,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID câu trả lời không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 400,
+      "httpStatus": 422,
     },
   },
   "missingQuestion": {
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Không tìm thấy câu hỏi",
+        "message": "Question not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -194,7 +217,7 @@ exports[`Quiz batch 4a contract (e2e) answer errors, delete, delete again 1`] = 
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Không tìm thấy câu trả lời",
+        "message": "Answer not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -229,6 +252,14 @@ exports[`Quiz batch 4a contract (e2e) question-bank create with answers, list, d
               "questionKey": "string",
             },
             "questionBankId": "number",
+            "translations": {
+              "meaning": [
+                {
+                  "language_code": "string",
+                  "value": "string",
+                },
+              ],
+            },
             "updatedAt": "string",
           },
         ],

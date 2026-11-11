@@ -8,7 +8,7 @@ import {
   AnswerResponseSchema,
   AnswerListResSchema,
   CreateMultipleAnswersResponseSchema
-} from '../entities/answer.entities'
+} from '../entities/answer.entity'
 
 export class CreateAnswerBodyDTO extends createZodDto(CreateAnswerBodyType) {}
 export class CreateMultipleAnswersBodyDTO extends createZodDto(

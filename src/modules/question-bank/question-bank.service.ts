@@ -676,7 +676,7 @@ export class QuestionBankService {
           this.logger.error(`Error creating answer "${answerData.answerJp}":`, error)
           failedAnswers.push({
             answerJp: answerData.answerJp,
-            reason: error?.message || 'Lỗi không xác định khi tạo câu trả lời'
+            reason: this.answerService.failureReason(error)
           })
         }
       }

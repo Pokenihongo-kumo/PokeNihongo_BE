@@ -2,7 +2,8 @@ import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
 import { AnswerSortField, SortOrder } from '@/common/enum/enum'
-import { language } from 'googleapis/build/src/apis/language'
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { AnswerMessage } from '@/i18n/message-keys'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
@@ -47,10 +48,10 @@ export const AnswerWithTranslationType = AnswerType.omit({ answerKey: true })
 export const CreateAnswerBodyType = z.object({
   answerJp: z
     .string()
-    .min(1, 'Nội dung câu trả lời không được để trống')
-    .max(1000, 'Nội dung câu trả lời không được vượt quá 1000 ký tự'),
+    .min(1, AnswerMessage.ANSWER_JP_REQUIRED)
+    .max(1000, AnswerMessage.ANSWER_JP_TOO_LONG),
   isCorrect: z.boolean().default(false),
-  questionBankId: z.number().min(1, 'ID câu hỏi không hợp lệ'),
+  questionBankId: z.number().min(1, AnswerMessage.QUESTION_ID_INVALID),
   translations: z
     .union([
       // Format 1: Simple object with language_code and value
@@ -73,15 +74,15 @@ export const CreateAnswerBodyType = z.object({
 
 // Schema for creating multiple answers
 export const CreateMultipleAnswersBodyType = z.object({
-  questionBankId: z.number().min(1, 'ID câu hỏi không hợp lệ'),
+  questionBankId: z.number().min(1, AnswerMessage.QUESTION_ID_INVALID),
   answers: z
     .array(
       z.object({
-        id: z.number().min(1, 'ID câu trả lời không hợp lệ').optional(), // Optional: nếu có ID → update answer đó, nếu không → upsert bằng answerJp
+        id: z.number().min(1, AnswerMessage.INVALID_ID).optional(), // Optional: nếu có ID → update answer đó, nếu không → upsert bằng answerJp
         answerJp: z
           .string()
-          .min(1, 'Nội dung câu trả lời không được để trống')
-          .max(1000, 'Nội dung câu trả lời không được vượt quá 1000 ký tự'),
+          .min(1, AnswerMessage.ANSWER_JP_REQUIRED)
+          .max(1000, AnswerMessage.ANSWER_JP_TOO_LONG),
         isCorrect: z.boolean().default(false),
         translations: z
           .union([
@@ -103,18 +104,18 @@ export const CreateMultipleAnswersBodyType = z.object({
           .optional()
       })
     )
-    .min(1, 'Phải có ít nhất 1 câu trả lời')
-    .max(10, 'Tối đa 10 câu trả lời')
+    .min(1, AnswerMessage.ANSWERS_REQUIRED)
+    .max(10, AnswerMessage.ANSWERS_TOO_MANY)
 })
 
 export const UpdateAnswerBodyType = z.object({
   answerJp: z
     .string()
-    .min(1, 'Nội dung câu trả lời không được để trống')
-    .max(1000, 'Nội dung câu trả lời không được vượt quá 1000 ký tự')
+    .min(1, AnswerMessage.ANSWER_JP_REQUIRED)
+    .max(1000, AnswerMessage.ANSWER_JP_TOO_LONG)
     .optional(),
   isCorrect: z.boolean().optional(),
-  questionBankId: z.number().min(1, 'ID câu hỏi không hợp lệ').optional(),
+  questionBankId: z.number().min(1, AnswerMessage.QUESTION_ID_INVALID).optional(),
   translations: z
     .union([
       // Format 1: Simple object with language_code and value
@@ -136,7 +137,7 @@ export const UpdateAnswerBodyType = z.object({
 })
 
 export const GetAnswerByIdParamsType = z.object({
-  id: z.string().transform(Number)
+  id: checkIdSchema(AnswerMessage.INVALID_ID)
 })
 
 export const GetAnswerListQueryType = z.object({

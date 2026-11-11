@@ -153,6 +153,40 @@ export const jaMessages = {
     READING_NOT_KANA:
       '音読み・訓読み（ひらがな・カタカナと基本的な記号のみ）で入力してください'
   },
+  answer: {
+    GET_LIST_SUCCESS: '回答一覧を取得しました',
+    GET_SUCCESS: '回答を取得しました',
+    CREATE_SUCCESS: '回答を作成しました',
+    UPDATE_SUCCESS: '回答を更新しました',
+    DELETE_SUCCESS: '回答を削除しました',
+    NOT_FOUND: '回答が見つかりません',
+    ALREADY_EXISTS: '回答は既に存在します',
+    CONTENT_ALREADY_EXISTS: 'この回答は既に質問に存在します',
+    INVALID_DATA: '回答のデータが無効です',
+    INVALID_ID: '回答IDが無効です',
+    QUESTION_NOT_FOUND: '質問が見つかりません',
+    QUESTION_ID_INVALID: '質問IDが無効です',
+    ANSWER_JP_REQUIRED: '回答内容は必須です',
+    ANSWER_JP_TOO_LONG: '回答内容は1000文字以内にしてください',
+    ANSWERS_REQUIRED: '回答は1つ以上必要です',
+    ANSWERS_TOO_MANY: '回答は最大10個までです',
+    MATCHING_SINGLE_ANSWER: 'MATCHING の質問は回答を1つだけ作成できます',
+    MATCHING_MUST_BE_CORRECT: 'MATCHING の回答は isCorrect = true が必要です',
+    MAX_ANSWERS_REACHED: '1つの質問に作成できる回答は最大4つです',
+    CORRECT_ANSWER_EXISTS: '1つの質問の正解は1つだけです',
+    ANSWER_ID_NOT_FOUND: 'ID {id} の回答が見つかりません',
+    ANSWER_OF_OTHER_QUESTION:
+      '回答ID {id} は別の質問のものです（questionBankId: {questionBankId}）',
+    ANSWER_TEXT_TAKEN: 'answerJp「{answerJp}」はこの質問に既に存在します（回答ID: {id}）',
+    UNKNOWN_FAILURE: '回答の処理中に不明なエラーが発生しました',
+    MULTIPLE_CREATED: '{created} 件の回答を作成しました',
+    MULTIPLE_CREATED_UPDATED: '{created} 件の回答を作成し、{updated} 件を更新しました',
+    MULTIPLE_CREATED_UPDATED_FAILED:
+      '{created} 件作成、{updated} 件更新、{failed} 件失敗しました',
+    MULTIPLE_CREATED_FAILED: '{created} 件作成、{failed} 件失敗しました',
+    MULTIPLE_UPDATED_FAILED: '{updated} 件更新、{failed} 件失敗しました',
+    MULTIPLE_NONE_SAVED: '作成または更新できた回答はありません'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'レッスンカテゴリを作成しました',
     UPDATE_SUCCESS: 'レッスンカテゴリを更新しました',

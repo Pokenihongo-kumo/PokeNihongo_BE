@@ -1,14 +1,12 @@
-import { Injectable } from '@nestjs/common'
-import { PrismaService } from '@/shared/services/prisma.service'
-import {
-  CreateAnswerBodyType,
-  UpdateAnswerBodyType,
-  GetAnswerListQueryType
-} from './entities/answer.entities'
 import { AnswerSortField, SortOrder } from '@/common/enum/enum'
+import { PrismaService } from '@/shared/services/prisma.service'
+import { toSkipTake } from '@/shared/utils/pagination'
+import { Injectable } from '@nestjs/common'
+import { Prisma } from '@prisma/client'
+import { GetAnswerListQueryType } from './entities/answer.entity'
 
 @Injectable()
-export class AnswerRepository {
+export class AnswerRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(params: GetAnswerListQueryType) {
@@ -21,24 +19,15 @@ export class AnswerRepository {
       sortBy = AnswerSortField.CREATED_AT,
       sort = SortOrder.DESC
     } = params
-    const skip = (currentPage - 1) * pageSize
-
-    const where: any = {}
-
-    if (questionBankId) {
-      where.questionBankId = questionBankId
+    const where: Prisma.AnswerWhereInput = {
+      ...(questionBankId && { questionBankId }),
+      ...(isCorrect !== undefined && { isCorrect }),
+      ...(search && { answerJp: { contains: search, mode: 'insensitive' } })
     }
-
-    if (isCorrect !== undefined) {
-      where.isCorrect = isCorrect
-    }
-
-    if (search) {
-      where.answerJp = {
-        contains: search,
-        mode: 'insensitive'
-      }
-    }
+    // Ties on the sort field are broken by id
+    const direction = sort as Prisma.SortOrder
+    const orderBy: Prisma.AnswerOrderByWithRelationInput[] =
+      sortBy === 'id' ? [{ id: direction }] : [{ [sortBy]: direction }, { id: direction }]
 
     const [items, total] = await Promise.all([
       this.prismaService.answer.findMany({
@@ -52,26 +41,13 @@ export class AnswerRepository {
             }
           }
         },
-        orderBy: (() => {
-          const primaryField = (sortBy ?? 'createdAt') as string
-          const direction = (sort ?? 'desc') as 'asc' | 'desc'
-          if (primaryField !== 'id') {
-            return [{ [primaryField]: direction } as any, { id: direction } as any]
-          }
-          return [{ id: direction } as any]
-        })(),
-        skip,
-        take: pageSize
+        orderBy,
+        ...toSkipTake(currentPage, pageSize)
       }),
       this.prismaService.answer.count({ where })
     ])
 
-    return {
-      items,
-      total,
-      page: currentPage,
-      limit: pageSize
-    }
+    return { items, total }
   }
 
   async findById(id: number) {
@@ -89,7 +65,7 @@ export class AnswerRepository {
     })
   }
 
-  async create(data: any) {
+  async create(data: Prisma.AnswerUncheckedCreateInput) {
     return this.prismaService.answer.create({
       data,
       include: {
@@ -104,7 +80,7 @@ export class AnswerRepository {
     })
   }
 
-  async update(id: number, data: UpdateAnswerBodyType) {
+  async update(id: number, data: Prisma.AnswerUncheckedUpdateInput) {
     return this.prismaService.answer.update({
       where: { id },
       data,
@@ -128,16 +104,6 @@ export class AnswerRepository {
 
   // Helper methods
 
-  async checkAnswerKeyExists(answerKey: string, excludeId?: number) {
-    const where: any = { answerKey }
-    if (excludeId) {
-      where.id = { not: excludeId }
-    }
-
-    const count = await this.prismaService.answer.count({ where })
-    return count > 0
-  }
-
   async updateAnswerKey(id: number, answerKey: string) {
     return this.prismaService.answer.update({
       where: { id },
@@ -145,20 +111,10 @@ export class AnswerRepository {
     })
   }
 
-  async checkAnswerExistsById(id: number) {
-    const count = await this.prismaService.answer.count({ where: { id } })
-    return count > 0
-  }
-
   async checkAnswerExists(questionBankId: number, answerJp: string, excludeId?: number) {
-    const where: any = {
-      questionBankId,
-      answerJp
-    }
-    if (excludeId) {
-      where.id = { not: excludeId }
-    }
-    return this.prismaService.answer.findFirst({ where })
+    return this.prismaService.answer.findFirst({
+      where: { questionBankId, answerJp, ...(excludeId && { id: { not: excludeId } }) }
+    })
   }
 
   async checkQuestionExists(questionId: number) {

@@ -70,8 +70,8 @@ export class AnswerController {
   })
   @ApiBody({ type: CreateAnswerSwaggerDTO })
   @ZodSerializerDto(AnswerResponseDTO)
-  async createAnswer(@Body() body: CreateAnswerBodyDTO) {
-    return await this.answerService.createAnswer(body)
+  async createAnswer(@Body() body: CreateAnswerBodyDTO, @I18nLang() lang: string) {
+    return await this.answerService.createAnswer(body, lang)
   }
 
   @Post('multiple')
@@ -101,9 +101,10 @@ export class AnswerController {
   @ZodSerializerDto(CreateMultipleAnswersResponseDTO)
   async createMultipleAnswers(
     @Body() body: CreateMultipleAnswersBodyDTO,
-    @Res() res: Response
+    @Res() res: Response,
+    @I18nLang() lang: string
   ) {
-    const result = await this.answerService.createMultiple(body)
+    const result = await this.answerService.createMultiple(body, lang)
     return res.status(result.statusCode).json(result) as any
   }
 
@@ -116,8 +117,8 @@ export class AnswerController {
   })
   @ApiQuery({ type: GetAnswerListQuerySwaggerDTO })
   @ZodSerializerDto(AnswerListResDTO)
-  async getAnswerList(@Query() query: GetAnswerListQueryDTO) {
-    return await this.answerService.getAnswerList(query)
+  async getAnswerList(@Query() query: GetAnswerListQueryDTO, @I18nLang() lang: string) {
+    return await this.answerService.getAnswerList(query, lang)
   }
 
   @Get(':id')
@@ -128,8 +129,8 @@ export class AnswerController {
     type: AnswerResponseSwaggerDTO
   })
   @ZodSerializerDto(AnswerResponseDTO)
-  async getAnswerById(@Param('id') id: string, @I18nLang() lang: string) {
-    return await this.answerService.getAnswerById(Number(id), lang)
+  async getAnswerById(@Param() params: GetAnswerByIdParamsDTO, @I18nLang() lang: string) {
+    return await this.answerService.getAnswerById(params.id, lang)
   }
 
   @Put(':id')
@@ -141,8 +142,12 @@ export class AnswerController {
     type: AnswerResponseSwaggerDTO
   })
   @ZodSerializerDto(AnswerResponseDTO)
-  async updateAnswer(@Param('id') id: string, @Body() body: UpdateAnswerBodyDTO) {
-    return await this.answerService.updateAnswer(Number(id), body)
+  async updateAnswer(
+    @Param() params: GetAnswerByIdParamsDTO,
+    @Body() body: UpdateAnswerBodyDTO,
+    @I18nLang() lang: string
+  ) {
+    return await this.answerService.updateAnswer(params.id, body, lang)
   }
 
   @Delete(':id')
@@ -150,7 +155,7 @@ export class AnswerController {
   @ApiOperation({ summary: 'Xóa câu trả lời' })
   @ApiResponse({ status: 204, description: 'Xóa câu trả lời thành công' })
   @ZodSerializerDto(MessageResDTO)
-  async deleteAnswer(@Param('id') id: string) {
-    return await this.answerService.deleteAnswer(Number(id))
+  async deleteAnswer(@Param() params: GetAnswerByIdParamsDTO, @I18nLang() lang: string) {
+    return await this.answerService.deleteAnswer(params.id, lang)
   }
 }

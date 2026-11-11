@@ -1,6 +1,6 @@
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
-import { AnswerType, AnswerListResSchema } from '../entities/answer.entities'
+import { AnswerType, AnswerListResSchema } from '../entities/answer.entity'
 
 // Extended Answer type with translations
 const AnswerWithTranslationsType = AnswerType.extend({
