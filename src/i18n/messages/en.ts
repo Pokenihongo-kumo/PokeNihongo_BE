@@ -141,6 +141,41 @@ export const enMessages = {
     READING_NOT_KANA:
       'Must be an onyomi/kunyomi reading (Hiragana, Katakana and basic punctuation only)'
   },
+  answer: {
+    GET_LIST_SUCCESS: 'Answer list retrieved successfully',
+    GET_SUCCESS: 'Answer retrieved successfully',
+    CREATE_SUCCESS: 'Answer created successfully',
+    UPDATE_SUCCESS: 'Answer updated successfully',
+    DELETE_SUCCESS: 'Answer deleted successfully',
+    NOT_FOUND: 'Answer not found',
+    ALREADY_EXISTS: 'Answer already exists',
+    CONTENT_ALREADY_EXISTS: 'This answer already exists in the question',
+    INVALID_DATA: 'Invalid answer data',
+    INVALID_ID: 'Invalid answer ID',
+    QUESTION_NOT_FOUND: 'Question not found',
+    QUESTION_ID_INVALID: 'Invalid question ID',
+    ANSWER_JP_REQUIRED: 'Answer text is required',
+    ANSWER_JP_TOO_LONG: 'Answer text must be at most 1000 characters',
+    ANSWERS_REQUIRED: 'At least 1 answer is required',
+    ANSWERS_TOO_MANY: 'At most 10 answers',
+    MATCHING_SINGLE_ANSWER: 'A MATCHING question allows only 1 answer',
+    MATCHING_MUST_BE_CORRECT: 'A MATCHING answer must have isCorrect = true',
+    MAX_ANSWERS_REACHED: 'A question can have at most 4 answers',
+    CORRECT_ANSWER_EXISTS: 'A question can have only 1 correct answer',
+    ANSWER_ID_NOT_FOUND: 'No answer with ID {id}',
+    ANSWER_OF_OTHER_QUESTION:
+      'Answer ID {id} belongs to another question (questionBankId: {questionBankId})',
+    ANSWER_TEXT_TAKEN:
+      'answerJp "{answerJp}" already exists in this question (answer ID: {id})',
+    UNKNOWN_FAILURE: 'Unknown error while processing the answer',
+    MULTIPLE_CREATED: 'Created {created} new answers',
+    MULTIPLE_CREATED_UPDATED: 'Created {created} new answers, updated {updated}',
+    MULTIPLE_CREATED_UPDATED_FAILED:
+      'Created {created} new answers, updated {updated}, {failed} failed',
+    MULTIPLE_CREATED_FAILED: 'Created {created} new answers, {failed} failed',
+    MULTIPLE_UPDATED_FAILED: 'Updated {updated} answers, {failed} failed',
+    MULTIPLE_NONE_SAVED: 'No answer could be created or updated'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Lesson category created successfully',
     UPDATE_SUCCESS: 'Lesson category updated successfully',

@@ -141,6 +141,44 @@ export const viMessages = {
     READING_NOT_KANA:
       'Phải là cách đọc Onyomi/Kunyomi (chỉ chứa Hiragana, Katakana và dấu câu cơ bản)'
   },
+  answer: {
+    GET_LIST_SUCCESS: 'Lấy danh sách câu trả lời thành công',
+    GET_SUCCESS: 'Lấy thông tin câu trả lời thành công',
+    CREATE_SUCCESS: 'Tạo câu trả lời thành công',
+    UPDATE_SUCCESS: 'Cập nhật câu trả lời thành công',
+    DELETE_SUCCESS: 'Xóa câu trả lời thành công',
+    NOT_FOUND: 'Không tìm thấy câu trả lời',
+    ALREADY_EXISTS: 'Câu trả lời đã tồn tại',
+    CONTENT_ALREADY_EXISTS: 'Câu trả lời này đã tồn tại trong câu hỏi',
+    INVALID_DATA: 'Dữ liệu câu trả lời không hợp lệ',
+    INVALID_ID: 'ID câu trả lời không hợp lệ',
+    QUESTION_NOT_FOUND: 'Không tìm thấy câu hỏi',
+    QUESTION_ID_INVALID: 'ID câu hỏi không hợp lệ',
+    ANSWER_JP_REQUIRED: 'Nội dung câu trả lời không được để trống',
+    ANSWER_JP_TOO_LONG: 'Nội dung câu trả lời không được vượt quá 1000 ký tự',
+    ANSWERS_REQUIRED: 'Phải có ít nhất 1 câu trả lời',
+    ANSWERS_TOO_MANY: 'Tối đa 10 câu trả lời',
+    MATCHING_SINGLE_ANSWER: 'MATCHING type chỉ cho phép tạo 1 answer duy nhất',
+    MATCHING_MUST_BE_CORRECT: 'MATCHING type bắt buộc phải có isCorrect = true',
+    MAX_ANSWERS_REACHED: 'Mỗi câu hỏi chỉ được tạo tối đa 4 câu trả lời',
+    CORRECT_ANSWER_EXISTS: 'Mỗi câu hỏi chỉ được có 1 câu trả lời đúng',
+    ANSWER_ID_NOT_FOUND: 'Không tìm thấy answer với ID {id}',
+    ANSWER_OF_OTHER_QUESTION:
+      'Answer ID {id} thuộc câu hỏi khác (questionBankId: {questionBankId})',
+    ANSWER_TEXT_TAKEN:
+      'answerJp "{answerJp}" đã tồn tại trong câu hỏi này (answer ID: {id})',
+    UNKNOWN_FAILURE: 'Lỗi không xác định khi xử lý câu trả lời',
+    MULTIPLE_CREATED: 'Tạo thành công {created} câu trả lời mới',
+    MULTIPLE_CREATED_UPDATED:
+      'Tạo thành công {created} câu trả lời mới, cập nhật {updated} câu trả lời',
+    MULTIPLE_CREATED_UPDATED_FAILED:
+      'Tạo thành công {created} câu trả lời mới, cập nhật {updated} câu trả lời, {failed} câu trả lời thất bại',
+    MULTIPLE_CREATED_FAILED:
+      'Tạo thành công {created} câu trả lời mới, {failed} câu trả lời thất bại',
+    MULTIPLE_UPDATED_FAILED:
+      'Cập nhật thành công {updated} câu trả lời, {failed} câu trả lời thất bại',
+    MULTIPLE_NONE_SAVED: 'Không thể tạo hoặc cập nhật câu trả lời nào'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Tạo danh mục bài học thành công',
     UPDATE_SUCCESS: 'Cập nhật danh mục bài học thành công',

@@ -1,25 +1,40 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common'
-import { QuestionType } from '@prisma/client'
+import { I18nService } from '@/i18n/i18n.service'
+import { AnswerMessage } from '@/i18n/message-keys'
+import { LanguagesRepo } from '@/modules/languages/languages.repo'
+import { TranslationService } from '@/modules/translation/translation.service'
+import { toPaginationMeta } from '@/shared/utils/pagination'
+import {
+  isNotFoundPrismaError,
+  isUniqueConstraintPrismaError
+} from '@/shared/utils/prisma-errors'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
+import { Answer, QuestionType } from '@prisma/client'
+import { AnswerRepo } from './answer.repo'
+import {
+  AnswerAlreadyExistsException,
+  AnswerContentAlreadyExistsException,
+  AnswerNotFoundException,
+  AnswerRule,
+  AnswerRuleViolationException,
+  InvalidAnswerDataException,
+  QuestionNotFoundException
+} from './dto/answer.error'
 import {
   CreateAnswerBodyType,
   CreateMultipleAnswersBodyType,
-  UpdateAnswerBodyType,
-  GetAnswerByIdParamsType,
   GetAnswerListQueryType,
-  CreateMultipleAnswersResponseType
+  UpdateAnswerBodyType
 } from './entities/answer.entity'
-import {
-  AnswerNotFoundException,
-  AnswerAlreadyExistsException,
-  InvalidAnswerDataException,
-  QuestionNotFoundException,
-  AnswerContentAlreadyExistsException,
-  InvalidJapaneseContentException
-} from './dto/answer.error'
-import { AnswerRepo } from './answer.repo'
-import { TranslationService } from '@/modules/translation/translation.service'
-import { LanguagesService } from '@/modules/languages/languages.service'
-import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from '@/shared/helpers'
+
+type TranslationInput = { language_code: string; value: string }
+type AnswerTranslations = CreateAnswerBodyType['translations']
+type Translate = (key: string, args?: Record<string, string | number>) => string
+// Language ids by code and codes by id, read from the Languages table
+// (they were hard-coded as vi=1, en=2, ja=3)
+type LanguageMaps = { idByCode: Map<string, number>; codeById: Map<number, string> }
+
+const LANGUAGE_CODES = ['vi', 'en', 'ja']
+const MAX_ANSWERS = 4
 
 @Injectable()
 export class AnswerService {
@@ -28,973 +43,345 @@ export class AnswerService {
   constructor(
     private readonly answerRepository: AnswerRepo,
     private readonly translationService: TranslationService,
-    private readonly languagesService: LanguagesService
+    private readonly languagesRepo: LanguagesRepo,
+    private readonly i18nService: I18nService
   ) {}
 
   //#region Get Answer
-  async getAnswerList(params: GetAnswerListQueryType) {
-    try {
-      this.logger.log('Getting answer list with params:', params)
+  // `language` (query) picks one meaning per answer; without it, all meanings
+  async getAnswerList(params: GetAnswerListQueryType, lang: string = 'vi') {
+    const result = await this.answerRepository.findMany(params)
+    const languages = await this.languageMaps()
+    const languageId = params.language
+      ? languages.idByCode.get(params.language)
+      : undefined
 
-      const result = await this.answerRepository.findMany(params)
-
-      // Resolve language (query param takes precedence over I18n header)
-      const requestedLanguageCode = params.language
-
-      // Get language ID for translations
-      let languageId: number | undefined
-      if (requestedLanguageCode) {
-        try {
-          const language = await this.languagesService.findByCode({
-            code: requestedLanguageCode
-          })
-          languageId = language?.data?.id
-        } catch {
-          languageId = undefined
+    const results = await Promise.all(
+      result.items.map(async ({ answerKey, ...answer }) => {
+        const parsed = this.parsedFields(answer.answerJp)
+        if (languageId) {
+          const meaning = answerKey
+            ? await this.safely(
+                async () =>
+                  (
+                    await this.translationService.findByKeyAndLanguage(
+                      answerKey,
+                      languageId
+                    )
+                  )?.value ||
+                  answer.answerJp ||
+                  '',
+                ''
+              )
+            : answer.answerJp || ''
+          return { ...answer, meaning, ...parsed }
         }
-      } else {
-        languageId = undefined
+        const meanings = answerKey
+          ? await this.safely(
+              async () =>
+                (
+                  await this.translationService.findByKey({ key: answerKey })
+                ).translations.map((t) => ({
+                  language: languages.codeById.get(t.languageId) ?? null,
+                  value: t.value
+                })),
+              []
+            )
+          : []
+        return { ...answer, meanings, ...parsed }
+      })
+    )
+
+    return {
+      statusCode: 200,
+      message: this.i18nService.translate(AnswerMessage.GET_LIST_SUCCESS, lang),
+      data: {
+        results,
+        pagination: toPaginationMeta(params.currentPage, params.pageSize, result.total)
       }
-
-      // Add translations for each answer (match Question Bank behavior)
-      const resultsWithTranslations = await Promise.all(
-        result.items.map(async (answer) => {
-          const parsedCombined = this.parseCombinedAnswer(answer.answerJp || '')
-          // If language specified -> return single meaning
-          if (languageId) {
-            try {
-              if (!answer.answerKey) {
-                const { answerKey, ...answerWithoutKey } = answer
-                return {
-                  ...answerWithoutKey,
-                  meaning: answer.answerJp || '',
-                  ...(parsedCombined
-                    ? {
-                        answerVi: parsedCombined.answerVi,
-                        answerEn: parsedCombined.answerEn,
-                        answerJp: parsedCombined.answerJp
-                      }
-                    : {})
-                }
-              }
-
-              const translationResult =
-                await this.translationService.findByKeyAndLanguage(
-                  answer.answerKey,
-                  languageId as number
-                )
-              const meaning = translationResult?.value || answer.answerJp || ''
-
-              const { answerKey, ...answerWithoutKey } = answer
-              return {
-                ...answerWithoutKey,
-                meaning,
-                ...(parsedCombined
-                  ? {
-                      answerVi: parsedCombined.answerVi,
-                      answerEn: parsedCombined.answerEn,
-                      answerJp: parsedCombined.answerJp
-                    }
-                  : {})
-              }
-            } catch {
-              const { answerKey, ...answerWithoutKey } = answer
-              return {
-                ...answerWithoutKey,
-                meaning: '',
-                ...(parsedCombined
-                  ? {
-                      answerVi: parsedCombined.answerVi,
-                      answerEn: parsedCombined.answerEn,
-                      answerJp: parsedCombined.answerJp
-                    }
-                  : {})
-              }
-            }
-          }
-
-          // If no language specified -> return all meanings
-          try {
-            if (!answer.answerKey) {
-              const { answerKey, ...answerWithoutKey } = answer
-              return {
-                ...answerWithoutKey,
-                meanings: [],
-                ...(parsedCombined
-                  ? {
-                      answerVi: parsedCombined.answerVi,
-                      answerEn: parsedCombined.answerEn,
-                      answerJp: parsedCombined.answerJp
-                    }
-                  : {})
-              }
-            }
-
-            const translationResult = await this.translationService.findByKey({
-              key: answer.answerKey
-            })
-            const meanings =
-              translationResult.translations && translationResult.translations.length > 0
-                ? translationResult.translations.map((t) => ({
-                    language: this.getLanguageCodeById(t.languageId),
-                    value: t.value
-                  }))
-                : []
-
-            const { answerKey, ...answerWithoutKey } = answer
-            return {
-              ...answerWithoutKey,
-              meanings,
-              ...(parsedCombined
-                ? {
-                    answerVi: parsedCombined.answerVi,
-                    answerEn: parsedCombined.answerEn,
-                    answerJp: parsedCombined.answerJp
-                  }
-                : {})
-            }
-          } catch {
-            const { answerKey, ...answerWithoutKey } = answer
-            return {
-              ...answerWithoutKey,
-              meanings: [],
-              ...(parsedCombined
-                ? {
-                    answerVi: parsedCombined.answerVi,
-                    answerEn: parsedCombined.answerEn,
-                    answerJp: parsedCombined.answerJp
-                  }
-                : {})
-            }
-          }
-        })
-      )
-
-      this.logger.log(`Found ${result.items.length} answer entries`)
-      return {
-        statusCode: 200,
-        message: 'Lấy danh sách câu trả lời thành công',
-        data: {
-          results: resultsWithTranslations,
-          pagination: {
-            current: result.page,
-            pageSize: result.limit,
-            totalPage: Math.ceil(result.total / result.limit),
-            totalItem: result.total
-          }
-        }
-      }
-    } catch (error) {
-      this.logger.error('Error getting answer list:', error)
-      throw error
     }
   }
 
-  async getAnswerById(id: number, lang: string) {
+  async getAnswerById(id: number, lang: string = 'vi') {
     try {
-      this.logger.log(`Getting answer by id: ${id}`)
-
-      const answer = await this.answerRepository.findById(id)
-
-      if (!answer) {
+      const found = await this.answerRepository.findById(id)
+      if (!found) {
         throw new AnswerNotFoundException()
       }
+      const { answerKey, ...answer } = found
+      const languages = await this.languageMaps()
 
-      // Resolve language id from I18n lang for meaning
-      let meaning: string
-      try {
-        if (lang && answer.answerKey) {
-          const language = await this.languagesService.findByCode({ code: lang })
-          const languageId = language?.data?.id
-          if (languageId) {
-            const translationResult = await this.translationService.findByKeyAndLanguage(
-              answer.answerKey,
-              languageId
+      // Meaning in the request language, else the Japanese text
+      const languageId = languages.idByCode.get(lang)
+      const meaning =
+        answerKey && languageId
+          ? await this.safely(
+              async () =>
+                (
+                  await this.translationService.findByKeyAndLanguage(
+                    answerKey,
+                    languageId
+                  )
+                )?.value ??
+                answer.answerJp ??
+                '',
+              answer.answerJp ?? ''
             )
-            meaning = translationResult?.value ?? answer.answerJp ?? ''
-          } else {
-            meaning = answer.answerJp ?? ''
-          }
-        } else {
-          meaning = answer.answerJp ?? ''
-        }
-      } catch {
-        meaning = answer.answerJp ?? ''
-      }
+          : (answer.answerJp ?? '')
+      const meanings = answerKey ? await this.translationsOf(answerKey, languages) : []
 
-      // Build meanings array (all languages) if answerKey exists
-      let meanings: Array<{ language_code: string; value: string }> | undefined
-      try {
-        if (answer.answerKey) {
-          const translationResultAll = await this.translationService.findByKey({
-            key: answer.answerKey
-          })
-          meanings = (translationResultAll.translations || []).map((t) => ({
-            language_code: this.getLanguageCodeById(t.languageId) || '',
-            value: t.value ?? ''
-          }))
-        }
-      } catch {
-        meanings = undefined
-      }
-
-      this.logger.log(`Found answer: ${answer.id}`)
-      const parsedCombined = this.parseCombinedAnswer(answer.answerJp || '')
-      const { answerKey, ...answerWithoutKey } = answer as any
       return {
         statusCode: 200,
         data: {
-          ...answerWithoutKey,
+          ...answer,
           meaning,
-          ...(meanings && meanings.length > 0 ? { meanings } : {}),
-          ...(parsedCombined
-            ? {
-                answerVi: parsedCombined.answerVi,
-                answerEn: parsedCombined.answerEn,
-                answerJp: parsedCombined.answerJp
-              }
-            : {})
-        } as any,
-        message: 'Lấy thông tin câu trả lời thành công'
+          ...(meanings.length > 0 ? { meanings } : {}),
+          ...this.parsedFields(answer.answerJp)
+        },
+        message: this.i18nService.translate(AnswerMessage.GET_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error(`Error getting answer by id ${id}:`, error)
-
-      if (error instanceof AnswerNotFoundException) {
-        throw error
-      }
-
-      throw new InvalidAnswerDataException('Lỗi khi lấy thông tin câu trả lời')
+      throw this.toAnswerError(error)
     }
   }
   //#endregion
 
-  //#region Create Answer
-  async createAnswer(data: CreateAnswerBodyType) {
+  //#region Create Answer (also used by question-bank)
+  async createAnswer(data: CreateAnswerBodyType, lang: string = 'vi') {
     try {
-      this.logger.log('Creating answer with data:', data)
-
-      // Allow any string content for answerJp (no Japanese-only validation)
-
-      // Check if question exists
-      const questionExists = await this.answerRepository.checkQuestionExists(
-        data.questionBankId
-      )
-      if (!questionExists) {
+      if (!(await this.answerRepository.checkQuestionExists(data.questionBankId))) {
         throw new QuestionNotFoundException()
       }
-
-      // Get question type for validation
-      const questionType = await this.answerRepository.getQuestionType(
-        data.questionBankId
-      )
-
-      // Validate MATCHING type: only 1 answer allowed and must be correct
-      if (questionType === QuestionType.MATCHING) {
-        const existingAnswerCount = await this.answerRepository.countAnswersByQuestionId(
-          data.questionBankId
-        )
-        if (existingAnswerCount >= 1) {
-          throw new BadRequestException(
-            'MATCHING type chỉ cho phép tạo 1 answer duy nhất'
-          )
-        }
-        // MATCHING type answer must be correct
-        if (!data.isCorrect) {
-          throw new BadRequestException('MATCHING type bắt buộc phải có isCorrect = true')
-        }
-      } else {
-        // Other types: max 4 answers, only 1 can be correct
-        const existingAnswerCount = await this.answerRepository.countAnswersByQuestionId(
-          data.questionBankId
-        )
-        if (existingAnswerCount >= 4) {
-          throw new BadRequestException('Mỗi câu hỏi chỉ được tạo tối đa 4 câu trả lời')
-        }
-
-        // Check if there's already a correct answer
-        if (data.isCorrect) {
-          const hasCorrectAnswer = await this.answerRepository.hasCorrectAnswer(
-            data.questionBankId
-          )
-          if (hasCorrectAnswer) {
-            throw new BadRequestException('Mỗi câu hỏi chỉ được có 1 câu trả lời đúng')
-          }
-        }
+      const rule = await this.brokenNewAnswerRule(data.questionBankId, data.isCorrect)
+      if (rule) {
+        throw new AnswerRuleViolationException(rule)
       }
-
-      // Check if answer content already exists in this question
-      const existingAnswer = await this.answerRepository.checkAnswerExists(
-        data.questionBankId,
-        data.answerJp
-      )
-      if (existingAnswer) {
+      if (
+        await this.answerRepository.checkAnswerExists(data.questionBankId, data.answerJp)
+      ) {
         throw new AnswerContentAlreadyExistsException()
       }
 
-      // Remove translations from data before passing to Prisma
       const { translations, ...answerData } = data
-
-      // Create answer with auto-generated answerKey
-      const tempData = { ...answerData, answerKey: 'temp' }
-      const answer = await this.answerRepository.create(tempData)
-
-      // Generate answerKey with actual ID
-      const answerKey = `answer.${answer.id}.text`
-
-      // Update with correct answerKey
-      const updatedAnswer = await this.answerRepository.update(answer.id, {
-        answerKey
-      } as any)
-
-      // Create translation keys if provided
-      if (translations) {
-        try {
-          // Check if it's simple format (direct object) or complex format (with meaning array)
-          if ('language_code' in translations && 'value' in translations) {
-            // Simple format: { language_code: "vi", value: "text" }
-            const languageId = this.getLanguageIdByCode(translations.language_code)
-            if (languageId) {
-              await this.translationService.create({
-                key: answerKey,
-                languageId: languageId,
-                value: translations.value
-              })
-              this.logger.log(`Created simple translation for answer: ${answer.id}`)
-            }
-          } else if (
-            'meaning' in translations &&
-            translations.meaning &&
-            translations.meaning.length > 0
-          ) {
-            // Complex format: { meaning: [{ language_code: "vi", value: "text" }] }
-            await this.createTranslationKeys(
-              answer.id,
-              answerKey,
-              data.answerJp,
-              translations
-            )
-            this.logger.log(`Translation keys created for answer: ${answer.id}`)
-          }
-        } catch (translationError) {
-          this.logger.warn(
-            `Failed to create translation for answer ${answer.id}:`,
-            translationError
-          )
-          // Don't throw error as answer was created successfully
-        }
-      } else {
-        // Create default Vietnamese translation if no translations provided
-        try {
-          await this.translationService.create({
-            key: answerKey,
-            languageId: 1, // Vietnamese
-            value: data.answerJp
-          })
-          this.logger.log(
-            `Created default Vietnamese translation for answer: ${answer.id}`
-          )
-        } catch (translationError) {
-          this.logger.warn(
-            `Failed to create default translation for answer ${answer.id}:`,
-            translationError
-          )
-        }
-      }
-
-      // Fetch the answer with translations for response
-      const answerWithTranslations = await this.getAnswerWithTranslations(
-        updatedAnswer.id
+      const answer = await this.createWithKey(answerData)
+      const languages = await this.languageMaps()
+      await this.safely(
+        () => this.writeTranslations(answer, translations, languages),
+        undefined
       )
 
-      this.logger.log(`Created answer: ${updatedAnswer.id}`)
       return {
         statusCode: 201,
-        data: answerWithTranslations,
-        message: 'Tạo câu trả lời thành công'
+        data: await this.withTranslations(answer.id, languages),
+        message: this.i18nService.translate(AnswerMessage.CREATE_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error('Error creating answer:', error)
-
-      if (
-        error instanceof QuestionNotFoundException ||
-        error instanceof AnswerAlreadyExistsException ||
-        error instanceof AnswerContentAlreadyExistsException ||
-        error instanceof InvalidJapaneseContentException ||
-        error instanceof BadRequestException
-      ) {
-        throw error
-      }
-
-      if (isUniqueConstraintPrismaError(error)) {
-        throw new AnswerAlreadyExistsException()
-      }
-
-      throw new InvalidAnswerDataException('Lỗi khi tạo câu trả lời')
+      throw this.toAnswerError(error)
     }
   }
   //#endregion
 
   //#region Update Answer
-  async updateAnswer(id: number, data: UpdateAnswerBodyType) {
+  async updateAnswer(id: number, data: UpdateAnswerBodyType, lang: string = 'vi') {
     try {
-      this.logger.log(`Updating answer ${id} with data:`, data)
-
-      // Check if answer exists
-      const answer = await this.answerRepository.findById(id)
-      if (!answer) {
+      if (!(await this.answerRepository.findById(id))) {
         throw new AnswerNotFoundException()
       }
-
-      // Check if question exists (if updating questionBankId)
-      if (data.questionBankId) {
-        const questionExists = await this.answerRepository.checkQuestionExists(
-          data.questionBankId
-        )
-        if (!questionExists) {
-          throw new QuestionNotFoundException()
-        }
-      }
-
-      // Prepare Prisma-safe data: map questionId -> questionBankId, strip translations
-      const { translations, questionId, ...rest } = data as any
-      const prismaData: any = { ...rest }
-      if (questionId) {
-        prismaData.questionBankId = questionId
-      }
-
-      // Update answer first (without translations)
-      const updatedAnswer = await this.answerRepository.update(id, prismaData)
-
-      // Generate new answerKey if answerJp changed
-      let currentAnswerKey = updatedAnswer.answerKey || `answer.${id}.text`
-      if (data.answerJp) {
-        const newAnswerKey = `answer.${id}.text`
-
-        // Update with new answerKey
-        const finalUpdatedAnswer = await this.answerRepository.update(id, {
-          answerKey: newAnswerKey
-        } as any)
-        currentAnswerKey = newAnswerKey
-        // continue to translation update below
-      }
-
-      // Upsert translations if provided
       if (
-        translations &&
-        'meaning' in translations &&
-        (translations as any).meaning?.length > 0
+        data.questionBankId &&
+        !(await this.answerRepository.checkQuestionExists(data.questionBankId))
       ) {
-        for (const m of (translations as any).meaning) {
-          const languageId = this.getLanguageIdByCode(m.language_code)
-          if (!languageId) continue
-          try {
-            const existing = await this.translationService.findByKeyAndLanguage(
-              currentAnswerKey,
-              languageId
-            )
-            if (existing) {
-              await this.translationService.updateByKeyAndLanguage(
-                currentAnswerKey,
-                languageId,
-                { value: m.value }
-              )
-            } else {
-              await this.translationService.create({
-                key: currentAnswerKey,
-                languageId,
-                value: m.value
-              })
-            }
-          } catch (e) {
-            this.logger.warn(
-              `Failed to upsert translation for answer ${id} ${m.language_code}`,
-              e as any
-            )
-          }
-        }
+        throw new QuestionNotFoundException()
       }
 
-      this.logger.log(`Updated answer: ${updatedAnswer.id}`)
+      const { translations, ...fields } = data
+      const updated = await this.answerRepository.update(id, fields)
+
+      // The key follows the id; a changed text re-points it there
+      let answerKey = updated.answerKey || `answer.${id}.text`
+      if (data.answerJp) {
+        answerKey = `answer.${id}.text`
+        await this.answerRepository.updateAnswerKey(id, answerKey)
+      }
+      if (translations && 'meaning' in translations) {
+        await this.upsertTranslations(
+          answerKey,
+          translations.meaning,
+          await this.languageMaps()
+        )
+      }
+
       return {
         statusCode: 200,
-        data: { ...updatedAnswer, answerKey: currentAnswerKey },
-        message: 'Cập nhật câu trả lời thành công'
+        data: { ...updated, answerKey },
+        message: this.i18nService.translate(AnswerMessage.UPDATE_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error(`Error updating answer ${id}:`, error)
-
-      if (
-        error instanceof AnswerNotFoundException ||
-        error instanceof QuestionNotFoundException ||
-        error instanceof AnswerAlreadyExistsException
-      ) {
-        throw error
-      }
-
-      throw new InvalidAnswerDataException('Lỗi khi cập nhật câu trả lời')
+      throw this.toAnswerError(error)
     }
   }
   //#endregion
 
   //#region Delete Answer
-  async deleteAnswer(id: number) {
+  async deleteAnswer(id: number, lang: string = 'vi') {
     try {
-      this.logger.log(`Deleting answer ${id}`)
-
-      // Check if answer exists
-      const answer = await this.answerRepository.findById(id)
-      if (!answer) {
+      if (!(await this.answerRepository.findById(id))) {
         throw new AnswerNotFoundException()
       }
-
       await this.answerRepository.delete(id)
-
-      this.logger.log(`Deleted answer ${id}`)
       return {
         statusCode: 204,
-        message: 'Xóa câu trả lời thành công'
+        message: this.i18nService.translate(AnswerMessage.DELETE_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error(`Error deleting answer ${id}:`, error)
-
-      if (error instanceof AnswerNotFoundException) {
-        throw error
-      }
-
-      if (isNotFoundPrismaError(error)) {
-        throw new AnswerNotFoundException()
-      }
-
-      throw new InvalidAnswerDataException('Lỗi khi xóa câu trả lời')
+      throw this.toAnswerError(error)
     }
   }
   //#endregion
 
-  //#region Helper Methods
+  //#region Create or update several answers of one question
   /**
-   * Check if text contains Japanese characters
+   * With `id`: updates that answer (its text may change); without: upserts by
+   * answerJp. Answers that break a rule are reported in `failed`, the rest are
+   * saved. statusCode: 201 created only, 200 with updates, 207 some failed,
+   * 400 none saved.
    */
-  private isJapanese(text: string): boolean {
-    const japaneseRegex = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/
-    return japaneseRegex.test(text)
-  }
-
-  /**
-   * Get language ID from language code
-   */
-  private getLanguageIdByCode(languageCode: string): number | null {
-    // Hardcode language IDs (usually vi=1, en=2, ja=3)
-    const languageMap: { [key: string]: number } = {
-      vi: 1,
-      en: 2,
-      ja: 3
-    }
-    return languageMap[languageCode] || null
-  }
-
-  /**
-   * Get language_code from languageId
-   */
-  private getLanguageCodeById(languageId: number): string | null {
-    // Hardcode language mappings (usually vi=1, en=2, ja=3)
-    const languageMap: { [key: number]: string } = {
-      1: 'vi',
-      2: 'en',
-      3: 'ja'
-    }
-    return languageMap[languageId] || null
-  }
-
-  /**
-   * Create translation keys for answer
-   */
-  private async createTranslationKeys(
-    answerId: number,
-    answerKey: string,
-    answerJp: string,
-    translations: { meaning: Array<{ language_code: string; value: string }> }
-  ) {
+  async createMultiple(data: CreateMultipleAnswersBodyType, lang: string = 'vi') {
     try {
-      // Create translations from provided data
-      const translationPromises = translations.meaning.map(async (translation) => {
-        // Get languageId from language_code
-        const languageId = this.getLanguageIdByCode(translation.language_code)
-        if (languageId) {
-          return this.translationService
-            .create({
-              key: answerKey,
-              languageId: languageId,
-              value: translation.value
-            })
-            .catch((error) => {
-              this.logger.warn(
-                `Failed to create translation for ${translation.language_code}:`,
-                error
-              )
-              return null
-            })
-        }
-        return null
-      })
-
-      await Promise.all(translationPromises.filter(Boolean))
-      this.logger.log(`Custom translations created for answer ${answerId}: ${answerKey}`)
-    } catch (error) {
-      this.logger.error(`Error creating translation keys for answer ${answerId}:`, error)
-      throw error
-    }
-  }
-
-  /**
-   * Get answer with translations
-   */
-  private async getAnswerWithTranslations(answerId: number) {
-    try {
-      // Get the answer
-      const answer = await this.answerRepository.findById(answerId)
-      if (!answer) {
-        throw new AnswerNotFoundException()
-      }
-
-      // Get translations for this answer
-      let response = { ...answer }
-
-      try {
-        if (!answer.answerKey) {
-          // If no answerKey, return answer without translations
-          return {
-            ...answer,
-            translations: {
-              answer: []
-            }
-          }
-        }
-
-        const translationResult = await this.translationService.findByKey({
-          key: answer.answerKey
-        })
-
-        if (translationResult.translations && translationResult.translations.length > 0) {
-          // Format translations for response
-          const formattedTranslations = translationResult.translations.map((t) => ({
-            language_code: this.getLanguageCodeById(t.languageId),
-            value: t.value
-          }))
-
-          response = {
-            ...answer,
-            translations: {
-              meaning: formattedTranslations
-            }
-          } as any
-        }
-      } catch (translationError) {
-        this.logger.warn(
-          `Failed to fetch translations for answer ${answerId}:`,
-          translationError
-        )
-        // Continue without translations if fetching fails
-      }
-
-      return response
-    } catch (error) {
-      this.logger.error(
-        `Error getting answer with translations for ID ${answerId}:`,
-        error
-      )
-      throw error
-    }
-  }
-
-  async createMultiple(
-    data: CreateMultipleAnswersBodyType
-  ): Promise<CreateMultipleAnswersResponseType> {
-    try {
-      this.logger.log(
-        `Creating/updating multiple answers for questionBankId: ${data.questionBankId}`
-      )
-
-      // Check if question exists
-      const questionExists = await this.answerRepository.checkQuestionExists(
-        data.questionBankId
-      )
-      if (!questionExists) {
+      if (!(await this.answerRepository.checkQuestionExists(data.questionBankId))) {
         throw new QuestionNotFoundException()
       }
-
-      // Get question type for validation
       const questionType = await this.answerRepository.getQuestionType(
         data.questionBankId
       )
+      const languages = await this.languageMaps()
+      const t: Translate = (key, args) => this.i18nService.translate(key, lang, args)
 
-      const createdAnswers: any[] = []
-      const updatedAnswers: any[] = []
+      const createdAnswers: Answer[] = []
+      const updatedAnswers: Answer[] = []
       const failedAnswers: { answerJp: string; reason: string }[] = []
+      const fail = (answerJp: string, reason: string) => {
+        failedAnswers.push({ answerJp, reason })
+      }
 
       for (const answerData of data.answers) {
         try {
-          let existingAnswer: any = null
-          let isUpdateById = false
+          let existing: Answer | null
+          const isUpdateById = !!answerData.id
 
-          // Strategy 1: If ID is provided, find answer by ID (allows changing answerJp)
           if (answerData.id) {
-            const answerById = await this.answerRepository.findById(answerData.id)
-            if (answerById && answerById.questionBankId === data.questionBankId) {
-              existingAnswer = answerById
-              isUpdateById = true
-              this.logger.log(`Found answer by ID ${answerData.id} for update`)
-            } else if (answerById && answerById.questionBankId !== data.questionBankId) {
-              failedAnswers.push({
-                answerJp: answerData.answerJp,
-                reason: `Answer ID ${answerData.id} thuộc câu hỏi khác (questionBankId: ${answerById.questionBankId})`
-              })
+            existing = await this.answerRepository.findById(answerData.id)
+            if (!existing) {
+              fail(
+                answerData.answerJp,
+                t(AnswerMessage.ANSWER_ID_NOT_FOUND, { id: answerData.id })
+              )
               continue
-            } else {
-              failedAnswers.push({
-                answerJp: answerData.answerJp,
-                reason: `Không tìm thấy answer với ID ${answerData.id}`
-              })
+            }
+            if (existing.questionBankId !== data.questionBankId) {
+              fail(
+                answerData.answerJp,
+                t(AnswerMessage.ANSWER_OF_OTHER_QUESTION, {
+                  id: answerData.id,
+                  questionBankId: existing.questionBankId
+                })
+              )
               continue
             }
           } else {
-            // Strategy 2: If no ID, find by answerJp (upsert by content)
-            existingAnswer = await this.answerRepository.checkAnswerExists(
+            existing = await this.answerRepository.checkAnswerExists(
               data.questionBankId,
               answerData.answerJp
             )
           }
 
-          if (existingAnswer) {
-            // UPDATE EXISTING ANSWER
-            this.logger.log(
-              `Updating existing answer ${existingAnswer.id} ${isUpdateById ? 'by ID' : 'by answerJp'}: ${answerData.answerJp}`
+          if (existing) {
+            // UPDATE
+            const rule = await this.brokenUpdateRule(
+              data.questionBankId,
+              questionType,
+              existing.isCorrect,
+              answerData.isCorrect
             )
-
-            // Validate MATCHING type: must be correct
-            if (questionType === QuestionType.MATCHING) {
-              if (!answerData.isCorrect) {
-                failedAnswers.push({
-                  answerJp: answerData.answerJp,
-                  reason: 'MATCHING type bắt buộc phải có isCorrect = true'
-                })
-                continue
-              }
-            } else {
-              // Other types: validate correct answer constraint
-              // If changing from incorrect to correct, check if another answer is already correct
-              if (answerData.isCorrect && !existingAnswer.isCorrect) {
-                const hasOtherCorrectAnswer =
-                  await this.answerRepository.hasCorrectAnswer(data.questionBankId)
-                // If there's another correct answer, reject the update
-                if (hasOtherCorrectAnswer) {
-                  failedAnswers.push({
-                    answerJp: answerData.answerJp,
-                    reason: 'Mỗi câu hỏi chỉ được có 1 câu trả lời đúng'
-                  })
-                  continue
-                }
-              }
+            if (rule) {
+              fail(answerData.answerJp, t(rule))
+              continue
             }
 
-            // Prepare update data
-            const { translations, id, ...updateData } = answerData
-            const prismaUpdateData: any = {
-              isCorrect: answerData.isCorrect
-            }
-
-            // If update by ID, allow changing answerJp
-            // If update by answerJp, don't change answerJp (it's the key)
-            if (isUpdateById) {
-              // Update by ID: can change answerJp
-              prismaUpdateData.answerJp = answerData.answerJp
-
-              // Check if new answerJp conflicts with another answer
-              if (answerData.answerJp !== existingAnswer.answerJp) {
-                const conflictAnswer = await this.answerRepository.checkAnswerExists(
-                  data.questionBankId,
-                  answerData.answerJp,
-                  existingAnswer.id
-                )
-                if (conflictAnswer) {
-                  failedAnswers.push({
-                    answerJp: answerData.answerJp,
-                    reason: `answerJp "${answerData.answerJp}" đã tồn tại trong câu hỏi này (answer ID: ${conflictAnswer.id})`
-                  })
-                  continue
-                }
-              }
-            } else {
-              // Update by answerJp: answerJp is the key, don't change it
-              // Only update isCorrect and translations
-            }
-
-            const updatedAnswer = await this.answerRepository.update(
-              existingAnswer.id,
-              prismaUpdateData
-            )
-            let currentAnswerKey =
-              updatedAnswer.answerKey || `answer.${updatedAnswer.id}.text`
-
-            // Update answerKey if answerJp changed (when updating by ID)
-            if (isUpdateById && answerData.answerJp !== existingAnswer.answerJp) {
-              const newAnswerKey = `answer.${updatedAnswer.id}.text`
-              await this.answerRepository.updateAnswerKey(updatedAnswer.id, newAnswerKey)
-              currentAnswerKey = newAnswerKey
-            }
-
-            // Upsert translations if provided
-            if (
-              translations &&
-              'meaning' in translations &&
-              translations.meaning &&
-              translations.meaning.length > 0
-            ) {
-              for (const m of translations.meaning) {
-                const languageId = this.getLanguageIdByCode(m.language_code)
-                if (!languageId) continue
-                try {
-                  const existing = await this.translationService.findByKeyAndLanguage(
-                    currentAnswerKey,
-                    languageId
-                  )
-                  if (existing) {
-                    await this.translationService.updateByKeyAndLanguage(
-                      currentAnswerKey,
-                      languageId,
-                      { value: m.value }
-                    )
-                  } else {
-                    await this.translationService.create({
-                      key: currentAnswerKey,
-                      languageId,
-                      value: m.value
-                    })
-                  }
-                } catch (e) {
-                  this.logger.warn(
-                    `Failed to upsert translation for answer ${updatedAnswer.id} ${m.language_code}`,
-                    e as any
-                  )
-                }
-              }
-            }
-
-            const answerWithTranslations = await this.answerRepository.findById(
-              updatedAnswer.id
-            )
-            if (answerWithTranslations) {
-              updatedAnswers.push(answerWithTranslations)
-            }
-          } else {
-            // CREATE NEW ANSWER
-            this.logger.log(`Creating new answer with answerJp: ${answerData.answerJp}`)
-
-            // Validate MATCHING type: only 1 answer allowed and must be correct
-            if (questionType === QuestionType.MATCHING) {
-              const existingAnswerCount =
-                await this.answerRepository.countAnswersByQuestionId(data.questionBankId)
-              if (existingAnswerCount >= 1) {
-                failedAnswers.push({
-                  answerJp: answerData.answerJp,
-                  reason: 'MATCHING type chỉ cho phép tạo 1 answer duy nhất'
-                })
-                continue
-              }
-              // MATCHING type answer must be correct
-              if (!answerData.isCorrect) {
-                failedAnswers.push({
-                  answerJp: answerData.answerJp,
-                  reason: 'MATCHING type bắt buộc phải có isCorrect = true'
-                })
-                continue
-              }
-            } else {
-              // Other types: max 4 answers, only 1 can be correct
-              const existingAnswerCount =
-                await this.answerRepository.countAnswersByQuestionId(data.questionBankId)
-              if (existingAnswerCount >= 4) {
-                failedAnswers.push({
-                  answerJp: answerData.answerJp,
-                  reason: 'Mỗi câu hỏi chỉ được tạo tối đa 4 câu trả lời'
-                })
-                continue
-              }
-
-              // Check if there's already a correct answer
-              if (answerData.isCorrect) {
-                const hasCorrectAnswer = await this.answerRepository.hasCorrectAnswer(
-                  data.questionBankId
-                )
-                if (hasCorrectAnswer) {
-                  failedAnswers.push({
-                    answerJp: answerData.answerJp,
-                    reason: 'Mỗi câu hỏi chỉ được có 1 câu trả lời đúng'
-                  })
-                  continue
-                }
-              }
-            }
-
-            // Create answer with auto-generated answerKey
-            // Remove id and translations from data (these are not Prisma fields)
-            const {
-              id: answerId,
-              translations: answerTranslations,
-              ...createData
-            } = answerData
-            const tempData = {
-              ...createData,
-              questionBankId: data.questionBankId,
-              answerKey: 'temp'
-            }
-            const answer = await this.answerRepository.create(tempData)
-
-            // Generate answerKey with actual ID
-            const answerKey = `answer.${answer.id}.text`
-            await this.answerRepository.updateAnswerKey(answer.id, answerKey)
-            answer.answerKey = answerKey
-
-            // Create translations
-            if (
-              answerTranslations &&
-              'meaning' in answerTranslations &&
-              answerTranslations.meaning &&
-              answerTranslations.meaning.length > 0
-            ) {
-              await this.createTranslationKeys(
-                answer.id,
-                answerKey,
-                answer.answerJp || '',
-                answerTranslations
+            // By id the text may change, unless another answer already has it
+            const textChanged = isUpdateById && answerData.answerJp !== existing.answerJp
+            if (textChanged) {
+              const conflict = await this.answerRepository.checkAnswerExists(
+                data.questionBankId,
+                answerData.answerJp,
+                existing.id
               )
-            } else {
-              // Create default Vietnamese translation if none provided
-              try {
-                await this.translationService.create({
-                  key: answerKey,
-                  languageId: 1, // Vietnamese
-                  value: answer.answerJp || ''
-                })
-              } catch (translationError) {
-                this.logger.warn(
-                  `Failed to create default translation for answer ${answer.id}:`,
-                  translationError
+              if (conflict) {
+                fail(
+                  answerData.answerJp,
+                  t(AnswerMessage.ANSWER_TEXT_TAKEN, {
+                    answerJp: answerData.answerJp,
+                    id: conflict.id
+                  })
                 )
+                continue
               }
             }
 
-            const answerWithTranslations = await this.answerRepository.findById(answer.id)
-            if (answerWithTranslations) {
-              createdAnswers.push(answerWithTranslations)
+            const updated = await this.answerRepository.update(existing.id, {
+              isCorrect: answerData.isCorrect,
+              ...(isUpdateById && { answerJp: answerData.answerJp })
+            })
+            let answerKey = updated.answerKey || `answer.${updated.id}.text`
+            if (textChanged) {
+              answerKey = `answer.${updated.id}.text`
+              await this.answerRepository.updateAnswerKey(updated.id, answerKey)
             }
+            if (answerData.translations && 'meaning' in answerData.translations) {
+              await this.upsertTranslations(
+                answerKey,
+                answerData.translations.meaning,
+                languages
+              )
+            }
+
+            const saved = await this.answerRepository.findById(updated.id)
+            if (saved) updatedAnswers.push(saved)
+          } else {
+            // CREATE
+            const rule = await this.brokenNewAnswerRule(
+              data.questionBankId,
+              answerData.isCorrect,
+              questionType
+            )
+            if (rule) {
+              fail(answerData.answerJp, t(rule))
+              continue
+            }
+
+            const { id: _id, translations, ...fields } = answerData
+            const answer = await this.createWithKey({
+              ...fields,
+              questionBankId: data.questionBankId
+            })
+            const hasMeanings =
+              translations && 'meaning' in translations && translations.meaning.length > 0
+            if (hasMeanings) {
+              await this.writeTranslations(answer, translations, languages)
+            } else {
+              // Default vi translation; its failure does not fail the answer
+              await this.safely(
+                () => this.writeTranslations(answer, undefined, languages),
+                undefined
+              )
+            }
+
+            const saved = await this.answerRepository.findById(answer.id)
+            if (saved) createdAnswers.push(saved)
           }
-        } catch (error: any) {
-          this.logger.error(`Error processing answer "${answerData.answerJp}":`, error)
-          failedAnswers.push({
-            answerJp: answerData.answerJp,
-            reason: error?.message || 'Lỗi không xác định khi xử lý câu trả lời'
-          })
+        } catch (error) {
+          this.logger.error(`Error processing answer "${answerData.answerJp}"`, error)
+          fail(answerData.answerJp, this.failureReason(error, lang))
         }
       }
 
@@ -1002,29 +389,7 @@ export class AnswerService {
       const created = createdAnswers.length
       const updated = updatedAnswers.length
       const failed = failedAnswers.length
-      const success = created + updated
-
-      let statusCode = 201
-      let message = `Tạo thành công ${created} câu trả lời mới`
-
-      if (updated > 0) {
-        message += `, cập nhật ${updated} câu trả lời`
-        statusCode = 200 // Use 200 if there are updates
-      }
-
-      if (success === 0) {
-        statusCode = 400
-        message = 'Không thể tạo hoặc cập nhật câu trả lời nào'
-      } else if (failed > 0) {
-        statusCode = 207 // Multi-status
-        if (created > 0 && updated > 0) {
-          message = `Tạo thành công ${created} câu trả lời mới, cập nhật ${updated} câu trả lời, ${failed} câu trả lời thất bại`
-        } else if (created > 0) {
-          message = `Tạo thành công ${created} câu trả lời mới, ${failed} câu trả lời thất bại`
-        } else if (updated > 0) {
-          message = `Cập nhật thành công ${updated} câu trả lời, ${failed} câu trả lời thất bại`
-        }
-      }
+      const { statusCode, message } = this.summaryOf(created, updated, failed, t)
 
       return {
         statusCode,
@@ -1032,28 +397,215 @@ export class AnswerService {
           created: createdAnswers,
           updated: updatedAnswers,
           failed: failedAnswers,
-          summary: {
-            total,
-            created,
-            updated,
-            failed
-          }
+          summary: { total, created, updated, failed }
         },
         message
       }
     } catch (error) {
-      this.logger.error('Error creating/updating multiple answers:', error)
-      if (error instanceof QuestionNotFoundException) {
-        throw error
-      }
-      throw new InvalidAnswerDataException('Lỗi khi tạo hoặc cập nhật nhiều câu trả lời')
+      throw this.toAnswerError(error)
     }
   }
   //#endregion
 
-  /**
-   * Parse combined answer string format: "jp:...+vi:...+en:..."
-   */
+  //#region Helpers
+  private summaryOf(
+    created: number,
+    updated: number,
+    failed: number,
+    t: Translate
+  ): { statusCode: number; message: string } {
+    if (created + updated === 0) {
+      return { statusCode: 400, message: t(AnswerMessage.MULTIPLE_NONE_SAVED) }
+    }
+    if (failed > 0) {
+      const key =
+        created > 0 && updated > 0
+          ? AnswerMessage.MULTIPLE_CREATED_UPDATED_FAILED
+          : created > 0
+            ? AnswerMessage.MULTIPLE_CREATED_FAILED
+            : AnswerMessage.MULTIPLE_UPDATED_FAILED
+      return { statusCode: 207, message: t(key, { created, updated, failed }) }
+    }
+    if (updated > 0) {
+      return {
+        statusCode: 200,
+        message: t(AnswerMessage.MULTIPLE_CREATED_UPDATED, { created, updated })
+      }
+    }
+    return { statusCode: 201, message: t(AnswerMessage.MULTIPLE_CREATED, { created }) }
+  }
+
+  // MATCHING: a single answer, which must be correct; others: at most 4, one correct
+  private async brokenNewAnswerRule(
+    questionBankId: number,
+    isCorrect: boolean,
+    knownType?: QuestionType | null
+  ): Promise<AnswerRule | null> {
+    const questionType =
+      knownType ?? (await this.answerRepository.getQuestionType(questionBankId))
+    const count = await this.answerRepository.countAnswersByQuestionId(questionBankId)
+    if (questionType === QuestionType.MATCHING) {
+      if (count >= 1) return AnswerMessage.MATCHING_SINGLE_ANSWER
+      if (!isCorrect) return AnswerMessage.MATCHING_MUST_BE_CORRECT
+      return null
+    }
+    if (count >= MAX_ANSWERS) return AnswerMessage.MAX_ANSWERS_REACHED
+    if (isCorrect && (await this.answerRepository.hasCorrectAnswer(questionBankId))) {
+      return AnswerMessage.CORRECT_ANSWER_EXISTS
+    }
+    return null
+  }
+
+  private async brokenUpdateRule(
+    questionBankId: number,
+    questionType: QuestionType | null,
+    wasCorrect: boolean,
+    isCorrect: boolean
+  ): Promise<AnswerRule | null> {
+    if (questionType === QuestionType.MATCHING) {
+      return isCorrect ? null : AnswerMessage.MATCHING_MUST_BE_CORRECT
+    }
+    if (
+      isCorrect &&
+      !wasCorrect &&
+      (await this.answerRepository.hasCorrectAnswer(questionBankId))
+    ) {
+      return AnswerMessage.CORRECT_ANSWER_EXISTS
+    }
+    return null
+  }
+
+  // The key embeds the id, so the row is created first and the key set after
+  private async createWithKey(data: {
+    answerJp: string
+    isCorrect: boolean
+    questionBankId: number
+  }): Promise<Answer> {
+    const answer = await this.answerRepository.create({ ...data, answerKey: 'temp' })
+    const answerKey = `answer.${answer.id}.text`
+    await this.answerRepository.updateAnswerKey(answer.id, answerKey)
+    return { ...answer, answerKey }
+  }
+
+  // Given translations, or a default vi one holding the Japanese text
+  private async writeTranslations(
+    answer: Answer,
+    translations: AnswerTranslations,
+    languages: LanguageMaps
+  ): Promise<void> {
+    const key = answer.answerKey as string
+    const items: TranslationInput[] = !translations
+      ? [{ language_code: 'vi', value: answer.answerJp ?? '' }]
+      : 'meaning' in translations
+        ? translations.meaning
+        : [translations]
+    await Promise.all(
+      items.map(async (item) => {
+        const languageId = languages.idByCode.get(item.language_code)
+        if (!languageId) return
+        await this.translationService
+          .create({ key, languageId, value: item.value })
+          .catch((error) =>
+            this.logger.warn(
+              `Failed to create ${item.language_code} translation for ${key}`,
+              error
+            )
+          )
+      })
+    )
+  }
+
+  private async upsertTranslations(
+    key: string,
+    items: TranslationInput[],
+    languages: LanguageMaps
+  ): Promise<void> {
+    for (const item of items) {
+      const languageId = languages.idByCode.get(item.language_code)
+      if (!languageId) continue
+      try {
+        if (await this.translationService.findByKeyAndLanguage(key, languageId)) {
+          await this.translationService.updateByKeyAndLanguage(key, languageId, {
+            value: item.value
+          })
+        } else {
+          await this.translationService.create({ key, languageId, value: item.value })
+        }
+      } catch (error) {
+        this.logger.warn(
+          `Failed to upsert ${item.language_code} translation for ${key}`,
+          error
+        )
+      }
+    }
+  }
+
+  private async translationsOf(
+    key: string,
+    languages: LanguageMaps
+  ): Promise<{ language_code: string; value: string }[]> {
+    return this.safely(
+      async () =>
+        (await this.translationService.findByKey({ key })).translations.map((t) => ({
+          language_code: languages.codeById.get(t.languageId) ?? '',
+          value: t.value ?? ''
+        })),
+      []
+    )
+  }
+
+  // Create answer: the row plus `translations.meaning` when it has any
+  private async withTranslations(answerId: number, languages: LanguageMaps) {
+    const answer = await this.answerRepository.findById(answerId)
+    if (!answer) {
+      throw new AnswerNotFoundException()
+    }
+    if (!answer.answerKey) {
+      return { ...answer, translations: { answer: [] } }
+    }
+    const meaning = await this.translationsOf(answer.answerKey, languages)
+    return meaning.length > 0 ? { ...answer, translations: { meaning } } : answer
+  }
+
+  private async languageMaps(): Promise<LanguageMaps> {
+    const rows = await this.languagesRepo.getWithListCode(LANGUAGE_CODES)
+    return {
+      idByCode: new Map(rows.map((l) => [l.code, l.id])),
+      codeById: new Map(rows.map((l) => [l.id, l.code]))
+    }
+  }
+
+  // A failed translation lookup or write never fails the answer itself
+  private async safely<T>(run: () => Promise<T>, fallback: T): Promise<T> {
+    try {
+      return await run()
+    } catch (error) {
+      this.logger.warn('Answer translation step failed', error)
+      return fallback
+    }
+  }
+
+  // Translated reason for an answer that could not be saved (also used by question-bank)
+  failureReason(error: unknown, lang: string = 'vi'): string {
+    if (error instanceof HttpException) {
+      const response = error.getResponse() as { errorKey?: string }
+      if (response?.errorKey) return this.i18nService.translate(response.errorKey, lang)
+    }
+    return this.i18nService.translate(AnswerMessage.UNKNOWN_FAILURE, lang)
+  }
+
+  /** "jp:...+vi:...+en:..." answers also expose answerJp/answerVi/answerEn */
+  private parsedFields(raw: string | null) {
+    const parsed = this.parseCombinedAnswer(raw || '')
+    return parsed
+      ? {
+          answerVi: parsed.answerVi,
+          answerEn: parsed.answerEn,
+          answerJp: parsed.answerJp
+        }
+      : {}
+  }
+
   private parseCombinedAnswer(
     raw: string
   ): { answerJp: string; answerVi?: string; answerEn?: string } | null {
@@ -1064,9 +616,27 @@ export class AnswerService {
     // capture even when empty: vi:  or en:
     const viMatch = normalized.match(/\+vi:([^+]*)/i)
     const enMatch = normalized.match(/\+en:([^+]*)/i)
-    const jp = jpMatch[1].trim()
-    const vi = viMatch ? viMatch[1].trim() : undefined
-    const en = enMatch ? enMatch[1].trim() : undefined
-    return { answerJp: jp, answerVi: vi, answerEn: en }
+    return {
+      answerJp: jpMatch[1].trim(),
+      answerVi: viMatch ? viMatch[1].trim() : undefined,
+      answerEn: enMatch ? enMatch[1].trim() : undefined
+    }
   }
+
+  /**
+   * Error to answer, decided by type (not message text): our HTTP errors pass
+   * through, unique 409, missing row 404, anything else the generic "invalid
+   * data" 400 these methods answered before.
+   */
+  private toAnswerError(error: unknown): HttpException {
+    if (error instanceof HttpException) return error
+    this.logger.error(
+      'Answer request failed',
+      error instanceof Error ? error.stack : error
+    )
+    if (isUniqueConstraintPrismaError(error)) return new AnswerAlreadyExistsException()
+    if (isNotFoundPrismaError(error)) return new AnswerNotFoundException()
+    return new InvalidAnswerDataException()
+  }
+  //#endregion
 }
