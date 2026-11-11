@@ -1,0 +1,1000 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Quiz batch 4a contract (e2e) answer create (as the web form sends it), list, detail, update 1`] = `
+{
+  "create": {
+    "body": {
+      "data": {
+        "created": [
+          {
+            "answerJp": "string",
+            "answerKey": "string",
+            "createdAt": "string",
+            "id": "number",
+            "isCorrect": "boolean",
+            "questionBank": {
+              "id": "number",
+              "questionJp": "string",
+              "questionKey": "string",
+            },
+            "questionBankId": "number",
+            "updatedAt": "string",
+          },
+        ],
+        "failed": [],
+        "summary": {
+          "created": "number",
+          "failed": "number",
+          "total": "number",
+          "updated": "number",
+        },
+        "updated": [],
+      },
+      "message": "Tạo thành công 1 câu trả lời mới",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "detail": {
+    "body": {
+      "data": {
+        "answerJp": "string",
+        "createdAt": "string",
+        "id": "number",
+        "isCorrect": "boolean",
+        "meaning": "string",
+        "questionBankId": "number",
+        "updatedAt": "string",
+      },
+      "message": "Lấy thông tin câu trả lời thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "list": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "answerJp": "string",
+            "createdAt": "string",
+            "id": "number",
+            "isCorrect": "boolean",
+            "meanings": [],
+            "questionBank": {
+              "id": "number",
+              "questionJp": "string",
+              "questionKey": "string",
+            },
+            "questionBankId": "number",
+            "updatedAt": "string",
+          },
+        ],
+      },
+      "message": "Lấy danh sách câu trả lời thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "update": {
+    "body": {
+      "data": {
+        "answerJp": "string",
+        "createdAt": "string",
+        "id": "number",
+        "isCorrect": "boolean",
+        "questionBankId": "number",
+        "updatedAt": "string",
+      },
+      "message": "Cập nhật câu trả lời thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Quiz batch 4a contract (e2e) answer errors, delete, delete again 1`] = `
+{
+  "delete": {
+    "body": {},
+    "httpStatus": 204,
+  },
+  "deleteAgain": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy câu trả lời",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy câu trả lời",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "invalidBody": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid data provided",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Dữ liệu không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "invalidId": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Lỗi khi lấy thông tin câu trả lời",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Lỗi khi lấy thông tin câu trả lời",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+  "missingQuestion": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy câu hỏi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy câu hỏi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "notFound": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy câu trả lời",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy câu trả lời",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+}
+`;
+
+exports[`Quiz batch 4a contract (e2e) question-bank create with answers, list, detail, update 1`] = `
+{
+  "create": {
+    "body": {
+      "data": {
+        "answers": [
+          {
+            "answerJp": "string",
+            "answerKey": "string",
+            "createdAt": "string",
+            "id": "number",
+            "isCorrect": "boolean",
+            "questionBank": {
+              "id": "number",
+              "questionJp": "string",
+              "questionKey": "string",
+            },
+            "questionBankId": "number",
+            "updatedAt": "string",
+          },
+        ],
+        "createdCount": "number",
+        "failedCount": "number",
+        "questionBank": {
+          "audioUrl": "null",
+          "createdAt": "string",
+          "createdById": "null",
+          "id": "number",
+          "levelN": "number",
+          "pronunciation": "null",
+          "questionJp": "string",
+          "questionKey": "string",
+          "questionType": "string",
+          "role": "null",
+          "updatedAt": "string",
+        },
+      },
+      "message": "Tạo câu hỏi và 2/2 câu trả lời thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "detail": {
+    "body": {
+      "data": {
+        "audioUrl": "null",
+        "createdAt": "string",
+        "id": "number",
+        "levelN": "number",
+        "pronunciation": "null",
+        "questionJp": "string",
+        "questionKey": "string",
+        "questionType": "string",
+        "role": "null",
+        "updatedAt": "string",
+      },
+      "message": "Lấy thông tin câu hỏi thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "list": {
+    "body": {
+      "data": {
+        "levelCounts": {
+          "N1": "number",
+          "N2": "number",
+          "N3": "number",
+          "N4": "number",
+          "N5": "number",
+        },
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "audioUrl": "null",
+            "createdAt": "string",
+            "createdById": "null",
+            "id": "number",
+            "levelN": "number",
+            "meanings": [
+              {
+                "language": "string",
+                "value": "string",
+              },
+            ],
+            "pronunciation": "null",
+            "questionJp": "string",
+            "questionKey": "string",
+            "questionType": "string",
+            "role": "null",
+            "updatedAt": "string",
+          },
+        ],
+      },
+      "message": "Lấy danh sách câu hỏi thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "update": {
+    "body": {
+      "data": {
+        "audioUrl": "null",
+        "createdAt": "string",
+        "createdById": "null",
+        "id": "number",
+        "levelN": "number",
+        "pronunciation": "null",
+        "questionJp": "string",
+        "questionKey": "string",
+        "questionType": "string",
+        "role": "null",
+        "updatedAt": "string",
+      },
+      "message": "Cập nhật câu hỏi thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Quiz batch 4a contract (e2e) question-bank delete bulk delete, delete one, delete again 1`] = `
+{
+  "bulkDelete": {
+    "body": {
+      "data": {
+        "deletedCount": "number",
+        "deletedIds": [
+          "number",
+        ],
+        "notFoundCount": "number",
+        "requestedCount": "number",
+      },
+      "message": "Xóa thành công 1/1 câu hỏi",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "bulkDeleteInvalid": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid data provided",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Dữ liệu không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "delete": {
+    "body": {
+      "data": {
+        "audioUrl": "null",
+        "createdAt": "string",
+        "id": "number",
+        "levelN": "number",
+        "pronunciation": "null",
+        "questionJp": "string",
+        "questionKey": "string",
+        "questionType": "string",
+        "role": "null",
+        "updatedAt": "string",
+      },
+      "message": "Xóa câu hỏi thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "deleteAgain": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu câu hỏi không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu câu hỏi không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+}
+`;
+
+exports[`Quiz batch 4a contract (e2e) question-bank errors, and the bulk create/update the web calls 1`] = `
+{
+  "bulkCreate": {
+    "body": {
+      "error": "NOT_FOUND",
+      "message": "Cannot POST /question-bank/bulk",
+      "statusCode": 404,
+    },
+    "httpStatus": 404,
+  },
+  "bulkUpdate": {
+    "body": {
+      "error": "UNPROCESSABLE_ENTITY",
+      "errors": [
+        {
+          "field": "string",
+          "message": "Dữ liệu không hợp lệ",
+        },
+      ],
+      "message": "Dữ liệu không hợp lệ",
+      "statusCode": 422,
+    },
+    "httpStatus": 422,
+  },
+  "invalidBody": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid format",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Định dạng không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "invalidId": {
+    "en": {
+      "body": {
+        "error": "INTERNAL_SERVER_ERROR",
+        "message": "An error occurred",
+        "statusCode": 500,
+      },
+      "httpStatus": 500,
+    },
+    "vi": {
+      "body": {
+        "error": "INTERNAL_SERVER_ERROR",
+        "message": "Đã xảy ra lỗi",
+        "statusCode": 500,
+      },
+      "httpStatus": 500,
+    },
+  },
+  "notFound": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy câu hỏi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy câu hỏi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "updateNotFound": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu câu hỏi không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu câu hỏi không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+}
+`;
+
+exports[`Quiz batch 4a contract (e2e) testset and testset-questionbank create with meanings, list, update, upsert with question banks, full detail 1`] = `
+{
+  "create": {
+    "body": {
+      "data": {
+        "audioUrl": "null",
+        "content": "null",
+        "createdAt": "string",
+        "creatorId": "number",
+        "description": "string",
+        "id": "number",
+        "levelN": "number",
+        "name": "string",
+        "price": "null",
+        "status": "string",
+        "testType": "string",
+        "updatedAt": "string",
+      },
+      "message": "Tạo bộ đề thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "full": {
+    "body": {
+      "data": {
+        "audioUrl": "null",
+        "content": "null",
+        "createdAt": "string",
+        "creatorId": "number",
+        "description": [
+          {
+            "en": "string",
+            "vi": "string",
+          },
+        ],
+        "id": "number",
+        "levelN": "number",
+        "name": [
+          {
+            "en": "string",
+            "vi": "string",
+          },
+        ],
+        "price": "null",
+        "status": "string",
+        "testSetQuestionBanks": [
+          {
+            "id": "number",
+            "questionBank": {
+              "audioUrl": "null",
+              "id": "number",
+              "levelN": "null",
+              "meanings": {
+                "en": "string",
+                "vi": "string",
+              },
+              "pronunciation": "null",
+              "questionJp": "string",
+              "questionKey": "string",
+              "questionType": "string",
+              "role": "null",
+            },
+            "questionOrder": "number",
+          },
+        ],
+        "testType": "string",
+        "updatedAt": "string",
+      },
+      "message": "Lấy thông tin bộ đề thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "list": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "audioUrl": "null",
+            "content": "null",
+            "createdAt": "string",
+            "creatorId": "number",
+            "description": [
+              {
+                "language": "string",
+                "value": "string",
+              },
+            ],
+            "id": "number",
+            "levelN": "number",
+            "name": [
+              {
+                "language": "string",
+                "value": "string",
+              },
+            ],
+            "price": "null",
+            "status": "string",
+            "testType": "string",
+            "updatedAt": "string",
+          },
+        ],
+      },
+      "message": "Lấy danh sách bộ đề thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "update": {
+    "body": {
+      "data": {
+        "audioUrl": "null",
+        "content": "null",
+        "createdAt": "string",
+        "creatorId": "number",
+        "description": "string",
+        "id": "number",
+        "levelN": "number",
+        "name": "string",
+        "price": "null",
+        "status": "string",
+        "testType": "string",
+        "updatedAt": "string",
+      },
+      "message": "Cập nhật bộ đề thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "upsert": {
+    "body": {
+      "data": {
+        "audioUrl": "null",
+        "content": "null",
+        "createdAt": "string",
+        "creatorId": "number",
+        "description": "string",
+        "id": "number",
+        "levelN": "number",
+        "name": "string",
+        "price": "null",
+        "status": "string",
+        "testSetQuestionBanks": [
+          {
+            "createdAt": "string",
+            "id": "number",
+            "questionBank": {
+              "audioUrl": "null",
+              "id": "number",
+              "levelN": "null",
+              "pronunciation": "null",
+              "questionJp": "string",
+              "questionKey": "string",
+              "questionType": "string",
+              "role": "null",
+            },
+            "questionBankId": "number",
+            "questionOrder": "number",
+            "testSetId": "number",
+            "updatedAt": "string",
+          },
+        ],
+        "testType": "string",
+        "updatedAt": "string",
+      },
+      "message": "Cập nhật bộ đề thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+}
+`;
+
+exports[`Quiz batch 4a contract (e2e) testset and testset-questionbank errors, delete test set, delete again 1`] = `
+{
+  "delete": {
+    "body": {
+      "data": {
+        "audioUrl": "null",
+        "content": "null",
+        "createdAt": "string",
+        "creatorId": "number",
+        "description": [
+          {
+            "language": "string",
+            "value": "string",
+          },
+        ],
+        "id": "number",
+        "levelN": "number",
+        "name": [
+          {
+            "language": "string",
+            "value": "string",
+          },
+        ],
+        "price": "null",
+        "status": "string",
+        "testType": "string",
+        "updatedAt": "string",
+      },
+      "message": "Xóa bộ đề thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "deleteAgain": {
+    "en": {
+      "body": {
+        "error": "INTERNAL_SERVER_ERROR",
+        "message": "An error occurred",
+        "statusCode": 500,
+      },
+      "httpStatus": 500,
+    },
+    "vi": {
+      "body": {
+        "error": "INTERNAL_SERVER_ERROR",
+        "message": "Đã xảy ra lỗi",
+        "statusCode": 500,
+      },
+      "httpStatus": 500,
+    },
+  },
+  "deleteManyInvalidBody": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu TestSetQuestionBank không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu TestSetQuestionBank không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+  "fullInvalidId": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Không thể lấy thông tin bộ đề với questionBanks",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Không thể lấy thông tin bộ đề với questionBanks",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+  "fullNotFound": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Không thể lấy thông tin bộ đề với questionBanks",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Không thể lấy thông tin bộ đề với questionBanks",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+  "linkInvalidBody": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu TestSetQuestionBank không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu TestSetQuestionBank không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+  "linksInvalidId": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu TestSetQuestionBank không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu TestSetQuestionBank không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+  "readingWithoutContent": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid data provided",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Dữ liệu không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+}
+`;
+
+exports[`Quiz batch 4a contract (e2e) testset and testset-questionbank link question banks, read the links, delete them 1`] = `
+{
+  "deleteMany": {
+    "body": {
+      "data": {
+        "deletedCount": "number",
+      },
+      "message": "Xóa TestSetQuestionBank thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "full": {
+    "body": {
+      "data": [
+        {
+          "answers": [],
+          "audioUrl": "null",
+          "createdAt": "string",
+          "createdById": "null",
+          "id": "number",
+          "levelN": "null",
+          "pronunciation": "null",
+          "questionBankId": "number",
+          "questionJp": "string",
+          "questionKey": "string",
+          "questionOrder": "number",
+          "questionType": "string",
+          "role": "null",
+          "updatedAt": "string",
+        },
+      ],
+      "message": "Lấy danh sách TestSetQuestionBank thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "link": {
+    "body": {
+      "data": {
+        "created": [
+          {
+            "createdAt": "string",
+            "id": "number",
+            "questionBankId": "number",
+            "questionOrder": "number",
+            "testSetId": "number",
+            "updatedAt": "string",
+          },
+        ],
+        "failed": [],
+        "summary": {
+          "failed": "number",
+          "success": "number",
+          "total": "number",
+        },
+      },
+      "message": "Tạo thành công 1/1 liên kết",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "linkAgain": {
+    "en": {
+      "body": {
+        "data": {
+          "created": [],
+          "failed": [
+            {
+              "questionBankId": "number",
+              "reason": "string",
+            },
+          ],
+          "summary": {
+            "failed": "number",
+            "success": "number",
+            "total": "number",
+          },
+        },
+        "message": "Không thể tạo liên kết nào",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "data": {
+          "created": [],
+          "failed": [
+            {
+              "questionBankId": "number",
+              "reason": "string",
+            },
+          ],
+          "summary": {
+            "failed": "number",
+            "success": "number",
+            "total": "number",
+          },
+        },
+        "message": "Không thể tạo liên kết nào",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+}
+`;
