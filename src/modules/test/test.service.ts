@@ -23,7 +23,7 @@ import { UserTestAttemptRepository } from '../user-test-attempt/user-test-attemp
 import { UserTestRepository } from '../user-test/user-test.repo'
 import { UserTestService } from '../user-test/user-test.service'
 import { TestStatus, UserTestStatus } from '@prisma/client'
-import { ExercisesRepository } from '../exercises/exercises.repo'
+import { ExercisesRepo } from '../exercises/exercises.repo'
 import { pickLabelFromComposite } from '@/common/utils/prase.utils'
 
 @Injectable()
@@ -40,7 +40,7 @@ export class TestService {
     private readonly userTestAttemptRepo: UserTestAttemptRepository,
     private readonly userTestRepo: UserTestRepository,
     private readonly userTestService: UserTestService,
-    private readonly exercisesRepo: ExercisesRepository
+    private readonly exercisesRepo: ExercisesRepo
   ) {}
 
   private isValidUrl(url: string): boolean {

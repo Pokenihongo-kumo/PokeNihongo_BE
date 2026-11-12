@@ -24,7 +24,7 @@ import { QuestionBankService } from '@/modules/question-bank/question-bank.servi
 import { UserAnswerLogService } from '@/modules/user-answer-log/user-answer-log.service'
 import { UserProgressService } from '@/modules/user-progress/user-progress.service'
 import { ExercisesService } from '@/modules/exercises/exercises.service'
-import { ExercisesRepository } from '@/modules/exercises/exercises.repo'
+import { ExercisesRepo } from '@/modules/exercises/exercises.repo'
 import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
 import { isNotFoundPrismaError } from '@/shared/helpers'
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common'
@@ -47,7 +47,7 @@ export class UserExerciseAttemptService {
     private readonly userAnswerLogService: UserAnswerLogService,
     private readonly userProgressService: UserProgressService,
     private readonly exercisesService: ExercisesService,
-    private readonly exercisesRepository: ExercisesRepository,
+    private readonly exercisesRepository: ExercisesRepo,
     private readonly sharedUserRepository: SharedUserRepository,
     private readonly translationHelper: TranslationHelperService,
     private readonly i18nService: I18nService,

@@ -289,6 +289,35 @@ export const viMessages = {
     QUESTION_IDS_REQUIRED: 'Phải có ít nhất 1 questionId',
     QUESTION_IDS_TOO_MANY: 'Tối đa 100 questionIds'
   },
+  exercises: {
+    GET_SUCCESS: 'Lấy thông tin bài tập thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách bài tập thành công',
+    CREATE_SUCCESS: 'Tạo bài tập thành công',
+    UPDATE_SUCCESS: 'Cập nhật bài tập thành công',
+    DELETE_SUCCESS: 'Xóa bài tập thành công',
+    NOT_FOUND: 'Không tìm thấy bài tập',
+    INVALID_DATA: 'Dữ liệu bài tập không hợp lệ',
+    LESSON_NOT_FOUND: 'Không tìm thấy bài học',
+    TEST_SET_NOT_FOUND: 'Không tìm thấy bộ đề',
+    REWARD_NOT_FOUND: 'Không tìm thấy phần thưởng',
+    LEVEL_INCOMPATIBLE:
+      'Level không tương thích: Lesson có level JLPT {lessonLevel} nhưng TestSet có level {testSetLevel}. Chỉ có thể tạo Exercise khi level của Lesson và TestSet khớp nhau',
+    LIMIT_PER_LESSON:
+      'Mỗi bài học chỉ được phép có tối đa 3 bài tập: VOCABULARY, GRAMMAR, KANJI',
+    TYPE_EXISTS_IN_LESSON: 'Mỗi loại bài tập chỉ được tạo 1 lần trong mỗi bài học',
+    TEST_SET_TYPE_MISMATCH:
+      'Loại TestSet không khớp với loại bài tập. Chỉ có thể gắn TestSet cùng loại (VOCABULARY/GRAMMAR/KANJI)',
+    TEST_SET_HAS_EXERCISE:
+      'TestSet này đã có exercise được gán. Mỗi testSet chỉ có thể có một exercise.',
+    INVALID_ID: 'ID bài tập không hợp lệ',
+    INVALID_LESSON_ID: 'ID bài học không hợp lệ',
+    INVALID_TEST_SET_ID: 'ID bộ đề không hợp lệ',
+    INVALID_REWARD_ID: 'ID phần thưởng không hợp lệ',
+    INVALID_EXERCISE_TYPE: 'Loại bài tập không hợp lệ',
+    INVALID_IS_BLOCKED: 'isBlocked phải là true hoặc false',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Tạo danh mục bài học thành công',
     UPDATE_SUCCESS: 'Cập nhật danh mục bài học thành công',

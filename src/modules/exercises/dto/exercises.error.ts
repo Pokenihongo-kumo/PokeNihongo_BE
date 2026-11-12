@@ -1,94 +1,61 @@
-import { BadRequestException, HttpException, HttpStatus } from '@nestjs/common'
-import { EXERCISES_MESSAGE, REWARD_MESSAGE } from '@/common/constants/message'
+import { ExercisesMessage as M } from '@/i18n/message-keys'
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common'
 
-export const ExercisesNotFoundException = new HttpException(
-  {
-    statusCode: HttpStatus.NOT_FOUND,
-    message: EXERCISES_MESSAGE.NOT_FOUND,
-    error: 'EXERCISES_NOT_FOUND'
-  },
-  HttpStatus.NOT_FOUND
-)
+// A new instance per throw; `message` is translated from errorKey (and
+// errorArgs) by ApiExceptionFilter, the old Vietnamese text is the vi value
 
-export const ExercisesAlreadyExistsException = new HttpException(
-  {
-    statusCode: HttpStatus.CONFLICT,
-    message: EXERCISES_MESSAGE.ALREADY_EXISTS,
-    error: 'EXERCISES_ALREADY_EXISTS'
-  },
-  HttpStatus.CONFLICT
-)
+export class ExercisesNotFoundException extends NotFoundException {
+  constructor() {
+    super({ message: M.NOT_FOUND, errorKey: M.NOT_FOUND })
+  }
+}
 
-export const InvalidExercisesDataException = new HttpException(
-  {
-    statusCode: HttpStatus.BAD_REQUEST,
-    message: EXERCISES_MESSAGE.INVALID_DATA,
-    error: 'INVALID_EXERCISES_DATA'
-  },
-  HttpStatus.BAD_REQUEST
-)
+export class InvalidExercisesDataException extends BadRequestException {
+  constructor() {
+    super({ message: M.INVALID_DATA, errorKey: M.INVALID_DATA })
+  }
+}
 
-export const LessonNotFoundException = new HttpException(
-  {
-    statusCode: HttpStatus.NOT_FOUND,
-    message: EXERCISES_MESSAGE.LESSON_NOT_FOUND,
-    error: 'LESSON_NOT_FOUND'
-  },
-  HttpStatus.NOT_FOUND
-)
+export class LessonNotFoundException extends NotFoundException {
+  constructor() {
+    super({ message: M.LESSON_NOT_FOUND, errorKey: M.LESSON_NOT_FOUND })
+  }
+}
 
-export const RewardNotFoundException = new HttpException(
-  {
-    statusCode: HttpStatus.NOT_FOUND,
-    message: REWARD_MESSAGE.NOT_FOUND,
-    error: 'REWARD_NOT_FOUND'
-  },
-  HttpStatus.NOT_FOUND
-)
+export class TestSetNotFoundException extends NotFoundException {
+  constructor() {
+    super({ message: M.TEST_SET_NOT_FOUND, errorKey: M.TEST_SET_NOT_FOUND })
+  }
+}
 
-export const LevelIncompatibleException = (
-  lessonLevelJlpt: number,
-  testSetLevelN: number
-) =>
-  new HttpException(
-    {
-      statusCode: HttpStatus.BAD_REQUEST,
-      message: `Level không tương thích: Lesson có level JLPT ${lessonLevelJlpt} nhưng TestSet có level ${testSetLevelN}. Chỉ có thể tạo Exercise khi level của Lesson và TestSet khớp nhau`,
-      error: 'LEVEL_INCOMPATIBLE'
-    },
-    HttpStatus.BAD_REQUEST
-  )
+export class RewardNotFoundException extends NotFoundException {
+  constructor() {
+    super({ message: M.REWARD_NOT_FOUND, errorKey: M.REWARD_NOT_FOUND })
+  }
+}
 
-export const ExerciseLimitPerLessonException = new HttpException(
-  {
-    statusCode: HttpStatus.BAD_REQUEST,
-    message: 'Mỗi bài học chỉ được phép có tối đa 3 bài tập: VOCABULARY, GRAMMAR, KANJI',
-    error: 'EXERCISE_LIMIT_PER_LESSON'
-  },
-  HttpStatus.BAD_REQUEST
-)
+// One exercise per test set
+export class TestSetAlreadyHasExerciseException extends ConflictException {
+  constructor() {
+    super({ message: M.TEST_SET_HAS_EXERCISE, errorKey: M.TEST_SET_HAS_EXERCISE })
+  }
+}
 
-export const ExerciseTypePerLessonExistsException = new HttpException(
-  {
-    statusCode: HttpStatus.CONFLICT,
-    message: 'Mỗi loại bài tập chỉ được tạo 1 lần trong mỗi bài học',
-    error: 'EXERCISE_TYPE_ALREADY_EXISTS'
-  },
-  HttpStatus.CONFLICT
-)
+// One exercise of each type per lesson
+export class ExerciseTypePerLessonExistsException extends ConflictException {
+  constructor() {
+    super({ message: M.TYPE_EXISTS_IN_LESSON, errorKey: M.TYPE_EXISTS_IN_LESSON })
+  }
+}
 
-export const TestSetTypeMismatchException = new HttpException(
-  {
-    statusCode: HttpStatus.BAD_REQUEST,
-    message:
-      'Loại TestSet không khớp với loại bài tập. Chỉ có thể gắn TestSet cùng loại (VOCABULARY/GRAMMAR/KANJI)',
-    error: 'TESTSET_TYPE_MISMATCH'
-  },
-  HttpStatus.BAD_REQUEST
-)
+// The exercise does not fit its lesson or test set
+export class ExerciseRuleViolationException extends BadRequestException {
+  constructor(rule: ExerciseRule, args?: Record<string, number>) {
+    super({ message: rule, errorKey: rule, errorArgs: args })
+  }
+}
 
-export const TestSetAlreadyHasExerciseException = new BadRequestException({
-  statusCode: 400,
-  message: 'TestSet này đã có exercise được gán. Mỗi testSet chỉ có thể có một exercise.',
-  error: 'TESTSET_ALREADY_HAS_EXERCISE'
-})
+export type ExerciseRule =
+  | typeof M.LEVEL_INCOMPATIBLE
+  | typeof M.LIMIT_PER_LESSON
+  | typeof M.TEST_SET_TYPE_MISMATCH

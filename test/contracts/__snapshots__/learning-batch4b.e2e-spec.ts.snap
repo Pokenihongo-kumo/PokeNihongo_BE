@@ -97,19 +97,31 @@ exports[`Learning batch 4b contract (e2e) exercises errors, delete, delete again
   "byLessonInvalidId": {
     "en": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Validation failed (numeric string is expected)",
-        "statusCode": 400,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid lesson ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 400,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Validation failed (numeric string is expected)",
-        "statusCode": 400,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID bài học không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 400,
+      "httpStatus": 422,
     },
   },
   "delete": {
@@ -124,7 +136,7 @@ exports[`Learning batch 4b contract (e2e) exercises errors, delete, delete again
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Không tìm thấy bài tập",
+        "message": "Exercise not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -141,26 +153,38 @@ exports[`Learning batch 4b contract (e2e) exercises errors, delete, delete again
   "invalidBody": {
     "en": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu bài tập không hợp lệ",
-        "statusCode": 400,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid exercise type",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 400,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu bài tập không hợp lệ",
-        "statusCode": 400,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Loại bài tập không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 400,
+      "httpStatus": 422,
     },
   },
   "updateNotFound": {
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Không tìm thấy bài tập",
+        "message": "Exercise not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
