@@ -7,11 +7,11 @@ import {
   GetTestSetListQueryType,
   CreateTestSetWithMeaningsBodyType,
   UpdateTestSetWithMeaningsBodyType
-} from './entities/testset.entities'
+} from './entities/testset.entity'
 import { TestSetType as PrismaTestSetType } from '@prisma/client'
 
 @Injectable()
-export class TestSetRepository {
+export class TestSetRepo {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(

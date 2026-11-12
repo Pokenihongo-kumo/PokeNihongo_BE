@@ -4,7 +4,7 @@ import {
   BadRequestException,
   Logger
 } from '@nestjs/common'
-import { TestSetRepository } from './testset.repo'
+import { TestSetRepo } from './testset.repo'
 import {
   CreateTestSetBodyType,
   UpdateTestSetBodyType,
@@ -14,7 +14,7 @@ import {
   UpdateTestSetWithMeaningsBodyType,
   CreateTestSetWithQuestionBodyType,
   UpsertTestSetWithQuestionBanksBodyType
-} from './entities/testset.entities'
+} from './entities/testset.entity'
 import {
   TestSetNotFoundException,
   TestSetAlreadyExistsException,
@@ -35,7 +35,7 @@ export class TestSetService {
   private readonly logger = new Logger(TestSetService.name)
 
   constructor(
-    private readonly testSetRepo: TestSetRepository,
+    private readonly testSetRepo: TestSetRepo,
     private readonly prisma: PrismaService,
     private readonly translationService: TranslationService,
     private readonly languagesService: LanguagesService,

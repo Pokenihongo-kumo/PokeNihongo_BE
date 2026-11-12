@@ -10,7 +10,7 @@ import {
   UpdateTestSetWithMeaningsBodySchema,
   CreateTestSetWithQuestionBodySchema,
   UpsertTestSetWithQuestionBanksBodySchema
-} from '../entities/testset.entities'
+} from '../entities/testset.entity'
 
 // Create TestSet DTO
 export class CreateTestSetBodyDTO extends createZodDto(CreateTestSetBodySchema) {}
