@@ -11,7 +11,7 @@ import {
   DeleteManyTestsBodySchema,
   AddTestSetsToTestBodySchema,
   RemoveTestSetsFromTestBodySchema
-} from '../entities/test.entities'
+} from '../entities/test.entity'
 
 // Create Test DTO
 export class CreateTestBodyDTO extends createZodDto(CreateTestBodySchema) {}

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
 import { TestController } from './test.controller'
 import { TestService } from './test.service'
-import { TestRepository } from './test.repo'
+import { TestRepo } from './test.repo'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { TranslationModule } from '../translation/translation.module'
 import { LanguagesModule } from '../languages/languages.module'
@@ -24,11 +24,11 @@ import { ExercisesModule } from '../exercises/exercises.module'
   controllers: [TestController],
   providers: [
     TestService,
-    TestRepository,
+    TestRepo,
     PrismaService,
     UserTestAttemptRepository,
     UserTestRepository
   ],
-  exports: [TestService, TestRepository]
+  exports: [TestService, TestRepo]
 })
 export class TestModule {}

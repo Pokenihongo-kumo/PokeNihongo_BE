@@ -7,11 +7,11 @@ import {
   GetTestListQueryType,
   CreateTestWithMeaningsBodyType,
   UpdateTestWithMeaningsBodyType
-} from './entities/test.entities'
+} from './entities/test.entity'
 import { TestStatus as PrismaTestStatus } from '@prisma/client'
 
 @Injectable()
-export class TestRepository {
+export class TestRepo {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: CreateTestBodyType & { creatorId?: number }): Promise<TestType> {

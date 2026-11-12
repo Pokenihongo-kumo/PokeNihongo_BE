@@ -1,5 +1,5 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common'
-import { TestRepository } from './test.repo'
+import { TestRepo } from './test.repo'
 import {
   CreateTestBodyType,
   UpdateTestBodyType,
@@ -9,7 +9,7 @@ import {
   DeleteManyTestsBodyType,
   AddTestSetsToTestBodyType,
   RemoveTestSetsFromTestBodyType
-} from './entities/test.entities'
+} from './entities/test.entity'
 import { TestNotFoundException, TestPermissionDeniedException } from './dto/test.error'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { MessageResDTO } from '@/shared/dtos/response.dto'
@@ -31,7 +31,7 @@ export class TestService {
   private readonly logger = new Logger(TestService.name)
 
   constructor(
-    private readonly testRepo: TestRepository,
+    private readonly testRepo: TestRepo,
     private readonly prisma: PrismaService,
     private readonly translationService: TranslationService,
     private readonly languagesService: LanguagesService,
