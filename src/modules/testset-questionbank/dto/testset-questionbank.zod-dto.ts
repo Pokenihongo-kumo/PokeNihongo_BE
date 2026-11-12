@@ -10,7 +10,7 @@ import {
   UpdateQuestionOrderSchema,
   BatchUpdateQuestionOrderSchema,
   DeleteManyTestSetQuestionBankBodySchema
-} from '../entities/testset-questionbank.entities'
+} from '../entities/testset-questionbank.entity'
 
 // Zod DTOs for request/response validation
 export const CreateTestSetQuestionBankBodyDTO = createZodDto(

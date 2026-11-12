@@ -3,8 +3,8 @@ import {
   UpdateTestSetQuestionBankBodyType,
   CreateMultipleTestSetQuestionBankBodyType,
   TestSetQuestionBankType
-} from './entities/testset-questionbank.entities'
-import { TestSetQuestionBankRepository } from './testset-questionbank.repo'
+} from './entities/testset-questionbank.entity'
+import { TestSetQuestionBankRepo } from './testset-questionbank.repo'
 import { TestSetService } from '@/modules/testset/testset.service'
 import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
 import { MessageResDTO } from '@/shared/dtos/response.dto'
@@ -22,14 +22,14 @@ import {
   TestSetNotFoundException,
   QuestionBankNotFoundException
 } from './dto/testset-questionbank.error'
-import { DeleteManyTestSetQuestionBankBodyType } from './entities/testset-questionbank.entities'
+import { DeleteManyTestSetQuestionBankBodyType } from './entities/testset-questionbank.entity'
 
 @Injectable()
 export class TestSetQuestionBankService {
   private readonly logger = new Logger(TestSetQuestionBankService.name)
 
   constructor(
-    private readonly testSetQuestionBankRepository: TestSetQuestionBankRepository,
+    private readonly testSetQuestionBankRepository: TestSetQuestionBankRepo,
     private readonly testSetService: TestSetService,
     private readonly questionBankService: QuestionBankService,
     private readonly translationHelper: TranslationHelperService,

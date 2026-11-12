@@ -17,7 +17,7 @@ import {
   UpdateQuestionOrderType,
   CreateMultipleTestSetQuestionBankBodyType,
   DeleteManyTestSetQuestionBankBodyType
-} from './entities/testset-questionbank.entities'
+} from './entities/testset-questionbank.entity'
 import {
   TestSetQuestionBankSwaggerDTO,
   CreateTestSetQuestionBankSwaggerDTO,

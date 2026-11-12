@@ -2,12 +2,12 @@ import {
   TestSetQuestionBankType,
   CreateTestSetQuestionBankBodyType,
   UpdateTestSetQuestionBankBodyType
-} from './entities/testset-questionbank.entities'
+} from './entities/testset-questionbank.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
 
 @Injectable()
-export class TestSetQuestionBankRepository {
+export class TestSetQuestionBankRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   // TestSetQuestionBank CRUD operations
