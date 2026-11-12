@@ -3,27 +3,18 @@ import { UploadedFile, UseInterceptors } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ApiConsumes } from '@nestjs/swagger'
 import {
-  CreateKanjiBodyDTO,
-  UpdateKanjiBodyDTO,
   GetKanjiByIdParamsDTO,
   GetKanjiListQueryDTO,
-  KanjiResponseDTO,
-  KanjiListResponseDTO,
   KanjiResDTO,
   KanjiListResDTO,
   KanjiManagementListResDTO
 } from './dto/zod/kanji.zod-dto'
-import {
-  CreateKanjiWithMeaningsSwaggerDTO,
-  KanjiWithMeaningsResponseSwaggerDTO
-} from './dto/kanji-with-meanings.dto'
+import { KanjiWithMeaningsResponseSwaggerDTO } from './dto/kanji-with-meanings.dto'
 import {
   CreateKanjiWithMeaningsBodyDTO,
   KanjiWithMeaningsResDTO
 } from './dto/zod/kanji-with-meanings.zod-dto'
 import {
-  UpdateKanjiWithMeaningsBodyType,
-  UpdateKanjiWithMeaningsResponseType,
   UpdateKanjiWithMeaningsSwaggerDTO,
   UpdateKanjiWithMeaningsResponseSwaggerDTO
 } from './dto/update-kanji-with-meanings.dto'
@@ -32,8 +23,6 @@ import {
   UpdateKanjiWithMeaningsResDTO
 } from './dto/zod/update-kanji.zod-dto'
 import {
-  CreateKanjiSwaggerDTO,
-  UpdateKanjiSwaggerDTO,
   KanjiSwaggerResponseDTO,
   KanjiListSwaggerResponseDTO,
   GetKanjiListQuerySwaggerDTO,
@@ -62,6 +51,7 @@ import {
   ApiTags
 } from '@nestjs/swagger'
 import { ZodSerializerDto } from 'nestjs-zod'
+import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { KanjiService } from './kanji.service'
 
 @ApiTags('Kanji')
@@ -82,8 +72,8 @@ export class KanjiController {
   })
   @ApiQuery({ type: GetKanjiListQuerySwaggerDTO })
   @ZodSerializerDto(KanjiListResDTO)
-  findAll(@Query() query: GetKanjiListQueryDTO) {
-    return this.kanjiService.findMany(query)
+  findAll(@Query() query: GetKanjiListQueryDTO, @I18nLang() lang: string) {
+    return this.kanjiService.findMany(query, lang)
   }
 
   @Get('management')
@@ -94,8 +84,8 @@ export class KanjiController {
   })
   @ApiQuery({ type: GetKanjiListQuerySwaggerDTO })
   @ZodSerializerDto(KanjiManagementListResDTO)
-  getKanjiManagementList(@Query() query: GetKanjiListQueryDTO) {
-    return this.kanjiService.getKanjiManagementList(query)
+  getKanjiManagementList(@Query() query: GetKanjiListQueryDTO, @I18nLang() lang: string) {
+    return this.kanjiService.getKanjiManagementList(query, lang)
   }
 
   @Get('stats')
@@ -127,8 +117,8 @@ export class KanjiController {
     type: KanjiSwaggerResponseDTO
   })
   @ZodSerializerDto(KanjiResDTO)
-  findByCharacter(@Param('character') character: string) {
-    return this.kanjiService.findByCharacter(character)
+  findByCharacter(@Param('character') character: string, @I18nLang() lang: string) {
+    return this.kanjiService.findByCharacter(character, lang)
   }
 
   @Get(':id')
@@ -147,8 +137,8 @@ export class KanjiController {
     type: KanjiSwaggerResponseDTO
   })
   @ZodSerializerDto(KanjiResDTO)
-  findById(@Param() params: GetKanjiByIdParamsDTO) {
-    return this.kanjiService.findById(params.id)
+  findById(@Param() params: GetKanjiByIdParamsDTO, @I18nLang() lang: string) {
+    return this.kanjiService.findById(params.id, lang)
   }
 
   @Post('with-meanings')
@@ -211,9 +201,10 @@ export class KanjiController {
   @ZodSerializerDto(KanjiWithMeaningsResDTO)
   createWithMeanings(
     @Body() body: CreateKanjiWithMeaningsBodyDTO,
+    @I18nLang() lang: string,
     @UploadedFile() image?: Express.Multer.File
   ) {
-    return this.kanjiService.createWithMeanings(body, image)
+    return this.kanjiService.createWithMeanings(body, image, lang)
   }
 
   @Put(':identifier/with-meanings')
@@ -237,9 +228,10 @@ export class KanjiController {
   updateWithMeanings(
     @Param('identifier') identifier: string,
     @Body() body: UpdateKanjiWithMeaningsBodyDTO,
+    @I18nLang() lang: string,
     @UploadedFile() image?: Express.Multer.File
   ) {
-    return this.kanjiService.updateWithMeanings(identifier, body, image)
+    return this.kanjiService.updateWithMeanings(identifier, body, image, lang)
   }
 
   @Delete('all')
@@ -282,8 +274,8 @@ export class KanjiController {
     description: 'Xóa Kanji thành công'
   })
   @HttpCode(HttpStatus.OK)
-  delete(@Param() params: GetKanjiByIdParamsDTO) {
-    return this.kanjiService.delete(params.id)
+  delete(@Param() params: GetKanjiByIdParamsDTO, @I18nLang() lang: string) {
+    return this.kanjiService.delete(params.id, lang)
   }
 
   @Post('import')

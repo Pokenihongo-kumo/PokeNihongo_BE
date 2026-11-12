@@ -2,19 +2,13 @@ import { ApiProperty } from '@nestjs/swagger'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
+import { KanjiMessage as M } from '@/i18n/message-keys'
+import { isKanjiCharacter } from '@/common/utils/japanese-text'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
 
 // Custom validation functions
-const isKanjiCharacter = (text: string): boolean => {
-  if (text.length !== 1) {
-    return false
-  }
-  const kanjiRegex =
-    /[\u4E00-\u9FAF\u3400-\u4DBF\u20000-\u2A6DF\u2A700-\u2B73F\u2B740-\u2B81F\u2B820-\u2CEAF\uF900-\uFAFF\u2F800-\u2FA1F]/
-  return kanjiRegex.test(text)
-}
 
 const isOnyomiKunyomi = (text: string): boolean => {
   const onyomiKunyomiRegex = /^[\u3040-\u309F\u30A0-\u30FF\s\-\.\,\!\?\'\"]+$/
@@ -26,29 +20,18 @@ const isValidReadingType = (readingType: string): boolean => {
   return validTypes.includes(readingType.toLowerCase())
 }
 
-const isValidJapaneseText = (text: string): boolean => {
-  const japaneseRegex =
-    /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\u3400-\u4DBF\u20000-\u2A6DF\u2A700-\u2B73F\u2B740-\u2B81F\u2B820-\u2CEAF\uF900-\uFAFF\u2F800-\u2FA1F\s\-\.\,\!\?\'\"]/
-  return japaneseRegex.test(text)
-}
-
 // Reading schema for kanji with readings
 const ReadingSchema = z.object({
   readingType: z
     .string()
-    .min(1, 'Loại cách đọc không được để trống')
-    .max(20, 'Loại cách đọc quá dài (tối đa 20 ký tự)')
-    .refine(isValidReadingType, {
-      message: 'Loại cách đọc phải là onyomi, kunyomi, nanori, hoặc irregular'
-    }),
+    .min(1, M.READING_TYPE_INVALID)
+    .max(20, M.READING_TYPE_INVALID)
+    .refine(isValidReadingType, M.READING_TYPE_INVALID),
   reading: z
     .string()
-    .min(1, 'Cách đọc không được để trống')
-    .max(100, 'Cách đọc quá dài (tối đa 100 ký tự)')
-    .refine(isOnyomiKunyomi, {
-      message:
-        'Phải là cách đọc Onyomi/Kunyomi (chỉ chứa Hiragana, Katakana và dấu câu cơ bản)'
-    })
+    .min(1, M.READING_INVALID)
+    .max(100, M.READING_INVALID)
+    .refine(isOnyomiKunyomi, M.READING_INVALID)
 })
 
 // Meaning schema for kanji with meanings
@@ -63,16 +46,16 @@ const MeaningSchema = z.object({
 
 // Main schema for creating kanji with readings and meanings
 export const CreateKanjiWithMeaningsSchema = z.object({
+  // Exactly one kanji (was checked in the service, with a regex that also
+  // accepted Latin-extended letters)
   character: z
-    .string()
-    .min(1, 'Ký tự Kanji không được để trống')
-    .max(10, 'Ký tự Kanji quá dài (tối đa 10 ký tự)'),
+    .string({ required_error: M.CHARACTER_REQUIRED })
+    .min(1, M.CHARACTER_REQUIRED)
+    .refine(isKanjiCharacter, M.CHARACTER_INVALID),
   strokeCount: z
     .union([z.number(), z.string()])
     .transform((val) => (typeof val === 'string' ? parseInt(val) : val))
-    .refine((val) => val >= 1 && val <= 50, {
-      message: 'Số nét vẽ phải từ 1 đến 50'
-    })
+    .refine((val) => val >= 1 && val <= 50, M.STROKE_COUNT_INVALID)
     .optional(),
   jlptLevel: z
     .union([z.number(), z.string()])
@@ -82,15 +65,9 @@ export const CreateKanjiWithMeaningsSchema = z.object({
       }
       return val
     })
-    .refine((val) => val >= 1 && val <= 5, {
-      message: 'Cấp độ JLPT phải từ 1 đến 5'
-    })
+    .refine((val) => val >= 1 && val <= 5, M.JLPT_LEVEL_INVALID)
     .optional(),
-  img: z
-    .string()
-    .max(500, 'URL hình ảnh quá dài (tối đa 500 ký tự)')
-    .url('URL hình ảnh không hợp lệ')
-    .optional(),
+  img: z.string().max(500, M.IMG_INVALID).url(M.IMG_INVALID).optional(),
   readings: z
     .union([z.array(ReadingSchema), z.string()])
     .transform((val) => {
@@ -105,12 +82,7 @@ export const CreateKanjiWithMeaningsSchema = z.object({
       }
       return val
     })
-    .pipe(
-      z
-        .array(ReadingSchema)
-        .min(1, 'Phải có ít nhất một cách đọc')
-        .max(10, 'Tối đa 10 cách đọc')
-    )
+    .pipe(z.array(ReadingSchema).min(1, M.READINGS_COUNT).max(10, M.READINGS_COUNT))
     .optional(),
   meanings: z
     .union([MeaningSchema, z.array(MeaningSchema), z.string()])

@@ -418,6 +418,35 @@ export const jaMessages = {
     IDS_REQUIRED: 'IDを1つ以上指定してください',
     IDS_TOO_MANY: 'テストは一度に100件まで削除できます'
   },
+  kanji: {
+    GET_SUCCESS: '漢字を取得しました',
+    GET_LIST_SUCCESS: '漢字一覧を取得しました',
+    GET_MANAGEMENT_LIST_SUCCESS: '漢字の管理一覧を取得しました',
+    CREATE_SUCCESS: '漢字と意味を作成しました',
+    UPDATE_SUCCESS: '漢字と意味を更新しました',
+    DELETE_SUCCESS: '漢字を削除しました',
+    DELETE_ALL_SUCCESS:
+      '漢字データをすべて削除しました：漢字{kanji}件、読み{readings}件、翻訳{translations}件',
+    IMPORT_XLSX_SUCCESS:
+      '漢字をインポートしました：作成{created}件、更新{updated}件、スキップ{skipped}件',
+    IMPORT_TXT_SUCCESS:
+      'TXT（{language}）から漢字をインポートしました：作成{created}件、更新{updated}件、スキップ{skipped}件',
+    NOT_FOUND: '漢字が見つかりません',
+    ALREADY_EXISTS: 'この漢字はすでに存在します',
+    INVALID_DATA: '漢字のデータが無効です',
+    CHARACTER_INVALID: '漢字1文字でなければなりません（ラテン文字や数字は不可）',
+    INVALID_FILE: 'ファイルが無効です',
+    INVALID_IMPORT_LANGUAGE: '言語が無効です（vi または en のみ）',
+    INVALID_ID: '漢字IDが無効です',
+    CHARACTER_REQUIRED: '漢字は必須です',
+    READING_TYPE_INVALID:
+      '読みの種類は onyomi・kunyomi・nanori・irregular のいずれかです',
+    READING_INVALID: '読みはひらがな・カタカナと基本的な記号のみです（1〜100文字）',
+    READINGS_COUNT: '読みは1〜10件です',
+    STROKE_COUNT_INVALID: '画数は1〜50です',
+    JLPT_LEVEL_INVALID: 'JLPTレベルは1から5です',
+    IMG_INVALID: '画像URLが無効です（500文字まで）'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'レッスンカテゴリを作成しました',
     UPDATE_SUCCESS: 'レッスンカテゴリを更新しました',

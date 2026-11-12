@@ -9,7 +9,7 @@ import {
   KanjiResSchema,
   KanjiListResSchema,
   KanjiManagementListResSchema
-} from '../../entities/kanji.entities'
+} from '../../entities/kanji.entity'
 
 // Zod DTOs - automatically validated
 export class CreateKanjiBodyDTO extends createZodDto(CreateKanjiSchema) {}

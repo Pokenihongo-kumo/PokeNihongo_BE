@@ -2,8 +2,7 @@ import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
 import { ApiProperty } from '@nestjs/swagger'
-import { createZodDto } from 'nestjs-zod'
-import { KanjiSchema } from '../entities/kanji.entities'
+import { KanjiSchema } from '../entities/kanji.entity'
 import { KanjiReadingSchema } from '@/modules/kanji-reading/entities/kanji-reading.entity'
 
 extendZodWithOpenApi(z)

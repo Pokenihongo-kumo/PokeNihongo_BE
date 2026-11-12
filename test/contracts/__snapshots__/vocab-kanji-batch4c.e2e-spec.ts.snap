@@ -144,7 +144,7 @@ exports[`Vocabulary/kanji batch 4c contract (e2e) kanji errors, delete, delete a
     "en": {
       "body": {
         "error": "CONFLICT",
-        "message": "Kanji đã tồn tại",
+        "message": "This kanji already exists",
         "statusCode": 409,
       },
       "httpStatus": 409,
@@ -165,7 +165,7 @@ exports[`Vocabulary/kanji batch 4c contract (e2e) kanji errors, delete, delete a
         "errors": [
           {
             "field": "string",
-            "message": "Invalid data provided",
+            "message": "The kanji character is required",
           },
         ],
         "message": "Invalid data provided",
@@ -179,7 +179,7 @@ exports[`Vocabulary/kanji batch 4c contract (e2e) kanji errors, delete, delete a
         "errors": [
           {
             "field": "string",
-            "message": "Dữ liệu không hợp lệ",
+            "message": "Ký tự Kanji không được để trống",
           },
         ],
         "message": "Dữ liệu không hợp lệ",
@@ -200,7 +200,7 @@ exports[`Vocabulary/kanji batch 4c contract (e2e) kanji errors, delete, delete a
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Kanji không tồn tại",
+        "message": "Kanji not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -217,26 +217,38 @@ exports[`Vocabulary/kanji batch 4c contract (e2e) kanji errors, delete, delete a
   "deleteInvalidId": {
     "en": {
       "body": {
-        "error": "NOT_FOUND",
-        "message": "Kanji không tồn tại",
-        "statusCode": 404,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid kanji ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 404,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "NOT_FOUND",
-        "message": "Kanji không tồn tại",
-        "statusCode": 404,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID kanji không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 404,
+      "httpStatus": 422,
     },
   },
   "updateNotFound": {
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Kanji không tồn tại",
+        "message": "Kanji not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
