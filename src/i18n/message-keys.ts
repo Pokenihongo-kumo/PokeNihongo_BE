@@ -174,6 +174,34 @@ export const AnswerMessage = {
   MULTIPLE_NONE_SAVED: 'answer.MULTIPLE_NONE_SAVED'
 } as const
 
+export const TestSetQuestionBankMessage = {
+  GET_SUCCESS: 'testset_questionbank.GET_SUCCESS',
+  GET_LIST_SUCCESS: 'testset_questionbank.GET_LIST_SUCCESS',
+  CREATE_SUCCESS: 'testset_questionbank.CREATE_SUCCESS',
+  UPDATE_SUCCESS: 'testset_questionbank.UPDATE_SUCCESS',
+  UPDATE_QUESTION_ORDER_SUCCESS: 'testset_questionbank.UPDATE_QUESTION_ORDER_SUCCESS',
+  DELETE_SUCCESS: 'testset_questionbank.DELETE_SUCCESS',
+  DELETE_BY_TESTSET_SUCCESS: 'testset_questionbank.DELETE_BY_TESTSET_SUCCESS',
+  NOT_FOUND: 'testset_questionbank.NOT_FOUND',
+  ALREADY_EXISTS: 'testset_questionbank.ALREADY_EXISTS',
+  INVALID_DATA: 'testset_questionbank.INVALID_DATA',
+  TYPE_INCOMPATIBLE: 'testset_questionbank.TYPE_INCOMPATIBLE',
+  LEVEL_ABOVE_TEST_SET: 'testset_questionbank.LEVEL_ABOVE_TEST_SET',
+  LEVEL_MISMATCH: 'testset_questionbank.LEVEL_MISMATCH',
+  TEST_SET_NOT_FOUND: 'testset_questionbank.TEST_SET_NOT_FOUND',
+  QUESTION_BANK_NOT_FOUND: 'testset_questionbank.QUESTION_BANK_NOT_FOUND',
+  INVALID_ID: 'testset_questionbank.INVALID_ID',
+  INVALID_TEST_SET_ID: 'testset_questionbank.INVALID_TEST_SET_ID',
+  INVALID_QUESTION_BANK_ID: 'testset_questionbank.INVALID_QUESTION_BANK_ID',
+  INVALID_QUESTION_ORDER: 'testset_questionbank.INVALID_QUESTION_ORDER',
+  QUESTION_BANK_IDS_REQUIRED: 'testset_questionbank.QUESTION_BANK_IDS_REQUIRED',
+  IDS_REQUIRED: 'testset_questionbank.IDS_REQUIRED',
+  MULTIPLE_CREATED: 'testset_questionbank.MULTIPLE_CREATED',
+  MULTIPLE_PARTIAL: 'testset_questionbank.MULTIPLE_PARTIAL',
+  MULTIPLE_NONE_CREATED: 'testset_questionbank.MULTIPLE_NONE_CREATED',
+  UNKNOWN_FAILURE: 'testset_questionbank.UNKNOWN_FAILURE'
+} as const
+
 export const LessonCategoryMessage = {
   CREATE_SUCCESS: 'lesson_category.CREATE_SUCCESS',
   UPDATE_SUCCESS: 'lesson_category.UPDATE_SUCCESS',

@@ -1,49 +1,31 @@
 import { createZodDto } from 'nestjs-zod'
-import { z } from 'zod'
-import { MessageResDTO } from '@/shared/dtos/response.dto'
 import {
-  TestSetQuestionBankSchema,
   CreateTestSetQuestionBankBodySchema,
   UpdateTestSetQuestionBankBodySchema,
+  CreateMultipleTestSetQuestionBankBodySchema,
   GetTestSetQuestionBankByTestSetIdParamsSchema,
   GetTestSetQuestionBankByIdParamsSchema,
   UpdateQuestionOrderSchema,
-  BatchUpdateQuestionOrderSchema,
   DeleteManyTestSetQuestionBankBodySchema
-} from '../entities/testset-questionbank.entities'
+} from '../entities/testset-questionbank.entity'
 
-// Zod DTOs for request/response validation
-export const CreateTestSetQuestionBankBodyDTO = createZodDto(
+// Request DTOs (validated by the global ZodValidationPipe)
+export class CreateTestSetQuestionBankBodyDTO extends createZodDto(
   CreateTestSetQuestionBankBodySchema
-)
-export const UpdateTestSetQuestionBankBodyDTO = createZodDto(
+) {}
+export class UpdateTestSetQuestionBankBodyDTO extends createZodDto(
   UpdateTestSetQuestionBankBodySchema
-)
-export const GetTestSetQuestionBankByTestSetIdParamsDTO = createZodDto(
+) {}
+export class CreateMultipleTestSetQuestionBankBodyDTO extends createZodDto(
+  CreateMultipleTestSetQuestionBankBodySchema
+) {}
+export class GetTestSetQuestionBankByTestSetIdParamsDTO extends createZodDto(
   GetTestSetQuestionBankByTestSetIdParamsSchema
-)
-export const GetTestSetQuestionBankByIdParamsDTO = createZodDto(
+) {}
+export class GetTestSetQuestionBankByIdParamsDTO extends createZodDto(
   GetTestSetQuestionBankByIdParamsSchema
-)
-export const UpdateQuestionOrderDTO = createZodDto(UpdateQuestionOrderSchema)
-export const BatchUpdateQuestionOrderDTO = createZodDto(BatchUpdateQuestionOrderSchema)
-export const DeleteManyTestSetQuestionBankBodyDTO = createZodDto(
+) {}
+export class UpdateQuestionOrderDTO extends createZodDto(UpdateQuestionOrderSchema) {}
+export class DeleteManyTestSetQuestionBankBodyDTO extends createZodDto(
   DeleteManyTestSetQuestionBankBodySchema
-)
-
-// Response DTOs
-export const TestSetQuestionBankResDTO = createZodDto(
-  z.object({
-    statusCode: z.number(),
-    data: TestSetQuestionBankSchema,
-    message: z.string()
-  })
-)
-
-export const TestSetQuestionBankListResDTO = createZodDto(
-  z.object({
-    statusCode: z.number(),
-    data: z.array(TestSetQuestionBankSchema),
-    message: z.string()
-  })
-)
+) {}

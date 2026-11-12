@@ -50,7 +50,12 @@ export class ApiExceptionFilter implements ExceptionFilter {
     if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
       const responseObj = exceptionResponse as Record<string, any>
       if (responseObj.errorKey) {
-        message = this.i18nService.translate(responseObj.errorKey, lang)
+        // errorArgs fills {name} placeholders, e.g. the levels in a mismatch
+        message = this.i18nService.translate(
+          responseObj.errorKey,
+          lang,
+          responseObj.errorArgs
+        )
       } else if (typeof responseObj.message === 'string') {
         message = responseObj.message
       } else if (Array.isArray(responseObj.message)) {

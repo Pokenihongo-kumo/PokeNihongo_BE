@@ -187,6 +187,37 @@ export const jaMessages = {
     MULTIPLE_UPDATED_FAILED: '{updated} 件更新、{failed} 件失敗しました',
     MULTIPLE_NONE_SAVED: '作成または更新できた回答はありません'
   },
+  testset_questionbank: {
+    GET_SUCCESS: 'テストセットの問題を取得しました',
+    GET_LIST_SUCCESS: 'テストセットの問題一覧を取得しました',
+    CREATE_SUCCESS: 'テストセットに問題を追加しました',
+    UPDATE_SUCCESS: 'テストセットの問題を更新しました',
+    UPDATE_QUESTION_ORDER_SUCCESS: '問題の順番を更新しました',
+    DELETE_SUCCESS: 'テストセットから問題を削除しました',
+    DELETE_BY_TESTSET_SUCCESS: 'テストセットの問題をすべて削除しました',
+    NOT_FOUND: 'テストセットの問題が見つかりません',
+    ALREADY_EXISTS: 'この問題はすでにテストセットにあります',
+    INVALID_DATA: 'テストセットの問題のデータが無効です',
+    TYPE_INCOMPATIBLE:
+      'テストセットと問題の種類が合いません。GENERAL か同じ種類のテストセットにのみ追加できます',
+    LEVEL_ABOVE_TEST_SET:
+      'レベルが合いません：テストセットはレベル{testSetLevel}、問題はレベル{questionLevel}です。GENERAL のテストセットでは、問題のレベルは同じか低くなければなりません',
+    LEVEL_MISMATCH:
+      'レベルが合いません：テストセットはレベル{testSetLevel}、問題はレベル{questionLevel}です。問題のレベルはテストセットと同じでなければなりません',
+    TEST_SET_NOT_FOUND: 'テストセットが見つかりません',
+    QUESTION_BANK_NOT_FOUND: '問題が見つかりません',
+    INVALID_ID: 'テストセットの問題IDが無効です',
+    INVALID_TEST_SET_ID: 'テストセットIDが無効です',
+    INVALID_QUESTION_BANK_ID: '問題IDが無効です',
+    INVALID_QUESTION_ORDER: '問題の順番は正の整数でなければなりません',
+    QUESTION_BANK_IDS_REQUIRED: '問題を1つ以上指定してください',
+    IDS_REQUIRED: 'IDを1つ以上指定してください',
+    MULTIPLE_CREATED: '{created}/{total}件の問題を追加しました',
+    MULTIPLE_PARTIAL:
+      '{created}/{total}件の問題を追加しました。{failed}件は追加できませんでした',
+    MULTIPLE_NONE_CREATED: '問題を追加できませんでした',
+    UNKNOWN_FAILURE: '不明なエラー'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'レッスンカテゴリを作成しました',
     UPDATE_SUCCESS: 'レッスンカテゴリを更新しました',

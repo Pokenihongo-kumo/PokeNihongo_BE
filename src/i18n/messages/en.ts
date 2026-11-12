@@ -176,6 +176,36 @@ export const enMessages = {
     MULTIPLE_UPDATED_FAILED: 'Updated {updated} answers, {failed} failed',
     MULTIPLE_NONE_SAVED: 'No answer could be created or updated'
   },
+  testset_questionbank: {
+    GET_SUCCESS: 'Test set question retrieved successfully',
+    GET_LIST_SUCCESS: 'Test set questions retrieved successfully',
+    CREATE_SUCCESS: 'Question added to the test set',
+    UPDATE_SUCCESS: 'Test set question updated successfully',
+    UPDATE_QUESTION_ORDER_SUCCESS: 'Question order updated successfully',
+    DELETE_SUCCESS: 'Question removed from the test set',
+    DELETE_BY_TESTSET_SUCCESS: 'All questions removed from the test set',
+    NOT_FOUND: 'Test set question not found',
+    ALREADY_EXISTS: 'This question is already in the test set',
+    INVALID_DATA: 'Invalid test set question data',
+    TYPE_INCOMPATIBLE:
+      'The test set type and the question type do not match. A question can only be added to a GENERAL test set or one of the same type',
+    LEVEL_ABOVE_TEST_SET:
+      'Level mismatch: the test set is level {testSetLevel} but the question is level {questionLevel}. In a GENERAL test set the question level must be the same or lower',
+    LEVEL_MISMATCH:
+      'Level mismatch: the test set is level {testSetLevel} but the question is level {questionLevel}. The question level must match the test set',
+    TEST_SET_NOT_FOUND: 'Test set not found',
+    QUESTION_BANK_NOT_FOUND: 'Question not found',
+    INVALID_ID: 'Invalid test set question ID',
+    INVALID_TEST_SET_ID: 'Invalid test set ID',
+    INVALID_QUESTION_BANK_ID: 'Invalid question ID',
+    INVALID_QUESTION_ORDER: 'Question order must be a positive integer',
+    QUESTION_BANK_IDS_REQUIRED: 'At least one question is required',
+    IDS_REQUIRED: 'At least one id is required',
+    MULTIPLE_CREATED: 'Added {created}/{total} questions',
+    MULTIPLE_PARTIAL: 'Added {created}/{total} questions. {failed} could not be added',
+    MULTIPLE_NONE_CREATED: 'No questions could be added',
+    UNKNOWN_FAILURE: 'Unknown error'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Lesson category created successfully',
     UPDATE_SUCCESS: 'Lesson category updated successfully',

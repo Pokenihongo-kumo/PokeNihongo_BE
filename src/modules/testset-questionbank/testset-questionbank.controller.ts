@@ -1,25 +1,14 @@
-import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import {
   CreateTestSetQuestionBankBodyDTO,
   UpdateTestSetQuestionBankBodyDTO,
+  CreateMultipleTestSetQuestionBankBodyDTO,
   GetTestSetQuestionBankByIdParamsDTO,
   GetTestSetQuestionBankByTestSetIdParamsDTO,
   UpdateQuestionOrderDTO,
-  TestSetQuestionBankResDTO,
-  TestSetQuestionBankListResDTO
+  DeleteManyTestSetQuestionBankBodyDTO
 } from './dto/testset-questionbank.zod-dto'
 import {
-  CreateTestSetQuestionBankBodyType,
-  UpdateTestSetQuestionBankBodyType,
-  GetTestSetQuestionBankByIdParamsType,
-  GetTestSetQuestionBankByTestSetIdParamsType,
-  UpdateQuestionOrderType,
-  CreateMultipleTestSetQuestionBankBodyType,
-  DeleteManyTestSetQuestionBankBodyType
-} from './entities/testset-questionbank.entities'
-import {
-  TestSetQuestionBankSwaggerDTO,
   CreateTestSetQuestionBankSwaggerDTO,
   UpdateTestSetQuestionBankSwaggerDTO,
   UpdateQuestionOrderSwaggerDTO,
@@ -29,7 +18,6 @@ import {
   CreateMultipleTestSetQuestionBankResponseSwaggerDTO,
   DeleteManyTestSetQuestionBankSwaggerDTO
 } from './dto/testset-questionbank.dto'
-import { MessageResDTO } from '@/shared/dtos/response.dto'
 import {
   Body,
   Controller,
@@ -52,7 +40,6 @@ import {
 } from '@nestjs/swagger'
 import { Response } from 'express'
 import { TestSetQuestionBankService } from './testset-questionbank.service'
-// no need to import DTO class for type annotation
 
 @ApiTags('TestSetQuestionBank')
 @Controller('testset-questionbank')
@@ -73,6 +60,7 @@ export class TestSetQuestionBankController {
       '\n• Nếu testsetType = GENERAL → Cho phép mọi questionType' +
       '\n• Nếu testsetType ≠ GENERAL → testsetType phải khớp với questionType' +
       '\n\nQuy tắc Level:' +
+      '\n• Nếu TestSet không có levelN (null hoặc 0) → Cho phép mọi levelN' +
       '\n• Nếu testsetType = GENERAL → QuestionBank levelN ≤ TestSet levelN' +
       '\n• Nếu testsetType ≠ GENERAL → QuestionBank levelN = TestSet levelN' +
       '\n\nCác loại có sẵn: VOCABULARY | GRAMMAR | KANJI | LISTENING | READING | SPEAKING | GENERAL'
@@ -82,11 +70,8 @@ export class TestSetQuestionBankController {
     description: 'Tạo liên kết thành công',
     type: TestSetQuestionBankResponseSwaggerDTO
   })
-  async create(
-    @Body() body: CreateTestSetQuestionBankBodyType,
-    @ActiveUser('userId') userId: number
-  ): Promise<MessageResDTO> {
-    return this.testSetQuestionBankService.create(body)
+  create(@Body() body: CreateTestSetQuestionBankBodyDTO, @I18nLang() lang: string) {
+    return this.testSetQuestionBankService.create(body, lang)
   }
 
   @Post('multiple')
@@ -121,12 +106,13 @@ export class TestSetQuestionBankController {
     type: CreateMultipleTestSetQuestionBankResponseSwaggerDTO
   })
   async createMultiple(
-    @Body() body: CreateMultipleTestSetQuestionBankBodyType,
-    @ActiveUser('userId') userId: number,
+    @Body() body: CreateMultipleTestSetQuestionBankBodyDTO,
+    @I18nLang() lang: string,
     @Res() res: Response
-  ): Promise<MessageResDTO> {
-    const result = await this.testSetQuestionBankService.createMultiple(body)
-    return res.status(result.statusCode).json(result) as any
+  ) {
+    // 201 all linked, 207 some, 400 none: the status is part of the result
+    const result = await this.testSetQuestionBankService.createMultiple(body, lang)
+    res.status(result.statusCode).json(result)
   }
 
   @Get(':id')
@@ -145,8 +131,11 @@ export class TestSetQuestionBankController {
     description: 'Lấy thông tin thành công',
     type: TestSetQuestionBankResponseSwaggerDTO
   })
-  async findById(@Param('id') id: string): Promise<TestSetQuestionBankSwaggerDTO> {
-    return this.testSetQuestionBankService.findById(Number(id))
+  findById(
+    @Param() params: GetTestSetQuestionBankByIdParamsDTO,
+    @I18nLang() lang: string
+  ) {
+    return this.testSetQuestionBankService.findById(params.id, lang)
   }
 
   @Get('testset/:testSetId')
@@ -160,21 +149,24 @@ export class TestSetQuestionBankController {
     description: 'Lấy danh sách thành công',
     type: TestSetQuestionBankListResponseSwaggerDTO
   })
-  async findByTestSetId(@Param('testSetId') testSetId: string): Promise<MessageResDTO> {
-    return this.testSetQuestionBankService.findByTestSetId(Number(testSetId))
+  findByTestSetId(
+    @Param() params: GetTestSetQuestionBankByTestSetIdParamsDTO,
+    @I18nLang() lang: string
+  ) {
+    return this.testSetQuestionBankService.findByTestSetId(params.testSetId, lang)
   }
 
-  //KUMO lấy testset và questionbank kèm theo answer theo header và tralation như đã làm bên userExercies
   @Get('testset/:testSetId/full')
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Lấy danh sách TestSetQuestionBank',
     description: 'Trả về các liên kết cùng dữ liệu QuestionBank'
   })
-  async findFullByTestSetId(
-    @Param('testSetId') testSetId: string
-  ): Promise<MessageResDTO> {
-    return this.testSetQuestionBankService.findFullByTestSetId(Number(testSetId))
+  findFullByTestSetId(
+    @Param() params: GetTestSetQuestionBankByTestSetIdParamsDTO,
+    @I18nLang() lang: string
+  ) {
+    return this.testSetQuestionBankService.getFullByTestSetId(params.testSetId, lang)
   }
 
   @Get('testset/:testSetId/full-with-answer')
@@ -185,13 +177,13 @@ export class TestSetQuestionBankController {
     description:
       'Trả về các liên kết cùng dữ liệu QuestionBank và Answers với translations theo ngôn ngữ'
   })
-  async findFullWithAnswerByTestSetId(
-    @Param('testSetId') testSetId: string,
-    @I18nLang() languageCode: string
-  ): Promise<MessageResDTO> {
-    return this.testSetQuestionBankService.findFullWithAnswerByTestSetId(
-      Number(testSetId),
-      languageCode
+  findFullWithAnswerByTestSetId(
+    @Param() params: GetTestSetQuestionBankByTestSetIdParamsDTO,
+    @I18nLang() lang: string
+  ) {
+    return this.testSetQuestionBankService.getFullWithAnswerByTestSetId(
+      params.testSetId,
+      lang
     )
   }
 
@@ -210,8 +202,11 @@ export class TestSetQuestionBankController {
       }
     }
   })
-  deleteMany(@Body() body: DeleteManyTestSetQuestionBankBodyType) {
-    return this.testSetQuestionBankService.deleteMany(body)
+  deleteMany(
+    @Body() body: DeleteManyTestSetQuestionBankBodyDTO,
+    @I18nLang() lang: string
+  ) {
+    return this.testSetQuestionBankService.deleteMany(body, lang)
   }
 
   @Put(':id')
@@ -229,11 +224,12 @@ export class TestSetQuestionBankController {
     description: 'Cập nhật thành công',
     type: TestSetQuestionBankResponseSwaggerDTO
   })
-  async update(
-    @Param('id') id: string,
-    @Body() body: UpdateTestSetQuestionBankBodyType
-  ): Promise<MessageResDTO> {
-    return this.testSetQuestionBankService.update(Number(id), body)
+  update(
+    @Param() params: GetTestSetQuestionBankByIdParamsDTO,
+    @Body() body: UpdateTestSetQuestionBankBodyDTO,
+    @I18nLang() lang: string
+  ) {
+    return this.testSetQuestionBankService.update(params.id, body, lang)
   }
 
   @Put(':id/question-order')
@@ -256,13 +252,15 @@ export class TestSetQuestionBankController {
     description: 'Cập nhật thứ tự thành công',
     type: TestSetQuestionBankResponseSwaggerDTO
   })
-  async updateQuestionOrder(
-    @Param() params: GetTestSetQuestionBankByIdParamsType,
-    @Body() body: UpdateQuestionOrderType
-  ): Promise<MessageResDTO> {
+  updateQuestionOrder(
+    @Param() params: GetTestSetQuestionBankByIdParamsDTO,
+    @Body() body: UpdateQuestionOrderDTO,
+    @I18nLang() lang: string
+  ) {
     return this.testSetQuestionBankService.updateQuestionOrder(
       params.id,
-      body.questionOrder
+      body.questionOrder,
+      lang
     )
   }
 
@@ -278,8 +276,8 @@ export class TestSetQuestionBankController {
     type: TestSetQuestionBankResponseSwaggerDTO
   })
   @HttpCode(HttpStatus.OK)
-  async delete(@Param('id') id: string): Promise<MessageResDTO> {
-    return this.testSetQuestionBankService.delete(Number(id))
+  delete(@Param() params: GetTestSetQuestionBankByIdParamsDTO, @I18nLang() lang: string) {
+    return this.testSetQuestionBankService.delete(params.id, lang)
   }
 
   @Delete('testset/:testSetId')
@@ -294,7 +292,10 @@ export class TestSetQuestionBankController {
     type: TestSetQuestionBankResponseSwaggerDTO
   })
   @HttpCode(HttpStatus.OK)
-  async deleteByTestSetId(@Param('testSetId') testSetId: string): Promise<MessageResDTO> {
-    return this.testSetQuestionBankService.deleteByTestSetId(Number(testSetId))
+  deleteByTestSetId(
+    @Param() params: GetTestSetQuestionBankByTestSetIdParamsDTO,
+    @I18nLang() lang: string
+  ) {
+    return this.testSetQuestionBankService.deleteByTestSetId(params.testSetId, lang)
   }
 }

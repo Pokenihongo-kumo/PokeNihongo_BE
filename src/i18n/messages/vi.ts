@@ -179,6 +179,37 @@ export const viMessages = {
       'Cập nhật thành công {updated} câu trả lời, {failed} câu trả lời thất bại',
     MULTIPLE_NONE_SAVED: 'Không thể tạo hoặc cập nhật câu trả lời nào'
   },
+  testset_questionbank: {
+    GET_SUCCESS: 'Lấy thông tin TestSetQuestionBank thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách TestSetQuestionBank thành công',
+    CREATE_SUCCESS: 'Tạo TestSetQuestionBank thành công',
+    UPDATE_SUCCESS: 'Cập nhật TestSetQuestionBank thành công',
+    UPDATE_QUESTION_ORDER_SUCCESS: 'Cập nhật thứ tự câu hỏi thành công',
+    DELETE_SUCCESS: 'Xóa TestSetQuestionBank thành công',
+    DELETE_BY_TESTSET_SUCCESS: 'Xóa TestSetQuestionBank theo TestSet thành công',
+    NOT_FOUND: 'Không tìm thấy TestSetQuestionBank',
+    ALREADY_EXISTS: 'TestSetQuestionBank đã tồn tại',
+    INVALID_DATA: 'Dữ liệu TestSetQuestionBank không hợp lệ',
+    TYPE_INCOMPATIBLE:
+      'Loại TestSet và QuestionBank không tương thích. Chỉ có thể liên kết khi TestSet có loại GENERAL hoặc khớp với loại QuestionBank',
+    LEVEL_ABOVE_TEST_SET:
+      'Level không phù hợp: TestSet có level {testSetLevel} nhưng QuestionBank có level {questionLevel}. Với TestSet loại GENERAL, QuestionBank phải có level bằng hoặc nhỏ hơn TestSet',
+    LEVEL_MISMATCH:
+      'Level không phù hợp: TestSet có level {testSetLevel} nhưng QuestionBank có level {questionLevel}. Với TestSet loại cụ thể, QuestionBank phải có level bằng TestSet',
+    TEST_SET_NOT_FOUND: 'Không tìm thấy TestSet',
+    QUESTION_BANK_NOT_FOUND: 'Không tìm thấy QuestionBank',
+    INVALID_ID: 'ID TestSetQuestionBank không hợp lệ',
+    INVALID_TEST_SET_ID: 'ID TestSet không hợp lệ',
+    INVALID_QUESTION_BANK_ID: 'ID QuestionBank không hợp lệ',
+    INVALID_QUESTION_ORDER: 'Thứ tự câu hỏi phải là số nguyên dương',
+    QUESTION_BANK_IDS_REQUIRED: 'Phải có ít nhất 1 QuestionBank',
+    IDS_REQUIRED: 'Phải có ít nhất 1 id',
+    MULTIPLE_CREATED: 'Tạo thành công {created}/{total} liên kết',
+    MULTIPLE_PARTIAL:
+      'Tạo thành công {created}/{total} liên kết. {failed} liên kết không thể tạo',
+    MULTIPLE_NONE_CREATED: 'Không thể tạo liên kết nào',
+    UNKNOWN_FAILURE: 'Lỗi không xác định'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Tạo danh mục bài học thành công',
     UPDATE_SUCCESS: 'Cập nhật danh mục bài học thành công',

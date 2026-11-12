@@ -1,56 +1,50 @@
-import { HttpException, HttpStatus } from '@nestjs/common'
-import { TEST_SET_QUESTIONBANK_MESSAGE } from '@/common/constants/message'
+import { TestSetQuestionBankMessage as M } from '@/i18n/message-keys'
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common'
 
-export const TestSetQuestionBankNotFoundException = new HttpException(
-  {
-    statusCode: HttpStatus.NOT_FOUND,
-    message: TEST_SET_QUESTIONBANK_MESSAGE.NOT_FOUND,
-    error: 'TESTSET_QUESTIONBANK_NOT_FOUND'
-  },
-  HttpStatus.NOT_FOUND
-)
+// A new instance per throw; `message` is translated from errorKey (and
+// errorArgs) by ApiExceptionFilter, the old Vietnamese text is the vi value
 
-export const TestSetQuestionBankAlreadyExistsException = new HttpException(
-  {
-    statusCode: HttpStatus.CONFLICT,
-    message: TEST_SET_QUESTIONBANK_MESSAGE.ALREADY_EXISTS,
-    error: 'TESTSET_QUESTIONBANK_ALREADY_EXISTS'
-  },
-  HttpStatus.CONFLICT
-)
+export class TestSetQuestionBankNotFoundException extends NotFoundException {
+  constructor() {
+    super({ message: M.NOT_FOUND, errorKey: M.NOT_FOUND })
+  }
+}
 
-export const InvalidTestSetQuestionBankDataException = new HttpException(
-  {
-    statusCode: HttpStatus.BAD_REQUEST,
-    message: TEST_SET_QUESTIONBANK_MESSAGE.INVALID_DATA,
-    error: 'INVALID_TESTSET_QUESTIONBANK_DATA'
-  },
-  HttpStatus.BAD_REQUEST
-)
+export class TestSetQuestionBankAlreadyExistsException extends ConflictException {
+  constructor() {
+    super({ message: M.ALREADY_EXISTS, errorKey: M.ALREADY_EXISTS })
+  }
+}
 
-export const TestSetQuestionBankTypeIncompatibleException = new HttpException(
-  {
-    statusCode: HttpStatus.BAD_REQUEST,
-    message: TEST_SET_QUESTIONBANK_MESSAGE.TYPE_INCOMPATIBLE,
-    error: 'TESTSET_QUESTIONBANK_TYPE_INCOMPATIBLE'
-  },
-  HttpStatus.BAD_REQUEST
-)
+export class InvalidTestSetQuestionBankDataException extends BadRequestException {
+  constructor() {
+    super({ message: M.INVALID_DATA, errorKey: M.INVALID_DATA })
+  }
+}
 
-export const TestSetNotFoundException = new HttpException(
-  {
-    statusCode: HttpStatus.NOT_FOUND,
-    message: 'Không tìm thấy TestSet',
-    error: 'TESTSET_NOT_FOUND'
-  },
-  HttpStatus.NOT_FOUND
-)
+export class TestSetNotFoundException extends NotFoundException {
+  constructor() {
+    super({ message: M.TEST_SET_NOT_FOUND, errorKey: M.TEST_SET_NOT_FOUND })
+  }
+}
 
-export const QuestionBankNotFoundException = new HttpException(
-  {
-    statusCode: HttpStatus.NOT_FOUND,
-    message: 'Không tìm thấy QuestionBank',
-    error: 'QUESTIONBANK_NOT_FOUND'
-  },
-  HttpStatus.NOT_FOUND
-)
+export class QuestionBankNotFoundException extends NotFoundException {
+  constructor() {
+    super({ message: M.QUESTION_BANK_NOT_FOUND, errorKey: M.QUESTION_BANK_NOT_FOUND })
+  }
+}
+
+// The question does not fit the test set (type or level)
+export class TestSetQuestionBankRuleViolationException extends BadRequestException {
+  constructor(
+    rule: TestSetQuestionBankRule,
+    args?: { testSetLevel: number; questionLevel: number | string }
+  ) {
+    super({ message: rule, errorKey: rule, errorArgs: args })
+  }
+}
+
+export type TestSetQuestionBankRule =
+  | typeof M.TYPE_INCOMPATIBLE
+  | typeof M.LEVEL_ABOVE_TEST_SET
+  | typeof M.LEVEL_MISMATCH

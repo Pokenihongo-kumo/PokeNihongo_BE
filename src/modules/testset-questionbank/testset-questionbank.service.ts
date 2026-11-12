@@ -2,707 +2,377 @@ import {
   CreateTestSetQuestionBankBodyType,
   UpdateTestSetQuestionBankBodyType,
   CreateMultipleTestSetQuestionBankBodyType,
+  DeleteManyTestSetQuestionBankBodyType,
   TestSetQuestionBankType
-} from './entities/testset-questionbank.entities'
-import { TestSetQuestionBankRepository } from './testset-questionbank.repo'
-import { TestSetService } from '@/modules/testset/testset.service'
+} from './entities/testset-questionbank.entity'
+import { TestSetQuestionBankRepo } from './testset-questionbank.repo'
 import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
-import { MessageResDTO } from '@/shared/dtos/response.dto'
-import { TEST_SET_QUESTIONBANK_MESSAGE } from '@/common/constants/message'
-import { BadRequestException } from '@nestjs/common'
-import { Injectable, Logger, HttpException } from '@nestjs/common'
-import { PrismaService } from '@/shared/services/prisma.service'
 import { TranslationHelperService } from '@/modules/translation/translation.helper.service'
 import { pickLabelFromComposite } from '@/common/utils/prase.utils'
+import { I18nService } from '@/i18n/i18n.service'
+import { TestSetQuestionBankMessage as M } from '@/i18n/message-keys'
+import {
+  isNotFoundPrismaError,
+  isUniqueConstraintPrismaError
+} from '@/shared/utils/prisma-errors'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
+import { TestSetType } from '@prisma/client'
 import {
   TestSetQuestionBankNotFoundException,
   TestSetQuestionBankAlreadyExistsException,
   InvalidTestSetQuestionBankDataException,
-  TestSetQuestionBankTypeIncompatibleException,
+  TestSetQuestionBankRuleViolationException,
   TestSetNotFoundException,
   QuestionBankNotFoundException
 } from './dto/testset-questionbank.error'
-import { DeleteManyTestSetQuestionBankBodyType } from './entities/testset-questionbank.entities'
+
+type TestSetRule = NonNullable<
+  Awaited<ReturnType<TestSetQuestionBankRepo['findTestSet']>>
+>
+type QuestionRule = NonNullable<
+  Awaited<ReturnType<TestSetQuestionBankRepo['findQuestionBank']>>
+>
 
 @Injectable()
 export class TestSetQuestionBankService {
   private readonly logger = new Logger(TestSetQuestionBankService.name)
 
   constructor(
-    private readonly testSetQuestionBankRepository: TestSetQuestionBankRepository,
-    private readonly testSetService: TestSetService,
+    private readonly testSetQuestionBankRepo: TestSetQuestionBankRepo,
     private readonly questionBankService: QuestionBankService,
     private readonly translationHelper: TranslationHelperService,
-    private readonly prismaService: PrismaService
+    private readonly i18nService: I18nService
   ) {}
 
-  async create(data: CreateTestSetQuestionBankBodyType): Promise<MessageResDTO> {
+  async create(data: CreateTestSetQuestionBankBodyType, lang: string = 'vi') {
     try {
-      this.logger.log(`Creating TestSetQuestionBank with data: ${JSON.stringify(data)}`)
-
-      // Validate TestSet exists and get testsetType
-      const testSet = await this.testSetService.getTestSetById(data.testSetId)
-      if (!testSet) {
-        throw TestSetNotFoundException
-      }
-
-      // Validate QuestionBank exists and get questionType
-
-      const questionBank = await this.questionBankService.findOne(
-        Number(data.questionBankId)
-      )
-      if (!questionBank) {
-        throw QuestionBankNotFoundException
-      }
-
-      // Validate testsetType and questionType compatibility
-      const testsetType = testSet.data.testType
-      const questionType = questionBank.data.questionType
-
-      // Ensure both values exist
-      if (!testsetType || !questionType) {
-        throw new BadRequestException(
-          TEST_SET_QUESTIONBANK_MESSAGE.INVALID_TYPE_DATA.replace(
-            '{testsetType}',
-            String(testsetType)
-          ).replace('{questionType}', String(questionType))
-        )
-      }
-
-      // Normalize to uppercase for comparison
-      const normalizedTestsetType = String(testsetType).toUpperCase().trim()
-      const normalizedQuestionType = String(questionType).toUpperCase().trim()
-
-      // Check compatibility logic:
-      // - If testsetType is GENERAL, allow any questionType
-      // - Otherwise, testsetType must match questionType exactly
-      if (
-        normalizedTestsetType !== 'GENERAL' &&
-        normalizedTestsetType !== normalizedQuestionType
-      ) {
-        throw TestSetQuestionBankTypeIncompatibleException
-      }
-
-      // Validate levelN compatibility
-      const testSetLevelN = testSet.data.levelN
-      const questionBankLevelN = questionBank.data.levelN
-
-      if (testsetType === 'GENERAL') {
-        // For GENERAL TestSet: QuestionBank levelN should be <= TestSet levelN
-        if (questionBankLevelN && testSetLevelN && questionBankLevelN > testSetLevelN) {
-          throw new BadRequestException(
-            `Level không phù hợp: TestSet có level ${testSetLevelN} nhưng QuestionBank có level ${questionBankLevelN}. Với TestSet loại GENERAL, QuestionBank phải có level bằng hoặc nhỏ hơn TestSet`
-          )
-        }
-      } else {
-        // For specific TestSet types: QuestionBank levelN must equal TestSet levelN
-        if (questionBankLevelN !== testSetLevelN) {
-          throw new BadRequestException(
-            `Level không phù hợp: TestSet có level ${testSetLevelN} nhưng QuestionBank gor level ${questionBankLevelN}. Với TestSet loại cụ thể, QuestionBank phải có level bằng TestSet`
-          )
-        }
-      }
-
-      // Check if TestSetQuestionBank already exists
-      const existing =
-        await this.testSetQuestionBankRepository.findByTestSetAndQuestionBank(
-          data.testSetId,
-          data.questionBankId
-        )
-      if (existing) {
-        throw TestSetQuestionBankAlreadyExistsException
-      }
-
-      // Auto-calculate questionOrder (next available order)
-      const currentCount = await this.testSetQuestionBankRepository.countByTestSetId(
-        data.testSetId
-      )
-      const nextOrder = currentCount + 1
-
-      const testSetQuestionBank = await this.testSetQuestionBankRepository.create({
-        ...data,
-        questionOrder: nextOrder
-      })
-
+      const testSet = await this.loadTestSet(data.testSetId)
+      const created = await this.link(testSet, data.questionBankId)
       return {
-        statusCode: 201,
-        data: testSetQuestionBank,
-        message: TEST_SET_QUESTIONBANK_MESSAGE.CREATE_SUCCESS
+        data: created,
+        message: this.i18nService.translate(M.CREATE_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error('Error creating TestSetQuestionBank:', error)
-      if (
-        error instanceof HttpException ||
-        error.message?.includes('không tồn tại') ||
-        error.message?.includes('đã tồn tại')
-      ) {
-        throw error
-      }
-      throw InvalidTestSetQuestionBankDataException
+      throw this.toTestSetQuestionBankError(error)
     }
   }
 
+  // Each question is linked on its own; failures are reported, not thrown.
+  // statusCode (201 all / 207 some / 400 none) is sent as the HTTP status
   async createMultiple(
-    data: CreateMultipleTestSetQuestionBankBodyType
-  ): Promise<MessageResDTO> {
-    try {
-      this.logger.log(
-        `Creating multiple TestSetQuestionBank with data: ${JSON.stringify(data)}`
-      )
-
-      // Validate TestSet exists and get testsetType
-      const testSet = await this.testSetService.getTestSetById(data.testSetId)
-      if (!testSet) {
-        throw TestSetNotFoundException
+    data: CreateMultipleTestSetQuestionBankBodyType,
+    lang: string = 'vi'
+  ) {
+    const testSet = await this.loadTestSet(data.testSetId).catch((error) => {
+      throw this.toTestSetQuestionBankError(error)
+    })
+    const created: TestSetQuestionBankType[] = []
+    const failed: { questionBankId: number; reason: string }[] = []
+    for (const questionBankId of data.questionBankIds) {
+      try {
+        created.push(await this.link(testSet, questionBankId))
+      } catch (error) {
+        failed.push({ questionBankId, reason: this.failureReason(error, lang) })
       }
+    }
 
-      const testsetType = testSet.data.testType
-      const createdItems: TestSetQuestionBankType[] = []
-      const failedItems: { questionBankId: number; reason: string }[] = []
-
-      // Process each questionBankId
-      for (const questionBankId of data.questionBankIds) {
-        try {
-          // Validate QuestionBank exists and get questionType
-          const questionBank = await this.questionBankService.findOne(
-            Number(questionBankId)
-          )
-          if (!questionBank) {
-            failedItems.push({
-              questionBankId,
-              reason: 'QuestionBank không tồn tại'
-            })
-            continue
-          }
-
-          const questionType = questionBank.data.questionType
-
-          // Validate testsetType and questionType compatibility
-          // Ensure both values exist and are strings
-          if (!testsetType || !questionType) {
-            failedItems.push({
-              questionBankId,
-              reason: TEST_SET_QUESTIONBANK_MESSAGE.INVALID_TYPE_DATA.replace(
-                '{testsetType}',
-                String(testsetType)
-              ).replace('{questionType}', String(questionType))
-            })
-            continue
-          }
-
-          // Normalize to uppercase for comparison
-          const normalizedTestsetType = String(testsetType).toUpperCase().trim()
-          const normalizedQuestionType = String(questionType).toUpperCase().trim()
-
-          // Check compatibility logic:
-          // - If testsetType is GENERAL, allow any questionType
-          // - Otherwise, testsetType must match questionType exactly
-          if (
-            normalizedTestsetType !== 'GENERAL' &&
-            normalizedTestsetType !== normalizedQuestionType
-          ) {
-            failedItems.push({
-              questionBankId,
-              reason: `Loại không tương thích: TestSet có loại "${testsetType}" nhưng QuestionBank có loại "${questionType}". Chỉ có thể thêm QuestionBank loại "${testsetType}" hoặc GENERAL vào TestSet loại "${testsetType}"`
-            })
-            continue
-          }
-
-          // Validate levelN compatibility
-          const testSetLevelN = testSet.data.levelN
-          const questionBankLevelN = questionBank.data.levelN
-
-          // Nếu TestSet có levelN = 0, cho phép mọi levelN
-          if (testSetLevelN === 0 || testSetLevelN === null) {
-            // Bỏ qua validation levelN, cho phép mọi levelN
-          } else if (testsetType === 'GENERAL') {
-            // For GENERAL TestSet: QuestionBank levelN should be <= TestSet levelN
-            if (
-              questionBankLevelN &&
-              testSetLevelN &&
-              questionBankLevelN > testSetLevelN
-            ) {
-              failedItems.push({
-                questionBankId,
-                reason: `Level không phù hợp: TestSet có level ${testSetLevelN} nhưng QuestionBank có level ${questionBankLevelN}. Với TestSet loại GENERAL, QuestionBank phải có level bằng hoặc nhỏ hơn TestSet`
-              })
-              continue
-            }
-          } else {
-            // For specific TestSet types: QuestionBank levelN must equal TestSet levelN
-            if (questionBankLevelN !== testSetLevelN) {
-              failedItems.push({
-                questionBankId,
-                reason: `Level không phù hợp: TestSet có level ${testSetLevelN} nhưng QuestionBank có level ${questionBankLevelN}. Với TestSet loại cụ thể, QuestionBank phải có level bằng TestSet`
-              })
-              continue
-            }
-          }
-
-          // Check if TestSetQuestionBank already exists
-          const existing =
-            await this.testSetQuestionBankRepository.findByTestSetAndQuestionBank(
-              data.testSetId,
-              questionBankId
-            )
-          if (existing) {
-            failedItems.push({
-              questionBankId,
-              reason: 'Liên kết đã tồn tại'
-            })
-            continue
-          }
-
-          // Auto-calculate questionOrder (next available order)
-          const currentCount = await this.testSetQuestionBankRepository.countByTestSetId(
-            data.testSetId
-          )
-          const nextOrder = currentCount + 1
-
-          // Create the TestSetQuestionBank
-          const testSetQuestionBank = await this.testSetQuestionBankRepository.create({
-            testSetId: data.testSetId,
-            questionBankId: questionBankId,
-            questionOrder: nextOrder
-          })
-
-          createdItems.push(testSetQuestionBank)
-        } catch (error) {
-          this.logger.error(`Error processing questionBankId ${questionBankId}:`, error)
-          failedItems.push({
-            questionBankId,
-            reason: 'Lỗi không xác định'
-          })
-        }
-      }
-
-      // Determine status code based on results
-      let statusCode = 201
-      let message = `Tạo thành công ${createdItems.length}/${data.questionBankIds.length} liên kết`
-
-      if (createdItems.length === 0) {
-        statusCode = 400
-        message = 'Không thể tạo liên kết nào'
-      } else if (failedItems.length > 0) {
-        statusCode = 207 // Multi-status: partial success
-        message = `Tạo thành công ${createdItems.length}/${data.questionBankIds.length} liên kết. ${failedItems.length} liên kết không thể tạo`
-      }
-
-      return {
-        statusCode,
-        data: {
-          created: createdItems,
-          failed: failedItems,
-          summary: {
-            total: data.questionBankIds.length,
-            success: createdItems.length,
-            failed: failedItems.length
-          }
-        },
-        message
-      }
-    } catch (error) {
-      this.logger.error('Error creating multiple TestSetQuestionBank:', error)
-      if (error instanceof HttpException || error.message?.includes('không tồn tại')) {
-        throw error
-      }
-      throw InvalidTestSetQuestionBankDataException
+    const total = data.questionBankIds.length
+    const counts = { created: created.length, total, failed: failed.length }
+    const [statusCode, key] =
+      created.length === 0
+        ? [400, M.MULTIPLE_NONE_CREATED]
+        : failed.length > 0
+          ? [207, M.MULTIPLE_PARTIAL]
+          : [201, M.MULTIPLE_CREATED]
+    return {
+      statusCode,
+      data: {
+        created,
+        failed,
+        summary: { total, success: created.length, failed: failed.length }
+      },
+      message: this.i18nService.translate(key, lang, counts)
     }
   }
 
-  async findById(id: number): Promise<TestSetQuestionBankType> {
-    try {
-      this.logger.log(`Finding TestSetQuestionBank by id: ${id}`)
-
-      const testSetQuestionBank = await this.testSetQuestionBankRepository.findById(id)
-      if (!testSetQuestionBank) {
-        throw TestSetQuestionBankNotFoundException
-      }
-
-      return testSetQuestionBank
-    } catch (error) {
-      this.logger.error('Error finding TestSetQuestionBank by id:', error)
-      if (error instanceof HttpException || error.message?.includes('không tồn tại')) {
-        throw error
-      }
-      throw InvalidTestSetQuestionBankDataException
-    }
+  async findById(id: number, lang: string = 'vi') {
+    const link = await this.testSetQuestionBankRepo.findById(id)
+    if (!link) throw new TestSetQuestionBankNotFoundException()
+    return { data: link, message: this.i18nService.translate(M.GET_SUCCESS, lang) }
   }
 
-  async findByTestSetId(testSetId: number): Promise<MessageResDTO> {
+  async findByTestSetId(testSetId: number, lang: string = 'vi') {
+    await this.loadTestSet(testSetId)
+    const links = await this.testSetQuestionBankRepo.findByTestSetId(testSetId)
+    return { data: links, message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang) }
+  }
+
+  // HTTP routes: a missing test set is a 404 (internal callers get an empty list)
+  async getFullByTestSetId(testSetId: number, lang: string = 'vi') {
+    await this.loadTestSet(testSetId)
+    return this.findFullByTestSetId(testSetId, lang)
+  }
+
+  async getFullWithAnswerByTestSetId(testSetId: number, lang: string = 'vi') {
+    await this.loadTestSet(testSetId)
+    return this.findFullWithAnswerByTestSetId(testSetId, lang)
+  }
+
+  // Used by user-test-attempt; returns { statusCode, data: [...], message }
+  async findFullByTestSetId(testSetId: number, languageCode: string = 'vi') {
     try {
-      this.logger.log(`Finding TestSetQuestionBank by testSetId: ${testSetId}`)
-
-      // Validate TestSet exists
-      const testSet = await this.testSetService.getTestSetById(testSetId)
-      if (!testSet) {
-        throw TestSetNotFoundException
-      }
-
-      const testSetQuestionBanks =
-        await this.testSetQuestionBankRepository.findByTestSetId(testSetId)
-
+      const links = await this.testSetQuestionBankRepo.findByTestSetId(testSetId)
+      const questionBanks = await this.questionBanksOf(links)
+      const data = links
+        .map((l) => {
+          const qb = questionBanks.get(l.questionBankId)
+          if (!qb) return null
+          return {
+            id: l.id, // id của TestSetQuestionBank
+            questionOrder: l.questionOrder,
+            questionBankId: qb.id,
+            questionJp: qb.questionJp || null,
+            questionType: qb.questionType,
+            audioUrl: qb.audioUrl || null,
+            questionKey: qb.questionKey || null,
+            pronunciation: qb.pronunciation || null,
+            role: qb.role || null,
+            levelN: qb.levelN || null,
+            createdById: qb.createdById || null,
+            createdAt: qb.createdAt,
+            updatedAt: qb.updatedAt,
+            answers: this.answersOf(qb, languageCode)
+          }
+        })
+        .filter(Boolean)
       return {
         statusCode: 200,
-        data: testSetQuestionBanks,
-        message: TEST_SET_QUESTIONBANK_MESSAGE.GET_LIST_SUCCESS
+        data,
+        message: this.i18nService.translate(M.GET_LIST_SUCCESS, languageCode)
       }
     } catch (error) {
-      this.logger.error('Error finding TestSetQuestionBank by testSetId:', error)
-      if (error instanceof HttpException || error.message?.includes('không tồn tại')) {
-        throw error
-      }
-      throw InvalidTestSetQuestionBankDataException
+      throw this.toTestSetQuestionBankError(error)
     }
   }
 
-  async findFullByTestSetId(
-    testSetId: number,
-    languageCode: string = 'vi'
-  ): Promise<MessageResDTO> {
+  // Used by test; question text from translations, falling back to the JP text
+  async findFullWithAnswerByTestSetId(testSetId: number, languageCode: string) {
     try {
-      this.logger.log(`Finding QuestionBanks with answers by testSetId: ${testSetId}`)
-
-      const links = await this.testSetQuestionBankRepository.findByTestSetId(testSetId)
-
-      let questionBanks = [] as any[]
-      if (links.length > 0) {
-        // Lấy tất cả QuestionBank IDs
-        const questionBankIds = links.map((l) => l.questionBankId)
-
-        // Lấy đầy đủ QuestionBanks với answers bằng cách gọi findOne cho mỗi ID
-        const qbPromises = questionBankIds.map((id) =>
-          this.questionBankService.findOne(id)
-        )
-        const qbResults = await Promise.all(qbPromises)
-        const idToQB = new Map(qbResults.map((res: any) => [res.data.id, res.data]))
-
-        // Map với translations
-        questionBanks = await Promise.all(
-          links
-            .sort((a, b) => a.questionOrder - b.questionOrder)
-            .map(async (l) => {
-              const qb = idToQB.get(l.questionBankId)
-              if (!qb) return null
-
-              // Map answers với translations
-              const mappedAnswers = await Promise.all(
-                (qb?.answers || []).map(async (ans: any) => {
-                  const answerLabel = pickLabelFromComposite(
-                    ans?.answerJp || '',
-                    languageCode
-                  )
-                  return {
-                    id: ans.id,
-                    answer: answerLabel
-                  }
-                })
-              )
-
-              return {
-                id: l.id, // id của TestSetQuestionBank
-                questionOrder: l.questionOrder,
-                questionBankId: qb.id,
-                questionJp: qb.questionJp || null,
+      const links = await this.testSetQuestionBankRepo.findByTestSetId(testSetId)
+      const lang = (languageCode || '').toLowerCase().split('-')[0] || 'vi'
+      const questionBanks = await this.questionBanksOf(links)
+      const data = (
+        await Promise.all(
+          links.map(async (l) => {
+            const qb = questionBanks.get(l.questionBankId)
+            if (!qb) return null
+            return {
+              id: l.id,
+              questionOrder: l.questionOrder,
+              questionBank: {
+                id: qb.id,
+                question: (await this.questionTextOf(qb, lang)) || qb.questionJp || '',
                 questionType: qb.questionType,
-                audioUrl: qb.audioUrl || null,
-                questionKey: qb.questionKey || null,
-                pronunciation: qb.pronunciation || null,
-                role: qb.role || null,
-                levelN: qb.levelN || null,
-                createdById: qb.createdById || null,
-                createdAt: qb.createdAt,
-                updatedAt: qb.updatedAt,
-                answers: mappedAnswers
+                audioUrl: qb.audioUrl,
+                pronunciation: qb.pronunciation,
+                role: qb.role,
+                levelN: qb.levelN,
+                answers: this.answersOf(qb, lang)
               }
-            })
+            }
+          })
         )
-        questionBanks = questionBanks.filter(Boolean) as any[]
-      }
-
+      ).filter(Boolean)
       return {
         statusCode: 200,
-        data: questionBanks,
-        message: TEST_SET_QUESTIONBANK_MESSAGE.GET_LIST_SUCCESS
+        data,
+        message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error('Error finding QuestionBanks with answers by testSetId:', error)
-      if (error instanceof HttpException || error.message?.includes('không tồn tại')) {
-        throw error
-      }
-      throw InvalidTestSetQuestionBankDataException
+      throw this.toTestSetQuestionBankError(error)
     }
   }
 
-  async findFullWithAnswerByTestSetId(
-    testSetId: number,
-    languageCode: string
-  ): Promise<MessageResDTO> {
+  async update(id: number, data: UpdateTestSetQuestionBankBodyType, lang: string = 'vi') {
     try {
-      this.logger.log(
-        `Finding QuestionBanks with answers by testSetId: ${testSetId}, language: ${languageCode}`
-      )
+      const existing = await this.testSetQuestionBankRepo.findById(id)
+      if (!existing) throw new TestSetQuestionBankNotFoundException()
 
-      const links = await this.testSetQuestionBankRepository.findByTestSetId(testSetId)
-      const normalizedLang = (languageCode || '').toLowerCase().split('-')[0] || 'vi'
-
-      let questionBanks = [] as any[]
-      if (links.length > 0) {
-        // Lấy tất cả QuestionBank IDs
-        const questionBankIds = links.map((l) => l.questionBankId)
-
-        // Lấy đầy đủ QuestionBanks với answers bằng cách gọi findOne cho mỗi ID
-        const qbPromises = questionBankIds.map((id) =>
-          this.questionBankService.findOne(id)
+      // Moving the link to another test set or question: same rules as create
+      if (data.testSetId || data.questionBankId) {
+        const testSet = await this.loadTestSet(data.testSetId ?? existing.testSetId)
+        const question = await this.loadQuestionBank(
+          data.questionBankId ?? existing.questionBankId
         )
-        const qbResults = await Promise.all(qbPromises)
-        const idToQB = new Map(qbResults.map((res: any) => [res.data.id, res.data]))
-
-        // Map với translations
-        questionBanks = await Promise.all(
-          links
-            .sort((a, b) => a.questionOrder - b.questionOrder)
-            .map(async (l) => {
-              const qb = idToQB.get(l.questionBankId)
-              if (!qb) return null
-
-              // Resolve question text via translation keys
-              let questionText = ''
-              if (qb?.questionKey) {
-                const triedLang = normalizedLang
-                const keyCandidates = [
-                  qb.questionKey,
-                  qb.questionKey.endsWith('.meaning.1')
-                    ? qb.questionKey
-                    : `${qb.questionKey}.meaning.1`,
-                  qb.questionKey.endsWith('.question')
-                    ? qb.questionKey
-                    : `${qb.questionKey}.question`
-                ]
-                for (const key of keyCandidates) {
-                  questionText =
-                    (await this.translationHelper.getTranslation(key, triedLang)) || ''
-                  if (!questionText) {
-                    questionText =
-                      (await this.translationHelper.getTranslation(key, 'vi')) || ''
-                  }
-                  if (questionText) break
-                }
-              }
-              if (!questionText) {
-                // fallback to JP original if translation is missing
-                questionText = qb?.questionJp || ''
-              }
-
-              // Map answers với translations
-              const mappedAnswers = await Promise.all(
-                (qb?.answers || []).map(async (ans: any) => {
-                  // Derive from answerJp composite string based on language
-                  const answerLabel = pickLabelFromComposite(
-                    ans?.answerJp || '',
-                    normalizedLang
-                  )
-                  return {
-                    id: ans.id,
-                    answer: answerLabel
-                  }
-                })
-              )
-
-              return {
-                id: l.id,
-                questionOrder: l.questionOrder,
-                questionBank: {
-                  id: qb.id,
-                  question: questionText,
-                  questionType: qb.questionType,
-                  audioUrl: qb.audioUrl,
-                  pronunciation: qb.pronunciation,
-                  role: qb.role,
-                  levelN: qb.levelN,
-                  answers: mappedAnswers
-                }
-              }
-            })
-        )
-        questionBanks = questionBanks.filter(Boolean) as any[]
+        const broken = this.brokenRule(testSet, question)
+        if (broken) throw broken
       }
 
+      const updated = await this.testSetQuestionBankRepo.update(id, data)
       return {
-        statusCode: 200,
-        data: questionBanks,
-        message: TEST_SET_QUESTIONBANK_MESSAGE.GET_LIST_SUCCESS
+        data: updated,
+        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error('Error finding QuestionBanks with answers by testSetId:', error)
-      if (error instanceof HttpException || error.message?.includes('không tồn tại')) {
-        throw error
-      }
-      throw InvalidTestSetQuestionBankDataException
+      throw this.toTestSetQuestionBankError(error)
     }
   }
 
-  async update(
-    id: number,
-    data: UpdateTestSetQuestionBankBodyType
-  ): Promise<MessageResDTO> {
+  async updateQuestionOrder(id: number, questionOrder: number, lang: string = 'vi') {
     try {
-      this.logger.log(
-        `Updating TestSetQuestionBank with id: ${id}, data: ${JSON.stringify(data)}`
-      )
-
-      // Check if TestSetQuestionBank exists
-      const existing = await this.testSetQuestionBankRepository.findById(id)
-      if (!existing) {
-        throw TestSetQuestionBankNotFoundException
-      }
-
-      // Validate TestSet exists if testSetId is being updated
-      if (data.testSetId) {
-        const testSet = await this.testSetService.getTestSetById(data.testSetId)
-        if (!testSet) {
-          throw TestSetNotFoundException
-        }
-      }
-
-      // Validate QuestionBank exists if questionBankId is being updated
-      if (data.questionBankId) {
-        const questionBank = await this.questionBankService.findOne(
-          Number(data.questionBankId)
-        )
-        if (!questionBank) {
-          throw QuestionBankNotFoundException
-        }
-      }
-
-      const updatedTestSetQuestionBank = await this.testSetQuestionBankRepository.update(
-        id,
-        data
-      )
-
+      const updated = await this.testSetQuestionBankRepo.update(id, { questionOrder })
       return {
-        statusCode: 200,
-        data: updatedTestSetQuestionBank,
-        message: TEST_SET_QUESTIONBANK_MESSAGE.UPDATE_SUCCESS
+        data: updated,
+        message: this.i18nService.translate(M.UPDATE_QUESTION_ORDER_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error('Error updating TestSetQuestionBank:', error)
-      if (error instanceof HttpException || error.message?.includes('không tồn tại')) {
-        throw error
-      }
-      throw InvalidTestSetQuestionBankDataException
+      throw this.toTestSetQuestionBankError(error)
     }
   }
 
-  async updateQuestionOrder(id: number, questionOrder: number): Promise<MessageResDTO> {
+  async delete(id: number, lang: string = 'vi') {
     try {
-      this.logger.log(
-        `Updating question order for TestSetQuestionBank with id: ${id}, order: ${questionOrder}`
-      )
-
-      // Check if TestSetQuestionBank exists
-      const existing = await this.testSetQuestionBankRepository.findById(id)
-      if (!existing) {
-        throw TestSetQuestionBankNotFoundException
-      }
-
-      const updatedTestSetQuestionBank =
-        await this.testSetQuestionBankRepository.updateQuestionOrder(id, questionOrder)
-
-      return {
-        statusCode: 200,
-        data: updatedTestSetQuestionBank,
-        message: TEST_SET_QUESTIONBANK_MESSAGE.UPDATE_QUESTION_ORDER_SUCCESS
-      }
+      await this.testSetQuestionBankRepo.delete(id)
+      return { message: this.i18nService.translate(M.DELETE_SUCCESS, lang) }
     } catch (error) {
-      this.logger.error('Error updating question order:', error)
-      if (error instanceof HttpException || error.message?.includes('không tồn tại')) {
-        throw error
-      }
-      throw InvalidTestSetQuestionBankDataException
+      throw this.toTestSetQuestionBankError(error)
     }
   }
 
-  async delete(id: number): Promise<MessageResDTO> {
-    try {
-      this.logger.log(`Deleting TestSetQuestionBank with id: ${id}`)
-
-      // Check if TestSetQuestionBank exists
-      const existing = await this.testSetQuestionBankRepository.findById(id)
-      if (!existing) {
-        throw TestSetQuestionBankNotFoundException
-      }
-
-      await this.testSetQuestionBankRepository.delete(id)
-
-      return {
-        statusCode: 200,
-        data: null,
-        message: TEST_SET_QUESTIONBANK_MESSAGE.DELETE_SUCCESS
-      }
-    } catch (error) {
-      this.logger.error('Error deleting TestSetQuestionBank:', error)
-      if (error instanceof HttpException || error.message?.includes('không tồn tại')) {
-        throw error
-      }
-      throw InvalidTestSetQuestionBankDataException
+  async deleteMany(body: DeleteManyTestSetQuestionBankBodyType, lang: string = 'vi') {
+    const result = await this.testSetQuestionBankRepo.deleteMany(body.ids)
+    return {
+      data: { deletedCount: result.count },
+      message: this.i18nService.translate(M.DELETE_SUCCESS, lang)
     }
   }
 
-  async deleteMany(body: DeleteManyTestSetQuestionBankBodyType): Promise<MessageResDTO> {
-    try {
-      this.logger.log(
-        `Deleting multiple TestSetQuestionBank with ids: ${JSON.stringify(body.ids)}`
-      )
-
-      const result = await this.testSetQuestionBankRepository.deleteMany(body.ids)
-
-      return {
-        statusCode: 200,
-        data: { deletedCount: result.count },
-        message: TEST_SET_QUESTIONBANK_MESSAGE.DELETE_SUCCESS
-      }
-    } catch (error) {
-      this.logger.error('Error deleting multiple TestSetQuestionBank:', error)
-      if (error instanceof HttpException) {
-        throw error
-      }
-      throw InvalidTestSetQuestionBankDataException
+  async deleteByTestSetId(testSetId: number, lang: string = 'vi') {
+    const result = await this.testSetQuestionBankRepo.deleteByTestSetId(testSetId)
+    return {
+      data: { deletedCount: result.count },
+      message: this.i18nService.translate(M.DELETE_BY_TESTSET_SUCCESS, lang)
     }
   }
 
-  async deleteByTestSetId(testSetId: number): Promise<MessageResDTO> {
-    try {
-      this.logger.log(`Deleting TestSetQuestionBank by testSetId: ${testSetId}`)
-
-      const result = await this.testSetQuestionBankRepository.deleteByTestSetId(testSetId)
-
-      return {
-        statusCode: 200,
-        data: { deletedCount: result.count },
-        message: TEST_SET_QUESTIONBANK_MESSAGE.DELETE_BY_TESTSET_SUCCESS
-      }
-    } catch (error) {
-      this.logger.error('Error deleting TestSetQuestionBank by testSetId:', error)
-      throw InvalidTestSetQuestionBankDataException
-    }
+  //#region helpers
+  private async loadTestSet(id: number) {
+    const testSet = await this.testSetQuestionBankRepo.findTestSet(id)
+    if (!testSet) throw new TestSetNotFoundException()
+    return testSet
   }
 
-  async deleteByQuestionBankId(questionBankId: number): Promise<MessageResDTO> {
-    try {
-      this.logger.log(`Deleting TestSetQuestionBank by questionBankId: ${questionBankId}`)
-
-      const result =
-        await this.testSetQuestionBankRepository.deleteByQuestionBankId(questionBankId)
-
-      return {
-        statusCode: 200,
-        data: { deletedCount: result.count },
-        message: TEST_SET_QUESTIONBANK_MESSAGE.DELETE_BY_QUESTIONBANK_SUCCESS
-      }
-    } catch (error) {
-      this.logger.error('Error deleting TestSetQuestionBank by questionBankId:', error)
-      throw InvalidTestSetQuestionBankDataException
-    }
+  private async loadQuestionBank(id: number) {
+    const question = await this.testSetQuestionBankRepo.findQuestionBank(id)
+    if (!question) throw new QuestionBankNotFoundException()
+    return question
   }
+
+  // Appends the question after the last one in the test set
+  private async link(testSet: TestSetRule, questionBankId: number) {
+    const question = await this.loadQuestionBank(questionBankId)
+    const broken = this.brokenRule(testSet, question)
+    if (broken) throw broken
+    const existing = await this.testSetQuestionBankRepo.findByTestSetAndQuestionBank(
+      testSet.id,
+      questionBankId
+    )
+    if (existing) throw new TestSetQuestionBankAlreadyExistsException()
+    return this.testSetQuestionBankRepo.create({
+      testSetId: testSet.id,
+      questionBankId,
+      questionOrder: (await this.testSetQuestionBankRepo.maxQuestionOrder(testSet.id)) + 1
+    })
+  }
+
+  // Type: a GENERAL test set takes any question, others only their own type.
+  // Level: a test set without one (null/0) takes any level; GENERAL takes the
+  // same or a lower level, others only the same level
+  private brokenRule(
+    testSet: TestSetRule,
+    question: QuestionRule
+  ): TestSetQuestionBankRuleViolationException | null {
+    const general = testSet.testType === TestSetType.GENERAL
+    if (!general && String(testSet.testType) !== String(question.questionType)) {
+      return new TestSetQuestionBankRuleViolationException(M.TYPE_INCOMPATIBLE)
+    }
+    if (!testSet.levelN) return null
+    const levels = { testSetLevel: testSet.levelN, questionLevel: question.levelN ?? '-' }
+    if (general) {
+      return question.levelN && question.levelN > testSet.levelN
+        ? new TestSetQuestionBankRuleViolationException(M.LEVEL_ABOVE_TEST_SET, levels)
+        : null
+    }
+    return question.levelN !== testSet.levelN
+      ? new TestSetQuestionBankRuleViolationException(M.LEVEL_MISMATCH, levels)
+      : null
+  }
+
+  // Why one question of createMultiple was not linked, in the request language
+  private failureReason(error: unknown, lang: string): string {
+    const response = error instanceof HttpException ? error.getResponse() : null
+    if (response && typeof response === 'object' && 'errorKey' in response) {
+      const { errorKey, errorArgs } = response as {
+        errorKey: string
+        errorArgs?: Record<string, string | number>
+      }
+      return this.i18nService.translate(errorKey, lang, errorArgs)
+    }
+    if (isUniqueConstraintPrismaError(error)) {
+      return this.i18nService.translate(M.ALREADY_EXISTS, lang)
+    }
+    this.logger.error(
+      'Linking a question failed',
+      error instanceof Error ? error.stack : error
+    )
+    return this.i18nService.translate(M.UNKNOWN_FAILURE, lang)
+  }
+
+  // Full question banks (with answers), keyed by id
+  private async questionBanksOf(links: TestSetQuestionBankType[]) {
+    const results = await Promise.all(
+      links.map((l) => this.questionBankService.findOne(l.questionBankId))
+    )
+    return new Map<number, any>(results.map((res: any) => [res.data.id, res.data]))
+  }
+
+  private answersOf(qb: any, lang: string) {
+    return (qb?.answers || []).map((ans: any) => ({
+      id: ans.id,
+      answer: pickLabelFromComposite(ans?.answerJp || '', lang)
+    }))
+  }
+
+  // Tries the key, then the .meaning.1 and .question variants, each in the
+  // language and then in vi
+  private async questionTextOf(qb: any, lang: string): Promise<string> {
+    if (!qb?.questionKey) return ''
+    const key: string = qb.questionKey
+    const candidates = [
+      key,
+      key.endsWith('.meaning.1') ? key : `${key}.meaning.1`,
+      key.endsWith('.question') ? key : `${key}.question`
+    ]
+    for (const candidate of candidates) {
+      const text =
+        (await this.translationHelper.getTranslation(candidate, lang)) ||
+        (await this.translationHelper.getTranslation(candidate, 'vi'))
+      if (text) return text
+    }
+    return ''
+  }
+
+  private toTestSetQuestionBankError(error: unknown): HttpException {
+    if (error instanceof HttpException) return error
+    this.logger.error(
+      'TestSetQuestionBank request failed',
+      error instanceof Error ? error.stack : error
+    )
+    if (isUniqueConstraintPrismaError(error)) {
+      return new TestSetQuestionBankAlreadyExistsException()
+    }
+    if (isNotFoundPrismaError(error)) return new TestSetQuestionBankNotFoundException()
+    return new InvalidTestSetQuestionBankDataException()
+  }
+  //#endregion
 }
