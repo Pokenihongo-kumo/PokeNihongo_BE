@@ -2,13 +2,13 @@ import {
   Kanji,
   CreateKanjiBodyType,
   UpdateKanjiBodyType
-} from './entities/kanji.entities'
+} from './entities/kanji.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
 import { KanjiSortField, SortOrder } from '@/common/enum/enum'
 
 @Injectable()
-export class KanjiRepository {
+export class KanjiRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   // Kanji CRUD operations

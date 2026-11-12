@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
 import { KanjiController } from './kanji.controller'
 import { KanjiService } from './kanji.service'
-import { KanjiRepository } from './kanji.repo'
+import { KanjiRepo } from './kanji.repo'
 import { SharedModule } from '@/shared/shared.module'
 import { KanjiReadingModule } from '@/modules/kanji-reading/kanji-reading.module'
 import { TranslationModule } from '@/modules/translation/translation.module'
@@ -17,7 +17,7 @@ import { UploadModule } from '@/3rdService/upload/upload.module'
     UploadModule
   ],
   controllers: [KanjiController],
-  providers: [KanjiService, KanjiRepository],
-  exports: [KanjiService, KanjiRepository]
+  providers: [KanjiService, KanjiRepo],
+  exports: [KanjiService, KanjiRepo]
 })
 export class KanjiModule {}

@@ -3,10 +3,10 @@ import {
   UpdateKanjiBodyType,
   GetKanjiListQueryType,
   Kanji
-} from './entities/kanji.entities'
+} from './entities/kanji.entity'
 import { CreateKanjiWithMeaningsBodyType } from './dto/kanji-with-meanings.dto'
 import { UpdateKanjiWithMeaningsBodyType } from './dto/update-kanji-with-meanings.dto'
-import { KanjiRepository } from './kanji.repo'
+import { KanjiRepo } from './kanji.repo'
 import { KanjiReadingService } from '@/modules/kanji-reading/kanji-reading.service'
 import { TranslationService } from '@/modules/translation/translation.service'
 import { LanguagesService } from '@/modules/languages/languages.service'
@@ -27,7 +27,7 @@ export class KanjiService {
   private readonly logger = new Logger(KanjiService.name)
 
   constructor(
-    private readonly kanjiRepository: KanjiRepository,
+    private readonly kanjiRepository: KanjiRepo,
     private readonly kanjiReadingService: KanjiReadingService,
     private readonly translationService: TranslationService,
     private readonly languagesService: LanguagesService,
