@@ -801,19 +801,31 @@ exports[`Quiz batch 4a contract (e2e) testset and testset-questionbank errors, d
   "deleteManyInvalidBody": {
     "en": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu TestSetQuestionBank không hợp lệ",
-        "statusCode": 400,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "At least one id is required",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 400,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu TestSetQuestionBank không hợp lệ",
-        "statusCode": 400,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Phải có ít nhất 1 id",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 400,
+      "httpStatus": 422,
     },
   },
   "fullInvalidId": {
@@ -855,37 +867,61 @@ exports[`Quiz batch 4a contract (e2e) testset and testset-questionbank errors, d
   "linkInvalidBody": {
     "en": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu TestSetQuestionBank không hợp lệ",
-        "statusCode": 400,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid test set ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 400,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu TestSetQuestionBank không hợp lệ",
-        "statusCode": 400,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID TestSet không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 400,
+      "httpStatus": 422,
     },
   },
   "linksInvalidId": {
     "en": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu TestSetQuestionBank không hợp lệ",
-        "statusCode": 400,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid test set ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 400,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu TestSetQuestionBank không hợp lệ",
-        "statusCode": 400,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID TestSet không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 400,
+      "httpStatus": 422,
     },
   },
   "readingWithoutContent": {
@@ -1000,7 +1036,7 @@ exports[`Quiz batch 4a contract (e2e) testset and testset-questionbank link ques
             "total": "number",
           },
         },
-        "message": "Không thể tạo liên kết nào",
+        "message": "No questions could be added",
         "statusCode": 400,
       },
       "httpStatus": 400,

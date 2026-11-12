@@ -17,7 +17,9 @@ function run(exception: unknown, acceptLanguage?: string) {
     })
   }
   const i18nService = {
-    translate: jest.fn((key: string, lang: string) => `${lang}:${key}`)
+    translate: jest.fn((key: string, lang: string, args?: object) =>
+      args ? `${lang}:${key}:${JSON.stringify(args)}` : `${lang}:${key}`
+    )
   }
   new ApiExceptionFilter(i18nService as any).catch(exception, host as any)
   return {
@@ -48,6 +50,16 @@ describe('ApiExceptionFilter', () => {
 
     expect(run(exception, 'ja;q=0.9, en;q=0.8').body.message).toBe('ja:level.NOT_FOUND')
     expect(run(exception, 'fr').body.message).toBe('vi:level.NOT_FOUND')
+  })
+
+  it('passes errorArgs to the translation', () => {
+    const exception = new ConflictException({
+      message: 'x',
+      errorKey: 'x.LEVEL',
+      errorArgs: { level: 3 }
+    })
+
+    expect(run(exception, 'en').body.message).toBe('en:x.LEVEL:{"level":3}')
   })
 
   it('keeps the 422 summary as a string and passes field errors through', () => {
