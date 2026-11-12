@@ -1,0 +1,712 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Learning batch 4b contract (e2e) exercises create, list by lesson (web and mobile), update 1`] = `
+{
+  "byLesson": {
+    "body": {
+      "data": [
+        {
+          "createdAt": "string",
+          "exerciseType": "string",
+          "id": "number",
+          "isBlocked": "boolean",
+          "lessonId": "number",
+          "rewardId": [],
+          "rewardLesson": [],
+          "rewards": [],
+          "testSetId": "number",
+          "updatedAt": "string",
+        },
+      ],
+      "message": "Lấy danh sách bài tập thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "create": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "exerciseType": "string",
+        "id": "number",
+        "isBlocked": "boolean",
+        "lesson": {
+          "id": "number",
+          "slug": "string",
+          "titleKey": "string",
+        },
+        "lessonId": "number",
+        "rewardId": [],
+        "testSet": {
+          "audioUrl": "null",
+          "content": "null",
+          "description": "null",
+          "id": "number",
+          "levelN": "number",
+          "name": "string",
+          "price": "string",
+          "status": "string",
+          "testType": "string",
+        },
+        "testSetId": "number",
+        "updatedAt": "string",
+      },
+      "message": "Tạo bài tập thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "update": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "exerciseType": "string",
+        "id": "number",
+        "isBlocked": "boolean",
+        "lesson": {
+          "id": "number",
+          "slug": "string",
+          "titleKey": "string",
+        },
+        "lessonId": "number",
+        "rewardId": [],
+        "testSet": {
+          "audioUrl": "null",
+          "content": "null",
+          "description": "null",
+          "id": "number",
+          "levelN": "number",
+          "name": "string",
+          "price": "string",
+          "status": "string",
+          "testType": "string",
+        },
+        "testSetId": "number",
+        "updatedAt": "string",
+      },
+      "message": "Cập nhật bài tập thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Learning batch 4b contract (e2e) exercises errors, delete, delete again 1`] = `
+{
+  "byLessonInvalidId": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Validation failed (numeric string is expected)",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Validation failed (numeric string is expected)",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+  "delete": {
+    "body": {
+      "data": "null",
+      "message": "Xóa bài tập thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "deleteAgain": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bài tập",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bài tập",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "invalidBody": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu bài tập không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu bài tập không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+  "updateNotFound": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bài tập",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bài tập",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+}
+`;
+
+exports[`Learning batch 4b contract (e2e) lessons create, list (web query and mobile), detail, update 1`] = `
+{
+  "create": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "createdBy": {
+          "email": "string",
+          "id": "number",
+          "name": "string",
+        },
+        "createdById": "number",
+        "estimatedTimeMinutes": "number",
+        "id": "number",
+        "isPublished": "boolean",
+        "lessonCategory": {
+          "id": "number",
+          "nameKey": "string",
+          "slug": "string",
+        },
+        "lessonCategoryId": "number",
+        "lessonOrder": "number",
+        "levelJlpt": "number",
+        "publishedAt": "null",
+        "rewardId": [],
+        "slug": "string",
+        "testId": "null",
+        "titleJp": "string",
+        "titleKey": "string",
+        "updatedAt": "string",
+        "version": "string",
+      },
+      "message": "Tạo bài học thành công",
+    },
+    "httpStatus": 201,
+  },
+  "detail": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "createdBy": {
+          "email": "string",
+          "id": "number",
+          "name": "string",
+        },
+        "createdById": "number",
+        "estimatedTimeMinutes": "number",
+        "id": "number",
+        "isPublished": "boolean",
+        "lessonCategory": {
+          "id": "number",
+          "nameKey": "string",
+          "slug": "string",
+        },
+        "lessonCategoryId": "number",
+        "lessonOrder": "number",
+        "levelJlpt": "number",
+        "publishedAt": "null",
+        "rewardId": [],
+        "slug": "string",
+        "testId": "null",
+        "title": [],
+        "titleJp": "string",
+        "titleKey": "string",
+        "updatedAt": "string",
+        "version": "string",
+      },
+      "message": "Lấy thông tin bài học thành công",
+    },
+    "httpStatus": 200,
+  },
+  "listMobile": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": "boolean",
+      },
+      "message": "Lấy danh sách bài học thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "listWeb": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [],
+      },
+      "message": "Lấy danh sách bài học thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "update": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "createdBy": {
+          "email": "string",
+          "id": "number",
+          "name": "string",
+        },
+        "createdById": "number",
+        "estimatedTimeMinutes": "number",
+        "id": "number",
+        "isPublished": "boolean",
+        "lessonCategory": {
+          "id": "number",
+          "nameKey": "string",
+          "slug": "string",
+        },
+        "lessonCategoryId": "number",
+        "lessonOrder": "number",
+        "levelJlpt": "number",
+        "publishedAt": "null",
+        "rewardId": [],
+        "slug": "string",
+        "testId": "null",
+        "titleJp": "string",
+        "titleKey": "string",
+        "updatedAt": "string",
+        "version": "string",
+      },
+      "message": "Cập nhật bài học thành công",
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Learning batch 4b contract (e2e) lessons errors 1`] = `
+{
+  "invalidBody": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid format",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Định dạng không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "invalidId": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu bài học không hợp lệ: Lỗi khi lấy thông tin bài học",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu bài học không hợp lệ: Lỗi khi lấy thông tin bài học",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+  "notFound": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Bài học không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Bài học không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "updateNotFound": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Bài học không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Bài học không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+}
+`;
+
+exports[`Learning batch 4b contract (e2e) test create, list, detail, update, link and unlink test sets 1`] = `
+{
+  "create": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "creatorId": "number",
+        "description": "string",
+        "id": "number",
+        "levelN": "number",
+        "limit": "number",
+        "name": "string",
+        "price": "null",
+        "status": "string",
+        "testType": "string",
+        "updatedAt": "string",
+      },
+      "message": "Tạo bài test thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "detail": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "creatorId": "number",
+        "description": "string",
+        "id": "number",
+        "levelN": "number",
+        "limit": "number",
+        "name": "string",
+        "price": "null",
+        "status": "string",
+        "testSets": [],
+        "testType": "string",
+        "updatedAt": "string",
+      },
+      "message": "Lấy thông tin bài test thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "link": {
+    "body": {
+      "data": {
+        "addedTestSetIds": [
+          "number",
+        ],
+        "count": "number",
+        "testId": "number",
+      },
+      "message": "Thêm TestSet vào Test thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "list": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [],
+      },
+      "message": "Lấy danh sách bài test thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "unlink": {
+    "body": {
+      "data": {
+        "count": "number",
+        "removedTestSetIds": [
+          "number",
+        ],
+        "testId": "number",
+      },
+      "message": "Xóa TestSet khỏi Test thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "update": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "creatorId": "number",
+        "description": "string",
+        "id": "number",
+        "levelN": "number",
+        "limit": "number",
+        "name": "string",
+        "price": "null",
+        "status": "string",
+        "testType": "string",
+        "updatedAt": "string",
+      },
+      "message": "Cập nhật bài test thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Learning batch 4b contract (e2e) test errors 1`] = `
+{
+  "fullUserNotFound": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Không thể lấy thông tin bài test",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Không thể lấy thông tin bài test",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+  "invalidBody": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid enum value. Expected 'PLACEMENT_TEST_DONE' | 'SUBSCRIPTION_TEST' | 'MATCH_TEST' | 'QUIZ_TEST' | 'REVIEW_TEST' | 'PRACTICE_TEST' | 'READING_TEST' | 'LISTENING_TEST' | 'SPEAKING_TEST' | 'LESSON_REVIEW', received 'NOPE'",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid enum value. Expected 'PLACEMENT_TEST_DONE' | 'SUBSCRIPTION_TEST' | 'MATCH_TEST' | 'QUIZ_TEST' | 'REVIEW_TEST' | 'PRACTICE_TEST' | 'READING_TEST' | 'LISTENING_TEST' | 'SPEAKING_TEST' | 'LESSON_REVIEW', received 'NOPE'",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "invalidId": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Không thể lấy thông tin bài test",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Không thể lấy thông tin bài test",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+  "linkInvalidBody": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid data provided",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Dữ liệu không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "notFound": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Không thể lấy thông tin bài test",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Không thể lấy thông tin bài test",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+  "updateNotFound": {
+    "en": {
+      "body": {
+        "error": "INTERNAL_SERVER_ERROR",
+        "message": "An error occurred",
+        "statusCode": 500,
+      },
+      "httpStatus": 500,
+    },
+    "vi": {
+      "body": {
+        "error": "INTERNAL_SERVER_ERROR",
+        "message": "Đã xảy ra lỗi",
+        "statusCode": 500,
+      },
+      "httpStatus": 500,
+    },
+  },
+}
+`;
+
+exports[`Learning batch 4b contract (e2e) test lesson review test, auto-add free test sets, what mobile reads 1`] = `
+{
+  "autoAdd": {
+    "body": {
+      "data": {
+        "totalTestSetsAdded": "number",
+        "totalTests": "number",
+      },
+      "message": "Không có Test PLACEMENT_TEST_DONE nào trong hệ thống",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "fullUser": {
+    "body": {
+      "data": {
+        "description": "string",
+        "id": "number",
+        "levelN": "number",
+        "limit": "number",
+        "name": "string",
+        "price": "null",
+        "status": "string",
+        "testSets": [],
+        "testType": "string",
+      },
+      "message": "Lấy thông tin bài test thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "lessonLink": {
+    "body": {
+      "error": "BAD_REQUEST",
+      "message": "Lesson với ID N chưa có Test. Vui lòng tạo Test cho Lesson trước.",
+      "statusCode": 400,
+    },
+    "httpStatus": 400,
+  },
+  "lessonReviewQuestions": {
+    "body": {
+      "error": "BAD_REQUEST",
+      "message": "Test này thiếu testSet loại: VOCABULARY, GRAMMAR, KANJI",
+      "statusCode": 400,
+    },
+    "httpStatus": 400,
+  },
+  "placementQuestions": {
+    "body": {
+      "error": "BAD_REQUEST",
+      "message": "Không thể lấy câu hỏi cho placement test",
+      "statusCode": 400,
+    },
+    "httpStatus": 400,
+  },
+}
+`;
