@@ -5,7 +5,7 @@ import { I18nService } from '@/i18n/i18n.service'
 import { UserTestAttemptMessage } from '@/i18n/message-keys'
 import { LevelRepo } from '@/modules/level/level.repo'
 import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
-import { TestRepository } from '@/modules/test/test.repo'
+import { TestRepo } from '@/modules/test/test.repo'
 import { TestService } from '@/modules/test/test.service'
 import { TestSetQuestionBankService } from '@/modules/testset-questionbank/testset-questionbank.service'
 import { TestSetService } from '@/modules/testset/testset.service'
@@ -46,7 +46,7 @@ export class UserTestAttemptService {
     private readonly questionBankService: QuestionBankService,
     private readonly userTestAnswerLogService: UserTestAnswerLogService,
     private readonly testService: TestService,
-    private readonly testRepo: TestRepository,
+    private readonly testRepo: TestRepo,
     private readonly testSetService: TestSetService,
     private readonly testSetQuestionBankService: TestSetQuestionBankService,
     private readonly translationHelper: TranslationHelperService,

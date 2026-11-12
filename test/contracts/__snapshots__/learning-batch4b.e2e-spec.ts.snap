@@ -565,19 +565,19 @@ exports[`Learning batch 4b contract (e2e) test errors 1`] = `
   "fullUserNotFound": {
     "en": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Không thể lấy thông tin bài test",
-        "statusCode": 400,
+        "error": "NOT_FOUND",
+        "message": "Test not found",
+        "statusCode": 404,
       },
-      "httpStatus": 400,
+      "httpStatus": 404,
     },
     "vi": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Không thể lấy thông tin bài test",
-        "statusCode": 400,
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bài test",
+        "statusCode": 404,
       },
-      "httpStatus": 400,
+      "httpStatus": 404,
     },
   },
   "invalidBody": {
@@ -587,7 +587,7 @@ exports[`Learning batch 4b contract (e2e) test errors 1`] = `
         "errors": [
           {
             "field": "string",
-            "message": "Invalid enum value. Expected 'PLACEMENT_TEST_DONE' | 'SUBSCRIPTION_TEST' | 'MATCH_TEST' | 'QUIZ_TEST' | 'REVIEW_TEST' | 'PRACTICE_TEST' | 'READING_TEST' | 'LISTENING_TEST' | 'SPEAKING_TEST' | 'LESSON_REVIEW', received 'NOPE'",
+            "message": "Invalid test type",
           },
         ],
         "message": "Invalid data provided",
@@ -601,7 +601,7 @@ exports[`Learning batch 4b contract (e2e) test errors 1`] = `
         "errors": [
           {
             "field": "string",
-            "message": "Invalid enum value. Expected 'PLACEMENT_TEST_DONE' | 'SUBSCRIPTION_TEST' | 'MATCH_TEST' | 'QUIZ_TEST' | 'REVIEW_TEST' | 'PRACTICE_TEST' | 'READING_TEST' | 'LISTENING_TEST' | 'SPEAKING_TEST' | 'LESSON_REVIEW', received 'NOPE'",
+            "message": "Loại đề thi không hợp lệ",
           },
         ],
         "message": "Dữ liệu không hợp lệ",
@@ -613,29 +613,11 @@ exports[`Learning batch 4b contract (e2e) test errors 1`] = `
   "invalidId": {
     "en": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Không thể lấy thông tin bài test",
-        "statusCode": 400,
-      },
-      "httpStatus": 400,
-    },
-    "vi": {
-      "body": {
-        "error": "BAD_REQUEST",
-        "message": "Không thể lấy thông tin bài test",
-        "statusCode": 400,
-      },
-      "httpStatus": 400,
-    },
-  },
-  "linkInvalidBody": {
-    "en": {
-      "body": {
         "error": "UNPROCESSABLE_ENTITY",
         "errors": [
           {
             "field": "string",
-            "message": "Invalid data provided",
+            "message": "Invalid test ID",
           },
         ],
         "message": "Invalid data provided",
@@ -649,7 +631,37 @@ exports[`Learning batch 4b contract (e2e) test errors 1`] = `
         "errors": [
           {
             "field": "string",
-            "message": "Dữ liệu không hợp lệ",
+            "message": "ID bài test không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "linkInvalidBody": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "At least one test set id is required",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Phải có ít nhất 1 TestSet ID",
           },
         ],
         "message": "Dữ liệu không hợp lệ",
@@ -661,37 +673,37 @@ exports[`Learning batch 4b contract (e2e) test errors 1`] = `
   "notFound": {
     "en": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Không thể lấy thông tin bài test",
-        "statusCode": 400,
+        "error": "NOT_FOUND",
+        "message": "Test not found",
+        "statusCode": 404,
       },
-      "httpStatus": 400,
+      "httpStatus": 404,
     },
     "vi": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Không thể lấy thông tin bài test",
-        "statusCode": 400,
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bài test",
+        "statusCode": 404,
       },
-      "httpStatus": 400,
+      "httpStatus": 404,
     },
   },
   "updateNotFound": {
     "en": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "An error occurred",
-        "statusCode": 500,
+        "error": "NOT_FOUND",
+        "message": "Test not found",
+        "statusCode": 404,
       },
-      "httpStatus": 500,
+      "httpStatus": 404,
     },
     "vi": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "Đã xảy ra lỗi",
-        "statusCode": 500,
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bài test",
+        "statusCode": 404,
       },
-      "httpStatus": 500,
+      "httpStatus": 404,
     },
   },
 }
@@ -747,7 +759,7 @@ exports[`Learning batch 4b contract (e2e) test lesson review test, auto-add free
   "placementQuestions": {
     "body": {
       "error": "BAD_REQUEST",
-      "message": "Không thể lấy câu hỏi cho placement test",
+      "message": "Chỉ có thể lấy câu hỏi từ Test loại PLACEMENT_TEST_DONE",
       "statusCode": 400,
     },
     "httpStatus": 400,

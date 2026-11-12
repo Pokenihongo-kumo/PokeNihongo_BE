@@ -1,479 +1,174 @@
-import { Injectable, BadRequestException, Logger } from '@nestjs/common'
-import { TestRepository } from './test.repo'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
+import { TestRepo } from './test.repo'
 import {
-  CreateTestBodyType,
-  UpdateTestBodyType,
   GetTestListQueryType,
   CreateTestWithMeaningsBodyType,
   UpdateTestWithMeaningsBodyType,
   DeleteManyTestsBodyType,
   AddTestSetsToTestBodyType,
-  RemoveTestSetsFromTestBodyType
-} from './entities/test.entities'
-import { TestNotFoundException, TestPermissionDeniedException } from './dto/test.error'
+  RemoveTestSetsFromTestBodyType,
+  TestType
+} from './entities/test.entity'
+import {
+  InvalidTestDataException,
+  TestNotFoundException,
+  TestPermissionDeniedException,
+  TestReferenceNotFoundException,
+  TestRuleViolationException
+} from './dto/test.error'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { MessageResDTO } from '@/shared/dtos/response.dto'
-import { TEST_MESSAGE } from '@/common/constants/message'
-import { TranslationService } from '../translation/translation.service'
-import { LanguagesService } from '../languages/languages.service'
-import { TestSetRepo } from '../testset/testset.repo'
-import { TestSetNotFoundException } from '../testset/dto/testset.error'
 import { TestSetQuestionBankService } from '../testset-questionbank/testset-questionbank.service'
 import { UserTestAttemptRepository } from '../user-test-attempt/user-test-attempt.repo'
 import { UserTestRepository } from '../user-test/user-test.repo'
 import { UserTestService } from '../user-test/user-test.service'
 import { TestStatus, UserTestStatus } from '@prisma/client'
-import { ExercisesRepo } from '../exercises/exercises.repo'
 import { pickLabelFromComposite } from '@/common/utils/prase.utils'
+import { I18nService } from '@/i18n/i18n.service'
+import { TestMessage as M } from '@/i18n/message-keys'
+import { toPaginationMeta } from '@/shared/utils/pagination'
+import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
+
+// A test of one of these types only takes test sets of the matching type
+const SINGLE_TYPE_TESTS = ['READING_TEST', 'LISTENING_TEST', 'SPEAKING_TEST']
+const testSetTypeOf = (testType: string) => testType.replace('_TEST', '') // READING_TEST -> READING
+const LESSON_REVIEW_TYPES = ['VOCABULARY', 'GRAMMAR', 'KANJI']
 
 @Injectable()
 export class TestService {
   private readonly logger = new Logger(TestService.name)
 
   constructor(
-    private readonly testRepo: TestRepository,
+    private readonly testRepo: TestRepo,
     private readonly prisma: PrismaService,
-    private readonly translationService: TranslationService,
-    private readonly languagesService: LanguagesService,
-    private readonly testSetRepo: TestSetRepo,
     private readonly testSetQuestionBankService: TestSetQuestionBankService,
     private readonly userTestAttemptRepo: UserTestAttemptRepository,
     private readonly userTestRepo: UserTestRepository,
     private readonly userTestService: UserTestService,
-    private readonly exercisesRepo: ExercisesRepo
+    private readonly i18nService: I18nService
   ) {}
 
-  private isValidUrl(url: string): boolean {
-    try {
-      new URL(url)
-      return true
-    } catch {
-      return false
-    }
-  }
-
-  private validateTestData(
-    data: CreateTestBodyType | UpdateTestBodyType,
-    isUpdate: boolean = false
-  ): void {
-    // Validation cho translations
-    if (data.translations && Array.isArray(data.translations)) {
-      if (data.translations.length === 0) {
-        throw new BadRequestException('Phải có ít nhất 1 translation')
-      }
-
-      // Kiểm tra có ít nhất 1 translation cho name
-      const hasNameTranslation = data.translations.some((t) => t.field === 'name')
-      if (!hasNameTranslation) {
-        throw new BadRequestException('Phải có ít nhất 1 translation cho name')
-      }
-    }
-
-    if (data.testType !== undefined) {
-      if (!data.testType) {
-        throw new BadRequestException('Loại đề thi không được để trống')
-      }
-    }
-
-    if (
-      data.price !== undefined &&
-      data.price !== null &&
-      typeof data.price === 'number' &&
-      data.price < 0
-    ) {
-      throw new BadRequestException('Giá bài test không được âm')
-    }
-
-    if (
-      data.levelN !== undefined &&
-      data.levelN !== null &&
-      (data.levelN < 0 || data.levelN > 5)
-    ) {
-      throw new BadRequestException('Cấp độ JLPT phải từ 0 đến 5')
-    }
-
-    // Validation chỉ cho create (không phải update)
-    if (!isUpdate) {
-      const createData = data as CreateTestBodyType
-      if (
-        createData.name &&
-        typeof createData.name === 'string' &&
-        createData.name.trim().length === 0
-      ) {
-        throw new BadRequestException('Tên bài test không được để trống')
-      }
-      if (!createData.testType) {
-        throw new BadRequestException('Loại đề thi không được để trống')
-      }
-    }
-  }
-
-  async createTest(data: CreateTestBodyType, userId: number): Promise<MessageResDTO> {
-    try {
-      // Validation
-      this.validateTestData(data, false)
-
-      // Kiểm tra nếu testType là PLACEMENT_TEST_DONE, chỉ cho phép tạo 1 test duy nhất trong toàn hệ thống
-      if (data.testType === 'PLACEMENT_TEST_DONE') {
-        const existingPlacementTest = await this.prisma.test.findFirst({
-          where: {
-            testType: 'PLACEMENT_TEST_DONE'
-          }
-        })
-
-        if (existingPlacementTest) {
-          throw new BadRequestException(
-            'Chỉ được tạo 1 test PLACEMENT_TEST_DONE duy nhất trong toàn hệ thống'
-          )
-        }
-      }
-
-      // Tạo test với transaction
-      const result = await this.prisma.$transaction(async (tx) => {
-        // Tạo test tạm thời để lấy ID
-        const test = await (tx as any).test.create({
-          data: {
-            name: 'temp', // Tạm thời
-            description: 'temp', // Tạm thời
-            price: data.price,
-            levelN: data.levelN,
-            limit: data.limit,
-            testType: data.testType,
-            status: data.status,
-            creatorId: userId
-          }
-        })
-
-        // Tạo keys
-        const nameKey = `test.${test.id}.name`
-        const descriptionKey = `test.${test.id}.description`
-
-        // Cập nhật test với keys
-        const updatedTest = await (tx as any).test.update({
-          where: { id: test.id },
-          data: {
-            name: nameKey,
-            description: descriptionKey
-          }
-        })
-
-        // Tạo translations
-        if (data.translations && Array.isArray(data.translations)) {
-          for (const translation of data.translations) {
-            const language = await this.languagesService.findByCode({
-              code: translation.language_code
-            })
-            if (language?.data) {
-              const key = translation.field === 'name' ? nameKey : descriptionKey
-              await tx.translation.upsert({
-                where: {
-                  languageId_key: {
-                    key: key,
-                    languageId: language.data.id
-                  }
-                },
-                update: { value: translation.value },
-                create: {
-                  key: key,
-                  languageId: language.data.id,
-                  value: translation.value
-                }
-              })
-            }
-          }
-        }
-
-        return updatedTest
-      })
-
-      return {
-        statusCode: 201,
-        data: result,
-        message: TEST_MESSAGE.CREATE_SUCCESS
-      }
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error
-      }
-      this.logger.error('Error creating test:', error)
-      throw new BadRequestException('Không thể tạo bài test')
-    }
-  }
-
-  async findAll(query: GetTestListQueryType, lang?: string) {
-    try {
-      // Nếu lang là undefined (admin), repo sẽ lấy tất cả translations
-      // Nếu lang có giá trị (user), repo sẽ filter theo language đó
-      const { data, total } = await this.testRepo.findMany({ ...query, language: lang })
-      const { currentPage, pageSize } = query
-      const totalPage = Math.ceil(total / (typeof pageSize === 'number' ? pageSize : 10))
-
-      return {
-        statusCode: 200,
-        data: {
-          results: data,
-          pagination: {
-            current: currentPage,
-            pageSize,
-            totalPage,
-            totalItem: total
-          }
-        },
-        message: TEST_MESSAGE.GET_LIST_SUCCESS
-      }
-    } catch (error) {
-      this.logger.error('Error finding tests:', error)
-      throw new BadRequestException('Không thể lấy danh sách bài test')
-    }
-  }
-
-  async findOne(id: number, lang: string) {
-    try {
-      const test = await this.testRepo.findById(id, lang)
-
-      if (!test) {
-        throw TestNotFoundException
-      }
-
-      return {
-        statusCode: 200,
-        data: test,
-        message: TEST_MESSAGE.GET_SUCCESS
-      }
-    } catch (error) {
-      this.logger.error('Error finding test by id:', error)
-      if (error instanceof TestNotFoundException) {
-        throw error
-      }
-      throw new BadRequestException('Không thể lấy thông tin bài test')
-    }
-  }
-
-  async updateTest(
-    id: number,
-    data: UpdateTestBodyType,
-    userId: number
-  ): Promise<MessageResDTO> {
-    const test = await this.testRepo.findById(id)
-
-    if (!test) {
-      throw TestNotFoundException
-    }
-
-    // Kiểm tra quyền sở hữu
-    if (test.creatorId !== userId) {
-      throw TestPermissionDeniedException
-    }
-
-    // Validation
-    this.validateTestData(data, true)
-
-    // Kiểm tra nếu đang update testType sang READING_TEST/LISTENING_TEST/SPEAKING_TEST
-    // và test hiện tại có TestSet type khác thì không cho phép
-    if (data.testType && data.testType !== test.testType) {
-      const restrictedTestTypes = ['READING_TEST', 'LISTENING_TEST', 'SPEAKING_TEST']
-      if (restrictedTestTypes.includes(data.testType)) {
-        // Lấy tất cả TestSet hiện có trong test này
-        const testTestSets = await (this.prisma as any).testTestSet.findMany({
-          where: { testId: id },
-          include: { testSet: true }
-        })
-
-        if (testTestSets.length > 0) {
-          const allowedTestSetType = data.testType.replace('_TEST', '') // READING_TEST -> READING
-          const invalidTestSets = testTestSets.filter(
-            (tts: any) => tts.testSet.testType !== allowedTestSetType
-          )
-
-          if (invalidTestSets.length > 0) {
-            const invalidIds = invalidTestSets.map((tts: any) => tts.testSet.id)
-            throw new BadRequestException(
-              `Không thể đổi testType sang ${data.testType} vì test đang chứa TestSet loại khác. ` +
-                `Vui lòng xóa các TestSet không hợp lệ trước: ${invalidIds.join(', ')}`
-            )
-          }
-        }
-      }
-    }
-
-    // Lưu status cũ để so sánh
-    const oldStatus = test.status
-
-    // Cập nhật test với transaction
-    const result = await this.prisma.$transaction(async (tx) => {
-      // Cập nhật test
-      const updatedTest = await (tx as any).test.update({
-        where: { id },
-        data: {
-          ...(data.price !== undefined && { price: data.price }),
-          ...(data.levelN !== undefined && { levelN: data.levelN }),
-          ...(data.limit !== undefined && { limit: data.limit }),
-          ...(data.testType && { testType: data.testType }),
-          ...(data.status && { status: data.status })
-        }
-      })
-
-      // Cập nhật translations nếu có
-      if (data.translations && Array.isArray(data.translations)) {
-        const nameKey = `test.${id}.name`
-        const descriptionKey = `test.${id}.description`
-
-        // Cập nhật translations
-        for (const translation of data.translations) {
-          const language = await this.languagesService.findByCode({
-            code: translation.language_code
-          })
-          if (language?.data) {
-            const key = translation.field === 'name' ? nameKey : descriptionKey
-            await tx.translation.upsert({
-              where: {
-                languageId_key: {
-                  key: key,
-                  languageId: language.data.id
-                }
-              },
-              update: { value: translation.value },
-              create: {
-                key: key,
-                languageId: language.data.id,
-                value: translation.value
-              }
-            })
-          }
-        }
-      }
-
-      return updatedTest
-    })
-
-    // Kiểm tra nếu status thay đổi (ACTIVE ↔ INACTIVE)
-    const newStatus = data.status || oldStatus
-    if (data.status && data.status !== oldStatus) {
-      try {
-        this.logger.log(
-          `Test status changed from ${oldStatus} to ${newStatus} for testId ${id}`
-        )
-
-        if (newStatus === 'INACTIVE') {
-          // Nếu test bị đổi thành INACTIVE, cập nhật tất cả user-test thành NOT_STARTED
-          // (UserTestStatus không có INACTIVE, nên dùng NOT_STARTED để vô hiệu hóa)
-          const updatedCount = await this.userTestService.updateStatusByTestId(
-            id,
-            UserTestStatus.NOT_STARTED
-          )
-          this.logger.log(
-            `Updated ${updatedCount} user-tests to NOT_STARTED for testId ${id} (test is now INACTIVE)`
-          )
-        } else if (newStatus === 'ACTIVE') {
-          // Nếu test được đổi thành ACTIVE, cập nhật user-test status dựa trên testType và price
-          const targetTestType = data.testType || test.testType
-          const updatedPrice = data.price !== undefined ? data.price : test.price
-          const userTestStatus = this.getUserTestStatusForTest(
-            targetTestType,
-            updatedPrice
-          )
-          const updatedCount = await this.userTestService.updateStatusByTestId(
-            id,
-            userTestStatus
-          )
-          this.logger.log(
-            `Updated ${updatedCount} user-tests to ${userTestStatus} for testId ${id}`
-          )
-        }
-      } catch (statusUpdateError) {
-        this.logger.error(
-          'Error updating user-test status after test status change:',
-          statusUpdateError
-        )
-      }
-    }
-
-    // Sau khi cập nhật test thành công, tự động cập nhật user-test cho tất cả users
-    // (để đồng bộ status, limit, và các test ACTIVE mới)
-    try {
-      this.logger.log('Auto-initializing user tests for all users after updating test')
-      await this.userTestService.initAllUsersTests()
-      this.logger.log('Successfully initialized user tests for all users')
-    } catch (initError) {
-      // Log error nhưng không throw để không ảnh hưởng đến response update test
-      this.logger.error('Error initializing user tests after updating test:', initError)
-      // Có thể thêm thông báo warning vào response nếu cần
-    }
-
+  // Admins get every translation of name/description (lang undefined)
+  async findAll(query: GetTestListQueryType, lang?: string, messageLang: string = 'vi') {
+    const { data, total } = await this.testRepo.findMany({ ...query, language: lang })
     return {
       statusCode: 200,
-      data: result,
-      message: TEST_MESSAGE.UPDATE_SUCCESS
+      data: {
+        results: data,
+        pagination: toPaginationMeta(query.currentPage, query.pageSize, total)
+      },
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, messageLang)
     }
   }
 
-  async deleteTest(id: number, userId: number): Promise<MessageResDTO> {
-    const test = await this.testRepo.findById(id)
-
-    if (!test) {
-      throw TestNotFoundException
-    }
-
-    // Kiểm tra quyền sở hữu
-    if (test.creatorId !== userId) {
-      throw TestPermissionDeniedException
-    }
-
-    await this.testRepo.delete(id)
-
+  // Also used by user-test-attempt (reads data)
+  async findOne(id: number, lang: string = 'vi') {
+    const test = await this.testRepo.findById(id, lang)
+    if (!test) throw new TestNotFoundException()
     return {
       statusCode: 200,
       data: test,
-      message: TEST_MESSAGE.DELETE_SUCCESS
+      message: this.i18nService.translate(M.GET_SUCCESS, lang)
     }
   }
 
+  // There is only one PLACEMENT_TEST_DONE test; every user then gets a UserTest
+  async createTestWithMeanings(
+    data: CreateTestWithMeaningsBodyType,
+    userId: number,
+    lang: string = 'vi'
+  ) {
+    try {
+      if (data.testType === TestStatus.PLACEMENT_TEST_DONE) {
+        const existing = await this.prisma.test.findFirst({
+          where: { testType: TestStatus.PLACEMENT_TEST_DONE },
+          select: { id: true }
+        })
+        if (existing) throw new TestRuleViolationException(M.PLACEMENT_EXISTS)
+      }
+      const test = await this.testRepo.createWithMeanings(data, userId)
+      await this.initUserTests()
+      return {
+        statusCode: 201,
+        data: test,
+        message: this.i18nService.translate(M.CREATE_SUCCESS, lang)
+      }
+    } catch (error) {
+      throw this.toTestError(error, M.CANNOT_CREATE)
+    }
+  }
+
+  // Only the creator; a type change must fit the test sets already there.
+  // A status change updates the users' UserTests, then all users are re-synced
+  async updateTestWithMeanings(
+    id: number,
+    data: UpdateTestWithMeaningsBodyType,
+    userId: number,
+    lang: string = 'vi'
+  ) {
+    try {
+      const test = await this.ownedTest(id, userId)
+      if (data.testType && data.testType !== test.testType) {
+        await this.assertTestSetsFitType(id, data.testType)
+      }
+      const updated = await this.testRepo.updateWithMeanings(id, data)
+      if (data.status && data.status !== test.status) {
+        await this.syncUserTestStatus(id, data.status, {
+          testType: data.testType ?? test.testType,
+          price: data.price !== undefined ? data.price : test.price
+        })
+      }
+      await this.initUserTests()
+      return {
+        statusCode: 200,
+        data: updated,
+        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
+      }
+    } catch (error) {
+      throw this.toTestError(error)
+    }
+  }
+
+  // Only the creator; returns the deleted test
+  async deleteTest(id: number, userId: number, lang: string = 'vi') {
+    try {
+      const test = await this.ownedTest(id, userId)
+      await this.testRepo.delete(id)
+      return {
+        statusCode: 200,
+        data: test,
+        message: this.i18nService.translate(M.DELETE_SUCCESS, lang)
+      }
+    } catch (error) {
+      throw this.toTestError(error)
+    }
+  }
+
+  // Every id must exist and belong to the user (up to 100)
   async deleteManyTests(
     data: DeleteManyTestsBodyType,
-    userId: number
-  ): Promise<MessageResDTO> {
+    userId: number,
+    lang: string = 'vi'
+  ) {
     try {
       const { ids } = data
-
-      // Validate input
-      if (!ids || ids.length === 0) {
-        throw new BadRequestException('Danh sách ID không được để trống')
-      }
-
-      // Kiểm tra giới hạn số lượng xóa cùng lúc
-      if (ids.length > 100) {
-        throw new BadRequestException('Chỉ được xóa tối đa 100 bài test cùng lúc')
-      }
-
-      // Lấy danh sách tests để kiểm tra quyền sở hữu
       const tests = await this.prisma.test.findMany({
         where: { id: { in: ids } },
         select: { id: true, creatorId: true }
       })
-
-      // Kiểm tra xem có test nào không tồn tại không
-      const foundIds = tests.map((test) => test.id)
-      const notFoundIds = ids.filter((id) => !foundIds.includes(id))
-
-      if (notFoundIds.length > 0) {
-        throw new BadRequestException(
-          `Không tìm thấy bài test với ID: ${notFoundIds.join(', ')}`
-        )
+      const found = new Set(tests.map((t) => t.id))
+      const missing = ids.filter((id) => !found.has(id))
+      if (missing.length > 0) {
+        throw new TestReferenceNotFoundException(M.TESTS_NOT_FOUND, {
+          ids: missing.join(', ')
+        })
       }
+      if (tests.some((t) => t.creatorId !== userId))
+        throw new TestPermissionDeniedException()
 
-      // Kiểm tra quyền sở hữu - tất cả tests phải thuộc về user
-      const unauthorizedTests = tests.filter((test) => test.creatorId !== userId)
-      if (unauthorizedTests.length > 0) {
-        throw TestPermissionDeniedException
-      }
-
-      // Xóa nhiều tests
       const result = await this.testRepo.deleteMany(ids)
-
-      if (result.deletedCount === 0) {
-        throw new BadRequestException('Không có bài test nào được xóa')
-      }
-
+      if (result.deletedCount === 0)
+        throw new TestRuleViolationException(M.CANNOT_DELETE_MANY)
       return {
         statusCode: 200,
         data: {
@@ -482,554 +177,255 @@ export class TestService {
           requestedCount: ids.length,
           notFoundCount: ids.length - result.deletedCount
         },
-        message: `Xóa thành công ${result.deletedCount}/${ids.length} bài test`
+        message: this.i18nService.translate(M.DELETE_MANY_SUCCESS, lang, {
+          deleted: result.deletedCount,
+          requested: ids.length
+        })
       }
     } catch (error) {
-      this.logger.error('Error deleting many tests:', error)
-      if (
-        error instanceof BadRequestException ||
-        error instanceof TestPermissionDeniedException
-      ) {
-        throw error
-      }
-      throw new BadRequestException('Không thể xóa nhiều bài test')
+      throw this.toTestError(error, M.CANNOT_DELETE_MANY)
     }
   }
 
-  private validateTestWithMeaningsData(
-    data: CreateTestWithMeaningsBodyType | UpdateTestWithMeaningsBodyType,
-    isUpdate: boolean = false
-  ): void {
-    // Validation cho meanings
-    if (data.meanings && Array.isArray(data.meanings)) {
-      if (data.meanings.length === 0) {
-        throw new BadRequestException('Phải có ít nhất 1 meaning')
-      }
-
-      // Kiểm tra có ít nhất 1 meaning cho name
-      const hasNameMeaning = data.meanings.some((m) => m.field === 'name')
-      if (!hasNameMeaning) {
-        throw new BadRequestException('Phải có ít nhất 1 meaning cho name')
-      }
-    }
-
-    if (data.testType !== undefined) {
-      if (!data.testType) {
-        throw new BadRequestException('Loại đề thi không được để trống')
-      }
-    }
-
-    if (
-      data.price !== undefined &&
-      data.price !== null &&
-      typeof data.price === 'number' &&
-      data.price < 0
-    ) {
-      throw new BadRequestException('Giá bài test không được âm')
-    }
-
-    if (
-      data.levelN !== undefined &&
-      data.levelN !== null &&
-      (data.levelN < 0 || data.levelN > 5)
-    ) {
-      throw new BadRequestException('Cấp độ JLPT phải từ 0 đến 5')
-    }
-
-    // Validation chỉ cho create (không phải update)
-    if (!isUpdate) {
-      const createData = data as CreateTestWithMeaningsBodyType
-      if (!createData.testType) {
-        throw new BadRequestException('Loại đề thi không được để trống')
-      }
-    }
-  }
-
-  private getUserTestStatusForTest(
-    testType: TestStatus | string,
-    price?: number | null
-  ): UserTestStatus {
-    const normalizedPrice = price !== undefined && price !== null ? Number(price) : 0
-    if (
-      testType === TestStatus.SUBSCRIPTION_TEST ||
-      testType === 'SUBSCRIPTION_TEST' ||
-      normalizedPrice > 0
-    ) {
-      return UserTestStatus.NOT_STARTED
-    }
-    return UserTestStatus.ACTIVE
-  }
-
-  async createTestWithMeanings(
-    data: CreateTestWithMeaningsBodyType,
-    userId: number
-  ): Promise<MessageResDTO> {
-    try {
-      // Validation
-      this.validateTestWithMeaningsData(data, false)
-
-      // Kiểm tra nếu testType là PLACEMENT_TEST_DONE, chỉ cho phép tạo 1 test duy nhất trong toàn hệ thống
-      if (data.testType === 'PLACEMENT_TEST_DONE') {
-        const existingPlacementTest = await this.prisma.test.findFirst({
-          where: {
-            testType: 'PLACEMENT_TEST_DONE'
-          }
-        })
-
-        if (existingPlacementTest) {
-          throw new BadRequestException(
-            'Chỉ được tạo 1 test PLACEMENT_TEST_DONE duy nhất trong toàn hệ thống'
-          )
-        }
-      }
-
-      // Tạo test với meanings
-      const result = await this.testRepo.createWithMeanings(data, userId)
-
-      // Sau khi tạo test thành công, tự động thêm test này vào user-test cho tất cả users
-      try {
-        this.logger.log(
-          'Auto-initializing user tests for all users after creating new test'
-        )
-        await this.userTestService.initAllUsersTests()
-        this.logger.log('Successfully initialized user tests for all users')
-      } catch (initError) {
-        // Log error nhưng không throw để không ảnh hưởng đến response tạo test
-        this.logger.error('Error initializing user tests after creating test:', initError)
-        // Có thể thêm thông báo warning vào response nếu cần
-      }
-
-      return {
-        statusCode: 201,
-        data: result,
-        message: TEST_MESSAGE.CREATE_SUCCESS
-      }
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error
-      }
-      this.logger.error('Error creating test with meanings:', error)
-      throw new BadRequestException('Không thể tạo bài test với meanings')
-    }
-  }
-
-  async updateTestWithMeanings(
-    id: number,
-    data: UpdateTestWithMeaningsBodyType,
-    userId: number
-  ): Promise<MessageResDTO> {
-    const test = await this.testRepo.findById(id)
-
-    if (!test) {
-      throw TestNotFoundException
-    }
-
-    // Kiểm tra quyền sở hữu
-    if (test.creatorId !== userId) {
-      throw TestPermissionDeniedException
-    }
-
-    // Validation
-    this.validateTestWithMeaningsData(data, true)
-
-    // Kiểm tra nếu đang update testType sang READING_TEST/LISTENING_TEST/SPEAKING_TEST
-    // và test hiện tại có TestSet type khác thì không cho phép
-    if (data.testType && data.testType !== test.testType) {
-      const restrictedTestTypes = ['READING_TEST', 'LISTENING_TEST', 'SPEAKING_TEST']
-      if (restrictedTestTypes.includes(data.testType)) {
-        // Lấy tất cả TestSet hiện có trong test này
-        const testTestSets = await (this.prisma as any).testTestSet.findMany({
-          where: { testId: id },
-          include: { testSet: true }
-        })
-
-        if (testTestSets.length > 0) {
-          const allowedTestSetType = data.testType.replace('_TEST', '') // READING_TEST -> READING
-          const invalidTestSets = testTestSets.filter(
-            (tts: any) => tts.testSet.testType !== allowedTestSetType
-          )
-
-          if (invalidTestSets.length > 0) {
-            const invalidIds = invalidTestSets.map((tts: any) => tts.testSet.id)
-            throw new BadRequestException(
-              `Không thể đổi testType sang ${data.testType} vì test đang chứa TestSet loại khác. ` +
-                `Vui lòng xóa các TestSet không hợp lệ trước: ${invalidIds.join(', ')}`
-            )
-          }
-        }
-      }
-    }
-
-    // Lưu status cũ để so sánh
-    const oldStatus = test.status
-
-    // Cập nhật test với meanings
-    const result = await this.testRepo.updateWithMeanings(id, data)
-
-    // Kiểm tra nếu status thay đổi (ACTIVE ↔ INACTIVE)
-    const newStatus = data.status || oldStatus
-    if (data.status && data.status !== oldStatus) {
-      try {
-        this.logger.log(
-          `Test status changed from ${oldStatus} to ${newStatus} for testId ${id}`
-        )
-
-        if (newStatus === 'INACTIVE') {
-          // Nếu test bị đổi thành INACTIVE, cập nhật tất cả user-test thành NOT_STARTED
-          // (UserTestStatus không có INACTIVE, nên dùng NOT_STARTED để vô hiệu hóa)
-          const updatedCount = await this.userTestService.updateStatusByTestId(
-            id,
-            UserTestStatus.NOT_STARTED
-          )
-          this.logger.log(
-            `Updated ${updatedCount} user-tests to NOT_STARTED for testId ${id} (test is now INACTIVE)`
-          )
-        } else if (newStatus === 'ACTIVE') {
-          // Nếu test được đổi thành ACTIVE, cập nhật user-test status dựa trên testType và price
-          const targetTestType = data.testType || test.testType
-          const updatedPrice = data.price !== undefined ? data.price : test.price
-          const userTestStatus = this.getUserTestStatusForTest(
-            targetTestType,
-            updatedPrice
-          )
-          const updatedCount = await this.userTestService.updateStatusByTestId(
-            id,
-            userTestStatus
-          )
-          this.logger.log(
-            `Updated ${updatedCount} user-tests to ${userTestStatus} for testId ${id}`
-          )
-        }
-      } catch (statusUpdateError) {
-        this.logger.error(
-          'Error updating user-test status after test status change:',
-          statusUpdateError
-        )
-      }
-    }
-
-    // Sau khi cập nhật test thành công, tự động cập nhật user-test cho tất cả users
-    // (để đồng bộ status, limit, và các test ACTIVE mới)
-    try {
-      this.logger.log('Auto-initializing user tests for all users after updating test')
-      await this.userTestService.initAllUsersTests()
-      this.logger.log('Successfully initialized user tests for all users')
-    } catch (initError) {
-      // Log error nhưng không throw để không ảnh hưởng đến response update test
-      this.logger.error('Error initializing user tests after updating test:', initError)
-      // Có thể thêm thông báo warning vào response nếu cần
-    }
-
-    return {
-      statusCode: 200,
-      data: result,
-      message: TEST_MESSAGE.UPDATE_SUCCESS
-    }
-  }
-
+  // Test sets that belonged to another test move to this one.
+  // LESSON_REVIEW: one each of VOCABULARY/GRAMMAR/KANJI (3 at most).
+  // READING/LISTENING/SPEAKING_TEST: only that type; SPEAKING_TEST: one at most
   async addTestSetsToTest(
     testId: number,
-    data: AddTestSetsToTestBodyType
-  ): Promise<MessageResDTO> {
+    data: AddTestSetsToTestBodyType,
+    lang: string = 'vi'
+  ) {
     try {
-      // Validate test tồn tại
       const test = await this.testRepo.findById(testId)
-      if (!test) {
-        throw TestNotFoundException
-      }
+      if (!test) throw new TestNotFoundException()
 
-      // Validate các TestSet tồn tại
       const testSets = await this.prisma.testSet.findMany({
-        where: {
-          id: { in: data.testSetIds }
-        }
+        where: { id: { in: data.testSetIds } }
       })
-
       if (testSets.length !== data.testSetIds.length) {
-        const foundIds = testSets.map((ts) => ts.id)
-        const notFoundIds = data.testSetIds.filter((id) => !foundIds.includes(id))
-        throw new BadRequestException(
-          `Không tìm thấy TestSet với ID: ${notFoundIds.join(', ')}`
-        )
-      }
-
-      // Kiểm tra nếu test là READING_TEST, LISTENING_TEST, hoặc SPEAKING_TEST
-      // thì chỉ cho phép thêm TestSet có cùng type (READING, LISTENING, SPEAKING)
-      // Validate cho LESSON_REVIEW: chỉ được thêm 3 loại VOCABULARY, GRAMMAR, KANJI
-      if (test.testType === 'LESSON_REVIEW') {
-        const allowedTestSetTypes = ['VOCABULARY', 'GRAMMAR', 'KANJI']
-        const invalidTestSets = testSets.filter(
-          (ts) => !allowedTestSetTypes.includes(ts.testType)
-        )
-
-        if (invalidTestSets.length > 0) {
-          const invalidIds = invalidTestSets.map((ts) => ts.id)
-          const invalidTypes = invalidTestSets.map((ts) => ts.testType).join(', ')
-          throw new BadRequestException(
-            `Test loại LESSON_REVIEW chỉ được thêm TestSet loại VOCABULARY, GRAMMAR, KANJI. ` +
-              `TestSet không hợp lệ (ID: ${invalidIds.join(', ')}, Type: ${invalidTypes})`
-          )
-        }
-
-        // Lấy danh sách testSet hiện có trong test
-        const existingTestSets = await (this.prisma as any).testTestSet.findMany({
-          where: { testId },
-          include: { testSet: true }
+        const found = new Set(testSets.map((ts) => ts.id))
+        throw new TestReferenceNotFoundException(M.TESTSETS_NOT_FOUND, {
+          ids: data.testSetIds.filter((id) => !found.has(id)).join(', ')
         })
-        const existingTestSetIds = existingTestSets.map((tts: any) => tts.testSetId)
-        const existingTestSetTypes = existingTestSets.map(
-          (tts: any) => tts.testSet.testType
-        )
-
-        // Lọc ra các testSet mới (chưa tồn tại)
-        const newTestSetIds = data.testSetIds.filter(
-          (id) => !existingTestSetIds.includes(id)
-        )
-        const newTestSets = testSets.filter((ts) => newTestSetIds.includes(ts.id))
-        const newTestSetTypes = newTestSets.map((ts) => ts.testType)
-
-        // Kiểm tra duplicate trong các testSet mới (không được có 2 testSet cùng loại trong 1 lần thêm)
-        const newTypeCounts: Record<string, number> = {}
-        for (const type of newTestSetTypes) {
-          newTypeCounts[type] = (newTypeCounts[type] || 0) + 1
-        }
-        const duplicateNewTypes = Object.entries(newTypeCounts)
-          .filter(([type, count]) => count > 1)
-          .map(([type]) => type)
-        if (duplicateNewTypes.length > 0) {
-          throw new BadRequestException(
-            `Không được thêm nhiều TestSet cùng loại trong 1 lần. ` +
-              `Loại bị trùng: ${duplicateNewTypes.join(', ')}`
-          )
-        }
-
-        // Kiểm tra duplicate với testSet đã tồn tại (không được có 2 testSet cùng loại)
-        const allTestSetTypes = [...existingTestSetTypes, ...newTestSetTypes]
-        const typeCounts: Record<string, number> = {}
-        for (const type of allTestSetTypes) {
-          typeCounts[type] = (typeCounts[type] || 0) + 1
-        }
-        const duplicateTypes = Object.entries(typeCounts)
-          .filter(([type, count]) => count > 1)
-          .map(([type]) => type)
-        if (duplicateTypes.length > 0) {
-          throw new BadRequestException(
-            `Test LESSON_REVIEW chỉ được có 1 TestSet cho mỗi loại (VOCABULARY, GRAMMAR, KANJI). ` +
-              `Loại bị trùng: ${duplicateTypes.join(', ')}`
-          )
-        }
-
-        // Kiểm tra tổng số lượng: không được vượt quá 3
-        const totalTestSets = existingTestSets.length + newTestSets.length
-        if (totalTestSets > 3) {
-          throw new BadRequestException(
-            `Test LESSON_REVIEW chỉ được có tối đa 3 TestSet (VOCABULARY, GRAMMAR, KANJI). ` +
-              `Hiện có ${existingTestSets.length}, đang cố thêm ${newTestSets.length}, tổng: ${totalTestSets}`
-          )
-        }
       }
 
-      // Validate cho các testType khác: READING_TEST, LISTENING_TEST, SPEAKING_TEST
-      const restrictedTestTypes = ['READING_TEST', 'LISTENING_TEST', 'SPEAKING_TEST']
-      if (restrictedTestTypes.includes(test.testType)) {
-        const allowedTestSetType = test.testType.replace('_TEST', '') // READING_TEST -> READING
-        const invalidTestSets = testSets.filter(
-          (ts) => ts.testType !== allowedTestSetType
-        )
-
-        if (invalidTestSets.length > 0) {
-          const invalidIds = invalidTestSets.map((ts) => ts.id)
-          throw new BadRequestException(
-            `Test loại ${test.testType} chỉ được thêm TestSet loại ${allowedTestSetType}. ` +
-              `TestSet không hợp lệ: ${invalidIds.join(', ')}`
-          )
-        }
-
-        // Với SPEAKING_TEST: chỉ được có tối đa 1 TestSet SPEAKING
-        if (test.testType === 'SPEAKING_TEST') {
-          const existingSpeakingCount = await (this.prisma as any).testTestSet.count({
-            where: {
-              testId,
-              testSet: { testType: 'SPEAKING' }
-            }
-          })
-          const incomingSpeakingCount = testSets.filter(
-            (ts) => ts.testType === 'SPEAKING'
-          ).length
-          if (existingSpeakingCount + incomingSpeakingCount > 1) {
-            throw new BadRequestException(
-              `Test SPEAKING_TEST chỉ được có tối đa 1 TestSet SPEAKING. ` +
-                `Hiện có ${existingSpeakingCount}, đang cố thêm ${incomingSpeakingCount}.`
-            )
-          }
-        }
+      if (test.testType === TestStatus.LESSON_REVIEW) {
+        await this.assertLessonReviewFits(testId, testSets, data.testSetIds)
+      }
+      if (SINGLE_TYPE_TESTS.includes(test.testType)) {
+        await this.assertSingleTypeFits(testId, test.testType, testSets)
       }
 
-      // Kiểm tra các TestSet đang thuộc test khác, nếu có thì xóa khỏi test cũ
-      const existingTestTestSets = await (this.prisma as any).testTestSet.findMany({
-        where: {
-          testSetId: { in: data.testSetIds },
-          testId: { not: testId } // Chỉ lấy những testSet thuộc test khác
-        }
+      // Move the test sets out of the tests they belonged to
+      await this.prisma.testTestSet.deleteMany({
+        where: { testSetId: { in: data.testSetIds }, testId: { not: testId } }
       })
-
-      if (existingTestTestSets.length > 0) {
-        // Xóa các testSet khỏi test cũ
-        const oldTestIds = [
-          ...new Set(existingTestTestSets.map((tts: any) => tts.testId))
-        ]
-        const testSetIdsToRemove = existingTestTestSets.map((tts: any) => tts.testSetId)
-
-        for (const oldTestId of oldTestIds) {
-          await (this.prisma as any).testTestSet.deleteMany({
-            where: {
-              testId: oldTestId,
-              testSetId: { in: testSetIdsToRemove }
-            }
-          })
-        }
-
-        this.logger.log(
-          `Đã xóa ${existingTestTestSets.length} TestSet khỏi test cũ (testId: ${oldTestIds.join(', ')}) ` +
-            `và sẽ thêm vào test mới (testId: ${testId})`
-        )
-      }
-
-      // Tạo các bản ghi trong bảng TestTestSet (nhiều-nhiều)
-      await (this.prisma as any).testTestSet.createMany({
-        data: data.testSetIds.map((testSetId) => ({
-          testId: testId,
-          testSetId: testSetId
-        })),
-        skipDuplicates: true // Bỏ qua nếu đã tồn tại
+      await this.prisma.testTestSet.createMany({
+        data: data.testSetIds.map((testSetId) => ({ testId, testSetId })),
+        skipDuplicates: true
       })
-
       return {
         statusCode: 200,
-        data: {
-          testId,
-          addedTestSetIds: data.testSetIds,
-          count: data.testSetIds.length
-        },
-        message: TEST_MESSAGE.ADD_TESTSETS_SUCCESS
+        data: { testId, addedTestSetIds: data.testSetIds, count: data.testSetIds.length },
+        message: this.i18nService.translate(M.ADD_TESTSETS_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error('Error adding testSets to test:', error)
-      if (
-        error instanceof TestNotFoundException ||
-        error instanceof BadRequestException
-      ) {
-        throw error
-      }
-      throw new BadRequestException('Không thể thêm TestSet vào Test')
+      throw this.toTestError(error, M.CANNOT_ADD_TESTSETS)
     }
   }
 
+  // The lesson's review test ends up with exactly these test sets
   async addTestSetsToLessonReviewTest(
     lessonId: number,
-    data: AddTestSetsToTestBodyType
-  ): Promise<MessageResDTO> {
+    data: AddTestSetsToTestBodyType,
+    lang: string = 'vi'
+  ) {
     try {
-      // Tìm lesson theo lessonId
       const lesson = await this.prisma.lesson.findUnique({
         where: { id: lessonId },
         select: { id: true, testId: true }
       })
-
-      if (!lesson) {
-        throw new BadRequestException(`Không tìm thấy Lesson với ID: ${lessonId}`)
-      }
-
+      if (!lesson) throw new TestNotFoundException(M.LESSON_NOT_FOUND, { id: lessonId })
       if (!lesson.testId) {
-        throw new BadRequestException(
-          `Lesson với ID ${lessonId} chưa có Test. Vui lòng tạo Test cho Lesson trước.`
-        )
+        throw new TestRuleViolationException(M.LESSON_HAS_NO_TEST, { id: lessonId })
       }
 
-      // Lấy danh sách testSet hiện có trong test
-      const existingTestTestSets = await (this.prisma as any).testTestSet.findMany({
+      const existing = await this.prisma.testTestSet.findMany({
         where: { testId: lesson.testId },
         select: { testSetId: true }
       })
-      const existingTestSetIds = existingTestTestSets.map((tts: any) => tts.testSetId)
-
-      // Tìm những testSet không có trong mảng mới (cần xóa)
-      const testSetIdsToRemove = existingTestSetIds.filter(
-        (id: number) => !data.testSetIds.includes(id)
-      )
-
-      // Xóa các testSet cũ không có trong mảng mới
-      if (testSetIdsToRemove.length > 0) {
-        await this.removeTestSetsFromTest(lesson.testId, {
-          testSetIds: testSetIdsToRemove
-        })
-        this.logger.log(
-          `Đã xóa ${testSetIdsToRemove.length} TestSet cũ khỏi test (testId: ${lesson.testId}): ${testSetIdsToRemove.join(', ')}`
-        )
+      const toRemove = existing
+        .map((tts) => tts.testSetId)
+        .filter((id) => !data.testSetIds.includes(id))
+      if (toRemove.length > 0) {
+        await this.removeTestSetsFromTest(lesson.testId, { testSetIds: toRemove }, lang)
       }
-
-      // Gọi addTestSetsToTest với testId từ lesson để thêm các testSet mới
-      return this.addTestSetsToTest(lesson.testId, data)
+      return await this.addTestSetsToTest(lesson.testId, data, lang)
     } catch (error) {
-      this.logger.error('Error adding testSets to lesson review test:', error)
-      if (error instanceof BadRequestException) {
-        throw error
-      }
-      throw new BadRequestException('Không thể thêm TestSet vào Lesson Review Test')
+      throw this.toTestError(error, M.CANNOT_ADD_TESTSETS)
     }
   }
 
   async removeTestSetsFromTest(
     testId: number,
-    data: RemoveTestSetsFromTestBodyType
-  ): Promise<MessageResDTO> {
+    data: RemoveTestSetsFromTestBodyType,
+    lang: string = 'vi'
+  ) {
     try {
-      // Validate test tồn tại
-      const test = await this.testRepo.findById(testId)
-      if (!test) {
-        throw TestNotFoundException
-      }
-
-      // Validate các TestSet có trong Test này
-      const testTestSets = await (this.prisma as any).testTestSet.findMany({
-        where: {
-          testId: testId,
-          testSetId: { in: data.testSetIds }
-        }
-      })
-
-      if (testTestSets.length === 0) {
-        throw new BadRequestException('Không có TestSet nào trong Test này để xóa')
-      }
-
-      // Xóa các bản ghi trong bảng TestTestSet
-      const deletedCount = await (this.prisma as any).testTestSet.deleteMany({
-        where: {
-          testId: testId,
-          testSetId: { in: data.testSetIds }
-        }
-      })
-
+      if (!(await this.testRepo.findById(testId))) throw new TestNotFoundException()
+      const where = { testId, testSetId: { in: data.testSetIds } }
+      const { count } = await this.prisma.testTestSet.deleteMany({ where })
+      if (count === 0) throw new TestRuleViolationException(M.NO_TESTSET_TO_REMOVE)
       return {
         statusCode: 200,
-        data: {
-          testId,
-          removedTestSetIds: data.testSetIds,
-          count: deletedCount.count
-        },
-        message: TEST_MESSAGE.REMOVE_TESTSETS_SUCCESS
+        data: { testId, removedTestSetIds: data.testSetIds, count },
+        message: this.i18nService.translate(M.REMOVE_TESTSETS_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error('Error removing testSets from test:', error)
-      if (
-        error instanceof TestNotFoundException ||
-        error instanceof BadRequestException
-      ) {
-        throw error
-      }
-      throw new BadRequestException('Không thể xóa TestSet khỏi Test')
+      throw this.toTestError(error, M.CANNOT_REMOVE_TESTSETS)
     }
   }
+
+  //#region rules and helpers
+  private async ownedTest(id: number, userId: number): Promise<TestType> {
+    const test = await this.testRepo.findById(id)
+    if (!test) throw new TestNotFoundException()
+    if (test.creatorId !== userId) throw new TestPermissionDeniedException()
+    return test
+  }
+
+  // Changing to READING/LISTENING/SPEAKING_TEST: every test set must be of that type
+  private async assertTestSetsFitType(testId: number, testType: string) {
+    if (!SINGLE_TYPE_TESTS.includes(testType)) return
+    const links = await this.prisma.testTestSet.findMany({
+      where: { testId },
+      select: { testSet: { select: { id: true, testType: true } } }
+    })
+    const invalid = links.filter((l) => l.testSet.testType !== testSetTypeOf(testType))
+    if (invalid.length > 0) {
+      throw new TestRuleViolationException(M.TYPE_CHANGE_INVALID_TESTSETS, {
+        testType,
+        ids: invalid.map((l) => l.testSet.id).join(', ')
+      })
+    }
+  }
+
+  private async assertLessonReviewFits(
+    testId: number,
+    testSets: { id: number; testType: string }[],
+    testSetIds: number[]
+  ) {
+    const invalid = testSets.filter((ts) => !LESSON_REVIEW_TYPES.includes(ts.testType))
+    if (invalid.length > 0) {
+      throw new TestRuleViolationException(M.LESSON_REVIEW_INVALID_TYPES, {
+        ids: invalid.map((ts) => ts.id).join(', '),
+        types: invalid.map((ts) => ts.testType).join(', ')
+      })
+    }
+    const existing = await this.prisma.testTestSet.findMany({
+      where: { testId },
+      select: { testSetId: true, testSet: { select: { testType: true } } }
+    })
+    const existingIds = existing.map((e) => e.testSetId)
+    const added = testSets.filter(
+      (ts) => testSetIds.includes(ts.id) && !existingIds.includes(ts.id)
+    )
+    const repeated = (types: string[]) =>
+      [...new Set(types.filter((t, i) => types.indexOf(t) !== i))].join(', ')
+
+    const repeatedNew = repeated(added.map((ts) => ts.testType))
+    if (repeatedNew) {
+      throw new TestRuleViolationException(M.DUPLICATE_NEW_TYPES, { types: repeatedNew })
+    }
+    const repeatedAll = repeated([
+      ...existing.map((e) => e.testSet.testType),
+      ...added.map((ts) => ts.testType)
+    ])
+    if (repeatedAll) {
+      throw new TestRuleViolationException(M.LESSON_REVIEW_DUPLICATE_TYPES, {
+        types: repeatedAll
+      })
+    }
+    const total = existing.length + added.length
+    if (total > LESSON_REVIEW_TYPES.length) {
+      throw new TestRuleViolationException(M.LESSON_REVIEW_TOO_MANY, {
+        existing: existing.length,
+        adding: added.length,
+        total
+      })
+    }
+  }
+
+  private async assertSingleTypeFits(
+    testId: number,
+    testType: string,
+    testSets: { id: number; testType: string }[]
+  ) {
+    const allowed = testSetTypeOf(testType)
+    const invalid = testSets.filter((ts) => ts.testType !== allowed)
+    if (invalid.length > 0) {
+      throw new TestRuleViolationException(M.TESTSET_TYPE_NOT_ALLOWED, {
+        testType,
+        allowed,
+        ids: invalid.map((ts) => ts.id).join(', ')
+      })
+    }
+    if (testType === 'SPEAKING_TEST') {
+      const existing = await this.prisma.testTestSet.count({
+        where: { testId, testSet: { testType: 'SPEAKING' } }
+      })
+      const adding = testSets.filter((ts) => ts.testType === 'SPEAKING').length
+      if (existing + adding > 1) {
+        throw new TestRuleViolationException(M.SPEAKING_TOO_MANY, { existing, adding })
+      }
+    }
+  }
+
+  // INACTIVE: the users' UserTests go back to NOT_STARTED. ACTIVE: ACTIVE, or
+  // NOT_STARTED for a paid or subscription test. Failures are only logged
+  private async syncUserTestStatus(
+    testId: number,
+    status: string,
+    test: { testType: TestStatus | string; price?: number | null }
+  ) {
+    try {
+      if (status === 'INACTIVE') {
+        await this.userTestService.updateStatusByTestId(
+          testId,
+          UserTestStatus.NOT_STARTED
+        )
+      } else if (status === 'ACTIVE') {
+        const paid = Number(test.price ?? 0) > 0
+        await this.userTestService.updateStatusByTestId(
+          testId,
+          test.testType === TestStatus.SUBSCRIPTION_TEST || paid
+            ? UserTestStatus.NOT_STARTED
+            : UserTestStatus.ACTIVE
+        )
+      }
+    } catch (error) {
+      this.logger.error('Syncing user tests after a status change failed', error)
+    }
+  }
+
+  // Every user gets the active tests (status, limits); failures are only logged
+  private async initUserTests() {
+    try {
+      await this.userTestService.initAllUsersTests()
+    } catch (error) {
+      this.logger.error('Initializing user tests failed', error)
+    }
+  }
+
+  // HttpExceptions pass through (they used to be swallowed into a generic 400);
+  // anything else is logged and becomes `fallback`
+  private toTestError(error: unknown, fallback: string = M.INVALID_DATA): HttpException {
+    if (error instanceof HttpException) return error
+    this.logger.error('Test request failed', error instanceof Error ? error.stack : error)
+    if (isNotFoundPrismaError(error)) return new TestNotFoundException()
+    return new InvalidTestDataException(fallback)
+  }
+  //#endregion
 
   async findFullById(testId: number, language: string = 'vi'): Promise<MessageResDTO> {
     try {
@@ -1038,11 +434,11 @@ export class TestService {
       // Lấy thông tin Test cơ bản
       const test = await this.testRepo.findById(testId, language)
       if (!test) {
-        throw TestNotFoundException
+        throw new TestNotFoundException()
       }
 
       // Lấy các TestSets của Test qua TestTestSet
-      const testTestSets = await (this.prisma as any).testTestSet.findMany({
+      const testTestSets = await this.prisma.testTestSet.findMany({
         where: { testId },
         include: {
           testSet: {
@@ -1170,14 +566,10 @@ export class TestService {
       return {
         statusCode: 200,
         data: result,
-        message: TEST_MESSAGE.GET_SUCCESS
+        message: this.i18nService.translate(M.GET_SUCCESS, language)
       }
     } catch (error) {
-      this.logger.error('Error finding full test by ID:', error)
-      if (error instanceof TestNotFoundException) {
-        throw error
-      }
-      throw new BadRequestException('Không thể lấy thông tin bài test')
+      throw this.toTestError(error, M.CANNOT_GET)
     }
   }
 
@@ -1193,11 +585,11 @@ export class TestService {
       // Lấy thông tin Test cơ bản
       const test = await this.testRepo.findById(testId, language)
       if (!test) {
-        throw TestNotFoundException
+        throw new TestNotFoundException()
       }
 
       // Lấy các TestSets của Test qua TestTestSet (không include creator cho user)
-      const testTestSets = await (this.prisma as any).testTestSet.findMany({
+      const testTestSets = await this.prisma.testTestSet.findMany({
         where: { testId },
         include: {
           testSet: true
@@ -1317,129 +709,14 @@ export class TestService {
       return {
         statusCode: 200,
         data: result,
-        message: TEST_MESSAGE.GET_SUCCESS
+        message: this.i18nService.translate(M.GET_SUCCESS, language)
       }
     } catch (error) {
-      this.logger.error('Error finding full test by ID for user:', error)
-      if (error instanceof TestNotFoundException) {
-        throw error
-      }
-      throw new BadRequestException('Không thể lấy thông tin bài test')
+      throw this.toTestError(error, M.CANNOT_GET)
     }
   }
 
-  async findSpeakingTest(
-    testId: number,
-    language: string = 'vi'
-  ): Promise<MessageResDTO> {
-    try {
-      this.logger.log(`Finding speaking test by ID: ${testId}, language: ${language}`)
-
-      // Base test info
-      const test = await this.testRepo.findById(testId, language)
-      if (!test) {
-        throw TestNotFoundException
-      }
-
-      // Get TestSets for this Test
-      const testTestSets = await (this.prisma as any).testTestSet.findMany({
-        where: { testId },
-        include: { testSet: true },
-        orderBy: { createdAt: 'asc' }
-      })
-
-      // Keep only SPEAKING test sets
-      const speakingTestSets = testTestSets.filter(
-        (tts: any) => tts.testSet?.testType === 'SPEAKING'
-      )
-
-      const testSetsWithQuestions = await Promise.all(
-        speakingTestSets.map(async (tts: any) => {
-          const ts = tts.testSet
-
-          // Resolve translations to simple strings for name/description/content
-          const testSetNameKey = `testset.${ts.id}.name`
-          const testSetDescriptionKey = `testset.${ts.id}.description`
-          const testSetContentKey = `testset.${ts.id}.content`
-
-          let nameValue: any = ts.name
-          let descriptionValue: any = ts.description
-
-          if (language) {
-            const languageRecord = await this.prisma.languages.findFirst({
-              where: { code: language }
-            })
-            const languageId = languageRecord?.id
-            if (languageId) {
-              const translations = await this.prisma.translation.findMany({
-                where: {
-                  languageId,
-                  OR: [
-                    { key: { startsWith: testSetNameKey + '.meaning.' } },
-                    { key: { startsWith: testSetDescriptionKey + '.meaning.' } },
-                    { key: { startsWith: testSetContentKey + '.meaning.' } }
-                  ]
-                }
-              })
-              const nameT = translations.find((t) =>
-                t.key.startsWith(testSetNameKey + '.meaning.')
-              )
-              const descT = translations.find((t) =>
-                t.key.startsWith(testSetDescriptionKey + '.meaning.')
-              )
-              nameValue = nameT?.value || ts.name
-              descriptionValue = descT?.value || ts.description
-            }
-          }
-
-          // Get questions with answers (already ordered by questionOrder and localized)
-          const questionsRes =
-            await this.testSetQuestionBankService.findFullWithAnswerByTestSetId(
-              ts.id,
-              language
-            )
-          const questions = questionsRes.data || []
-
-          return {
-            id: ts.id,
-            name: nameValue,
-            description: descriptionValue,
-            content: ts.content ?? null,
-            audioUrl: ts.audioUrl ?? null,
-            testType: ts.testType,
-            status: ts.status,
-            levelN: ts.levelN,
-            price: ts.price ? Number(ts.price) : null,
-            questions
-          }
-        })
-      )
-
-      return {
-        statusCode: 200,
-        data: {
-          id: test.id,
-          name: (test as any).name, // already localized by repo.findById
-          description: (test as any).description,
-          price: (test as any).price ?? 0,
-          levelN: (test as any).levelN,
-          limit: (test as any).limit,
-          testType: (test as any).testType,
-          status: (test as any).status,
-          testSets: testSetsWithQuestions
-        },
-        message: TEST_MESSAGE.GET_SUCCESS
-      }
-    } catch (error) {
-      this.logger.error('Error finding speaking test by ID:', error)
-      if (error instanceof TestNotFoundException) {
-        throw error
-      }
-      throw new BadRequestException('Không thể lấy thông tin bài test Speaking')
-    }
-  }
-
-  async autoAddFreeTestSets(): Promise<MessageResDTO> {
+  async autoAddFreeTestSets(lang: string = 'vi'): Promise<MessageResDTO> {
     try {
       this.logger.log('Starting auto-add free testSets to PLACEMENT_TEST_DONE tests')
 
@@ -1462,7 +739,7 @@ export class TestService {
             totalTests: 0,
             totalTestSetsAdded: 0
           },
-          message: 'Không có Test PLACEMENT_TEST_DONE nào trong hệ thống'
+          message: this.i18nService.translate(M.AUTO_ADD_NO_PLACEMENT, lang)
         }
       }
 
@@ -1488,7 +765,7 @@ export class TestService {
             totalTests: placementTests.length,
             totalTestSetsAdded: 0
           },
-          message: 'Không có TestSet free nào trong hệ thống'
+          message: this.i18nService.translate(M.AUTO_ADD_NO_FREE_TESTSETS, lang)
         }
       }
 
@@ -1499,7 +776,7 @@ export class TestService {
         const testSetIds = freeTestSets.map((ts) => ts.id)
 
         // Lấy danh sách TestSet đã có trong Test này
-        const existingTestTestSets = await (this.prisma as any).testTestSet.findMany({
+        const existingTestTestSets = await this.prisma.testTestSet.findMany({
           where: { testId: test.id },
           select: { testSetId: true }
         })
@@ -1508,7 +785,7 @@ export class TestService {
         const newTestSetIds = testSetIds.filter((id) => !existingTestSetIds.includes(id))
 
         if (newTestSetIds.length > 0) {
-          await (this.prisma as any).testTestSet.createMany({
+          await this.prisma.testTestSet.createMany({
             data: newTestSetIds.map((testSetId) => ({
               testId: test.id,
               testSetId: testSetId
@@ -1530,11 +807,13 @@ export class TestService {
           totalTests: placementTests.length,
           totalTestSetsAdded: totalAdded
         },
-        message: `Đã thêm ${totalAdded} TestSet vào ${placementTests.length} Test PLACEMENT_TEST_DONE`
+        message: this.i18nService.translate(M.AUTO_ADD_SUCCESS, lang, {
+          added: totalAdded,
+          tests: placementTests.length
+        })
       }
     } catch (error) {
-      this.logger.error('Error auto-adding free testSets:', error)
-      throw new BadRequestException('Không thể tự động thêm TestSet')
+      throw this.toTestError(error, M.CANNOT_AUTO_ADD)
     }
   }
 
@@ -1551,19 +830,17 @@ export class TestService {
       // Validate test tồn tại và là PLACEMENT_TEST_DONE
       const test = await this.testRepo.findById(testId)
       if (!test) {
-        throw TestNotFoundException
+        throw new TestNotFoundException()
       }
 
       if (test.testType !== 'PLACEMENT_TEST_DONE') {
-        throw new BadRequestException(
-          'Chỉ có thể lấy câu hỏi từ Test loại PLACEMENT_TEST_DONE'
-        )
+        throw new TestRuleViolationException(M.NOT_PLACEMENT_TEST)
       }
 
       // Kiểm tra UserTest tồn tại và limit
       const userTest = await this.userTestRepo.findByUserAndTest(userId, testId)
       if (!userTest) {
-        throw new BadRequestException('Bạn chưa có quyền làm bài test này')
+        throw new TestPermissionDeniedException(M.NO_ACCESS)
       }
 
       // Lấy attempt được tạo gần nhất của userId và testId (không phân biệt status)
@@ -1628,13 +905,13 @@ export class TestService {
       }
 
       // Lấy các TestSets của Test
-      const testTestSets = await (this.prisma as any).testTestSet.findMany({
+      const testTestSets = await this.prisma.testTestSet.findMany({
         where: { testId },
         select: { testSetId: true }
       })
 
       if (testTestSets.length === 0) {
-        throw new BadRequestException('Test này chưa có TestSet nào')
+        throw new TestRuleViolationException(M.NO_TESTSETS)
       }
 
       const testSetIds = testTestSets.map((tts: any) => tts.testSetId)
@@ -1769,14 +1046,10 @@ export class TestService {
             total: finalQuestions.length
           }
         },
-        message: 'Lấy câu hỏi placement test thành công'
+        message: this.i18nService.translate(M.PLACEMENT_QUESTIONS_SUCCESS, language)
       }
     } catch (error) {
-      this.logger.error('Error getting random questions for placement test:', error)
-      if (error instanceof TestNotFoundException) {
-        throw error
-      }
-      throw new BadRequestException('Không thể lấy câu hỏi cho placement test')
+      throw this.toTestError(error, M.CANNOT_GET_PLACEMENT_QUESTIONS)
     }
   }
 
@@ -1793,26 +1066,26 @@ export class TestService {
 
       // Validate
       if (![1, 2, 3, 4, 5].includes(levelN)) {
-        throw new BadRequestException('Level phải từ 1 đến 5')
+        throw new TestRuleViolationException(M.INVALID_LEVEL_N)
       }
       if (count < 1) {
-        throw new BadRequestException('Số lượng câu hỏi phải lớn hơn 0')
+        throw new TestRuleViolationException(M.INVALID_COUNT)
       }
 
       // Validate test tồn tại
       const test = await this.testRepo.findById(testId)
       if (!test) {
-        throw TestNotFoundException
+        throw new TestNotFoundException()
       }
 
       // Lấy các TestSets của Test
-      const testTestSets = await (this.prisma as any).testTestSet.findMany({
+      const testTestSets = await this.prisma.testTestSet.findMany({
         where: { testId },
         select: { testSetId: true }
       })
 
       if (testTestSets.length === 0) {
-        throw new BadRequestException('Test này chưa có TestSet nào')
+        throw new TestRuleViolationException(M.NO_TESTSETS)
       }
 
       const testSetIds = testTestSets.map((tts: any) => tts.testSetId)
@@ -1929,14 +1202,13 @@ export class TestService {
           levelN,
           count: mappedQuestions.length
         },
-        message: `Lấy ${mappedQuestions.length} câu hỏi level N${levelN} thành công`
+        message: this.i18nService.translate(M.LEVEL_QUESTIONS_SUCCESS, language, {
+          count: mappedQuestions.length,
+          level: levelN
+        })
       }
     } catch (error) {
-      this.logger.error('Error getting random questions by level:', error)
-      if (error instanceof TestNotFoundException) {
-        throw error
-      }
-      throw new BadRequestException('Không thể lấy câu hỏi')
+      throw this.toTestError(error, M.CANNOT_GET_QUESTIONS)
     }
   }
 
@@ -1953,11 +1225,11 @@ export class TestService {
       // Lấy thông tin Test cơ bản (giống findFullById)
       const test = await this.testRepo.findById(testId, language)
       if (!test) {
-        throw TestNotFoundException
+        throw new TestNotFoundException()
       }
 
       // Kiểm tra UserTest tồn tại, nếu không thì tạo
-      let userTest = await this.userTestRepo.findByUserAndTest(userId, testId)
+      const userTest = await this.userTestRepo.findByUserAndTest(userId, testId)
       if (!userTest) {
         await this.userTestService.create({
           userId,
@@ -1993,9 +1265,9 @@ export class TestService {
       // Kiểm tra có đủ 3 testSet không
       const missingTypes = targetTypes.filter((type) => !testSetsByType[type])
       if (missingTypes.length > 0) {
-        throw new BadRequestException(
-          `Test này thiếu testSet loại: ${missingTypes.join(', ')}`
-        )
+        throw new TestRuleViolationException(M.MISSING_TESTSET_TYPES, {
+          types: missingTypes.join(', ')
+        })
       }
 
       // Lấy tất cả questions từ 3 testSet để filter và random
@@ -2042,9 +1314,9 @@ export class TestService {
       }
 
       if (allQuestionsWithTestSetInfo.length < 10) {
-        throw new BadRequestException(
-          `Không đủ câu hỏi. Tổng có ${allQuestionsWithTestSetInfo.length} câu, cần ít nhất 10 câu`
-        )
+        throw new TestRuleViolationException(M.NOT_ENOUGH_QUESTIONS, {
+          count: allQuestionsWithTestSetInfo.length
+        })
       }
 
       // Random chọn 10 câu từ 15 câu
@@ -2178,17 +1450,10 @@ export class TestService {
       return {
         statusCode: 200,
         data: result,
-        message: TEST_MESSAGE.GET_SUCCESS
+        message: this.i18nService.translate(M.GET_SUCCESS, language)
       }
     } catch (error) {
-      this.logger.error('Error generating lesson review test:', error)
-      if (
-        error instanceof BadRequestException ||
-        error instanceof TestNotFoundException
-      ) {
-        throw error
-      }
-      throw new BadRequestException('Không thể lấy câu hỏi bài test ôn tập')
+      throw this.toTestError(error, M.CANNOT_GET_REVIEW_QUESTIONS)
     }
   }
 
