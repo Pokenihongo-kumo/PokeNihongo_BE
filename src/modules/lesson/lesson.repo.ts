@@ -1,301 +1,174 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '@/shared/services/prisma.service'
-import {
-  CreateLessonBodyType,
-  UpdateLessonBodyType,
-  GetLessonListQueryType
-} from './entities/lesson.entities'
-import { LessonSortField, SortOrder } from '@/common/enum/enum'
+import { GetLessonListQueryType } from './entities/lesson.entity'
+import { toSkipTake } from '@/shared/utils/pagination'
+import { Prisma } from '@prisma/client'
+
+// Category, author and test returned with a lesson
+const withRelations = {
+  lessonCategory: { select: { id: true, nameKey: true, slug: true } },
+  createdBy: { select: { id: true, name: true, email: true } },
+  test: { select: { id: true } }
+} satisfies Prisma.LessonInclude
+
+// The title lives in translations under lesson.{id}.title
+export const titleKeyOf = (id: number) => `lesson.${id}.title`
 
 @Injectable()
-export class LessonRepository {
+export class LessonRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
-  // Lesson CRUD
   async findMany(params: GetLessonListQueryType) {
-    const {
-      currentPage,
-      pageSize,
-      search,
-      lessonCategoryId,
-      levelJlpt,
-      isPublished,
-      sortBy = LessonSortField.CREATED_AT,
-      sort = SortOrder.DESC
-    } = params
-    const skip = (currentPage - 1) * pageSize
-
-    const where: any = {}
-
-    if (search) {
-      where.OR = [
-        { slug: { contains: search, mode: 'insensitive' } },
-        { titleKey: { contains: search, mode: 'insensitive' } }
-      ]
+    const { currentPage, pageSize, search, lessonCategoryId, levelJlpt, isPublished } =
+      params
+    const where: Prisma.LessonWhereInput = {
+      ...(search && {
+        OR: [
+          { slug: { contains: search, mode: 'insensitive' } },
+          { titleKey: { contains: search, mode: 'insensitive' } }
+        ]
+      }),
+      ...(lessonCategoryId && { lessonCategoryId }),
+      ...(levelJlpt && { levelJlpt }),
+      ...(isPublished !== undefined && { isPublished })
     }
-
-    if (lessonCategoryId) {
-      where.lessonCategoryId = lessonCategoryId
-    }
-
-    if (levelJlpt) {
-      where.levelJlpt = levelJlpt
-    }
-
-    if (typeof isPublished === 'boolean') {
-      where.isPublished = isPublished
-    }
-
     const [data, total] = await Promise.all([
       this.prismaService.lesson.findMany({
         where,
-        include: {
-          lessonCategory: {
-            select: {
-              id: true,
-              nameKey: true,
-              slug: true
-            }
-          },
-          createdBy: {
-            select: {
-              id: true,
-              name: true,
-              email: true
-            }
-          },
-          test: {
-            select: {
-              id: true
-            }
-          }
-        },
-        orderBy: { [sortBy]: sort },
-        skip,
-        take: pageSize
+        include: withRelations,
+        orderBy: { [params.sortBy]: params.sort },
+        ...toSkipTake(currentPage, pageSize)
       }),
       this.prismaService.lesson.count({ where })
     ])
-
-    return {
-      data,
-      total,
-      page: currentPage,
-      limit: pageSize,
-      totalPages: Math.ceil(total / pageSize)
-    }
+    return { data, total }
   }
 
-  async findById(id: number) {
-    return this.prismaService.lesson.findUnique({
-      where: { id },
-      include: {
-        lessonCategory: {
-          select: {
-            id: true,
-            nameKey: true,
-            slug: true
-          }
-        },
-        createdBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        },
-        test: {
-          select: {
-            id: true
-          }
-        }
-      }
-    })
+  // Also used by lesson-content and user-test-attempt
+  findById(id: number) {
+    return this.prismaService.lesson.findUnique({ where: { id }, include: withRelations })
   }
-  async findByTestId(testId: number) {
+
+  // Used by user-test-attempt
+  findByTestId(testId: number) {
     return this.prismaService.lesson.findFirst({
       where: { testId },
       select: { id: true }
     })
   }
 
-  async findBySlug(slug: string) {
+  findBySlug(slug: string) {
     return this.prismaService.lesson.findUnique({
       where: { slug },
-      include: {
-        lessonCategory: {
-          select: {
-            id: true,
-            nameKey: true,
-            slug: true
-          }
-        },
-        createdBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        },
-        test: {
-          select: {
-            id: true
-          }
-        }
-      }
+      include: withRelations
     })
   }
 
-  async create(
-    data: CreateLessonBodyType & { createdById: number; slug: string; titleKey: string }
+  // Inserts the lesson, sets its slug/titleKey from the id and writes the
+  // title translations, in one transaction
+  createWithTitle(
+    data: Omit<Prisma.LessonUncheckedCreateInput, 'slug' | 'titleKey'>,
+    titles: { languageId: number; value: string }[]
   ) {
-    const { rewardId, ...restData } = data
-    return this.prismaService.lesson.create({
-      data: {
-        ...restData,
-        rewardId: (rewardId ?? []) as any,
-        publishedAt: data.isPublished ? new Date() : null
-      },
-      include: {
-        lessonCategory: {
-          select: {
-            id: true,
-            nameKey: true,
-            slug: true
-          }
-        },
-        createdBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        },
-        test: {
-          select: {
-            id: true
-          }
+    return this.prismaService.$transaction(async (tx) => {
+      const temp = `lesson-temp-${Date.now()}-${Math.random().toString(36).slice(2)}`
+      const created = await tx.lesson.create({
+        data: {
+          ...data,
+          slug: temp,
+          titleKey: temp,
+          publishedAt: data.isPublished ? new Date() : null
         }
-      }
-    })
-  }
-
-  async update(id: number, data: UpdateLessonBodyType) {
-    const { rewardId, ...rest } = data
-    const updateData: any = { ...rest }
-
-    if (rewardId !== undefined) {
-      updateData.rewardId = rewardId as any
-    }
-
-    // Xử lý publishedAt dựa trên isPublished
-    if (data.isPublished !== undefined) {
-      if (data.isPublished === true) {
-        // Publish: set publishedAt nếu chưa có
-        const existingLesson = await this.prismaService.lesson.findUnique({
-          where: { id },
-          select: { isPublished: true, publishedAt: true }
+      })
+      const titleKey = titleKeyOf(created.id)
+      await tx.lesson.update({
+        where: { id: created.id },
+        data: { slug: `lesson-${created.id}`, titleKey }
+      })
+      for (const title of titles) {
+        await tx.translation.upsert({
+          where: { languageId_key: { languageId: title.languageId, key: titleKey } },
+          update: { value: title.value },
+          create: { languageId: title.languageId, key: titleKey, value: title.value }
         })
-
-        if (
-          existingLesson &&
-          !existingLesson.isPublished &&
-          !existingLesson.publishedAt
-        ) {
-          updateData.publishedAt = new Date()
-        }
-      } else if (data.isPublished === false) {
-        // Unpublish: clear publishedAt
-        updateData.publishedAt = null
       }
-    }
+      return tx.lesson.findUniqueOrThrow({
+        where: { id: created.id },
+        include: withRelations
+      })
+    })
+  }
 
-    return this.prismaService.lesson.update({
-      where: { id },
-      data: updateData,
-      include: {
-        lessonCategory: {
-          select: {
-            id: true,
-            nameKey: true,
-            slug: true
+  // Publishing sets publishedAt the first time; unpublishing clears it.
+  // Title translations, when given, are written in the same transaction
+  async update(
+    id: number,
+    data: Prisma.LessonUncheckedUpdateInput,
+    titles: { languageId: number; value: string }[] = []
+  ) {
+    let publishedAt: Date | null | undefined
+    if (data.isPublished === false) publishedAt = null
+    if (data.isPublished === true) {
+      const current = await this.prismaService.lesson.findUnique({
+        where: { id },
+        select: { isPublished: true, publishedAt: true }
+      })
+      if (current && !current.isPublished && !current.publishedAt)
+        publishedAt = new Date()
+    }
+    return this.prismaService.$transaction(async (tx) => {
+      const lesson = await tx.lesson.update({
+        where: { id },
+        data: { ...data, ...(publishedAt !== undefined && { publishedAt }) },
+        include: withRelations
+      })
+      for (const title of titles) {
+        await tx.translation.upsert({
+          where: {
+            languageId_key: { languageId: title.languageId, key: lesson.titleKey }
+          },
+          update: { value: title.value },
+          create: {
+            languageId: title.languageId,
+            key: lesson.titleKey,
+            value: title.value
           }
-        },
-        createdBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        },
-        test: {
-          select: {
-            id: true
-          }
-        }
+        })
       }
+      return lesson
     })
   }
 
-  async delete(id: number) {
-    return this.prismaService.lesson.delete({
-      where: { id }
+  delete(id: number) {
+    return this.prismaService.lesson.delete({ where: { id } })
+  }
+
+  // The title of each key, in one language or in all of them
+  titles(keys: string[], languageId?: number) {
+    return this.prismaService.translation.findMany({
+      where: { key: { in: keys }, ...(languageId && { languageId }) },
+      select: { key: true, value: true, language: { select: { code: true } } }
     })
   }
 
-  // Helper methods
-
-  async checkRewardsExist(rewardIds: number[]) {
-    if (!Array.isArray(rewardIds) || rewardIds.length === 0) {
-      return true
-    }
-    const uniqueIds = Array.from(new Set(rewardIds))
-    const count = await this.prismaService.reward.count({
-      where: { id: { in: uniqueIds } }
-    })
-    return count === uniqueIds.length
+  async categoryExists(id: number) {
+    return (await this.prismaService.lessonCategory.count({ where: { id } })) > 0
   }
 
-  async checkLessonExists(id: number) {
-    const count = await this.prismaService.lesson.count({
-      where: { id }
-    })
-    return count > 0
+  async testExists(id: number) {
+    return (await this.prismaService.test.count({ where: { id } })) > 0
   }
 
-  async checkSlugExists(slug: string, excludeId?: number) {
-    const where: any = { slug }
-    if (excludeId) {
-      where.id = { not: excludeId }
-    }
-
-    const count = await this.prismaService.lesson.count({ where })
-    return count > 0
+  countRewards(ids: number[]) {
+    return this.prismaService.reward.count({ where: { id: { in: ids } } })
   }
 
-  async getMaxLessonOrderByCategory(lessonCategoryId: number): Promise<number> {
-    const result = await this.prismaService.lesson.findFirst({
+  // 0 for an empty category
+  async maxLessonOrder(lessonCategoryId: number): Promise<number> {
+    const { _max } = await this.prismaService.lesson.aggregate({
       where: { lessonCategoryId },
-      orderBy: { lessonOrder: 'desc' },
-      select: { lessonOrder: true }
+      _max: { lessonOrder: true }
     })
-    return result?.lessonOrder ?? 0
-  }
-
-  async getRewardsByIds(rewardIds: number[]) {
-    if (!Array.isArray(rewardIds) || rewardIds.length === 0) {
-      return []
-    }
-    const uniqueIds = Array.from(new Set(rewardIds))
-    return this.prismaService.reward.findMany({
-      where: { id: { in: uniqueIds } },
-      select: {
-        id: true,
-        nameKey: true,
-        rewardType: true,
-        rewardItem: true,
-        rewardTarget: true
-      }
-    })
+    return _max.lessonOrder ?? 0
   }
 }

@@ -32,7 +32,7 @@ import { KanjiService } from '../kanji/kanji.service'
 import { TranslationService } from '../translation/translation.service'
 import { LanguagesService } from '../languages/languages.service'
 import { MeaningService } from '../meaning/meaning.service'
-import { LessonRepository } from '../lesson/lesson.repo'
+import { LessonRepo } from '../lesson/lesson.repo'
 import { UserExerciseAttemptRepository } from '../user-exercise-attempt/user-exercise-attempt.repo'
 import { ExercisesService } from '../exercises/exercises.service'
 
@@ -48,7 +48,7 @@ export class LessonContentService {
     private readonly translationService: TranslationService,
     private readonly languagesService: LanguagesService,
     private readonly meaningService: MeaningService,
-    private readonly lessonRepository: LessonRepository,
+    private readonly lessonRepository: LessonRepo,
     private readonly userExerciseAttemptRepository: UserExerciseAttemptRepository,
     private readonly exercisesService: ExercisesService
   ) {}

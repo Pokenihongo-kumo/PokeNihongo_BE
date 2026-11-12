@@ -234,6 +234,7 @@ exports[`Learning batch 4b contract (e2e) lessons create, list (web query and mo
         "version": "string",
       },
       "message": "Tạo bài học thành công",
+      "statusCode": 201,
     },
     "httpStatus": 201,
   },
@@ -262,13 +263,19 @@ exports[`Learning batch 4b contract (e2e) lessons create, list (web query and mo
         "rewardId": [],
         "slug": "string",
         "testId": "null",
-        "title": [],
+        "title": [
+          {
+            "language": "string",
+            "value": "string",
+          },
+        ],
         "titleJp": "string",
         "titleKey": "string",
         "updatedAt": "string",
         "version": "string",
       },
       "message": "Lấy thông tin bài học thành công",
+      "statusCode": 200,
     },
     "httpStatus": 200,
   },
@@ -335,6 +342,7 @@ exports[`Learning batch 4b contract (e2e) lessons create, list (web query and mo
         "version": "string",
       },
       "message": "Cập nhật bài học thành công",
+      "statusCode": 200,
     },
     "httpStatus": 200,
   },
@@ -350,7 +358,7 @@ exports[`Learning batch 4b contract (e2e) lessons errors 1`] = `
         "errors": [
           {
             "field": "string",
-            "message": "Invalid format",
+            "message": "titleJp must be 1 to 500 characters",
           },
         ],
         "message": "Invalid data provided",
@@ -364,7 +372,7 @@ exports[`Learning batch 4b contract (e2e) lessons errors 1`] = `
         "errors": [
           {
             "field": "string",
-            "message": "Định dạng không hợp lệ",
+            "message": "Tiêu đề tiếng Nhật phải từ 1 đến 500 ký tự",
           },
         ],
         "message": "Dữ liệu không hợp lệ",
@@ -376,26 +384,38 @@ exports[`Learning batch 4b contract (e2e) lessons errors 1`] = `
   "invalidId": {
     "en": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu bài học không hợp lệ: Lỗi khi lấy thông tin bài học",
-        "statusCode": 400,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid lesson ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 400,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu bài học không hợp lệ: Lỗi khi lấy thông tin bài học",
-        "statusCode": 400,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID bài học không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 400,
+      "httpStatus": 422,
     },
   },
   "notFound": {
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Bài học không tồn tại",
+        "message": "Lesson not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -413,7 +433,7 @@ exports[`Learning batch 4b contract (e2e) lessons errors 1`] = `
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Bài học không tồn tại",
+        "message": "Lesson not found",
         "statusCode": 404,
       },
       "httpStatus": 404,

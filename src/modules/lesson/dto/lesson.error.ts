@@ -1,118 +1,41 @@
-import { HttpException, HttpStatus } from '@nestjs/common'
+import { LessonMessage as M } from '@/i18n/message-keys'
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common'
 
-export class LessonNotFoundException extends HttpException {
+// A new instance per throw; `message` is translated from errorKey by
+// ApiExceptionFilter (Accept-Language), the old Vietnamese text is the vi value
+
+export class LessonNotFoundException extends NotFoundException {
   constructor() {
-    super(
-      {
-        statusCode: HttpStatus.NOT_FOUND,
-        message: 'Bài học không tồn tại',
-        error: 'LESSON_NOT_FOUND'
-      },
-      HttpStatus.NOT_FOUND
-    )
+    super({ message: M.NOT_FOUND, errorKey: M.NOT_FOUND })
   }
 }
 
-export class LessonAlreadyExistsException extends HttpException {
+export class LessonAlreadyExistsException extends ConflictException {
   constructor() {
-    super(
-      {
-        statusCode: HttpStatus.CONFLICT,
-        message: 'Bài học đã tồn tại',
-        error: 'LESSON_ALREADY_EXISTS'
-      },
-      HttpStatus.CONFLICT
-    )
+    super({ message: M.ALREADY_EXISTS, errorKey: M.ALREADY_EXISTS })
   }
 }
 
-export class InvalidLessonDataException extends HttpException {
-  constructor(message: string) {
-    super(
-      {
-        statusCode: HttpStatus.BAD_REQUEST,
-        message: `Dữ liệu bài học không hợp lệ: ${message}`,
-        error: 'INVALID_LESSON_DATA'
-      },
-      HttpStatus.BAD_REQUEST
-    )
-  }
-}
-
-export class LessonCategoryNotFoundException extends HttpException {
+export class InvalidLessonDataException extends BadRequestException {
   constructor() {
-    super(
-      {
-        statusCode: HttpStatus.NOT_FOUND,
-        message: 'Danh mục bài học không tồn tại',
-        error: 'LESSON_CATEGORY_NOT_FOUND'
-      },
-      HttpStatus.NOT_FOUND
-    )
+    super({ message: M.INVALID_DATA, errorKey: M.INVALID_DATA })
   }
 }
 
-export class LessonCategoryAlreadyExistsException extends HttpException {
+export class LessonCategoryNotFoundException extends NotFoundException {
   constructor() {
-    super(
-      {
-        statusCode: HttpStatus.CONFLICT,
-        message: 'Danh mục bài học đã tồn tại',
-        error: 'LESSON_CATEGORY_ALREADY_EXISTS'
-      },
-      HttpStatus.CONFLICT
-    )
+    super({ message: M.CATEGORY_NOT_FOUND, errorKey: M.CATEGORY_NOT_FOUND })
   }
 }
 
-export class LessonContentsNotFoundException extends HttpException {
+export class LessonRewardNotFoundException extends NotFoundException {
   constructor() {
-    super(
-      {
-        statusCode: HttpStatus.NOT_FOUND,
-        message: 'Nội dung bài học không tồn tại',
-        error: 'LESSON_CONTENTS_NOT_FOUND'
-      },
-      HttpStatus.NOT_FOUND
-    )
+    super({ message: M.REWARD_NOT_FOUND, errorKey: M.REWARD_NOT_FOUND })
   }
 }
 
-export class LessonContentsAlreadyExistsException extends HttpException {
+export class LessonTestNotFoundException extends NotFoundException {
   constructor() {
-    super(
-      {
-        statusCode: HttpStatus.CONFLICT,
-        message: 'Nội dung bài học đã tồn tại',
-        error: 'LESSON_CONTENTS_ALREADY_EXISTS'
-      },
-      HttpStatus.CONFLICT
-    )
-  }
-}
-
-export class InvalidLessonContentsDataException extends HttpException {
-  constructor(message: string) {
-    super(
-      {
-        statusCode: HttpStatus.BAD_REQUEST,
-        message: `Dữ liệu nội dung bài học không hợp lệ: ${message}`,
-        error: 'INVALID_LESSON_CONTENTS_DATA'
-      },
-      HttpStatus.BAD_REQUEST
-    )
-  }
-}
-
-export class RewardNotFoundException extends HttpException {
-  constructor() {
-    super(
-      {
-        statusCode: HttpStatus.NOT_FOUND,
-        message: 'Phần thưởng không tồn tại',
-        error: 'REWARD_NOT_FOUND'
-      },
-      HttpStatus.NOT_FOUND
-    )
+    super({ message: M.TEST_NOT_FOUND, errorKey: M.TEST_NOT_FOUND })
   }
 }
