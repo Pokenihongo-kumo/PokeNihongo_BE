@@ -6,13 +6,13 @@ import {
   GetQuestionBankByIdParamsType,
   GetQuestionBankListQueryType,
   UpdateQuestionBankBodyType
-} from '@/modules/question-bank/entities/question-bank.entities'
+} from '@/modules/question-bank/entities/question-bank.entity'
 import {
   InvalidQuestionBankDataException,
   QuestionBankNotFoundException
 } from '@/modules/question-bank/dto/question-bank.error'
 import { QUESTION_BANK_MESSAGE } from '@/common/constants/message'
-import { QuestionBankRepository } from '@/modules/question-bank/question-bank.repo'
+import { QuestionBankRepo } from '@/modules/question-bank/question-bank.repo'
 import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from '@/shared/helpers'
 import {
   Injectable,
@@ -50,7 +50,7 @@ export class QuestionBankService {
   private readonly logger = new Logger(QuestionBankService.name)
 
   constructor(
-    private readonly questionBankRepository: QuestionBankRepository,
+    private readonly questionBankRepository: QuestionBankRepo,
     private readonly textToSpeechService: TextToSpeechService,
     private readonly uploadService: UploadService,
     private readonly translationService: TranslationService,

@@ -1,7 +1,7 @@
 import { BullAction, BullQueue } from '@/common/constants/bull-action.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { RoundQuestionMessage } from '@/i18n/message-keys'
-import { QuestionBankRepository } from '@/modules/question-bank/question-bank.repo'
+import { QuestionBankRepo } from '@/modules/question-bank/question-bank.repo'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   addTimeUTC,
@@ -33,7 +33,7 @@ export class RoundQuestionService {
     private readonly i18nService: I18nService,
     private readonly prismaService: PrismaService,
     private readonly matchingGateway: MatchingGateway,
-    private readonly questionBankRepo: QuestionBankRepository,
+    private readonly questionBankRepo: QuestionBankRepo,
     @InjectQueue(BullQueue.ROUND_QUESTION_TIMEOUT)
     private readonly roundQuestionTimeoutQueue: Queue,
     @InjectQueue(BullQueue.MATCH_ROUND_PARTICIPANT_TIMEOUT)

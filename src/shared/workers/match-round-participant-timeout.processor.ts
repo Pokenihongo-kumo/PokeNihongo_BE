@@ -5,7 +5,7 @@ import {
   RoundStatus
 } from '@/common/constants/match.constant'
 import { PokemonRepo } from '@/modules/pokemon/pokemon.repo'
-import { QuestionBankRepository } from '@/modules/question-bank/question-bank.repo'
+import { QuestionBankRepo } from '@/modules/question-bank/question-bank.repo'
 import { addTimeUTC, convertEloToRank } from '@/shared/helpers'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { MatchingGateway } from '@/websockets/matching.gateway'
@@ -33,7 +33,7 @@ export class MatchRoundParticipantTimeoutProcessor implements OnModuleInit {
 
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly questionBankRepo: QuestionBankRepository,
+    private readonly questionBankRepo: QuestionBankRepo,
     private readonly pokemonRepo: PokemonRepo,
     @InjectQueue(BullQueue.MATCH_ROUND_PARTICIPANT_TIMEOUT)
     private readonly matchRoundParticipantTimeoutQueue: Queue,
@@ -801,7 +801,7 @@ export class MatchRoundParticipantTimeoutProcessor implements OnModuleInit {
         return undefined
       }
 
-      // Use QuestionBankRepository to fetch random questions
+      // Use QuestionBankRepo to fetch random questions
       const baseLevelN = rankToLevel(baseRank)
       const finalBase = baseLevelN
         ? await this.questionBankRepo.getRandomQuestions(

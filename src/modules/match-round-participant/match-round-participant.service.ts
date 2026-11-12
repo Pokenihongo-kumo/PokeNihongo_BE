@@ -22,7 +22,7 @@ import { PrismaService } from 'src/shared/services/prisma.service'
 import { MatchingGateway } from 'src/websockets/matching.gateway'
 import { MatchRoundRepo } from '../match-round/match-round.repo'
 import { PokemonRepo } from '../pokemon/pokemon.repo'
-import { QuestionBankRepository } from '../question-bank/question-bank.repo'
+import { QuestionBankRepo } from '../question-bank/question-bank.repo'
 import { UserPokemonRepo } from '../user-pokemon/user-pokemon.repo'
 import {
   MatchRoundParticipantNotFoundException,
@@ -46,7 +46,7 @@ export class MatchRoundParticipantService {
     private matchRoundParticipantRepo: MatchRoundParticipantRepo,
     private readonly matchRoundRepo: MatchRoundRepo,
     private readonly userPokemonRepo: UserPokemonRepo,
-    private readonly questionBankRepo: QuestionBankRepository,
+    private readonly questionBankRepo: QuestionBankRepo,
     private readonly pokemonRepo: PokemonRepo,
     private readonly i18nService: I18nService,
     private readonly prismaService: PrismaService,
@@ -672,7 +672,7 @@ export class MatchRoundParticipantService {
         return undefined
       }
 
-      // Use QuestionBankRepository to fetch random questions
+      // Use QuestionBankRepo to fetch random questions
       const baseLevelN = rankToLevel(baseRank)
       const finalBase = baseLevelN
         ? await this.questionBankRepo.getRandomQuestions(baseCount, baseLevelN)

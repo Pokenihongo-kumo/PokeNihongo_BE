@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 import { QuestionBankController } from './question-bank.controller'
-import { QuestionBankRepository } from './question-bank.repo'
+import { QuestionBankRepo } from './question-bank.repo'
 import { QuestionBankService } from './question-bank.service'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { TextToSpeechService } from '@/3rdService/speech/text-to-speech.service'
@@ -14,10 +14,10 @@ import { AnswerModule } from '@/modules/answer/answer.module'
   controllers: [QuestionBankController],
   providers: [
     QuestionBankService,
-    QuestionBankRepository,
+    QuestionBankRepo,
     PrismaService,
     TextToSpeechService
   ],
-  exports: [QuestionBankService, QuestionBankRepository]
+  exports: [QuestionBankService, QuestionBankRepo]
 })
 export class QuestionBankModule {}

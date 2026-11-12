@@ -11,7 +11,7 @@ import {
   QuestionBankResSchema,
   QuestionBankListResSchema,
   BulkDeleteQuestionBankBodySchema
-} from '../entities/question-bank.entities'
+} from '../entities/question-bank.entity'
 
 export class CreateQuestionBankBodyDTO extends createZodDto(
   CreateQuestionBankBodySchema

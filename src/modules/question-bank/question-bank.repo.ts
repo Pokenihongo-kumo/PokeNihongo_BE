@@ -5,15 +5,15 @@ import {
   UpdateQuestionBankWithMeaningsBodyType,
   UpdateQuestionBankBodyType,
   GetQuestionBankListQueryType
-} from '@/modules/question-bank/entities/question-bank.entities'
+} from '@/modules/question-bank/entities/question-bank.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable, Logger } from '@nestjs/common'
 import { pickLabelFromComposite } from '@/common/utils/prase.utils'
 import { QuestionType } from '@prisma/client'
 
 @Injectable()
-export class QuestionBankRepository {
-  private readonly logger = new Logger(QuestionBankRepository.name)
+export class QuestionBankRepo {
+  private readonly logger = new Logger(QuestionBankRepo.name)
 
   constructor(private readonly prisma: PrismaService) {}
 
