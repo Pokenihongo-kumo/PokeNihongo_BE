@@ -2,8 +2,6 @@ import { Injectable } from '@nestjs/common'
 import { PrismaService } from '@/shared/services/prisma.service'
 import {
   TestType,
-  CreateTestBodyType,
-  UpdateTestBodyType,
   GetTestListQueryType,
   CreateTestWithMeaningsBodyType,
   UpdateTestWithMeaningsBodyType
@@ -13,28 +11,6 @@ import { TestStatus as PrismaTestStatus } from '@prisma/client'
 @Injectable()
 export class TestRepo {
   constructor(private readonly prisma: PrismaService) {}
-
-  async create(data: CreateTestBodyType & { creatorId?: number }): Promise<TestType> {
-    const result = await this.prisma.test.create({
-      data: {
-        name: 'temp', // Sẽ được cập nhật trong service
-        description: 'temp', // Sẽ được cập nhật trong service
-        price: data.price,
-        levelN: data.levelN,
-        limit: data.limit,
-        testType: data.testType,
-        status: data.status,
-        creatorId: data.creatorId
-      }
-    })
-    return {
-      ...result,
-      price: result.price ? Number(result.price) : null,
-      levelN: result.levelN,
-      limit: result.limit,
-      testType: result.testType as PrismaTestStatus
-    }
-  }
 
   async findById(id: number, language?: string): Promise<TestType | null> {
     const result = await this.prisma.test.findUnique({
@@ -345,25 +321,6 @@ export class TestRepo {
     )
 
     return { data, total }
-  }
-
-  async update(id: number, data: UpdateTestBodyType): Promise<TestType> {
-    const result = await this.prisma.test.update({
-      where: { id },
-      data: {
-        ...(data.price !== undefined && { price: data.price }),
-        ...(data.levelN !== undefined && { levelN: data.levelN }),
-        ...(data.testType && { testType: data.testType }),
-        ...(data.status && { status: data.status })
-      }
-    })
-    return {
-      ...result,
-      price: result.price ? Number(result.price) : null,
-      levelN: result.levelN,
-      limit: result.limit,
-      testType: result.testType as PrismaTestStatus
-    }
   }
 
   async delete(id: number): Promise<TestType> {

@@ -2,9 +2,19 @@ import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
 import { TestSetStatus, TestStatus as PrismaTestStatus } from '@prisma/client'
+import { TestMessage as M } from '@/i18n/message-keys'
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { paginatedResSchema } from '@/shared/utils/pagination'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
+
+const enumOf = <T extends Record<string, string>>(values: T, key: string) =>
+  z.nativeEnum(values, { errorMap: () => ({ message: key }) })
+
+// Body ids are JSON numbers (no coercion); params and query use checkIdSchema
+const idOf = (key: string) =>
+  z.number({ invalid_type_error: key, required_error: key }).int(key).positive(key)
 
 // Test Schema
 export const TestSchema = z.object({
@@ -39,153 +49,131 @@ export const TestSchema = z.object({
   updatedAt: z.date()
 })
 
-// Create Test Schema
-export const CreateTestBodySchema = z
-  .object({
-    name: z.string().optional(),
-    description: z.string().nullable().optional(),
-    price: z.number().nullable().optional(),
-    levelN: z.number().int().min(0).max(5).nullable().optional(),
-    limit: z.number().int().min(0).nullable().optional(),
-    testType: z.nativeEnum(PrismaTestStatus),
-    status: z.nativeEnum(TestSetStatus).default(TestSetStatus.DRAFT),
-    translations: z
-      .array(
-        z.object({
-          field: z.enum(['name', 'description']),
-          language_code: z.string(),
-          value: z.string()
-        })
-      )
-      .min(1, 'Phải có ít nhất 1 translation')
-  })
-  .strict()
+// Field rules shared by create and update (were checked in the service)
+const fields = {
+  price: z
+    .number({ invalid_type_error: M.INVALID_PRICE })
+    .min(0, M.INVALID_PRICE)
+    .nullable()
+    .optional(),
+  // 0 = several levels
+  levelN: z
+    .number({ invalid_type_error: M.INVALID_LEVEL })
+    .int(M.INVALID_LEVEL)
+    .min(0, M.INVALID_LEVEL)
+    .max(5, M.INVALID_LEVEL)
+    .nullable()
+    .optional(),
+  // Attempts allowed (0 = no limit)
+  limit: z
+    .number({ invalid_type_error: M.INVALID_LIMIT })
+    .int(M.INVALID_LIMIT)
+    .min(0, M.INVALID_LIMIT)
+    .nullable()
+    .optional(),
+  testType: enumOf(PrismaTestStatus, M.INVALID_TEST_TYPE),
+  status: enumOf(TestSetStatus, M.INVALID_STATUS)
+}
+
+const MeaningsSchema = z
+  .array(
+    z.object({
+      field: z.enum(['name', 'description']),
+      meaningKey: z.string().optional(),
+      translations: z.object({
+        vi: z.string(),
+        en: z.string(),
+        ja: z.string().optional()
+      })
+    }),
+    { required_error: M.MEANINGS_REQUIRED }
+  )
+  .min(1, M.MEANINGS_REQUIRED)
+
+// Meanings, when sent, include the name
+const nameMeaning = (
+  data: { meanings?: { field: 'name' | 'description' }[] },
+  ctx: z.RefinementCtx
+) => {
+  if (data.meanings && !data.meanings.some((m) => m.field === 'name')) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: M.NAME_MEANING_REQUIRED,
+      path: ['meanings']
+    })
+  }
+}
 
 // Create Test with Meanings Schema
 export const CreateTestWithMeaningsBodySchema = z
   .object({
-    price: z.number().nullable().optional(),
-    levelN: z.number().int().min(0).max(5).nullable().optional(),
-    limit: z.number().int().min(0).nullable().optional(),
-    testType: z.nativeEnum(PrismaTestStatus),
-    status: z.nativeEnum(TestSetStatus).default(TestSetStatus.DRAFT),
-    meanings: z
-      .array(
-        z.object({
-          field: z.enum(['name', 'description']),
-          meaningKey: z.string().optional(),
-          translations: z.object({
-            vi: z.string(),
-            en: z.string(),
-            ja: z.string().optional()
-          })
-        })
-      )
-      .min(1, 'Phải có ít nhất 1 meaning')
+    ...fields,
+    status: fields.status.default(TestSetStatus.DRAFT),
+    meanings: MeaningsSchema
   })
   .strict()
-
-// Update Test Schema
-export const UpdateTestBodySchema = z
-  .object({
-    price: z.number().nullable().optional(),
-    levelN: z.number().int().min(0).max(5).nullable().optional(),
-    limit: z.number().int().min(0).nullable().optional(),
-    testType: z.nativeEnum(PrismaTestStatus).optional(),
-    status: z.nativeEnum(TestSetStatus).optional(),
-    translations: z
-      .array(
-        z.object({
-          field: z.enum(['name', 'description']),
-          language_code: z.string(),
-          value: z.string()
-        })
-      )
-      .optional()
-  })
-  .strict()
+  .superRefine(nameMeaning)
 
 // Update Test with Meanings Schema
 export const UpdateTestWithMeaningsBodySchema = z
   .object({
-    price: z.number().nullable().optional(),
-    levelN: z.number().int().min(0).max(5).nullable().optional(),
-    limit: z.number().int().min(0).nullable().optional(),
-    testType: z.nativeEnum(PrismaTestStatus).optional(),
-    status: z.nativeEnum(TestSetStatus).optional(),
-    meanings: z
-      .array(
-        z.object({
-          field: z.enum(['name', 'description']),
-          meaningKey: z.string().optional(),
-          translations: z.object({
-            vi: z.string(),
-            en: z.string(),
-            ja: z.string().optional()
-          })
-        })
-      )
-      .optional()
+    ...fields,
+    testType: fields.testType.optional(),
+    status: fields.status.optional(),
+    meanings: MeaningsSchema.optional()
   })
   .strict()
-
-// Test Response Schema
-export const TestResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: TestSchema,
-    message: z.string()
-  })
-  .strict()
+  .superRefine(nameMeaning)
 
 // Test List Response Schema
-export const TestListResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(TestSchema),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
+export const TestListResSchema = paginatedResSchema(TestSchema)
 
 // Get Test by ID Params Schema
 export const GetTestByIdParamsSchema = z
   .object({
-    id: z.string().transform((val) => parseInt(val, 10))
+    id: checkIdSchema(M.INVALID_ID)
+  })
+  .strict()
+
+export const GetTestByLessonParamsSchema = z
+  .object({
+    lessonId: checkIdSchema(M.INVALID_LESSON_ID)
+  })
+  .strict()
+
+export const GetLessonReviewParamsSchema = z
+  .object({
+    testId: checkIdSchema(M.INVALID_ID)
+  })
+  .strict()
+
+// levelN 1-5 and how many questions
+export const GetRandomQuestionsQuerySchema = z
+  .object({
+    levelN: z.coerce
+      .number({ invalid_type_error: M.INVALID_LEVEL_N })
+      .int(M.INVALID_LEVEL_N)
+      .min(1, M.INVALID_LEVEL_N)
+      .max(5, M.INVALID_LEVEL_N),
+    count: checkIdSchema(M.INVALID_COUNT)
   })
   .strict()
 
 // Get Test List Query Schema
 export const GetTestListQuerySchema = z
   .object({
-    currentPage: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('1'),
-    pageSize: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('10'),
+    currentPage: checkIdSchema(M.INVALID_PAGE).default(1),
+    pageSize: checkIdSchema(M.INVALID_PAGE_SIZE).default(10),
     search: z.string().optional(),
-    testType: z.nativeEnum(PrismaTestStatus).optional(),
-    status: z.nativeEnum(TestSetStatus).optional(),
-    levelN: z
-      .string()
-      .transform((val) => parseInt(val, 10))
+    testType: enumOf(PrismaTestStatus, M.INVALID_TEST_TYPE).optional(),
+    status: enumOf(TestSetStatus, M.INVALID_STATUS).optional(),
+    levelN: z.coerce
+      .number({ invalid_type_error: M.INVALID_LEVEL })
+      .int(M.INVALID_LEVEL)
+      .min(0, M.INVALID_LEVEL)
+      .max(5, M.INVALID_LEVEL)
       .optional(),
-    creatorId: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional(),
+    creatorId: checkIdSchema(M.INVALID_CREATOR_ID).optional(),
     language: z.string().optional(),
     sortBy: z
       .enum([
@@ -204,38 +192,40 @@ export const GetTestListQuerySchema = z
   })
   .strict()
 
+const testSetIds = z
+  .array(idOf(M.INVALID_TESTSET_ID), {
+    required_error: M.TESTSET_IDS_REQUIRED,
+    invalid_type_error: M.TESTSET_IDS_REQUIRED
+  })
+  .min(1, M.TESTSET_IDS_REQUIRED)
+
 // Delete Many Tests Schema
 export const DeleteManyTestsBodySchema = z
   .object({
-    ids: z.array(z.number()).min(1, 'Phải có ít nhất 1 ID để xóa')
+    ids: z
+      .array(idOf(M.INVALID_ID), {
+        required_error: M.IDS_REQUIRED,
+        invalid_type_error: M.IDS_REQUIRED
+      })
+      .min(1, M.IDS_REQUIRED)
+      .max(100, M.IDS_TOO_MANY)
   })
   .strict()
 
 // Add TestSets to Test Schema
-export const AddTestSetsToTestBodySchema = z
-  .object({
-    testSetIds: z.array(z.number()).min(1, 'Phải có ít nhất 1 TestSet ID')
-  })
-  .strict()
+export const AddTestSetsToTestBodySchema = z.object({ testSetIds }).strict()
 
 // Remove TestSets from Test Schema
-export const RemoveTestSetsFromTestBodySchema = z
-  .object({
-    testSetIds: z.array(z.number()).min(1, 'Phải có ít nhất 1 TestSet ID')
-  })
-  .strict()
+export const RemoveTestSetsFromTestBodySchema = z.object({ testSetIds }).strict()
 
 // Types
 export type TestType = z.infer<typeof TestSchema>
-export type CreateTestBodyType = z.infer<typeof CreateTestBodySchema>
-export type UpdateTestBodyType = z.infer<typeof UpdateTestBodySchema>
 export type CreateTestWithMeaningsBodyType = z.infer<
   typeof CreateTestWithMeaningsBodySchema
 >
 export type UpdateTestWithMeaningsBodyType = z.infer<
   typeof UpdateTestWithMeaningsBodySchema
 >
-export type TestResType = z.infer<typeof TestResSchema>
 export type TestListResType = z.infer<typeof TestListResSchema>
 export type GetTestByIdParamsType = z.infer<typeof GetTestByIdParamsSchema>
 export type GetTestListQueryType = z.infer<typeof GetTestListQuerySchema>
