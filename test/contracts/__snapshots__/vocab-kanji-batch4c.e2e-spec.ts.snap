@@ -1,0 +1,389 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Vocabulary/kanji batch 4c contract (e2e) kanji create, list (web query names), management list, update 1`] = `
+{
+  "create": {
+    "body": {
+      "data": {
+        "kanji": {
+          "character": "string",
+          "createdAt": "string",
+          "id": "number",
+          "img": "null",
+          "jlptLevel": "number",
+          "meaningKey": "string",
+          "strokeCount": "number",
+          "updatedAt": "string",
+        },
+        "meanings": [
+          {
+            "meaningKey": "string",
+            "translations": {
+              "en": "string",
+              "vi": "string",
+            },
+          },
+        ],
+        "readings": [
+          {
+            "createdAt": "string",
+            "id": "number",
+            "kanjiId": "number",
+            "reading": "string",
+            "readingType": "string",
+            "updatedAt": "string",
+          },
+        ],
+      },
+      "message": "Tạo Kanji cùng với nghĩa thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "list": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "character": "string",
+            "createdAt": "string",
+            "id": "number",
+            "img": "null",
+            "jlptLevel": "number",
+            "meaningKey": "string",
+            "meanings": [
+              {
+                "meaningKey": "string",
+                "translations": {
+                  "en": "string",
+                  "vi": "string",
+                },
+              },
+            ],
+            "readings": [
+              {
+                "createdAt": "string",
+                "id": "number",
+                "kanjiId": "number",
+                "reading": "string",
+                "readingType": "string",
+                "updatedAt": "string",
+              },
+            ],
+            "strokeCount": "number",
+            "updatedAt": "string",
+          },
+        ],
+      },
+      "message": "Lấy danh sách kanji thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "management": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "createdAt": "string",
+            "id": "number",
+            "jlptLevel": "number",
+            "kanji": "string",
+            "kunyomi": "string",
+            "meaning": "string",
+            "onyomi": "string",
+            "strokeCount": "number",
+            "updatedAt": "string",
+          },
+        ],
+      },
+      "message": "Lấy danh sách quản lý kanji thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "update": {
+    "body": {
+      "data": {
+        "kanji": {
+          "character": "string",
+          "createdAt": "string",
+          "id": "number",
+          "img": "null",
+          "jlptLevel": "number",
+          "meaningKey": "string",
+          "readings": [],
+          "strokeCount": "number",
+          "updatedAt": "string",
+        },
+        "meanings": [],
+      },
+      "message": "Cập nhật Kanji cùng với nghĩa thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Vocabulary/kanji batch 4c contract (e2e) kanji errors, delete, delete again 1`] = `
+{
+  "createDuplicate": {
+    "en": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Kanji đã tồn tại",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+    "vi": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Kanji đã tồn tại",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+  },
+  "createInvalid": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid data provided",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Dữ liệu không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "delete": {
+    "body": {
+      "data": "null",
+      "message": "Xóa kanji thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "deleteAgain": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Kanji không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Kanji không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "deleteInvalidId": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Kanji không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Kanji không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "updateNotFound": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Kanji không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Kanji không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+}
+`;
+
+exports[`Vocabulary/kanji batch 4c contract (e2e) vocabulary errors (web and mobile routes) 1`] = `
+{
+  "deleteInvalidId": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu từ vựng không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu từ vựng không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+  "detailInvalidId": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy từ vựng",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy từ vựng",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "detailNotFound": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy từ vựng",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy từ vựng",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "updateNotFound": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy từ vựng",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy từ vựng",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+}
+`;
+
+exports[`Vocabulary/kanji batch 4c contract (e2e) vocabulary statistics, delete, delete again 1`] = `
+{
+  "delete": {
+    "body": {
+      "data": {
+        "audioUrl": "null",
+        "createdAt": "string",
+        "createdById": "null",
+        "id": "number",
+        "imageUrl": "null",
+        "levelN": "number",
+        "reading": "string",
+        "updatedAt": "string",
+        "wordJp": "string",
+        "wordType": "null",
+      },
+      "message": "Xóa từ vựng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "deleteAgain": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy từ vựng",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy từ vựng",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "statistics": {
+    "body": {
+      "data": {
+        "totalKanji": "number",
+        "totalVocabulary": "number",
+        "vocabularyN1": "number",
+        "vocabularyN2": "number",
+        "vocabularyN3": "number",
+        "vocabularyN4": "number",
+        "vocabularyN5": "number",
+      },
+      "message": "Lấy thống kê từ vựng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
