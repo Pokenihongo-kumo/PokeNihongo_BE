@@ -210,6 +210,47 @@ export const viMessages = {
     MULTIPLE_NONE_CREATED: 'Không thể tạo liên kết nào',
     UNKNOWN_FAILURE: 'Lỗi không xác định'
   },
+  testset: {
+    GET_SUCCESS: 'Lấy thông tin bộ đề thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách bộ đề thành công',
+    CREATE_SUCCESS: 'Tạo bộ đề thành công',
+    UPDATE_SUCCESS: 'Cập nhật bộ đề thành công',
+    DELETE_SUCCESS: 'Xóa bộ đề thành công',
+    NOT_FOUND: 'Không tìm thấy bộ đề',
+    INVALID_DATA: 'Dữ liệu bộ đề không hợp lệ',
+    QUESTION_BANK_NOT_FOUND: 'QuestionBank với ID {id} không tồn tại',
+    CANNOT_CHANGE_LEVEL_HAS_QUESTIONS:
+      'Không thể thay đổi levelN khi testSet đã có câu hỏi, trừ khi testType là GENERAL',
+    CANNOT_CHANGE_TYPE_GENERAL_MULTIPLE:
+      'Không thể thay đổi testType từ GENERAL sang loại khác khi testSet đang chứa nhiều loại câu hỏi khác nhau',
+    CANNOT_CHANGE_TYPE_SPECIFIC:
+      'Không thể thay đổi testType. Chỉ có thể thay đổi thành cùng type hoặc GENERAL (từ {from} sang {to})',
+    CANNOT_CHANGE_TYPE_GENERAL_SINGLE:
+      'Không thể thay đổi testType từ GENERAL sang type khác. TestSet hiện đang chứa câu hỏi loại {questionType}',
+    INVALID_ID: 'ID bộ đề không hợp lệ',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương',
+    INVALID_CREATOR_ID: 'ID người tạo không hợp lệ',
+    INVALID_LEVEL: 'Cấp độ JLPT phải từ 0 đến 5 (0 = nhiều cấp độ)',
+    INVALID_QUESTION_LEVEL: 'Cấp độ câu hỏi phải từ 1 đến 5',
+    INVALID_PRICE: 'Giá bộ đề không được âm',
+    INVALID_AUDIO_URL: 'URL âm thanh không hợp lệ',
+    INVALID_TEST_TYPE: 'Loại đề thi không hợp lệ',
+    INVALID_STATUS: 'Trạng thái bộ đề không hợp lệ',
+    INVALID_QUESTION_TYPE: 'Loại câu hỏi không hợp lệ',
+    TEST_TYPE_REQUIRED: 'testType là bắt buộc khi tạo mới',
+    READING_CONTENT_REQUIRED:
+      'Khi testType là READING, content phải có và phải là tiếng Nhật (bài đọc)',
+    MEANINGS_REQUIRED: 'Phải có ít nhất 1 meaning',
+    NAME_MEANING_REQUIRED: 'Phải có ít nhất 1 meaning cho name',
+    TRANSLATIONS_REQUIRED: 'Phải có ít nhất 1 translation',
+    NAME_TRANSLATION_REQUIRED: 'Phải có ít nhất 1 translation cho name',
+    QUESTION_BANKS_REQUIRED: 'Phải có ít nhất 1 questionBank khi tạo mới',
+    DUPLICATE_QUESTION_IDS:
+      'Danh sách questionBanks có trùng lặp id (TestSetQuestionBank.id)',
+    QUESTION_JP_REQUIRED: 'questionJp không được để trống',
+    QUESTION_JP_NOT_JAPANESE: 'questionJp phải là tiếng Nhật (Hiragana/Katakana/Kanji)'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Tạo danh mục bài học thành công',
     UPDATE_SUCCESS: 'Cập nhật danh mục bài học thành công',

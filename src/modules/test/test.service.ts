@@ -16,7 +16,7 @@ import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { TEST_MESSAGE } from '@/common/constants/message'
 import { TranslationService } from '../translation/translation.service'
 import { LanguagesService } from '../languages/languages.service'
-import { TestSetRepository } from '../testset/testset.repo'
+import { TestSetRepo } from '../testset/testset.repo'
 import { TestSetNotFoundException } from '../testset/dto/testset.error'
 import { TestSetQuestionBankService } from '../testset-questionbank/testset-questionbank.service'
 import { UserTestAttemptRepository } from '../user-test-attempt/user-test-attempt.repo'
@@ -35,7 +35,7 @@ export class TestService {
     private readonly prisma: PrismaService,
     private readonly translationService: TranslationService,
     private readonly languagesService: LanguagesService,
-    private readonly testSetRepo: TestSetRepository,
+    private readonly testSetRepo: TestSetRepo,
     private readonly testSetQuestionBankService: TestSetQuestionBankService,
     private readonly userTestAttemptRepo: UserTestAttemptRepository,
     private readonly userTestRepo: UserTestRepository,

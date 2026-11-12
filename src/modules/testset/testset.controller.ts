@@ -1,12 +1,9 @@
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
-import { IsPublic } from '@/common/decorators/auth.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import {
-  CreateTestSetBodyDTO,
   GetTestSetByIdParamsDTO,
   GetTestSetListQueryDTO,
   UpdateTestSetBodyDTO,
-  TestSetResDTO,
   TestSetListResDTO,
   CreateTestSetWithMeaningsBodyDTO,
   UpdateTestSetWithMeaningsBodyDTO,
@@ -18,13 +15,11 @@ import {
   TestSetWithQuestionsResponseSwaggerDTO,
   TestSetWithQuestionsFullResponseSwaggerDTO,
   GetTestSetListQuerySwaggerDTO,
-  CreateTestSetSwaggerDTO,
   UpdateTestSetSwaggerDTO,
   CreateTestSetWithMeaningsSwaggerDTO,
   UpdateTestSetWithMeaningsSwaggerDTO,
   UpsertTestSetWithQuestionBanksSwaggerDTO
 } from './dto/testset.dto'
-import { MessageResDTO } from '@/shared/dtos/response.dto'
 import {
   Body,
   Controller,
@@ -62,11 +57,12 @@ export class TestSetController {
       'Nếu không có id trong body → tạo mới testset. Nếu có id → cập nhật testset. Có thể: tạo questionBank mới, update thông tin testset/questionBank, và update vị trí order (drag & drop) trong 1 API'
   })
   @ApiBody({ type: UpsertTestSetWithQuestionBanksSwaggerDTO })
-  async upsertTestSetWithQuestionBanks(
+  upsertTestSetWithQuestionBanks(
     @Body() body: UpsertTestSetWithQuestionBanksBodyDTO,
-    @ActiveUser('userId') userId: number
-  ): Promise<MessageResDTO> {
-    return this.testSetService.upsertTestSetWithQuestionBanks(body, userId)
+    @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string
+  ) {
+    return this.testSetService.upsertTestSetWithQuestionBanks(body, userId, lang)
   }
 
   @Post('with-meanings')
@@ -82,11 +78,12 @@ export class TestSetController {
     description: 'Tạo bộ đề với meanings thành công',
     type: TestSetResponseSwaggerDTO
   })
-  async createTestSetWithMeanings(
+  createTestSetWithMeanings(
     @Body() body: CreateTestSetWithMeaningsBodyDTO,
-    @ActiveUser('userId') userId: number
-  ): Promise<MessageResDTO> {
-    return this.testSetService.createTestSetWithMeanings(body, userId)
+    @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string
+  ) {
+    return this.testSetService.createTestSetWithMeanings(body, userId, lang)
   }
 
   @Get()
@@ -114,7 +111,7 @@ export class TestSetController {
   @ApiQuery({ type: GetTestSetListQuerySwaggerDTO })
   @ZodSerializerDto(TestSetListResDTO)
   findAllBasic(@Query() query: GetTestSetListQueryDTO, @I18nLang() lang: string) {
-    return this.testSetService.findAllBasic(query, lang)
+    return this.testSetService.findAll(query, lang)
   }
 
   @Get(':id')
@@ -125,8 +122,8 @@ export class TestSetController {
     description: 'Lấy thông tin bộ đề thành công',
     type: TestSetWithQuestionsResponseSwaggerDTO
   })
-  findOne(@Param('id') id: string, @I18nLang() lang: string) {
-    return this.testSetService.findOne(Number(id), lang)
+  findOne(@Param() params: GetTestSetByIdParamsDTO, @I18nLang() lang: string) {
+    return this.testSetService.findOne(params.id, lang)
   }
 
   @Get(':id/with-question-banks-full')
@@ -146,8 +143,11 @@ export class TestSetController {
     description: 'Lấy thông tin bộ đề với questionBanks và full translations thành công',
     type: TestSetWithQuestionsFullResponseSwaggerDTO
   })
-  findOneWithQuestionBanksFull(@Param('id') id: string) {
-    return this.testSetService.findOneWithQuestionBanksFull(Number(id))
+  findOneWithQuestionBanksFull(
+    @Param() params: GetTestSetByIdParamsDTO,
+    @I18nLang() lang: string
+  ) {
+    return this.testSetService.findOneWithQuestionBanksFull(params.id, lang)
   }
 
   @Put(':id')
@@ -159,12 +159,12 @@ export class TestSetController {
     description: 'Cập nhật bộ đề thành công',
     type: TestSetResponseSwaggerDTO
   })
-  async updateTestSet(
-    @Param('id') id: string,
+  updateTestSet(
+    @Param() params: GetTestSetByIdParamsDTO,
     @Body() body: UpdateTestSetBodyDTO,
-    @ActiveUser('userId') userId: number
-  ): Promise<MessageResDTO> {
-    return this.testSetService.updateTestSet(Number(id), body, userId)
+    @I18nLang() lang: string
+  ) {
+    return this.testSetService.updateTestSet(params.id, body, lang)
   }
 
   @Put(':id/with-meanings')
@@ -176,12 +176,12 @@ export class TestSetController {
     description: 'Cập nhật bộ đề với meanings thành công',
     type: TestSetResponseSwaggerDTO
   })
-  async updateTestSetWithMeanings(
-    @Param('id') id: string,
+  updateTestSetWithMeanings(
+    @Param() params: GetTestSetByIdParamsDTO,
     @Body() body: UpdateTestSetWithMeaningsBodyDTO,
-    @ActiveUser('userId') userId: number
-  ): Promise<MessageResDTO> {
-    return this.testSetService.updateTestSetWithMeanings(Number(id), body, userId)
+    @I18nLang() lang: string
+  ) {
+    return this.testSetService.updateTestSetWithMeanings(params.id, body, lang)
   }
 
   @Delete(':id')
@@ -193,10 +193,7 @@ export class TestSetController {
     description: 'Xóa bộ đề thành công',
     type: TestSetResponseSwaggerDTO
   })
-  async deleteTestSet(
-    @Param('id') id: string,
-    @ActiveUser('userId') userId: number
-  ): Promise<MessageResDTO> {
-    return this.testSetService.deleteTestSet(Number(id), userId)
+  deleteTestSet(@Param() params: GetTestSetByIdParamsDTO, @I18nLang() lang: string) {
+    return this.testSetService.deleteTestSet(params.id, lang)
   }
 }

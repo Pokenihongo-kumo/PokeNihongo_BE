@@ -206,6 +206,46 @@ export const enMessages = {
     MULTIPLE_NONE_CREATED: 'No questions could be added',
     UNKNOWN_FAILURE: 'Unknown error'
   },
+  testset: {
+    GET_SUCCESS: 'Test set retrieved successfully',
+    GET_LIST_SUCCESS: 'Test sets retrieved successfully',
+    CREATE_SUCCESS: 'Test set created successfully',
+    UPDATE_SUCCESS: 'Test set updated successfully',
+    DELETE_SUCCESS: 'Test set deleted successfully',
+    NOT_FOUND: 'Test set not found',
+    INVALID_DATA: 'Invalid test set data',
+    QUESTION_BANK_NOT_FOUND: 'Question {id} not found',
+    CANNOT_CHANGE_LEVEL_HAS_QUESTIONS:
+      'The level cannot change while the test set has questions, unless it is GENERAL',
+    CANNOT_CHANGE_TYPE_GENERAL_MULTIPLE:
+      'A GENERAL test set with questions of several types cannot change its type',
+    CANNOT_CHANGE_TYPE_SPECIFIC:
+      'The type can only change to GENERAL (from {from} to {to})',
+    CANNOT_CHANGE_TYPE_GENERAL_SINGLE:
+      'This GENERAL test set can only change to {questionType}, the type of its questions',
+    INVALID_ID: 'Invalid test set ID',
+    INVALID_PAGE: 'Page must be a positive integer',
+    INVALID_PAGE_SIZE: 'Page size must be a positive integer',
+    INVALID_CREATOR_ID: 'Invalid creator ID',
+    INVALID_LEVEL: 'JLPT level must be from 0 to 5 (0 = several levels)',
+    INVALID_QUESTION_LEVEL: 'Question level must be from 1 to 5',
+    INVALID_PRICE: 'Price cannot be negative',
+    INVALID_AUDIO_URL: 'Invalid audio URL',
+    INVALID_TEST_TYPE: 'Invalid test type',
+    INVALID_STATUS: 'Invalid test set status',
+    INVALID_QUESTION_TYPE: 'Invalid question type',
+    TEST_TYPE_REQUIRED: 'Test type is required for a new test set',
+    READING_CONTENT_REQUIRED:
+      'A READING test set needs content in Japanese (the reading text)',
+    MEANINGS_REQUIRED: 'At least one meaning is required',
+    NAME_MEANING_REQUIRED: 'A meaning for the name is required',
+    TRANSLATIONS_REQUIRED: 'At least one translation is required',
+    NAME_TRANSLATION_REQUIRED: 'A translation for the name is required',
+    QUESTION_BANKS_REQUIRED: 'A new test set needs at least one question',
+    DUPLICATE_QUESTION_IDS: 'The questions list repeats an id',
+    QUESTION_JP_REQUIRED: 'questionJp is required',
+    QUESTION_JP_NOT_JAPANESE: 'questionJp must be Japanese (Hiragana/Katakana/Kanji)'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Lesson category created successfully',
     UPDATE_SUCCESS: 'Lesson category updated successfully',
