@@ -7,9 +7,91 @@ import {
   QuestionType,
   RoleSpeaking
 } from '@prisma/client'
+import { TestSetMessage as M } from '@/i18n/message-keys'
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { hasJapaneseText } from '@/common/utils/japanese-text'
+import { paginatedResSchema } from '@/shared/utils/pagination'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
+
+const enumOf = <T extends Record<string, string>>(values: T, key: string) =>
+  z.nativeEnum(values, { errorMap: () => ({ message: key }) })
+
+const isUrl = (value: string) => {
+  try {
+    new URL(value)
+    return true
+  } catch {
+    return false
+  }
+}
+
+// Field rules shared by every create/update body (were checked in the service)
+const fields = {
+  content: z.string().nullable().optional(),
+  // '' means "no audio"
+  audioUrl: z
+    .string()
+    .refine((v) => v === '' || isUrl(v), M.INVALID_AUDIO_URL)
+    .nullable()
+    .optional(),
+  price: z
+    .number({ invalid_type_error: M.INVALID_PRICE })
+    .min(0, M.INVALID_PRICE)
+    .nullable()
+    .optional(),
+  // 0 = several levels
+  levelN: z
+    .number({ invalid_type_error: M.INVALID_LEVEL })
+    .int(M.INVALID_LEVEL)
+    .min(0, M.INVALID_LEVEL)
+    .max(5, M.INVALID_LEVEL)
+    .nullable()
+    .optional(),
+  testType: enumOf(PrismaTestSetType, M.INVALID_TEST_TYPE),
+  status: enumOf(TestSetStatus, M.INVALID_STATUS)
+}
+
+type Ctx = z.RefinementCtx
+const issue = (ctx: Ctx, message: string, path: (string | number)[]) =>
+  ctx.addIssue({ code: z.ZodIssueCode.custom, message, path })
+
+// A READING test set carries its reading text, in Japanese
+const readingNeedsContent = (
+  data: { testType?: PrismaTestSetType; content?: string | null },
+  ctx: Ctx
+) => {
+  if (data.testType === PrismaTestSetType.READING && !hasJapaneseText(data.content)) {
+    issue(ctx, M.READING_CONTENT_REQUIRED, ['content'])
+  }
+}
+
+const nameIsTranslated = (
+  items: { field: 'name' | 'description' }[] | undefined,
+  key: string,
+  path: string,
+  ctx: Ctx
+) => {
+  if (items && !items.some((item) => item.field === 'name')) issue(ctx, key, [path])
+}
+
+const fieldEnum = z.enum(['name', 'description'])
+
+const MeaningSchema = z.object({
+  field: fieldEnum,
+  meaningKey: z.string().optional(),
+  translations: z.object({ vi: z.string(), en: z.string(), ja: z.string().optional() })
+})
+const MeaningsSchema = z
+  .array(MeaningSchema, { required_error: M.MEANINGS_REQUIRED })
+  .min(1, M.MEANINGS_REQUIRED)
+
+const TranslationsSchema = z
+  .array(z.object({ field: fieldEnum, language_code: z.string(), value: z.string() }), {
+    required_error: M.TRANSLATIONS_REQUIRED
+  })
+  .min(1, M.TRANSLATIONS_REQUIRED)
 
 // TestSet Schema
 export const TestSetSchema = z.object({
@@ -45,141 +127,67 @@ export const TestSetSchema = z.object({
   updatedAt: z.date()
 })
 
-// Create TestSet Schema
-export const CreateTestSetBodySchema = z
-  .object({
-    name: z.string().optional(),
-    description: z.string().nullable().optional(),
-    content: z.string().nullable().optional(),
-    audioUrl: z.string().nullable().optional(),
-    price: z.number().nullable().optional(),
-    levelN: z.number().nullable().optional(),
-    testType: z.nativeEnum(PrismaTestSetType),
-    status: z.nativeEnum(TestSetStatus).default(TestSetStatus.DRAFT),
-    translations: z
-      .array(
-        z.object({
-          field: z.enum(['name', 'description']),
-          language_code: z.string(),
-          value: z.string()
-        })
-      )
-      .min(1, 'Phải có ít nhất 1 translation')
-  })
-  .strict()
-  .refine(
-    (data) => {
-      // Nếu testType là READING thì content phải có và là tiếng Nhật
-      if (data.testType === PrismaTestSetType.READING) {
-        if (!data.content || data.content.trim() === '') {
-          return false
-        }
-        // Kiểm tra có chứa ký tự tiếng Nhật (Hiragana, Katakana, Kanji)
-        const japaneseRegex = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/
-        return japaneseRegex.test(data.content)
-      }
-      return true
-    },
-    {
-      message: 'Khi testType là READING, content phải có và phải là tiếng Nhật (bài đọc)',
-      path: ['content']
-    }
-  )
-
 // Create TestSet with Meanings Schema
 export const CreateTestSetWithMeaningsBodySchema = z
   .object({
-    content: z.string().nullable().optional(),
-    audioUrl: z.string().nullable().optional(),
-    price: z.number().nullable().optional(),
-    levelN: z.number().nullable().optional(),
-    testType: z.nativeEnum(PrismaTestSetType),
-    status: z.nativeEnum(TestSetStatus).default(TestSetStatus.DRAFT),
-    meanings: z
-      .array(
-        z.object({
-          field: z.enum(['name', 'description']),
-          meaningKey: z.string().optional(),
-          translations: z.object({
-            vi: z.string(),
-            en: z.string(),
-            ja: z.string().optional()
-          })
-        })
-      )
-      .min(1, 'Phải có ít nhất 1 meaning')
+    ...fields,
+    status: fields.status.default(TestSetStatus.DRAFT),
+    meanings: MeaningsSchema
   })
   .strict()
-  .refine(
-    (data) => {
-      // Nếu testType là READING thì content phải có và là tiếng Nhật
-      if (data.testType === PrismaTestSetType.READING) {
-        if (!data.content || data.content.trim() === '') {
-          return false
-        }
-        // Kiểm tra có chứa ký tự tiếng Nhật (Hiragana, Katakana, Kanji)
-        const japaneseRegex = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/
-        return japaneseRegex.test(data.content)
-      }
-      return true
-    },
-    {
-      message: 'Khi testType là READING, content phải có và phải là tiếng Nhật (bài đọc)',
-      path: ['content']
-    }
-  )
+  .superRefine((data, ctx) => {
+    readingNeedsContent(data, ctx)
+    nameIsTranslated(data.meanings, M.NAME_MEANING_REQUIRED, 'meanings', ctx)
+  })
 
-// Create TestSet with QuestionBanks Schema
-export const CreateTestSetWithQuestionBodySchema = z
+// Update TestSet Schema (translations are written as the first meaning)
+export const UpdateTestSetBodySchema = z
   .object({
-    content: z.string().nullable().optional(),
-    audioUrl: z.string().nullable().optional(),
-    price: z.number().nullable().optional(),
-    levelN: z.number().nullable().optional(),
-    testType: z.nativeEnum(PrismaTestSetType),
-    status: z.nativeEnum(TestSetStatus).default(TestSetStatus.DRAFT),
-    translations: z
-      .array(
-        z.object({
-          field: z.enum(['name', 'description']),
-          language_code: z.string(),
-          value: z.string()
-        })
-      )
-      .min(1, 'Phải có ít nhất 1 translation'),
-    questionBankIds: z
-      .array(z.number().int().positive())
-      .min(1, 'Phải có ít nhất 1 questionBank')
+    ...fields,
+    testType: fields.testType.optional(),
+    status: fields.status.optional(),
+    translations: TranslationsSchema.optional()
   })
   .strict()
-  .refine(
-    (data) => {
-      // Nếu testType là READING thì content phải có và là tiếng Nhật
-      if (data.testType === PrismaTestSetType.READING) {
-        if (!data.content || data.content.trim() === '') {
-          return false
-        }
-        // Kiểm tra có chứa ký tự tiếng Nhật (Hiragana, Katakana, Kanji)
-        const japaneseRegex = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/
-        return japaneseRegex.test(data.content)
-      }
-      return true
-    },
-    {
-      message: 'Khi testType là READING, content phải có và phải là tiếng Nhật (bài đọc)',
-      path: ['content']
-    }
-  )
+  .superRefine((data, ctx) => {
+    readingNeedsContent(data, ctx)
+    nameIsTranslated(data.translations, M.NAME_TRANSLATION_REQUIRED, 'translations', ctx)
+  })
 
-// Schema for creating a new questionBank inline
-export const CreateQuestionBankInlineSchema = z
+// Update TestSet with Meanings Schema
+export const UpdateTestSetWithMeaningsBodySchema = z
   .object({
-    questionJp: z.string().min(1, 'questionJp không được để trống'),
-    questionType: z.nativeEnum(QuestionType),
+    ...fields,
+    testType: fields.testType.optional(),
+    status: fields.status.optional(),
+    meanings: MeaningsSchema.optional()
+  })
+  .strict()
+  .superRefine((data, ctx) => {
+    readingNeedsContent(data, ctx)
+    nameIsTranslated(data.meanings, M.NAME_MEANING_REQUIRED, 'meanings', ctx)
+  })
+
+// A question in the upsert: with `id` an existing one (a TestSetQuestionBank id
+// of this test set, else a QuestionBank id), without `id` a new QuestionBank
+export const UpsertQuestionBankSchema = z
+  .object({
+    id: z.number().int().positive().optional(),
+    questionJp: z
+      .string({ required_error: M.QUESTION_JP_REQUIRED })
+      .min(1, M.QUESTION_JP_REQUIRED)
+      .refine(hasJapaneseText, M.QUESTION_JP_NOT_JAPANESE),
+    questionType: enumOf(QuestionType, M.INVALID_QUESTION_TYPE),
     audioUrl: z.string().nullable().optional(),
     pronunciation: z.string().nullable().optional(),
     role: z.nativeEnum(RoleSpeaking).nullable().optional(),
-    levelN: z.number().min(1).max(5).nullable().optional(),
+    levelN: z
+      .number({ invalid_type_error: M.INVALID_QUESTION_LEVEL })
+      .int(M.INVALID_QUESTION_LEVEL)
+      .min(1, M.INVALID_QUESTION_LEVEL)
+      .max(5, M.INVALID_QUESTION_LEVEL)
+      .nullable()
+      .optional(),
     meanings: z
       .array(
         z.object({
@@ -191,26 +199,17 @@ export const CreateQuestionBankInlineSchema = z
   })
   .strict()
 
-// Schema cho questionBank trong upsert (có thể có id để update order, hoặc không có id để tạo mới)
-export const UpsertQuestionBankSchema = CreateQuestionBankInlineSchema.extend({
-  id: z.number().int().positive().optional() // ID của TestSetQuestionBank (nếu có = update order, nếu không = tạo mới)
-}).strict()
-
-// Upsert TestSet with QuestionBanks Schema (order tự động dựa vào vị trí trong mảng)
+// Upsert: create without `id` (testType, meanings and questions required),
+// update with `id`. Question order = position in the array
 export const UpsertTestSetWithQuestionBanksBodySchema = z
   .object({
     id: z.number().int().positive().optional(),
-    content: z.string().nullable().optional(),
-    audioUrl: z.string().nullable().optional(),
-    price: z.number().nullable().optional(),
-    levelN: z.number().nullable().optional(),
-    testType: z.nativeEnum(PrismaTestSetType).optional(),
-    status: z.nativeEnum(TestSetStatus).optional(),
+    ...fields,
+    testType: fields.testType.optional(),
+    status: fields.status.optional(),
     meanings: z
       .array(
-        z.object({
-          field: z.enum(['name', 'description']),
-          meaningKey: z.string().optional(),
+        MeaningSchema.extend({
           translations: z.object({
             vi: z.string().optional(),
             en: z.string().optional(),
@@ -218,183 +217,58 @@ export const UpsertTestSetWithQuestionBanksBodySchema = z
           })
         })
       )
+      .min(1, M.MEANINGS_REQUIRED)
       .optional(),
-    questionBanks: z.array(UpsertQuestionBankSchema).optional() // Mảng questionBank, order tự động = index + 1
+    questionBanks: z.array(UpsertQuestionBankSchema).optional()
   })
   .strict()
-  .refine(
-    (data) => {
-      // Phải có ít nhất questionBanks (nếu là create)
-      // Nếu là update có thể không có (chỉ update testset info)
-      if (!data.questionBanks || data.questionBanks.length === 0) {
-        // Cho phép không có questionBank nếu đang update
-        return true
-      }
-      return true
-    },
-    {
-      message: 'Phải có ít nhất 1 questionBank khi tạo mới',
-      path: ['questionBanks']
+  .superRefine((data, ctx) => {
+    readingNeedsContent(data, ctx)
+    nameIsTranslated(data.meanings, M.NAME_MEANING_REQUIRED, 'meanings', ctx)
+    if (!data.id) {
+      if (!data.testType) issue(ctx, M.TEST_TYPE_REQUIRED, ['testType'])
+      if (!data.meanings) issue(ctx, M.MEANINGS_REQUIRED, ['meanings'])
+      if (!data.questionBanks?.length)
+        issue(ctx, M.QUESTION_BANKS_REQUIRED, ['questionBanks'])
     }
-  )
-  .refine(
-    (data) => {
-      // Nếu testType là READING thì content phải có và là tiếng Nhật
-      if (data.testType === PrismaTestSetType.READING) {
-        if (!data.content || data.content.trim() === '') {
-          return false
-        }
-        // Kiểm tra có chứa ký tự tiếng Nhật (Hiragana, Katakana, Kanji)
-        const japaneseRegex = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/
-        return japaneseRegex.test(data.content)
-      }
-      return true
-    },
-    {
-      message: 'Khi testType là READING, content phải có và phải là tiếng Nhật (bài đọc)',
-      path: ['content']
+    const ids = (data.questionBanks ?? []).flatMap((q) => (q.id ? [q.id] : []))
+    if (new Set(ids).size !== ids.length) {
+      issue(ctx, M.DUPLICATE_QUESTION_IDS, ['questionBanks'])
     }
-  )
-
-// Update TestSet Schema
-export const UpdateTestSetBodySchema = z
-  .object({
-    content: z.string().nullable().optional(),
-    audioUrl: z.string().nullable().optional(),
-    price: z.number().nullable().optional(),
-    levelN: z.number().nullable().optional(),
-    testType: z.nativeEnum(PrismaTestSetType).optional(),
-    status: z.nativeEnum(TestSetStatus).optional(),
-    translations: z
-      .array(
-        z.object({
-          field: z.enum(['name', 'description']),
-          language_code: z.string(),
-          value: z.string()
-        })
-      )
-      .optional()
   })
-  .strict()
-  .refine(
-    (data) => {
-      // Nếu testType là READING thì content phải có và là tiếng Nhật
-      if (data.testType === PrismaTestSetType.READING) {
-        if (!data.content || data.content.trim() === '') {
-          return false
-        }
-        // Kiểm tra có chứa ký tự tiếng Nhật (Hiragana, Katakana, Kanji)
-        const japaneseRegex = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/
-        return japaneseRegex.test(data.content)
-      }
-      return true
-    },
-    {
-      message: 'Khi testType là READING, content phải có và phải là tiếng Nhật (bài đọc)',
-      path: ['content']
-    }
-  )
-
-// Update TestSet with Meanings Schema
-export const UpdateTestSetWithMeaningsBodySchema = z
-  .object({
-    content: z.string().nullable().optional(),
-    audioUrl: z.string().nullable().optional(),
-    price: z.number().nullable().optional(),
-    levelN: z.number().nullable().optional(),
-    testType: z.nativeEnum(PrismaTestSetType).optional(),
-    status: z.nativeEnum(TestSetStatus).optional(),
-    meanings: z
-      .array(
-        z.object({
-          field: z.enum(['name', 'description']),
-          meaningKey: z.string().optional(),
-          translations: z.object({
-            vi: z.string(),
-            en: z.string(),
-            ja: z.string().optional()
-          })
-        })
-      )
-      .optional()
-  })
-  .strict()
-  .refine(
-    (data) => {
-      // Nếu testType là READING thì content phải có và là tiếng Nhật
-      if (data.testType === PrismaTestSetType.READING) {
-        if (!data.content || data.content.trim() === '') {
-          return false
-        }
-        // Kiểm tra có chứa ký tự tiếng Nhật (Hiragana, Katakana, Kanji)
-        const japaneseRegex = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/
-        return japaneseRegex.test(data.content)
-      }
-      return true
-    },
-    {
-      message: 'Khi testType là READING, content phải có và phải là tiếng Nhật (bài đọc)',
-      path: ['content']
-    }
-  )
-
-// TestSet Response Schema
-export const TestSetResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: TestSetSchema,
-    message: z.string()
-  })
-  .strict()
 
 // TestSet List Response Schema
-export const TestSetListResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(TestSetSchema),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
+export const TestSetListResSchema = paginatedResSchema(TestSetSchema)
 
 // Get TestSet by ID Params Schema
 export const GetTestSetByIdParamsSchema = z
   .object({
-    id: z.string().transform((val) => parseInt(val, 10))
+    id: checkIdSchema(M.INVALID_ID)
   })
   .strict()
+
+const flag = z
+  .string()
+  .optional()
+  .transform((val) => val === 'true')
 
 // Get TestSet List Query Schema
 export const GetTestSetListQuerySchema = z
   .object({
-    currentPage: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('1'),
-    pageSize: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('10'),
+    currentPage: checkIdSchema(M.INVALID_PAGE).default(1),
+    pageSize: checkIdSchema(M.INVALID_PAGE_SIZE).default(10),
+    // Matches the name/description translations and the content
     search: z.string().optional(),
-    levelN: z
-      .string()
-      .transform((val) => parseInt(val, 10))
+    levelN: z.coerce
+      .number({ invalid_type_error: M.INVALID_LEVEL })
+      .int(M.INVALID_LEVEL)
+      .min(0, M.INVALID_LEVEL)
+      .max(5, M.INVALID_LEVEL)
       .optional(),
-    testType: z.nativeEnum(PrismaTestSetType).optional(),
-    status: z.nativeEnum(TestSetStatus).optional(),
-    creatorId: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional(),
+    testType: enumOf(PrismaTestSetType, M.INVALID_TEST_TYPE).optional(),
+    status: enumOf(TestSetStatus, M.INVALID_STATUS).optional(),
+    creatorId: checkIdSchema(M.INVALID_CREATOR_ID).optional(),
+    // Without it, name/description are every translation; with it, one string
     language: z.string().optional(),
     sortBy: z
       .enum([
@@ -410,20 +284,13 @@ export const GetTestSetListQuerySchema = z
       .optional()
       .default('createdAt'),
     sort: z.enum(['asc', 'desc']).optional().default('desc'),
-    noExercies: z
-      .string()
-      .optional()
-      .transform((val) => val === 'true'),
-    noPrice: z
-      .string()
-      .optional()
-      .transform((val) => val === 'true')
+    noExercies: flag,
+    noPrice: flag
   })
   .strict()
 
 // Types
 export type TestSetType = z.infer<typeof TestSetSchema>
-export type CreateTestSetBodyType = z.infer<typeof CreateTestSetBodySchema>
 export type UpdateTestSetBodyType = z.infer<typeof UpdateTestSetBodySchema>
 export type CreateTestSetWithMeaningsBodyType = z.infer<
   typeof CreateTestSetWithMeaningsBodySchema
@@ -431,13 +298,10 @@ export type CreateTestSetWithMeaningsBodyType = z.infer<
 export type UpdateTestSetWithMeaningsBodyType = z.infer<
   typeof UpdateTestSetWithMeaningsBodySchema
 >
-export type CreateTestSetWithQuestionBodyType = z.infer<
-  typeof CreateTestSetWithQuestionBodySchema
->
 export type UpsertTestSetWithQuestionBanksBodyType = z.infer<
   typeof UpsertTestSetWithQuestionBanksBodySchema
 >
-export type TestSetResType = z.infer<typeof TestSetResSchema>
+export type UpsertQuestionBankType = z.infer<typeof UpsertQuestionBankSchema>
 export type TestSetListResType = z.infer<typeof TestSetListResSchema>
 export type GetTestSetByIdParamsType = z.infer<typeof GetTestSetByIdParamsSchema>
 export type GetTestSetListQueryType = z.infer<typeof GetTestSetListQuerySchema>

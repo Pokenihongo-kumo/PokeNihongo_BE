@@ -222,6 +222,13 @@ describe('Quiz batch 4a contract (e2e)', () => {
           ]
         })
       testSetId = create.body.data?.id ?? (await newest('testSet'))
+      // search matches the translated name (it used to compare the stored key)
+      const searchByName = await http()
+        .get('/testset')
+        .query({ search: 'contract TEST set', pageSize: '50' })
+      expect(searchByName.body.data.results.map((t: { id: number }) => t.id)).toContain(
+        testSetId
+      )
       expect({
         create: capture(create),
         list: capture(

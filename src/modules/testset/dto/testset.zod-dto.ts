@@ -1,25 +1,16 @@
 import { createZodDto } from 'nestjs-zod'
 import {
-  CreateTestSetBodySchema,
   UpdateTestSetBodySchema,
-  TestSetResSchema,
   TestSetListResSchema,
   GetTestSetByIdParamsSchema,
   GetTestSetListQuerySchema,
   CreateTestSetWithMeaningsBodySchema,
   UpdateTestSetWithMeaningsBodySchema,
-  CreateTestSetWithQuestionBodySchema,
   UpsertTestSetWithQuestionBanksBodySchema
 } from '../entities/testset.entity'
 
-// Create TestSet DTO
-export class CreateTestSetBodyDTO extends createZodDto(CreateTestSetBodySchema) {}
-
 // Update TestSet DTO
 export class UpdateTestSetBodyDTO extends createZodDto(UpdateTestSetBodySchema) {}
-
-// TestSet Response DTO
-export class TestSetResDTO extends createZodDto(TestSetResSchema) {}
 
 // TestSet List Response DTO
 export class TestSetListResDTO extends createZodDto(TestSetListResSchema) {}
@@ -38,11 +29,6 @@ export class CreateTestSetWithMeaningsBodyDTO extends createZodDto(
 // Update TestSet with Meanings DTO
 export class UpdateTestSetWithMeaningsBodyDTO extends createZodDto(
   UpdateTestSetWithMeaningsBodySchema
-) {}
-
-// Create TestSet with QuestionBanks DTO
-export class CreateTestSetWithQuestionBodyDTO extends createZodDto(
-  CreateTestSetWithQuestionBodySchema
 ) {}
 
 // Upsert TestSet with QuestionBanks DTO (gộp create và update)

@@ -218,6 +218,45 @@ export const jaMessages = {
     MULTIPLE_NONE_CREATED: '問題を追加できませんでした',
     UNKNOWN_FAILURE: '不明なエラー'
   },
+  testset: {
+    GET_SUCCESS: 'テストセットを取得しました',
+    GET_LIST_SUCCESS: 'テストセット一覧を取得しました',
+    CREATE_SUCCESS: 'テストセットを作成しました',
+    UPDATE_SUCCESS: 'テストセットを更新しました',
+    DELETE_SUCCESS: 'テストセットを削除しました',
+    NOT_FOUND: 'テストセットが見つかりません',
+    INVALID_DATA: 'テストセットのデータが無効です',
+    QUESTION_BANK_NOT_FOUND: '問題 {id} が見つかりません',
+    CANNOT_CHANGE_LEVEL_HAS_QUESTIONS:
+      '問題があるテストセットのレベルは変更できません（GENERAL を除く）',
+    CANNOT_CHANGE_TYPE_GENERAL_MULTIPLE:
+      '複数の種類の問題がある GENERAL のテストセットは種類を変更できません',
+    CANNOT_CHANGE_TYPE_SPECIFIC: '種類は GENERAL にのみ変更できます（{from} から {to}）',
+    CANNOT_CHANGE_TYPE_GENERAL_SINGLE:
+      'この GENERAL のテストセットは、問題の種類である {questionType} にのみ変更できます',
+    INVALID_ID: 'テストセットIDが無効です',
+    INVALID_PAGE: 'ページは正の整数でなければなりません',
+    INVALID_PAGE_SIZE: 'ページサイズは正の整数でなければなりません',
+    INVALID_CREATOR_ID: '作成者IDが無効です',
+    INVALID_LEVEL: 'JLPTレベルは0から5です（0 = 複数レベル）',
+    INVALID_QUESTION_LEVEL: '問題のレベルは1から5です',
+    INVALID_PRICE: '価格は負の値にできません',
+    INVALID_AUDIO_URL: '音声URLが無効です',
+    INVALID_TEST_TYPE: 'テストの種類が無効です',
+    INVALID_STATUS: 'テストセットのステータスが無効です',
+    INVALID_QUESTION_TYPE: '問題の種類が無効です',
+    TEST_TYPE_REQUIRED: '新しいテストセットには種類が必要です',
+    READING_CONTENT_REQUIRED: 'READING のテストセットには日本語の本文が必要です',
+    MEANINGS_REQUIRED: '意味を1つ以上指定してください',
+    NAME_MEANING_REQUIRED: '名前の意味が必要です',
+    TRANSLATIONS_REQUIRED: '翻訳を1つ以上指定してください',
+    NAME_TRANSLATION_REQUIRED: '名前の翻訳が必要です',
+    QUESTION_BANKS_REQUIRED: '新しいテストセットには問題が1つ以上必要です',
+    DUPLICATE_QUESTION_IDS: '問題リストに同じIDがあります',
+    QUESTION_JP_REQUIRED: 'questionJp は必須です',
+    QUESTION_JP_NOT_JAPANESE:
+      'questionJp は日本語（ひらがな・カタカナ・漢字）でなければなりません'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'レッスンカテゴリを作成しました',
     UPDATE_SUCCESS: 'レッスンカテゴリを更新しました',
