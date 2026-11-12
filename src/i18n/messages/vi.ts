@@ -416,6 +416,36 @@ export const viMessages = {
     IDS_REQUIRED: 'Phải có ít nhất 1 ID để xóa',
     IDS_TOO_MANY: 'Chỉ được xóa tối đa 100 bài test cùng lúc'
   },
+  kanji: {
+    GET_SUCCESS: 'Lấy thông tin kanji thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách kanji thành công',
+    GET_MANAGEMENT_LIST_SUCCESS: 'Lấy danh sách quản lý kanji thành công',
+    CREATE_SUCCESS: 'Tạo Kanji cùng với nghĩa thành công',
+    UPDATE_SUCCESS: 'Cập nhật Kanji cùng với nghĩa thành công',
+    DELETE_SUCCESS: 'Xóa kanji thành công',
+    DELETE_ALL_SUCCESS:
+      'Đã xóa toàn bộ dữ liệu Kanji thành công. Đã xóa {kanji} Kanji, {readings} cách đọc, {translations} bản dịch',
+    IMPORT_XLSX_SUCCESS:
+      'Import Kanji thành công: {created} tạo mới, {updated} cập nhật, {skipped} bỏ qua',
+    IMPORT_TXT_SUCCESS:
+      'Import Kanji từ TXT ({language}) thành công: {created} tạo mới, {updated} cập nhật, {skipped} bỏ qua',
+    NOT_FOUND: 'Kanji không tồn tại',
+    ALREADY_EXISTS: 'Kanji đã tồn tại',
+    INVALID_DATA: 'Dữ liệu Kanji không hợp lệ',
+    CHARACTER_INVALID:
+      'Phải là một ký tự Kanji (Hán tự) duy nhất. Không chấp nhận ký tự Latin hoặc số',
+    INVALID_FILE: 'File không hợp lệ',
+    INVALID_IMPORT_LANGUAGE: 'Ngôn ngữ không hợp lệ. Chỉ hỗ trợ vi hoặc en',
+    INVALID_ID: 'ID kanji không hợp lệ',
+    CHARACTER_REQUIRED: 'Ký tự Kanji không được để trống',
+    READING_TYPE_INVALID: 'Loại cách đọc phải là onyomi, kunyomi, nanori, hoặc irregular',
+    READING_INVALID:
+      'Phải là cách đọc Onyomi/Kunyomi (chỉ chứa Hiragana, Katakana và dấu câu cơ bản)',
+    READINGS_COUNT: 'Phải có từ 1 đến 10 cách đọc',
+    STROKE_COUNT_INVALID: 'Số nét vẽ phải từ 1 đến 50',
+    JLPT_LEVEL_INVALID: 'Cấp độ JLPT phải từ 1 đến 5',
+    IMG_INVALID: 'URL hình ảnh không hợp lệ (tối đa 500 ký tự)'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Tạo danh mục bài học thành công',
     UPDATE_SUCCESS: 'Cập nhật danh mục bài học thành công',

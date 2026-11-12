@@ -1,48 +1,41 @@
-import { HttpException, HttpStatus } from '@nestjs/common'
-import { VOCABULARY_MESSAGE } from '@/common/constants/message'
+import { KanjiMessage as M } from '@/i18n/message-keys'
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+  UnprocessableEntityException
+} from '@nestjs/common'
 
-export const KanjiNotFoundException = new HttpException(
-  {
-    statusCode: HttpStatus.NOT_FOUND,
-    message: 'Kanji không tồn tại',
-    error: 'KANJI_NOT_FOUND'
-  },
-  HttpStatus.NOT_FOUND
-)
+// A new instance per throw; `message` is translated from errorKey by
+// ApiExceptionFilter (Accept-Language), the old Vietnamese text is the vi value
 
-export const KanjiAlreadyExistsException = new HttpException(
-  {
-    statusCode: HttpStatus.CONFLICT,
-    message: 'Kanji đã tồn tại',
-    error: 'KANJI_ALREADY_EXISTS'
-  },
-  HttpStatus.CONFLICT
-)
+export class KanjiNotFoundException extends NotFoundException {
+  constructor() {
+    super({ message: M.NOT_FOUND, errorKey: M.NOT_FOUND })
+  }
+}
 
-export const InvalidKanjiDataException = new HttpException(
-  {
-    statusCode: HttpStatus.BAD_REQUEST,
-    message: 'Dữ liệu Kanji không hợp lệ',
-    error: 'INVALID_KANJI_DATA'
-  },
-  HttpStatus.BAD_REQUEST
-)
+export class KanjiAlreadyExistsException extends ConflictException {
+  constructor() {
+    super({ message: M.ALREADY_EXISTS, errorKey: M.ALREADY_EXISTS })
+  }
+}
 
-export const KanjiCharacterInvalidException = new HttpException(
-  {
-    statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-    message:
-      'Phải là một ký tự Kanji (Hán tự) duy nhất. Không chấp nhận ký tự Latin hoặc số',
-    error: 'KANJI_CHARACTER_INVALID'
-  },
-  HttpStatus.UNPROCESSABLE_ENTITY
-)
+// Unexpected failure, or a file/option the import cannot use
+export class InvalidKanjiDataException extends BadRequestException {
+  constructor(
+    key:
+      | typeof M.INVALID_DATA
+      | typeof M.INVALID_FILE
+      | typeof M.INVALID_IMPORT_LANGUAGE = M.INVALID_DATA
+  ) {
+    super({ message: key, errorKey: key })
+  }
+}
 
-export const MeaningAlreadyExistsException = new HttpException(
-  {
-    statusCode: HttpStatus.CONFLICT,
-    message: VOCABULARY_MESSAGE.MEANING_ALREADY_EXISTS,
-    error: 'MEANING_ALREADY_EXISTS'
-  },
-  HttpStatus.CONFLICT
-)
+// The identifier of PUT /kanji/:identifier is neither an id nor one kanji
+export class KanjiCharacterInvalidException extends UnprocessableEntityException {
+  constructor() {
+    super({ message: M.CHARACTER_INVALID, errorKey: M.CHARACTER_INVALID })
+  }
+}

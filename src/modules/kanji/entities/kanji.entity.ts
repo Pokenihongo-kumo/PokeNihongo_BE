@@ -1,68 +1,12 @@
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
+import { KanjiMessage } from '@/i18n/message-keys'
+import { checkIdSchema } from '@/common/utils/id.validation'
 import { KanjiSortField, SortOrder } from '@/common/enum/enum'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
-
-// Custom validation functions for Kanji
-const isKanjiCharacter = (text: string): boolean => {
-  // Check if it's a single character
-  if (text.length !== 1) {
-    return false
-  }
-
-  const char = text
-
-  // First, reject ASCII characters (a-z, A-Z, 0-9) and common symbols
-  if (/[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(char)) {
-    return false
-  }
-
-  // Then check if it's a valid Kanji character using comprehensive Unicode ranges
-  // CJK Unified Ideographs (main Kanji block)
-  const cjkUnifiedIdeographs = /[\u4E00-\u9FAF]/
-
-  // CJK Extension A (rare Kanji)
-  const cjkExtensionA = /[\u3400-\u4DBF]/
-
-  // CJK Extension B, C, D, E (very rare Kanji)
-  const cjkExtensionB = /[\u20000-\u2A6DF]/
-  const cjkExtensionC = /[\u2A700-\u2B73F]/
-  const cjkExtensionD = /[\u2B740-\u2B81F]/
-  const cjkExtensionE = /[\u2B820-\u2CEAF]/
-
-  // CJK Compatibility Ideographs
-  const cjkCompatibility = /[\uF900-\uFAFF]/
-
-  // CJK Compatibility Supplement
-  const cjkCompatibilitySupplement = /[\u2F800-\u2FA1F]/
-
-  // Check if character matches any Kanji range
-  return (
-    cjkUnifiedIdeographs.test(char) ||
-    cjkExtensionA.test(char) ||
-    cjkExtensionB.test(char) ||
-    cjkExtensionC.test(char) ||
-    cjkExtensionD.test(char) ||
-    cjkExtensionE.test(char) ||
-    cjkCompatibility.test(char) ||
-    cjkCompatibilitySupplement.test(char)
-  )
-}
-
-const isOnyomiKunyomi = (text: string): boolean => {
-  // Onyomi and Kunyomi contain Hiragana, Katakana, and some punctuation
-  const onyomiKunyomiRegex = /^[\u3040-\u309F\u30A0-\u30FF\s\-\.\,\!\?\'\"]+$/
-  return onyomiKunyomiRegex.test(text)
-}
-
-// Custom error messages
-const KANJI_CHARACTER_ERROR =
-  'Phải là một ký tự Kanji (Hán tự) duy nhất. Không chấp nhận ký tự Latin, số hoặc ký hiệu đặc biệt'
-const ONYOMI_KUNYOMI_ERROR =
-  'Phải là cách đọc Onyomi/Kunyomi (chỉ chứa Hiragana, Katakana và dấu câu cơ bản)'
 
 // Kanji Reading Schema
 export const KanjiReadingSchema = z.object({
@@ -175,7 +119,7 @@ export const UpdateKanjiSchema = z.object({
 
 // Get Kanji by ID params schema
 export const GetKanjiByIdParamsSchema = z.object({
-  id: z.string().transform((val) => parseInt(val, 10))
+  id: checkIdSchema(KanjiMessage.INVALID_ID)
 })
 
 // Get Kanji list query schema (standardize on currentPage/pageSize + sortOrder)

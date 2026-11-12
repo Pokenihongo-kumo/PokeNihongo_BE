@@ -1,8 +1,4 @@
-import {
-  Kanji,
-  CreateKanjiBodyType,
-  UpdateKanjiBodyType
-} from './entities/kanji.entity'
+import { Kanji, CreateKanjiBodyType, UpdateKanjiBodyType } from './entities/kanji.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
 import { KanjiSortField, SortOrder } from '@/common/enum/enum'
@@ -293,6 +289,37 @@ export class KanjiRepo {
   }
 
   // Transform methods
+  // Meanings of several kanji in one query, with the language code
+  translationsByKeys(keys: string[]) {
+    return this.prismaService.translation.findMany({
+      where: { key: { in: keys } },
+      select: { key: true, value: true, language: { select: { code: true } } },
+      orderBy: { languageId: 'asc' }
+    })
+  }
+
+  // Writes a meaning's translations by language code (unknown codes are
+  // skipped). onlyMissing keeps the translations that already exist
+  async writeTranslations(
+    key: string,
+    values: Record<string, string>,
+    onlyMissing = false
+  ): Promise<void> {
+    const languages = await this.prismaService.languages.findMany({
+      where: { code: { in: Object.keys(values) } },
+      select: { id: true, code: true }
+    })
+    for (const { id: languageId, code } of languages) {
+      const value = values[code]
+      if (!value) continue
+      await this.prismaService.translation.upsert({
+        where: { languageId_key: { languageId, key } },
+        update: onlyMissing ? {} : { value },
+        create: { languageId, key, value }
+      })
+    }
+  }
+
   private transformKanji(kanji: any): Kanji {
     return {
       id: kanji.id,

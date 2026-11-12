@@ -404,6 +404,35 @@ export const enMessages = {
     IDS_REQUIRED: 'At least one id is required',
     IDS_TOO_MANY: 'At most 100 tests at a time'
   },
+  kanji: {
+    GET_SUCCESS: 'Kanji retrieved successfully',
+    GET_LIST_SUCCESS: 'Kanji retrieved successfully',
+    GET_MANAGEMENT_LIST_SUCCESS: 'Kanji list retrieved successfully',
+    CREATE_SUCCESS: 'Kanji created with its meaning',
+    UPDATE_SUCCESS: 'Kanji and its meaning updated',
+    DELETE_SUCCESS: 'Kanji deleted successfully',
+    DELETE_ALL_SUCCESS:
+      'All kanji data deleted: {kanji} kanji, {readings} readings, {translations} translations',
+    IMPORT_XLSX_SUCCESS:
+      'Kanji imported: {created} created, {updated} updated, {skipped} skipped',
+    IMPORT_TXT_SUCCESS:
+      'Kanji imported from TXT ({language}): {created} created, {updated} updated, {skipped} skipped',
+    NOT_FOUND: 'Kanji not found',
+    ALREADY_EXISTS: 'This kanji already exists',
+    INVALID_DATA: 'Invalid kanji data',
+    CHARACTER_INVALID: 'Must be exactly one kanji character (no Latin letters or digits)',
+    INVALID_FILE: 'Invalid file',
+    INVALID_IMPORT_LANGUAGE: 'Invalid language: only vi or en',
+    INVALID_ID: 'Invalid kanji ID',
+    CHARACTER_REQUIRED: 'The kanji character is required',
+    READING_TYPE_INVALID: 'The reading type must be onyomi, kunyomi, nanori or irregular',
+    READING_INVALID:
+      'A reading has only Hiragana, Katakana and basic punctuation (1 to 100 characters)',
+    READINGS_COUNT: 'From 1 to 10 readings',
+    STROKE_COUNT_INVALID: 'The stroke count must be from 1 to 50',
+    JLPT_LEVEL_INVALID: 'JLPT level must be from 1 to 5',
+    IMG_INVALID: 'Invalid image URL (500 characters at most)'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Lesson category created successfully',
     UPDATE_SUCCESS: 'Lesson category updated successfully',
