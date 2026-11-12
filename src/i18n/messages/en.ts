@@ -282,6 +282,33 @@ export const enMessages = {
     QUESTION_IDS_REQUIRED: 'At least one questionId is required',
     QUESTION_IDS_TOO_MANY: 'At most 100 questionIds'
   },
+  exercises: {
+    GET_SUCCESS: 'Exercise retrieved successfully',
+    GET_LIST_SUCCESS: 'Exercises retrieved successfully',
+    CREATE_SUCCESS: 'Exercise created successfully',
+    UPDATE_SUCCESS: 'Exercise updated successfully',
+    DELETE_SUCCESS: 'Exercise deleted successfully',
+    NOT_FOUND: 'Exercise not found',
+    INVALID_DATA: 'Invalid exercise data',
+    LESSON_NOT_FOUND: 'Lesson not found',
+    TEST_SET_NOT_FOUND: 'Test set not found',
+    REWARD_NOT_FOUND: 'Reward not found',
+    LEVEL_INCOMPATIBLE:
+      'Level mismatch: the lesson is JLPT {lessonLevel} but the test set is level {testSetLevel}. They must match',
+    LIMIT_PER_LESSON: 'A lesson has at most 3 exercises: VOCABULARY, GRAMMAR, KANJI',
+    TYPE_EXISTS_IN_LESSON: 'This lesson already has an exercise of this type',
+    TEST_SET_TYPE_MISMATCH:
+      'The test set type must match the exercise type (VOCABULARY/GRAMMAR/KANJI)',
+    TEST_SET_HAS_EXERCISE: 'This test set already belongs to an exercise',
+    INVALID_ID: 'Invalid exercise ID',
+    INVALID_LESSON_ID: 'Invalid lesson ID',
+    INVALID_TEST_SET_ID: 'Invalid test set ID',
+    INVALID_REWARD_ID: 'Invalid reward ID',
+    INVALID_EXERCISE_TYPE: 'Invalid exercise type',
+    INVALID_IS_BLOCKED: 'isBlocked must be true or false',
+    INVALID_PAGE: 'Page must be a positive integer',
+    INVALID_PAGE_SIZE: 'Page size must be a positive integer'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Lesson category created successfully',
     UPDATE_SUCCESS: 'Lesson category updated successfully',

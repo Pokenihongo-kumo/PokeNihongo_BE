@@ -293,6 +293,33 @@ export const jaMessages = {
     QUESTION_IDS_REQUIRED: 'questionId を1つ以上指定してください',
     QUESTION_IDS_TOO_MANY: 'questionId は100個までです'
   },
+  exercises: {
+    GET_SUCCESS: '練習問題を取得しました',
+    GET_LIST_SUCCESS: '練習問題一覧を取得しました',
+    CREATE_SUCCESS: '練習問題を作成しました',
+    UPDATE_SUCCESS: '練習問題を更新しました',
+    DELETE_SUCCESS: '練習問題を削除しました',
+    NOT_FOUND: '練習問題が見つかりません',
+    INVALID_DATA: '練習問題のデータが無効です',
+    LESSON_NOT_FOUND: 'レッスンが見つかりません',
+    TEST_SET_NOT_FOUND: 'テストセットが見つかりません',
+    REWARD_NOT_FOUND: '報酬が見つかりません',
+    LEVEL_INCOMPATIBLE:
+      'レベルが合いません：レッスンはJLPT {lessonLevel}、テストセットはレベル{testSetLevel}です。同じでなければなりません',
+    LIMIT_PER_LESSON: 'レッスンの練習問題は最大3つです（VOCABULARY、GRAMMAR、KANJI）',
+    TYPE_EXISTS_IN_LESSON: 'このレッスンにはすでにこの種類の練習問題があります',
+    TEST_SET_TYPE_MISMATCH:
+      'テストセットの種類は練習問題の種類と同じでなければなりません（VOCABULARY/GRAMMAR/KANJI）',
+    TEST_SET_HAS_EXERCISE: 'このテストセットはすでに別の練習問題に使われています',
+    INVALID_ID: '練習問題IDが無効です',
+    INVALID_LESSON_ID: 'レッスンIDが無効です',
+    INVALID_TEST_SET_ID: 'テストセットIDが無効です',
+    INVALID_REWARD_ID: '報酬IDが無効です',
+    INVALID_EXERCISE_TYPE: '練習問題の種類が無効です',
+    INVALID_IS_BLOCKED: 'isBlocked は true か false です',
+    INVALID_PAGE: 'ページは正の整数でなければなりません',
+    INVALID_PAGE_SIZE: 'ページサイズは正の整数でなければなりません'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'レッスンカテゴリを作成しました',
     UPDATE_SUCCESS: 'レッスンカテゴリを更新しました',

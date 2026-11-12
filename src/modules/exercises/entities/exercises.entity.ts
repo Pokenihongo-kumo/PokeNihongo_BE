@@ -1,11 +1,20 @@
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
-import { ExercisesSortField, SortOrder } from '@/common/enum/enum'
 import { LessonContentsType } from '@prisma/client'
+import { ExercisesMessage as M } from '@/i18n/message-keys'
+import { checkIdSchema } from '@/common/utils/id.validation'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
+
+// Body ids are JSON numbers (no coercion); params and query use checkIdSchema
+const idOf = (key: string) =>
+  z.number({ invalid_type_error: key, required_error: key }).int(key).positive(key)
+
+const exerciseType = z.nativeEnum(LessonContentsType, {
+  errorMap: () => ({ message: M.INVALID_EXERCISE_TYPE })
+})
 
 const RewardSummarySchema = z.object({
   id: z.number(),
@@ -28,81 +37,59 @@ export const ExercisesType = z.object({
   updatedAt: z.date()
 })
 
-// Request/Response Types
-export const CreateExercisesBodyType = z.object({
-  exerciseType: z.nativeEnum(LessonContentsType, {
-    required_error: 'Loại bài tập không được để trống',
-    invalid_type_error: 'Loại bài tập không hợp lệ'
-  }),
-  isBlocked: z.boolean().default(false),
-  lessonId: z.number().min(1, 'ID bài học không hợp lệ'),
-  testSetId: z.number().min(1, 'ID bộ đề không hợp lệ').optional(),
-  rewardId: z
-    .array(z.number().min(1, 'ID phần thưởng không hợp lệ'))
-    .optional()
-    .default([])
-})
+// The exercise type, lesson and test set rules are checked by the service
+export const CreateExercisesBodyType = z
+  .object({
+    exerciseType,
+    isBlocked: z.boolean({ invalid_type_error: M.INVALID_IS_BLOCKED }).default(false),
+    lessonId: idOf(M.INVALID_LESSON_ID),
+    testSetId: idOf(M.INVALID_TEST_SET_ID).optional(),
+    rewardId: z.array(idOf(M.INVALID_REWARD_ID)).optional().default([])
+  })
+  .strict()
 
-export const UpdateExercisesBodyType = z.object({
-  exerciseType: z.nativeEnum(LessonContentsType).optional(),
-  isBlocked: z.boolean().optional(),
-  lessonId: z.number().min(1, 'ID bài học không hợp lệ').optional(),
-  testSetId: z.number().min(1, 'ID bộ đề không hợp lệ').optional(),
-  rewardId: z.array(z.number().min(1, 'ID phần thưởng không hợp lệ')).optional()
-})
+export const UpdateExercisesBodyType = z
+  .object({
+    exerciseType: exerciseType.optional(),
+    isBlocked: z.boolean({ invalid_type_error: M.INVALID_IS_BLOCKED }).optional(),
+    lessonId: idOf(M.INVALID_LESSON_ID).optional(),
+    testSetId: idOf(M.INVALID_TEST_SET_ID).optional(),
+    rewardId: z.array(idOf(M.INVALID_REWARD_ID)).optional()
+  })
+  .strict()
 
 export const GetExercisesByIdParamsType = z.object({
-  id: z.string().transform(Number)
+  id: checkIdSchema(M.INVALID_ID)
+})
+
+export const GetExercisesByLessonParamsType = z.object({
+  lessonId: checkIdSchema(M.INVALID_LESSON_ID)
 })
 
 export const GetExercisesListQueryType = z.object({
-  currentPage: z
-    .string()
-    .transform((val) => (val ? Number(val) : 1))
-    .default('1'),
-  pageSize: z
-    .string()
-    .transform((val) => (val ? Number(val) : 10))
-    .default('10'),
-  exerciseType: z.nativeEnum(LessonContentsType).optional(),
-  lessonId: z
-    .string()
-    .transform((val) => (val ? Number(val) : undefined))
-    .optional(),
+  currentPage: checkIdSchema(M.INVALID_PAGE).default(1),
+  pageSize: checkIdSchema(M.INVALID_PAGE_SIZE).default(10),
+  exerciseType: exerciseType.optional(),
+  lessonId: checkIdSchema(M.INVALID_LESSON_ID).optional(),
   isBlocked: z
-    .string()
+    .enum(['true', 'false'], { errorMap: () => ({ message: M.INVALID_IS_BLOCKED }) })
     .transform((val) => val === 'true')
     .optional(),
+  // Matches the test set's name or description
   search: z.string().optional(),
+  // Columns of the table (the old enum also listed `price`, which has none)
   sortBy: z
-    .nativeEnum(ExercisesSortField)
+    .enum(['id', 'exerciseType', 'isBlocked', 'lessonId', 'createdAt', 'updatedAt'])
     .optional()
-    .default(ExercisesSortField.CREATED_AT),
+    .default('createdAt'),
   sort: z
     .preprocess(
       (val) => (typeof val === 'string' ? val.toLowerCase() : val),
-      z.nativeEnum(SortOrder)
+      z.enum(['asc', 'desc'])
     )
     .optional()
-    .default(SortOrder.DESC)
+    .default('desc')
 })
-
-// Response schemas
-export const ExercisesListResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(ExercisesType),
-      pagination: z.object({
-        currentPage: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
 
 // Type exports
 export type ExercisesType = z.infer<typeof ExercisesType>
@@ -111,4 +98,3 @@ export type CreateExercisesBodyType = z.infer<typeof CreateExercisesBodyType>
 export type UpdateExercisesBodyType = z.infer<typeof UpdateExercisesBodyType>
 export type GetExercisesByIdParamsType = z.infer<typeof GetExercisesByIdParamsType>
 export type GetExercisesListQueryType = z.infer<typeof GetExercisesListQueryType>
-export type ExercisesListResType = z.infer<typeof ExercisesListResSchema>

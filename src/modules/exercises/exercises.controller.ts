@@ -8,7 +8,6 @@ import {
   Param,
   Query,
   UseGuards,
-  ParseIntPipe,
   HttpCode,
   HttpStatus
 } from '@nestjs/common'
@@ -21,7 +20,6 @@ import {
   ApiQuery
 } from '@nestjs/swagger'
 import { AccessTokenGuard } from '@/common/guards/access-token.guard'
-import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { ExercisesService } from './exercises.service'
 import {
   CreateExercisesSwaggerDTO,
@@ -31,10 +29,12 @@ import {
   ExercisesListResponseSwaggerDTO
 } from './dto/exercises.dto'
 import {
-  CreateExercisesBodyType,
-  UpdateExercisesBodyType,
-  GetExercisesListQueryType
-} from './entities/exercises.entity'
+  CreateExercisesBodyDTO,
+  UpdateExercisesBodyDTO,
+  GetExercisesByIdParamsDTO,
+  GetExercisesByLessonParamsDTO,
+  GetExercisesListQueryDTO
+} from './dto/exercises.zod-dto'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 
 @ApiTags('Exercises')
@@ -64,11 +64,8 @@ export class ExercisesController {
     description: 'Tạo bài tập thành công',
     type: ExercisesResponseSwaggerDTO
   })
-  async create(
-    @Body() body: CreateExercisesBodyType,
-    @ActiveUser('userId') userId: number
-  ) {
-    return await this.exercisesService.create(body, userId)
+  create(@Body() body: CreateExercisesBodyDTO, @I18nLang() lang: string) {
+    return this.exercisesService.create(body, lang)
   }
 
   @Get()
@@ -83,10 +80,8 @@ export class ExercisesController {
     description: 'Lấy danh sách bài tập thành công',
     type: ExercisesListResponseSwaggerDTO
   })
-  async getExercisesList(@Query() query: any) {
-    // Explicit validation and transformation
-    const validatedQuery = GetExercisesListQueryType.parse(query)
-    return await this.exercisesService.getExercisesList(validatedQuery)
+  getExercisesList(@Query() query: GetExercisesListQueryDTO, @I18nLang() lang: string) {
+    return this.exercisesService.getExercisesList(query, lang)
   }
 
   @Get(':id')
@@ -99,8 +94,8 @@ export class ExercisesController {
     description: 'Lấy thông tin bài tập thành công',
     type: ExercisesResponseSwaggerDTO
   })
-  async getExercisesById(@Param('id', ParseIntPipe) id: number) {
-    return await this.exercisesService.getExercisesById(id)
+  getExercisesById(@Param() params: GetExercisesByIdParamsDTO, @I18nLang() lang: string) {
+    return this.exercisesService.getExercisesById(params.id, lang)
   }
 
   @Get(':id/plain')
@@ -113,8 +108,11 @@ export class ExercisesController {
     description: 'Lấy thông tin bài tập (gọn) thành công',
     type: ExercisesResponseSwaggerDTO
   })
-  async getExercisesByIdPlain(@Param('id', ParseIntPipe) id: number) {
-    return await this.exercisesService.getExercisesByIdHaveQuestionBanks(id)
+  getExercisesByIdPlain(
+    @Param() params: GetExercisesByIdParamsDTO,
+    @I18nLang() lang: string
+  ) {
+    return this.exercisesService.getExercisesByIdHaveQuestionBanks(params.id, lang)
   }
 
   @Get('lesson/:lessonId')
@@ -127,11 +125,11 @@ export class ExercisesController {
     description: 'Lấy danh sách bài tập theo bài học thành công',
     type: [ExercisesResponseSwaggerDTO]
   })
-  async getExercisesByLessonId(
-    @Param('lessonId', ParseIntPipe) lessonId: number,
+  getExercisesByLessonId(
+    @Param() params: GetExercisesByLessonParamsDTO,
     @I18nLang() lang: string
   ) {
-    return await this.exercisesService.getExercisesByLessonId(lessonId, lang)
+    return this.exercisesService.getExercisesByLessonId(params.lessonId, lang)
   }
 
   @Put(':id')
@@ -148,11 +146,12 @@ export class ExercisesController {
     description: 'Cập nhật bài tập thành công',
     type: ExercisesResponseSwaggerDTO
   })
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() body: UpdateExercisesBodyType
+  update(
+    @Param() params: GetExercisesByIdParamsDTO,
+    @Body() body: UpdateExercisesBodyDTO,
+    @I18nLang() lang: string
   ) {
-    return await this.exercisesService.update(id, body)
+    return this.exercisesService.update(params.id, body, lang)
   }
 
   @Delete(':id')
@@ -166,7 +165,7 @@ export class ExercisesController {
     description: 'Xóa bài tập thành công',
     type: ExercisesResponseSwaggerDTO
   })
-  async delete(@Param('id', ParseIntPipe) id: number) {
-    return await this.exercisesService.delete(id)
+  delete(@Param() params: GetExercisesByIdParamsDTO, @I18nLang() lang: string) {
+    return this.exercisesService.delete(params.id, lang)
   }
 }
