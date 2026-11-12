@@ -1,6 +1,6 @@
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
-import { LessonWithRelationsType, LessonListResSchema } from '../entities/lesson.entities'
+import { LessonWithRelationsType, LessonListResSchema } from '../entities/lesson.entity'
 
 // Response DTOs
 export const LessonResponseSchema = z.object({

@@ -32,7 +32,7 @@ import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { HttpException, Injectable, Logger } from '@nestjs/common'
 import { ProgressStatus, UserRewardSourceType } from '@prisma/client'
-import { LessonRepository } from '../lesson/lesson.repo'
+import { LessonRepo } from '../lesson/lesson.repo'
 import { RewardService } from '../reward/reward.service'
 import { REQUIRED_ANSWERS_FOR_LESSON_REVIEW } from './dto/variable'
 
@@ -56,7 +56,7 @@ export class UserTestAttemptService {
     private readonly levelRepo: LevelRepo,
     private readonly userProgressRepository: UserProgressRepository,
     private readonly rewardService: RewardService,
-    private readonly lessonRepository: LessonRepository
+    private readonly lessonRepository: LessonRepo
   ) {}
 
   async create(userId: number, testId: number) {

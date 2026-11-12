@@ -4,7 +4,7 @@ import {
   UpdateLessonBodyType,
   GetLessonByIdParamsType,
   GetLessonListQueryType
-} from './entities/lesson.entities'
+} from './entities/lesson.entity'
 import {
   LessonNotFoundException,
   LessonAlreadyExistsException,
@@ -16,7 +16,7 @@ import {
   InvalidLessonContentsDataException,
   RewardNotFoundException
 } from './dto/lesson.error'
-import { LessonRepository } from './lesson.repo'
+import { LessonRepo } from './lesson.repo'
 import { LessonCategoryService } from '../lesson-category/lesson-category.service'
 import { TranslationService } from '../translation/translation.service'
 import { LanguagesService } from '../languages/languages.service'
@@ -38,7 +38,7 @@ export class LessonService {
   private readonly logger = new Logger(LessonService.name)
 
   constructor(
-    private readonly lessonRepository: LessonRepository,
+    private readonly lessonRepository: LessonRepo,
     private readonly lessonCategoryService: LessonCategoryService,
     private readonly translationService: TranslationService,
     private readonly languagesService: LanguagesService,

@@ -4,7 +4,7 @@ import {
   UpdateLessonBodyType,
   GetLessonByIdParamsType,
   GetLessonListQueryType
-} from '../entities/lesson.entities'
+} from '../entities/lesson.entity'
 
 // Lesson DTOs
 export class CreateLessonBodyDTO extends createZodDto(CreateLessonBodyType) {}

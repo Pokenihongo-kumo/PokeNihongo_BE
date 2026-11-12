@@ -4,11 +4,11 @@ import {
   CreateLessonBodyType,
   UpdateLessonBodyType,
   GetLessonListQueryType
-} from './entities/lesson.entities'
+} from './entities/lesson.entity'
 import { LessonSortField, SortOrder } from '@/common/enum/enum'
 
 @Injectable()
-export class LessonRepository {
+export class LessonRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   // Lesson CRUD
