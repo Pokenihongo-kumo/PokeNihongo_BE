@@ -10,6 +10,7 @@ import {
 import { TestSetMessage as M } from '@/i18n/message-keys'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { hasJapaneseText } from '@/common/utils/japanese-text'
+import { isUrl } from '@/common/utils/is-url'
 import { paginatedResSchema } from '@/shared/utils/pagination'
 
 extendZodWithOpenApi(z)
@@ -17,15 +18,6 @@ patchNestJsSwagger()
 
 const enumOf = <T extends Record<string, string>>(values: T, key: string) =>
   z.nativeEnum(values, { errorMap: () => ({ message: key }) })
-
-const isUrl = (value: string) => {
-  try {
-    new URL(value)
-    return true
-  } catch {
-    return false
-  }
-}
 
 // Field rules shared by every create/update body (were checked in the service)
 const fields = {

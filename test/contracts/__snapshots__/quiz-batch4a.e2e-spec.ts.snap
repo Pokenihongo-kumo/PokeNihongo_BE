@@ -268,7 +268,7 @@ exports[`Quiz batch 4a contract (e2e) question-bank create with answers, list, d
         "questionBank": {
           "audioUrl": "null",
           "createdAt": "string",
-          "createdById": "null",
+          "createdById": "number",
           "id": "number",
           "levelN": "number",
           "pronunciation": "null",
@@ -323,7 +323,7 @@ exports[`Quiz batch 4a contract (e2e) question-bank create with answers, list, d
           {
             "audioUrl": "null",
             "createdAt": "string",
-            "createdById": "null",
+            "createdById": "number",
             "id": "number",
             "levelN": "number",
             "meanings": [
@@ -351,7 +351,7 @@ exports[`Quiz batch 4a contract (e2e) question-bank create with answers, list, d
       "data": {
         "audioUrl": "null",
         "createdAt": "string",
-        "createdById": "null",
+        "createdById": "number",
         "id": "number",
         "levelN": "number",
         "pronunciation": "null",
@@ -393,7 +393,7 @@ exports[`Quiz batch 4a contract (e2e) question-bank delete bulk delete, delete o
         "errors": [
           {
             "field": "string",
-            "message": "Invalid data provided",
+            "message": "At least one id is required",
           },
         ],
         "message": "Invalid data provided",
@@ -407,7 +407,7 @@ exports[`Quiz batch 4a contract (e2e) question-bank delete bulk delete, delete o
         "errors": [
           {
             "field": "string",
-            "message": "Dữ liệu không hợp lệ",
+            "message": "Phải có ít nhất 1 ID",
           },
         ],
         "message": "Dữ liệu không hợp lệ",
@@ -438,19 +438,19 @@ exports[`Quiz batch 4a contract (e2e) question-bank delete bulk delete, delete o
   "deleteAgain": {
     "en": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu câu hỏi không hợp lệ",
-        "statusCode": 400,
+        "error": "NOT_FOUND",
+        "message": "Question not found",
+        "statusCode": 404,
       },
-      "httpStatus": 400,
+      "httpStatus": 404,
     },
     "vi": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu câu hỏi không hợp lệ",
-        "statusCode": 400,
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy câu hỏi",
+        "statusCode": 404,
       },
-      "httpStatus": 400,
+      "httpStatus": 404,
     },
   },
 }
@@ -487,7 +487,7 @@ exports[`Quiz batch 4a contract (e2e) question-bank errors, and the bulk create/
         "errors": [
           {
             "field": "string",
-            "message": "Invalid format",
+            "message": "questionJp is required",
           },
         ],
         "message": "Invalid data provided",
@@ -501,7 +501,7 @@ exports[`Quiz batch 4a contract (e2e) question-bank errors, and the bulk create/
         "errors": [
           {
             "field": "string",
-            "message": "Định dạng không hợp lệ",
+            "message": "Nội dung câu hỏi không được để trống",
           },
         ],
         "message": "Dữ liệu không hợp lệ",
@@ -513,26 +513,38 @@ exports[`Quiz batch 4a contract (e2e) question-bank errors, and the bulk create/
   "invalidId": {
     "en": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "An error occurred",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid question ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "Đã xảy ra lỗi",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID câu hỏi không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
   },
   "notFound": {
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Không tìm thấy câu hỏi",
+        "message": "Question not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -549,19 +561,19 @@ exports[`Quiz batch 4a contract (e2e) question-bank errors, and the bulk create/
   "updateNotFound": {
     "en": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu câu hỏi không hợp lệ",
-        "statusCode": 400,
+        "error": "NOT_FOUND",
+        "message": "Question not found",
+        "statusCode": 404,
       },
-      "httpStatus": 400,
+      "httpStatus": 404,
     },
     "vi": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu câu hỏi không hợp lệ",
-        "statusCode": 400,
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy câu hỏi",
+        "statusCode": 404,
       },
-      "httpStatus": 400,
+      "httpStatus": 404,
     },
   },
 }
@@ -988,7 +1000,7 @@ exports[`Quiz batch 4a contract (e2e) testset and testset-questionbank link ques
           "answers": [],
           "audioUrl": "null",
           "createdAt": "string",
-          "createdById": "null",
+          "createdById": "number",
           "id": "number",
           "levelN": "null",
           "pronunciation": "null",
