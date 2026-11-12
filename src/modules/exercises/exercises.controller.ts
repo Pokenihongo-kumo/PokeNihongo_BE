@@ -34,7 +34,7 @@ import {
   CreateExercisesBodyType,
   UpdateExercisesBodyType,
   GetExercisesListQueryType
-} from './entities/exercises.entities'
+} from './entities/exercises.entity'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 
 @ApiTags('Exercises')

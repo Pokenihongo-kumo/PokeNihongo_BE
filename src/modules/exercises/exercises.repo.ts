@@ -4,11 +4,11 @@ import {
   CreateExercisesBodyType,
   UpdateExercisesBodyType,
   GetExercisesListQueryType
-} from './entities/exercises.entities'
+} from './entities/exercises.entity'
 
 @Injectable()
-export class ExercisesRepository {
-  private readonly logger = new Logger(ExercisesRepository.name)
+export class ExercisesRepo {
+  private readonly logger = new Logger(ExercisesRepo.name)
 
   constructor(private readonly prismaService: PrismaService) {}
 

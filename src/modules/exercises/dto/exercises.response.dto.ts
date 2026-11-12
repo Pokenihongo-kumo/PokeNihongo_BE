@@ -1,6 +1,6 @@
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
-import { ExercisesType, ExercisesListResSchema } from '../entities/exercises.entities'
+import { ExercisesType, ExercisesListResSchema } from '../entities/exercises.entity'
 
 // Response DTOs
 export const ExercisesResponseSchema = z.object({

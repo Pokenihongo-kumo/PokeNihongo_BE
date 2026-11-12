@@ -1,11 +1,11 @@
 import { Injectable, Logger, HttpException } from '@nestjs/common'
-import { ExercisesRepository } from './exercises.repo'
+import { ExercisesRepo } from './exercises.repo'
 import {
   CreateExercisesBodyType,
   UpdateExercisesBodyType,
   GetExercisesListQueryType,
   ExercisesType
-} from './entities/exercises.entities'
+} from './entities/exercises.entity'
 import { EXERCISES_MESSAGE } from '@/common/constants/message'
 import { MessageResDTO } from '@/shared/dtos/response.dto'
 import {
@@ -69,7 +69,7 @@ export class ExercisesService {
   }
 
   constructor(
-    private readonly exercisesRepository: ExercisesRepository,
+    private readonly exercisesRepository: ExercisesRepo,
     private readonly languagesRepository: LanguagesRepo,
     private readonly translationRepository: TranslationRepo
   ) {}

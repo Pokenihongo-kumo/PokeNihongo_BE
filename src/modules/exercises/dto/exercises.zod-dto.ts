@@ -5,7 +5,7 @@ import {
   GetExercisesByIdParamsType,
   GetExercisesListQueryType,
   ExercisesListResSchema
-} from '../entities/exercises.entities'
+} from '../entities/exercises.entity'
 
 export class CreateExercisesBodyDTO extends createZodDto(CreateExercisesBodyType) {}
 export class UpdateExercisesBodyDTO extends createZodDto(UpdateExercisesBodyType) {}
