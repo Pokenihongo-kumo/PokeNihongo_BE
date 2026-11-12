@@ -1,14 +1,10 @@
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import {
-  CreateQuestionBankBodyDTO,
-  CreateQuestionBankWithMeaningsBodyDTO,
   UpdateQuestionBankWithMeaningsBodyDTO,
   CreateQuestionBankWithAnswersBodyDTO,
   GetQuestionBankByIdParamsDTO,
   GetQuestionBankListQueryDTO,
   GetQuestionBanksByIdsQueryDTO,
-  UpdateQuestionBankBodyDTO,
-  QuestionBankListResDTO,
   QuestionBankResDTO,
   BulkDeleteQuestionBankBodyDTO
 } from '@/modules/question-bank/dto/question-bank.zod-dto'
@@ -17,11 +13,9 @@ import {
   QuestionBankListResponseSwaggerDTO,
   GetQuestionBankListQuerySwaggerDTO,
   GetQuestionBanksByIdsQuerySwaggerDTO,
-  CreateQuestionBankWithMeaningsSwaggerDTO,
   UpdateQuestionBankWithMeaningsSwaggerDTO,
   CreateQuestionBankWithAnswersSwaggerDTO,
   CreateQuestionBankWithAnswersResponseSwaggerDTO,
-  UpdateQuestionBankSwaggerDTO,
   BulkDeleteQuestionBankSwaggerDTO
 } from '@/modules/question-bank/dto/question-bank.dto'
 import {
@@ -55,29 +49,6 @@ import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 export class QuestionBankController {
   constructor(private readonly questionBankService: QuestionBankService) {}
 
-  //     @Post('with-meanings')
-  //     @ApiBearerAuth()
-  //     @ApiOperation({
-  //         summary: 'Tạo câu hỏi mới với nghĩa và bản dịch',
-  //         description: `Tạo câu hỏi mới với nghĩa và bản dịch.
-
-  // **Quy tắc đặc biệt:**
-  // - **audioUrl**: Optional - chỉ khi questionType là LISTENING và không truyền thì hệ thống sẽ tự động gen text-to-speech từ questionJp
-  // - **SPEAKING**: Bắt buộc phải có pronunciation (cách phát âm romaji)
-  // - **Các loại khác**: audioUrl và pronunciation là tùy chọn
-
-  // **Loại câu hỏi hỗ trợ:** VOCABULARY, GRAMMAR, KANJI, LISTENING, READING, SPEAKING, MATCHING` })
-  //     @ApiBody({ type: CreateQuestionBankWithMeaningsSwaggerDTO })
-  //     @ApiResponse({
-  //         status: 201,
-  //         description: 'Tạo câu hỏi với nghĩa thành công',
-  //         type: QuestionBankResponseSwaggerDTO
-  //     })
-  //     @ZodSerializerDto(QuestionBankResDTO)
-  //     createWithMeanings(@Body() body: CreateQuestionBankWithMeaningsBodyDTO, @ActiveUser('userId') userId: number) {
-  //         return this.questionBankService.createWithMeanings(body, userId)
-  //     }
-
   @Post('with-answers')
   @ApiBearerAuth()
   @ApiOperation({
@@ -101,13 +72,15 @@ export class QuestionBankController {
     description: 'Tạo câu hỏi và câu trả lời thành công',
     type: CreateQuestionBankWithAnswersResponseSwaggerDTO
   })
-  createWithAnswers(
+  async createWithAnswers(
     @Body() body: CreateQuestionBankWithAnswersBodyDTO,
     @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string,
     @Res() res: Response
   ) {
-    const result = this.questionBankService.createWithAnswers(body, userId)
-    return result.then((data) => res.status(data.statusCode).json(data)) as any
+    // 201 all answers saved, 207 some, 400 none: the status is part of the result
+    const result = await this.questionBankService.createWithAnswers(body, userId, lang)
+    res.status(result.statusCode).json(result)
   }
 
   @Get()
@@ -132,7 +105,6 @@ export class QuestionBankController {
     description: 'Lấy thông tin câu hỏi thành công',
     type: QuestionBankListResponseSwaggerDTO
   })
-  // @ZodSerializerDto(QuestionBankListResDTO)
   findByIds(@Query() query: GetQuestionBanksByIdsQueryDTO, @I18nLang() lang: string) {
     return this.questionBankService.findByIds(query.questionIds, lang)
   }
@@ -146,8 +118,8 @@ export class QuestionBankController {
     type: QuestionBankResponseSwaggerDTO
   })
   @ZodSerializerDto(QuestionBankResDTO)
-  findOne(@Param('id') id: string) {
-    return this.questionBankService.findOne(Number(id))
+  findOne(@Param() params: GetQuestionBankByIdParamsDTO, @I18nLang() lang: string) {
+    return this.questionBankService.findOne(params.id, lang)
   }
 
   @Put(':id')
@@ -164,10 +136,11 @@ export class QuestionBankController {
     type: QuestionBankResponseSwaggerDTO
   })
   updateWithMeanings(
-    @Param('id') id: string,
-    @Body() body: UpdateQuestionBankWithMeaningsBodyDTO
+    @Param() params: GetQuestionBankByIdParamsDTO,
+    @Body() body: UpdateQuestionBankWithMeaningsBodyDTO,
+    @I18nLang() lang: string
   ) {
-    return this.questionBankService.updateWithMeanings(Number(id), body)
+    return this.questionBankService.updateWithMeanings(params.id, body, lang)
   }
 
   @Delete('bulk')
@@ -206,8 +179,8 @@ export class QuestionBankController {
       }
     }
   })
-  removeMany(@Body() body: BulkDeleteQuestionBankBodyDTO) {
-    return this.questionBankService.removeMany(body.ids)
+  removeMany(@Body() body: BulkDeleteQuestionBankBodyDTO, @I18nLang() lang: string) {
+    return this.questionBankService.removeMany(body.ids, lang)
   }
 
   @Delete(':id')
@@ -220,7 +193,7 @@ export class QuestionBankController {
     type: QuestionBankResponseSwaggerDTO
   })
   @ZodSerializerDto(QuestionBankResDTO)
-  remove(@Param('id') id: string) {
-    return this.questionBankService.remove(Number(id))
+  remove(@Param() params: GetQuestionBankByIdParamsDTO, @I18nLang() lang: string) {
+    return this.questionBankService.remove(params.id, lang)
   }
 }

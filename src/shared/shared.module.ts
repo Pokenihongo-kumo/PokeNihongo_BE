@@ -5,7 +5,7 @@ import { AuthenticationGuard } from '@/common/guards/authentication.guard'
 import { InvoiceRepo } from '@/modules/invoice/invoice.repo'
 import { LanguagesRepo } from '@/modules/languages/languages.repo'
 import { PokemonRepo } from '@/modules/pokemon/pokemon.repo'
-import { QuestionBankRepository } from '@/modules/question-bank/question-bank.repo'
+import { QuestionBankRepo } from '@/modules/question-bank/question-bank.repo'
 import { UserSubscriptionRepo } from '@/modules/user-subscription/user-subscription.repo'
 import { WalletTransactionRepo } from '@/modules/wallet-transaction/wallet-transaction.repo'
 import { WalletRepo } from '@/modules/wallet/wallet.repo'
@@ -37,7 +37,7 @@ const sharedServices = [
   SharedUserRepository,
   SharedRoleRepository,
   SharedNotificationRepo,
-  QuestionBankRepository,
+  QuestionBankRepo,
   PokemonRepo,
   PayOSService,
   InvoiceRepo,

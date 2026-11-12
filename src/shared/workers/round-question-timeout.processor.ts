@@ -1,5 +1,5 @@
 import { BullAction, BullQueue } from '@/common/constants/bull-action.constant'
-import { QuestionBankRepository } from '@/modules/question-bank/question-bank.repo'
+import { QuestionBankRepo } from '@/modules/question-bank/question-bank.repo'
 import {
   addTimeUTC,
   calculateEloGain,
@@ -31,7 +31,7 @@ export class RoundQuestionTimeoutProcessor implements OnModuleInit {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly matchingGateway: MatchingGateway,
-    private readonly questionBankRepo: QuestionBankRepository,
+    private readonly questionBankRepo: QuestionBankRepo,
     private readonly socketServerService: SocketServerService,
     @InjectQueue(BullQueue.ROUND_QUESTION_TIMEOUT)
     private readonly roundQuestionTimeoutQueue: Queue,

@@ -12,7 +12,7 @@ import { PrismaService } from '@/shared/services/prisma.service'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { LanguagesRepo } from '../languages/languages.repo'
 import { LeaderboardSeasonRepo } from '../leaderboard-season/leaderboard-season.repo'
-import { QuestionBankRepository } from '../question-bank/question-bank.repo'
+import { QuestionBankRepo } from '../question-bank/question-bank.repo'
 import {
   MatchAlreadyExistsException,
   NotHaveActiveLeaderboardSeasonException
@@ -28,7 +28,7 @@ export class MatchService {
     private readonly languageRepo: LanguagesRepo,
     private readonly leaderboardSeasonRepo: LeaderboardSeasonRepo,
     private readonly prismaService: PrismaService,
-    private readonly questionBankRepo: QuestionBankRepository
+    private readonly questionBankRepo: QuestionBankRepo
   ) {}
 
   async list(pagination: PaginationQueryType, lang: string = 'vi') {

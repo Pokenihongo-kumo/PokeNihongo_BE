@@ -17,7 +17,7 @@ import { LanguagesRepo } from '../languages/languages.repo'
 import { LeaderboardSeasonRepo } from '../leaderboard-season/leaderboard-season.repo'
 import { MatchRoundParticipantRepo } from '../match-round-participant/match-round-participant.repo'
 import { MatchRepo } from '../match/match.repo'
-import { QuestionBankRepository } from '../question-bank/question-bank.repo'
+import { QuestionBankRepo } from '../question-bank/question-bank.repo'
 import { RoundQuestionRepo } from '../round-question/round-question.repo'
 import { MatchRoundAlreadyExistsException } from './dto/match-round.error'
 import {
@@ -37,7 +37,7 @@ export class MatchRoundService {
     private readonly leaderboardSeasonRepo: LeaderboardSeasonRepo,
     @InjectQueue(BullQueue.MATCH_ROUND_PARTICIPANT_TIMEOUT)
     private readonly matchRoundParticipantTimeoutQueue: Queue,
-    private readonly questionBankRepo: QuestionBankRepository,
+    private readonly questionBankRepo: QuestionBankRepo,
     private readonly roundQuestionRepo: RoundQuestionRepo
   ) {}
 
@@ -135,7 +135,7 @@ export class MatchRoundService {
 
         if ((roundQuestions || []).length > 0) {
           const qbIds = roundQuestions.map((rq: any) => rq.questionBankId)
-          // Use QuestionBankRepository to get formatted canonical question objects
+          // Use QuestionBankRepo to get formatted canonical question objects
           const formattedQbs = await this.questionBankRepo.findByIds(qbIds, lang)
           const qbMap = new Map<number, any>()
           for (const fq of formattedQbs) {
