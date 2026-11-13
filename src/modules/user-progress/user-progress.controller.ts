@@ -2,6 +2,8 @@ import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import {
   CreateUserProgressBodyDTO,
   GetUserProgressByIdParamsDTO,
+  UserProgressLessonParamsDTO,
+  UserProgressUserParamsDTO,
   GetUserProgressListQueryDTO,
   UpdateUserProgressBodyDTO,
   UserProgressListResDTO,
@@ -40,6 +42,7 @@ import {
 } from '@nestjs/swagger'
 import { ZodSerializerDto } from 'nestjs-zod'
 import { UserProgressService } from './user-progress.service'
+import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 
 @ApiTags('User Progress')
 @Controller('user-progress')
@@ -56,8 +59,8 @@ export class UserProgressController {
     type: UserProgressResponseSwaggerDTO
   })
   @ZodSerializerDto(UserProgressResDTO)
-  create(@Body() body: CreateUserProgressBodyDTO, @ActiveUser('userId') userId: number) {
-    return this.userProgressService.create(body)
+  create(@Body() body: CreateUserProgressBodyDTO, @I18nLang() lang: string) {
+    return this.userProgressService.create(body, lang)
   }
 
   @Get()
@@ -72,8 +75,8 @@ export class UserProgressController {
   })
   @ApiQuery({ type: GetUserProgressListQuerySwaggerDTO })
   @ZodSerializerDto(UserProgressListResDTO)
-  findAll(@Query() query: GetUserProgressListQueryDTO) {
-    return this.userProgressService.findAll(query)
+  findAll(@Query() query: GetUserProgressListQueryDTO, @I18nLang() lang: string) {
+    return this.userProgressService.findAll(query, lang)
   }
 
   @Get('my')
@@ -88,9 +91,10 @@ export class UserProgressController {
   @ZodSerializerDto(UserProgressListResDTO)
   getMy(
     @Query() query: GetUserProgressListQueryDTO,
-    @ActiveUser('userId') userId: number
+    @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string
   ) {
-    return this.userProgressService.getMy(userId, query)
+    return this.userProgressService.getMy(userId, query, lang)
   }
 
   // @Get(':id')
@@ -133,11 +137,11 @@ export class UserProgressController {
   })
   @ZodSerializerDto(UserProgressResDTO)
   update(
-    @Param('id') id: string,
+    @Param() params: GetUserProgressByIdParamsDTO,
     @Body() body: UpdateUserProgressBodyDTO,
-    @ActiveUser('userId') userId: number
+    @I18nLang() lang: string
   ) {
-    return this.userProgressService.update(Number(id), body)
+    return this.userProgressService.update(params.id, body, lang)
   }
 
   @Put('user/lesson/:lessonId')
@@ -150,14 +154,16 @@ export class UserProgressController {
   })
   @ZodSerializerDto(UserProgressResDTO)
   updateByUserAndLesson(
-    @ActiveUser('userId') userId: string,
-    @Param('lessonId') lessonId: string,
-    @Body() body: UpdateUserProgressBodyDTO
+    @ActiveUser('userId') userId: number,
+    @Param() params: UserProgressLessonParamsDTO,
+    @Body() body: UpdateUserProgressBodyDTO,
+    @I18nLang() lang: string
   ) {
     return this.userProgressService.updateByUserAndLesson(
-      parseInt(userId, 10),
-      parseInt(lessonId, 10),
-      body
+      userId,
+      params.lessonId,
+      body,
+      lang
     )
   }
 
@@ -171,8 +177,8 @@ export class UserProgressController {
     type: UserProgressResponseSwaggerDTO
   })
   @ZodSerializerDto(UserProgressResDTO)
-  remove(@Param('id') id: string) {
-    return this.userProgressService.remove(Number(id))
+  remove(@Param() params: GetUserProgressByIdParamsDTO, @I18nLang() lang: string) {
+    return this.userProgressService.remove(params.id, lang)
   }
 
   @Post('start-lesson')
@@ -184,8 +190,12 @@ export class UserProgressController {
     type: UserProgressResponseSwaggerDTO
   })
   @ZodSerializerDto(UserProgressResDTO)
-  startLesson(@Body() body: StartLessonBodyDTO, @ActiveUser('userId') userId: number) {
-    return this.userProgressService.startLesson(userId, body.lessonId)
+  startLesson(
+    @Body() body: StartLessonBodyDTO,
+    @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string
+  ) {
+    return this.userProgressService.startLesson(userId, body.lessonId, lang)
   }
 
   @Post('complete-lesson')
@@ -199,9 +209,15 @@ export class UserProgressController {
   @ZodSerializerDto(UserProgressResDTO)
   completeLesson(
     @Body() body: CompleteLessonBodyDTO,
-    @ActiveUser('userId') userId: number
+    @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string
   ) {
-    return this.userProgressService.completeLesson(userId, body.lessonId, body.score)
+    return this.userProgressService.completeLesson(
+      userId,
+      body.lessonId,
+      body.score,
+      lang
+    )
   }
 
   @Post('admin/init-user-progress/:userId')
@@ -213,8 +229,8 @@ export class UserProgressController {
     description: 'Khởi tạo UserProgress thành công',
     type: InitUserProgressForAdminResponseSwaggerDTO
   })
-  async initUserProgressForAdmin(@Param('userId') userId: number) {
-    return this.userProgressService.initUserProgressForAdmin(userId)
+  async initUserProgressForAdmin(@Param() params: UserProgressUserParamsDTO) {
+    return this.userProgressService.initUserProgressForAdmin(params.userId)
   }
 
   @Post('admin/init-all-users-progress')

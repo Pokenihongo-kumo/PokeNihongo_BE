@@ -451,6 +451,28 @@ export const SrsReviewMessage = {
   INVALID_FLAG: 'srs_review.INVALID_FLAG'
 } as const
 
+export const UserProgressMessage = {
+  GET_SUCCESS: 'user_progress.GET_SUCCESS',
+  GET_LIST_SUCCESS: 'user_progress.GET_LIST_SUCCESS',
+  GET_MY_SUCCESS: 'user_progress.GET_MY_SUCCESS',
+  CREATE_SUCCESS: 'user_progress.CREATE_SUCCESS',
+  UPDATE_SUCCESS: 'user_progress.UPDATE_SUCCESS',
+  DELETE_SUCCESS: 'user_progress.DELETE_SUCCESS',
+  START_LESSON_SUCCESS: 'user_progress.START_LESSON_SUCCESS',
+  COMPLETE_LESSON_SUCCESS: 'user_progress.COMPLETE_LESSON_SUCCESS',
+  NOT_FOUND: 'user_progress.NOT_FOUND',
+  ALREADY_EXISTS: 'user_progress.ALREADY_EXISTS',
+  INVALID_DATA: 'user_progress.INVALID_DATA',
+  INVALID_ID: 'user_progress.INVALID_ID',
+  INVALID_LESSON_ID: 'user_progress.INVALID_LESSON_ID',
+  INVALID_USER_ID: 'user_progress.INVALID_USER_ID',
+  INVALID_CATEGORY_ID: 'user_progress.INVALID_CATEGORY_ID',
+  INVALID_PAGE: 'user_progress.INVALID_PAGE',
+  INVALID_PAGE_SIZE: 'user_progress.INVALID_PAGE_SIZE',
+  INVALID_PERCENTAGE: 'user_progress.INVALID_PERCENTAGE',
+  INVALID_STATUS: 'user_progress.INVALID_STATUS'
+} as const
+
 export const LessonCategoryMessage = {
   CREATE_SUCCESS: 'lesson_category.CREATE_SUCCESS',
   UPDATE_SUCCESS: 'lesson_category.UPDATE_SUCCESS',

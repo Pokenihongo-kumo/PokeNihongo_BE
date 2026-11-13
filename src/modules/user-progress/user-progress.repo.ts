@@ -1,10 +1,10 @@
-import { UserProgressType } from '@/modules/user-progress/entities/user-progress.entities'
+import { UserProgressType } from '@/modules/user-progress/entities/user-progress.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
 import { ProgressStatus } from '@prisma/client'
 
 @Injectable()
-export class UserProgressRepository {
+export class UserProgressRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(params: {

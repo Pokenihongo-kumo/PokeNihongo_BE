@@ -35,91 +35,61 @@ exports[`User progress batch 5b contract (e2e) errors: bad query values 1`] = `
   "progressBadCategory": {
     "en": {
       "body": {
-        "data": {
-          "pagination": {
-            "current": "number",
-            "pageSize": "number",
-            "totalItem": "number",
-            "totalPage": "number",
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid lesson category ID",
           },
-          "results": [
-            {
-              "completedAt": "null",
-              "createdAt": "string",
-              "id": "number",
-              "lastAccessedAt": "string",
-              "lesson": {
-                "id": "number",
-                "isPublished": "boolean",
-                "levelJlpt": "number",
-                "titleJp": "string",
-              },
-              "lessonId": "number",
-              "progressPercentage": "number",
-              "status": "string",
-              "testId": "null",
-              "updatedAt": "string",
-              "userId": "number",
-            },
-          ],
-        },
-        "message": "Lấy tiến độ học tập của tôi thành công",
-        "statusCode": 200,
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 200,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "data": {
-          "pagination": {
-            "current": "number",
-            "pageSize": "number",
-            "totalItem": "number",
-            "totalPage": "number",
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID danh mục bài học không hợp lệ",
           },
-          "results": [
-            {
-              "completedAt": "null",
-              "createdAt": "string",
-              "id": "number",
-              "lastAccessedAt": "string",
-              "lesson": {
-                "id": "number",
-                "isPublished": "boolean",
-                "levelJlpt": "number",
-                "titleJp": "string",
-              },
-              "lessonId": "number",
-              "progressPercentage": "number",
-              "status": "string",
-              "testId": "null",
-              "updatedAt": "string",
-              "userId": "number",
-            },
-          ],
-        },
-        "message": "Lấy tiến độ học tập của tôi thành công",
-        "statusCode": 200,
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 200,
+      "httpStatus": 422,
     },
   },
   "progressBadPageSize": {
     "en": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "An error occurred",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Page size must be a positive integer",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "Đã xảy ra lỗi",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Kích thước trang phải là số nguyên dương",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
   },
   "progressUnknownField": {
@@ -316,7 +286,7 @@ exports[`User progress batch 5b contract (e2e) user-progress: lessons of a categ
             },
           ],
         },
-        "message": "Lấy tiến độ học tập của tôi thành công",
+        "message": "Your progress retrieved successfully",
         "statusCode": 200,
       },
       "httpStatus": 200,

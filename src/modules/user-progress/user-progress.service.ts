@@ -3,13 +3,14 @@ import {
   GetUserProgressByIdParamsType,
   GetUserProgressListQueryType,
   UpdateUserProgressBodyType
-} from '@/modules/user-progress/entities/user-progress.entities'
+} from '@/modules/user-progress/entities/user-progress.entity'
 import {
   InvalidUserProgressDataException,
-  UserProgressNotFoundException,
-  USER_PROGRESS_MESSAGE
+  UserProgressNotFoundException
 } from '@/modules/user-progress/dto/user-progress.error'
-import { UserProgressRepository } from '@/modules/user-progress/user-progress.repo'
+import { I18nService } from '@/i18n/i18n.service'
+import { UserProgressMessage as M } from '@/i18n/message-keys'
+import { UserProgressRepo } from '@/modules/user-progress/user-progress.repo'
 import { isNotFoundPrismaError } from '@/shared/helpers'
 import { Injectable, Logger, HttpException } from '@nestjs/common'
 import { ProgressStatus } from '@prisma/client'
@@ -18,9 +19,12 @@ import { ProgressStatus } from '@prisma/client'
 export class UserProgressService {
   private readonly logger = new Logger(UserProgressService.name)
 
-  constructor(private readonly userProgressRepository: UserProgressRepository) {}
+  constructor(
+    private readonly userProgressRepository: UserProgressRepo,
+    private readonly i18nService: I18nService
+  ) {}
 
-  async create(body: CreateUserProgressBodyType) {
+  async create(body: CreateUserProgressBodyType, lang: string = 'vi') {
     try {
       // Kiểm tra xem đã tồn tại progress cho user và lesson này chưa
       const existingProgress = await this.userProgressRepository.findByUserAndLesson(
@@ -28,29 +32,25 @@ export class UserProgressService {
         body.lessonId
       )
       if (existingProgress) {
-        throw InvalidUserProgressDataException
+        throw new InvalidUserProgressDataException()
       }
 
       const userProgress = await this.userProgressRepository.create(body)
 
       return {
         data: userProgress,
-        message: USER_PROGRESS_MESSAGE.CREATE_SUCCESS
+        message: this.i18nService.translate(M.CREATE_SUCCESS, lang)
       }
     } catch (error) {
       this.logger.error('Error creating user progress:', error)
-      if (
-        error instanceof HttpException ||
-        error.message?.includes('đã tồn tại') ||
-        error.message?.includes('không tồn tại')
-      ) {
+      if (error instanceof HttpException) {
         throw error
       }
-      throw InvalidUserProgressDataException
+      throw new InvalidUserProgressDataException()
     }
   }
 
-  async findAll(query: GetUserProgressListQueryType) {
+  async findAll(query: GetUserProgressListQueryType, lang: string = 'vi') {
     const {
       currentPage,
       pageSize,
@@ -73,7 +73,7 @@ export class UserProgressService {
 
     return {
       statusCode: 200,
-      message: USER_PROGRESS_MESSAGE.GET_LIST_SUCCESS,
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
       data: {
         results: result.items,
         pagination: {
@@ -87,7 +87,7 @@ export class UserProgressService {
   }
 
   //KUMO
-  async getMy(userId: number, query: GetUserProgressListQueryType) {
+  async getMy(userId: number, query: GetUserProgressListQueryType, lang: string = 'vi') {
     const {
       currentPage,
       pageSize,
@@ -109,7 +109,7 @@ export class UserProgressService {
 
     return {
       statusCode: 200,
-      message: 'Lấy tiến độ học tập của tôi thành công',
+      message: this.i18nService.translate(M.GET_MY_SUCCESS, lang),
       data: {
         results: result.items,
         pagination: {
@@ -122,43 +122,43 @@ export class UserProgressService {
     }
   }
 
-  async findOne(params: GetUserProgressByIdParamsType) {
+  async findOne(params: GetUserProgressByIdParamsType, lang: string = 'vi') {
     const userProgress = await this.userProgressRepository.findUnique({
       id: params.id
     })
 
     if (!userProgress) {
-      throw UserProgressNotFoundException
+      throw new UserProgressNotFoundException()
     }
 
     return {
       data: userProgress,
-      message: USER_PROGRESS_MESSAGE.GET_SUCCESS
+      message: this.i18nService.translate(M.GET_SUCCESS, lang)
     }
   }
 
-  async findByUserAndLesson(userId: number, lessonId: number) {
+  async findByUserAndLesson(userId: number, lessonId: number, lang: string = 'vi') {
     const userProgress = await this.userProgressRepository.findByUserAndLesson(
       userId,
       lessonId
     )
 
     if (!userProgress) {
-      throw UserProgressNotFoundException
+      throw new UserProgressNotFoundException()
     }
 
     return {
       data: userProgress,
-      message: USER_PROGRESS_MESSAGE.GET_SUCCESS
+      message: this.i18nService.translate(M.GET_SUCCESS, lang)
     }
   }
 
-  async update(id: number, body: UpdateUserProgressBodyType) {
+  async update(id: number, body: UpdateUserProgressBodyType, lang: string = 'vi') {
     try {
       // Validate progress percentage
       if (body.progressPercentage !== undefined) {
         if (body.progressPercentage < 0 || body.progressPercentage > 100) {
-          throw InvalidUserProgressDataException
+          throw new InvalidUserProgressDataException()
         }
       }
 
@@ -166,31 +166,28 @@ export class UserProgressService {
 
       return {
         data: userProgress,
-        message: USER_PROGRESS_MESSAGE.UPDATE_SUCCESS
+        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
       }
     } catch (error) {
       this.logger.error('Error updating user progress:', error)
-      if (
-        error instanceof HttpException ||
-        error.message?.includes('không tồn tại') ||
-        error.message?.includes('đã tồn tại')
-      ) {
+      if (error instanceof HttpException) {
         throw error
       }
-      throw InvalidUserProgressDataException
+      throw new InvalidUserProgressDataException()
     }
   }
 
   async updateByUserAndLesson(
     userId: number,
     lessonId: number,
-    body: UpdateUserProgressBodyType
+    body: UpdateUserProgressBodyType,
+    lang: string = 'vi'
   ) {
     try {
       // Validate progress percentage
       if (body.progressPercentage !== undefined) {
         if (body.progressPercentage < 0 || body.progressPercentage > 100) {
-          throw InvalidUserProgressDataException
+          throw new InvalidUserProgressDataException()
         }
       }
 
@@ -202,39 +199,35 @@ export class UserProgressService {
 
       return {
         data: userProgress,
-        message: USER_PROGRESS_MESSAGE.UPDATE_SUCCESS
+        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
       }
     } catch (error) {
       this.logger.error('Error updating user progress by user and lesson:', error)
-      if (
-        error instanceof HttpException ||
-        error.message?.includes('không tồn tại') ||
-        error.message?.includes('đã tồn tại')
-      ) {
+      if (error instanceof HttpException) {
         throw error
       }
-      throw InvalidUserProgressDataException
+      throw new InvalidUserProgressDataException()
     }
   }
 
-  async remove(id: number) {
+  async remove(id: number, lang: string = 'vi') {
     try {
       const userProgress = await this.userProgressRepository.delete({ id })
 
       return {
         data: userProgress,
-        message: USER_PROGRESS_MESSAGE.DELETE_SUCCESS
+        message: this.i18nService.translate(M.DELETE_SUCCESS, lang)
       }
     } catch (error) {
       this.logger.error('Error deleting user progress:', error)
-      if (error instanceof HttpException || error.message?.includes('không tồn tại')) {
+      if (error instanceof HttpException) {
         throw error
       }
-      throw InvalidUserProgressDataException
+      throw new InvalidUserProgressDataException()
     }
   }
 
-  async startLesson(userId: number, lessonId: number) {
+  async startLesson(userId: number, lessonId: number, lang: string = 'vi') {
     try {
       const data = {
         userId,
@@ -251,15 +244,20 @@ export class UserProgressService {
 
       return {
         data: userProgress,
-        message: 'Bắt đầu bài học thành công'
+        message: this.i18nService.translate(M.START_LESSON_SUCCESS, lang)
       }
     } catch (error) {
       this.logger.error('Error starting lesson:', error)
-      throw InvalidUserProgressDataException
+      throw new InvalidUserProgressDataException()
     }
   }
 
-  async completeLesson(userId: number, lessonId: number, score?: number) {
+  async completeLesson(
+    userId: number,
+    lessonId: number,
+    score?: number,
+    lang: string = 'vi'
+  ) {
     try {
       const data = {
         status: 'COMPLETED',
@@ -274,11 +272,11 @@ export class UserProgressService {
 
       return {
         data: userProgress,
-        message: 'Hoàn thành bài học thành công'
+        message: this.i18nService.translate(M.COMPLETE_LESSON_SUCCESS, lang)
       }
     } catch (error) {
       this.logger.error('Error completing lesson:', error)
-      throw InvalidUserProgressDataException
+      throw new InvalidUserProgressDataException()
     }
   }
 
@@ -374,7 +372,7 @@ export class UserProgressService {
         `Error in admin initializing user progress for user ${userId}:`,
         error
       )
-      throw InvalidUserProgressDataException
+      throw new InvalidUserProgressDataException()
     }
   }
 
@@ -459,7 +457,7 @@ export class UserProgressService {
       }
     } catch (error) {
       this.logger.error('Error in admin initializing user progress for all users:', error)
-      throw InvalidUserProgressDataException
+      throw new InvalidUserProgressDataException()
     }
   }
 

@@ -477,6 +477,27 @@ export const viMessages = {
     INVALID_PAGE_SIZE: 'Kích thước trang phải từ 1 đến 200',
     INVALID_FLAG: 'Giá trị phải là true hoặc false'
   },
+  user_progress: {
+    GET_SUCCESS: 'Lấy thông tin tiến độ học tập thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách tiến độ học tập thành công',
+    GET_MY_SUCCESS: 'Lấy tiến độ học tập của tôi thành công',
+    CREATE_SUCCESS: 'Tạo tiến độ học tập thành công',
+    UPDATE_SUCCESS: 'Cập nhật tiến độ học tập thành công',
+    DELETE_SUCCESS: 'Xóa tiến độ học tập thành công',
+    START_LESSON_SUCCESS: 'Bắt đầu bài học thành công',
+    COMPLETE_LESSON_SUCCESS: 'Hoàn thành bài học thành công',
+    NOT_FOUND: 'Không tìm thấy tiến độ học tập',
+    ALREADY_EXISTS: 'Tiến độ học tập đã tồn tại',
+    INVALID_DATA: 'Dữ liệu tiến độ học tập không hợp lệ',
+    INVALID_ID: 'ID tiến độ học tập không hợp lệ',
+    INVALID_LESSON_ID: 'ID bài học không hợp lệ',
+    INVALID_USER_ID: 'ID người dùng không hợp lệ',
+    INVALID_CATEGORY_ID: 'ID danh mục bài học không hợp lệ',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương',
+    INVALID_PERCENTAGE: 'Phần trăm tiến độ phải từ 0 đến 100',
+    INVALID_STATUS: 'Trạng thái tiến độ không hợp lệ'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Tạo danh mục bài học thành công',
     UPDATE_SUCCESS: 'Cập nhật danh mục bài học thành công',
