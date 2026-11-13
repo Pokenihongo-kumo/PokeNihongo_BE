@@ -1,0 +1,409 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`User progress batch 5c contract (e2e) a second attempt: continue, abandon, and the history the app asks for 1`] = `
+{
+  "abandon": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "exerciseId": "number",
+        "id": "number",
+        "status": "string",
+        "time": "number",
+        "updatedAt": "string",
+        "userId": "number",
+      },
+      "message": "Đã đánh dấu bài tập là bỏ dở",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "continue": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "exerciseId": "number",
+        "id": "number",
+        "status": "string",
+        "time": "number",
+        "updatedAt": "string",
+        "userId": "number",
+      },
+      "message": "Cập nhật lần thử bài tập thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "history": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy lần thử bài tập",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy lần thử bài tập",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "second": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "exerciseId": "number",
+        "id": "number",
+        "status": "string",
+        "time": "number",
+        "updatedAt": "string",
+        "userId": "number",
+      },
+      "message": "Tạo lần thử bài tập thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+}
+`;
+
+exports[`User progress batch 5c contract (e2e) errors 1`] = `
+{
+  "answerInvalidBody": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid format",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Định dạng không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "answerMissingAttempt": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu log câu trả lời không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu log câu trả lời không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+  "checkMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy lần thử bài tập",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy lần thử bài tập",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "latestInvalidLesson": {
+    "en": {
+      "body": {
+        "error": "INTERNAL_SERVER_ERROR",
+        "message": "Không thể lấy danh sách exercise gần nhất",
+        "statusCode": 500,
+      },
+      "httpStatus": 500,
+    },
+    "vi": {
+      "body": {
+        "error": "INTERNAL_SERVER_ERROR",
+        "message": "Không thể lấy danh sách exercise gần nhất",
+        "statusCode": 500,
+      },
+      "httpStatus": 500,
+    },
+  },
+  "questionsMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy lần thử bài tập",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy lần thử bài tập",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "startInvalidId": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu lần thử bài tập không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu lần thử bài tập không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+  "startMissingExercise": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Exercise not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bài tập",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "submitInvalidBody": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid format",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Định dạng không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+}
+`;
+
+exports[`User progress batch 5c contract (e2e) start, latest of the lesson, questions, answer, check, submit, review 1`] = `
+{
+  "answer": {
+    "body": {
+      "data": {
+        "answerId": "number",
+        "createdAt": "string",
+        "id": "number",
+        "isCorrect": "boolean",
+        "questionBankId": "number",
+        "updatedAt": "string",
+        "userExerciseAttemptId": "number",
+      },
+      "message": "Tạo log câu trả lời thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "check": {
+    "body": {
+      "data": {
+        "allCorrect": "boolean",
+        "answeredQuestions": "number",
+        "isCompleted": "boolean",
+        "status": "string",
+        "totalQuestions": "number",
+        "unansweredQuestions": "number",
+      },
+      "message": "Chúc mừng! Bạn đã hoàn thành bài tập và trả lời đúng hết",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "latest": {
+    "body": {
+      "data": [
+        {
+          "createdAt": "string",
+          "exerciseId": "number",
+          "exerciseType": "string",
+          "id": "number",
+          "status": "string",
+          "updatedAt": "string",
+          "userId": "number",
+        },
+      ],
+      "message": "Lấy danh sách exercise gần nhất thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "questions": {
+    "body": {
+      "data": {
+        "answeredQuestions": "number",
+        "exerciseType": "string",
+        "id": "number",
+        "isBlocked": "boolean",
+        "testSet": {
+          "id": "number",
+          "testSetQuestionBanks": [
+            {
+              "id": "number",
+              "questionBank": {
+                "answers": [
+                  {
+                    "answer": "string",
+                    "id": "number",
+                  },
+                ],
+                "id": "number",
+                "question": "string",
+              },
+              "questionOrder": "number",
+            },
+          ],
+        },
+        "testSetId": "number",
+        "time": "number",
+        "totalQuestions": "number",
+        "userExerciseAttemptId": "number",
+      },
+      "message": "Lấy thông tin bài tập thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "review": {
+    "body": {
+      "data": {
+        "answeredCorrect": "number",
+        "answeredInCorrect": "number",
+        "exerciseType": "string",
+        "id": "number",
+        "isBlocked": "boolean",
+        "score": "number",
+        "status": "string",
+        "testSet": {
+          "id": "number",
+          "testSetQuestionBanks": [
+            {
+              "id": "number",
+              "questionBank": {
+                "answers": [
+                  {
+                    "answer": "string",
+                    "explantion": "string",
+                    "id": "number",
+                    "type": "string",
+                  },
+                ],
+                "id": "number",
+                "isCorrect": "boolean",
+                "question": "string",
+              },
+              "questionOrder": "number",
+            },
+          ],
+        },
+        "testSetId": "number",
+        "time": "number",
+        "totalQuestions": "number",
+      },
+      "message": "Lấy thông tin đáp án bài tập thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "start": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "exerciseId": "number",
+        "id": "number",
+        "status": "string",
+        "time": "number",
+        "updatedAt": "string",
+        "userId": "number",
+      },
+      "message": "Tạo lần thử bài tập thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "submit": {
+    "body": {
+      "data": {
+        "allCorrect": "boolean",
+        "answeredQuestions": "number",
+        "isCompleted": "boolean",
+        "rewards": "null",
+        "score": "number",
+        "status": "string",
+        "totalQuestions": "number",
+        "unansweredQuestions": "number",
+      },
+      "message": "Chúc mừng! Bạn đã hoàn thành bài tập và trả lời đúng hết",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
