@@ -15,7 +15,9 @@ import {
 import { VocabularyRepo } from '@/modules/vocabulary/vocabulary.repo'
 import { VocabularyHelperService } from '@/modules/vocabulary/vocabulary.helper.service'
 import { MeaningService } from '@/modules/meaning/meaning.service'
-import { VOCABULARY_MESSAGE } from '@/common/constants/message'
+import { I18nService } from '@/i18n/i18n.service'
+import { hasJapaneseText } from '@/common/utils/japanese-text'
+import { VocabularyMessage as M } from '@/i18n/message-keys'
 import { UploadService } from '@/3rdService/upload/upload.service'
 import { TextToSpeechService } from '@/3rdService/speech/text-to-speech.service'
 import { TranslationService } from '@/modules/translation/translation.service'
@@ -38,7 +40,8 @@ export class VocabularyService {
     private readonly meaningService: MeaningService,
     private readonly translationService: TranslationService,
     private readonly languagesService: LanguagesService,
-    private readonly wordTypeService: WordTypeService
+    private readonly wordTypeService: WordTypeService,
+    private readonly i18nService: I18nService
   ) {}
 
   // Removed old create method - use createFullVocabularyWithFiles instead
@@ -100,7 +103,7 @@ export class VocabularyService {
 
       return {
         statusCode: 200,
-        message: VOCABULARY_MESSAGE.GET_LIST_SUCCESS,
+        message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
         data: {
           results: resultsWithWordType,
           pagination: {
@@ -249,7 +252,7 @@ export class VocabularyService {
                     isNew: false
                   })
                 } catch (meaningError: any) {
-                  if (meaningError === MeaningAlreadyExistsException) {
+                  if (meaningError instanceof MeaningAlreadyExistsException) {
                     skipped.push({
                       word: wordJp,
                       reason: `Meaning already exists (${meaningEntry.value})`
@@ -296,7 +299,7 @@ export class VocabularyService {
       }
     } catch (error) {
       this.logger.error('Error importing vocabularies from xlsx:', error)
-      throw InvalidVocabularyDataException
+      throw new InvalidVocabularyDataException()
     }
   }
   //#endregion
@@ -517,7 +520,7 @@ export class VocabularyService {
                 )
               } catch (e: any) {
                 // If meaning already exists, silently skip (don't create duplicate)
-                if (e === MeaningAlreadyExistsException) {
+                if (e instanceof MeaningAlreadyExistsException) {
                   this.logger.log(
                     `Meaning already exists for vocabulary ${existing.id}, skipping`
                   )
@@ -573,7 +576,7 @@ export class VocabularyService {
       }
     } catch (error) {
       this.logger.error('Error importing vocabularies from txt:', error)
-      throw InvalidVocabularyDataException
+      throw new InvalidVocabularyDataException()
     }
   }
   //#endregion
@@ -636,12 +639,12 @@ export class VocabularyService {
   }
 
   //#region Statistics
-  async getStatistics() {
+  async getStatistics(lang: string = 'vi') {
     const stats = await this.vocabularyRepository.getStatistics()
 
     return {
       statusCode: 200,
-      message: VOCABULARY_MESSAGE.GET_STATS_SUCCESS,
+      message: this.i18nService.translate(M.GET_STATS_SUCCESS, lang),
       data: stats
     }
   }
@@ -654,7 +657,7 @@ export class VocabularyService {
     })
 
     if (!vocabulary) {
-      throw VocabularyNotFoundException
+      throw new VocabularyNotFoundException()
     }
 
     // Resolve wordType translation if present
@@ -690,11 +693,11 @@ export class VocabularyService {
 
     return {
       data: vocabularyWithWordType,
-      message: VOCABULARY_MESSAGE.GET_SUCCESS
+      message: this.i18nService.translate(M.GET_SUCCESS, lang)
     }
   }
 
-  async findByWordJp(wordJp: string) {
+  async findByWordJp(wordJp: string, lang: string = 'vi') {
     const vocabulary = await this.vocabularyRepository.findFirst({
       wordJp
     })
@@ -705,7 +708,7 @@ export class VocabularyService {
 
     return {
       data: vocabulary,
-      message: VOCABULARY_MESSAGE.GET_SUCCESS
+      message: this.i18nService.translate(M.GET_SUCCESS, lang)
     }
   }
 
@@ -715,7 +718,7 @@ export class VocabularyService {
     })
 
     if (!vocabulary) {
-      throw VocabularyNotFoundException
+      throw new VocabularyNotFoundException()
     }
 
     // Get language ID
@@ -906,7 +909,7 @@ export class VocabularyService {
 
     return {
       statusCode: 200,
-      message: VOCABULARY_MESSAGE.GET_SUCCESS,
+      message: this.i18nService.translate(M.GET_SUCCESS, lang),
       data: {
         id: vocabulary.id,
         wordJp: vocabulary.wordJp,
@@ -978,7 +981,7 @@ export class VocabularyService {
 
       return {
         statusCode: 200,
-        message: VOCABULARY_MESSAGE.GET_LIST_SUCCESS,
+        message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
         data: {
           results,
           pagination: {
@@ -1032,7 +1035,7 @@ export class VocabularyService {
 
       return {
         statusCode: 200,
-        message: VOCABULARY_MESSAGE.GET_LIST_SUCCESS,
+        message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
         data: {
           results,
           pagination: {
@@ -1056,13 +1059,14 @@ export class VocabularyService {
     body: UpdateVocabularyBodyType,
     imageFile?: Express.Multer.File,
     audioFile?: Express.Multer.File,
-    regenerateAudio?: boolean
+    regenerateAudio?: boolean,
+    lang: string = 'vi'
   ) {
     try {
       // Get existing vocabulary to get old URLs
       const existingVocabulary = await this.vocabularyRepository.findUnique({ id })
       if (!existingVocabulary) {
-        throw VocabularyNotFoundException
+        throw new VocabularyNotFoundException()
       }
 
       // Upload new files if provided and get URLs
@@ -1124,7 +1128,7 @@ export class VocabularyService {
           wordJp: updateData.wordJp
         })
         if (duplicateVocabulary && duplicateVocabulary.id !== id) {
-          throw VocabularyAlreadyExistsException
+          throw new VocabularyAlreadyExistsException()
         }
       }
 
@@ -1139,44 +1143,44 @@ export class VocabularyService {
 
       return {
         data: vocabulary,
-        message: VOCABULARY_MESSAGE.UPDATE_SUCCESS
+        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
       }
     } catch (error) {
       // If it's our custom exceptions, re-throw them
       if (
-        error === VocabularyNotFoundException ||
-        error === VocabularyAlreadyExistsException
+        error instanceof VocabularyNotFoundException ||
+        error instanceof VocabularyAlreadyExistsException
       ) {
         throw error
       }
       // Handle database errors
       if (isNotFoundPrismaError(error)) {
-        throw VocabularyNotFoundException
+        throw new VocabularyNotFoundException()
       }
       if (isUniqueConstraintPrismaError(error)) {
-        throw VocabularyAlreadyExistsException
+        throw new VocabularyAlreadyExistsException()
       }
       this.logger.error('Error updating vocabulary:', error)
-      throw InvalidVocabularyDataException
+      throw new InvalidVocabularyDataException()
     }
   }
   //#endregion
 
   //#region Remove
-  async remove(id: number) {
+  async remove(id: number, lang: string = 'vi') {
     try {
       const vocabulary = await this.vocabularyRepository.delete({ id })
 
       return {
         data: vocabulary,
-        message: VOCABULARY_MESSAGE.DELETE_SUCCESS
+        message: this.i18nService.translate(M.DELETE_SUCCESS, lang)
       }
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
-        throw VocabularyNotFoundException
+        throw new VocabularyNotFoundException()
       }
       this.logger.error('Error deleting vocabulary:', error)
-      throw InvalidVocabularyDataException
+      throw new InvalidVocabularyDataException()
     }
   }
   //#endregion
@@ -1248,7 +1252,8 @@ export class VocabularyService {
     meaningData: {
       wordTypeId?: number
       exampleSentenceJp?: string
-    }
+    },
+    lang: string = 'vi'
   ) {
     try {
       this.logger.log(`Adding new meaning to vocabulary ${vocabularyId}`)
@@ -1256,7 +1261,7 @@ export class VocabularyService {
       // Kiểm tra vocabulary có tồn tại không
       const vocabulary = await this.vocabularyRepository.findUnique({ id: vocabularyId })
       if (!vocabulary) {
-        throw VocabularyNotFoundException
+        throw new VocabularyNotFoundException()
       }
 
       // Thêm meaning mới
@@ -1271,7 +1276,7 @@ export class VocabularyService {
       }
     } catch (error) {
       this.logger.error(`Error adding meaning to vocabulary ${vocabularyId}:`, error)
-      if (error === VocabularyNotFoundException) {
+      if (error instanceof VocabularyNotFoundException) {
         throw error
       }
       throw new Error('Không thể thêm nghĩa mới')
@@ -1304,12 +1309,13 @@ export class VocabularyService {
     audioFile?: Express.Multer.File,
     imageFile?: Express.Multer.File,
     createdById?: number,
-    allowUpdateExistingLevel?: boolean
+    allowUpdateExistingLevel?: boolean,
+    lang: string = 'vi'
   ) {
     try {
       // Validate word_jp must be Japanese (Hiragana/Katakana/Kanji)
       if (!this.isJapaneseText(data.word_jp)) {
-        throw VocabularyJapaneseTextInvalidException
+        throw new VocabularyJapaneseTextInvalidException()
       }
       this.logger.log('Creating full vocabulary with file uploads')
 
@@ -1386,7 +1392,7 @@ export class VocabularyService {
           id: existingCheck.vocabularyId
         })
         if (!vocabulary) {
-          throw VocabularyNotFoundException
+          throw new VocabularyNotFoundException()
         }
 
         if (
@@ -1426,7 +1432,7 @@ export class VocabularyService {
             translationsCreated: result.translationsCreated,
             isNew: false
           },
-          message: VOCABULARY_MESSAGE.ADD_MEANING_SUCCESS
+          message: this.i18nService.translate(M.ADD_MEANING_SUCCESS, lang)
         }
       } else {
         // Vocabulary doesn't exist → Create new
@@ -1471,21 +1477,21 @@ export class VocabularyService {
             translationsCreated: result.translationsCreated,
             isNew: true
           },
-          message: VOCABULARY_MESSAGE.CREATE_FULL_SUCCESS
+          message: this.i18nService.translate(M.CREATE_FULL_SUCCESS, lang)
         }
       }
     } catch (error) {
       this.logger.error('Error creating full vocabulary with files:', error)
       // Let specific exceptions bubble up
       if (
-        error === VocabularyJapaneseTextInvalidException ||
+        error instanceof VocabularyJapaneseTextInvalidException ||
         (error &&
           error.status === 409 &&
           error.response?.error === 'MEANING_ALREADY_EXISTS')
       ) {
         throw error
       }
-      throw InvalidVocabularyDataException
+      throw new InvalidVocabularyDataException()
     }
   }
   //#endregion
@@ -1496,17 +1502,16 @@ export class VocabularyService {
     // Reject obvious Latin letters, digits, common symbols
     const hasNonJapanese = /[a-zA-Z0-9@#$%^&*()_+=\[\]{}|\\:\";'<>?,./`~]/.test(text)
     if (hasNonJapanese) return false
-    // Require at least one Japanese character
-    const japaneseRegex =
-      /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\u3400-\u4DBF\u20000-\u2A6DF\u2A700-\u2B73F\u2B740-\u2B81F\u2B820-\u2CEAF\uF900-\uFAFF\u2F800-\u2FA1F]/
-    return japaneseRegex.test(text)
+    // At least one kana or kanji (the old range "u20000-u2A6DF" also matched
+    // Latin-extended, Greek and Cyrillic letters)
+    return hasJapaneseText(text)
   }
 
   //#region Create Sample Vocabularies
   /**
    * Tạo nhiều từ vựng mẫu với dữ liệu mặc định
    */
-  async createSampleVocabularies(userId?: number) {
+  async createSampleVocabularies(userId?: number, lang: string = 'vi') {
     try {
       this.logger.log('Creating sample vocabularies...')
 
@@ -1771,7 +1776,9 @@ export class VocabularyService {
 
       return {
         statusCode: 201,
-        message: `${VOCABULARY_MESSAGE.CREATE_SAMPLE_SUCCESS}. Đã tạo ${createdVocabularies.length} từ vựng`,
+        message: this.i18nService.translate(M.CREATE_SAMPLE_SUCCESS, lang, {
+          count: createdVocabularies.length
+        }),
         data: {
           results: createdVocabularies,
           pagination: {
@@ -1790,7 +1797,7 @@ export class VocabularyService {
       }
     } catch (error) {
       this.logger.error('Error creating sample vocabularies:', error)
-      throw InvalidVocabularyDataException
+      throw new InvalidVocabularyDataException()
     }
   }
   //#endregion

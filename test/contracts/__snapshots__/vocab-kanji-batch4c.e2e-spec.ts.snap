@@ -270,44 +270,68 @@ exports[`Vocabulary/kanji batch 4c contract (e2e) vocabulary errors (web and mob
   "deleteInvalidId": {
     "en": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu từ vựng không hợp lệ",
-        "statusCode": 400,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid word ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 400,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu từ vựng không hợp lệ",
-        "statusCode": 400,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID từ vựng không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 400,
+      "httpStatus": 422,
     },
   },
   "detailInvalidId": {
     "en": {
       "body": {
-        "error": "NOT_FOUND",
-        "message": "Không tìm thấy từ vựng",
-        "statusCode": 404,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid word ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 404,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "NOT_FOUND",
-        "message": "Không tìm thấy từ vựng",
-        "statusCode": 404,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID từ vựng không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 404,
+      "httpStatus": 422,
     },
   },
   "detailNotFound": {
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Không tìm thấy từ vựng",
+        "message": "Word not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -325,7 +349,7 @@ exports[`Vocabulary/kanji batch 4c contract (e2e) vocabulary errors (web and mob
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Không tìm thấy từ vựng",
+        "message": "Word not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -367,7 +391,7 @@ exports[`Vocabulary/kanji batch 4c contract (e2e) vocabulary statistics, delete,
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Không tìm thấy từ vựng",
+        "message": "Word not found",
         "statusCode": 404,
       },
       "httpStatus": 404,

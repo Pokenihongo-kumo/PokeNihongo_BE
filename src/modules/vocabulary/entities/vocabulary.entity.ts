@@ -1,6 +1,8 @@
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
+import { VocabularyMessage } from '@/i18n/message-keys'
+import { checkIdSchema } from '@/common/utils/id.validation'
 import { VocabularySortField, VocabularySortOrder } from '@/common/enum/enum'
 
 extendZodWithOpenApi(z)
@@ -109,7 +111,7 @@ export const VocabularyListResSchema = z
 
 export const GetVocabularyByIdParamsSchema = z
   .object({
-    id: z.string().transform((val) => parseInt(val, 10))
+    id: checkIdSchema(VocabularyMessage.INVALID_ID)
   })
   .strict()
 

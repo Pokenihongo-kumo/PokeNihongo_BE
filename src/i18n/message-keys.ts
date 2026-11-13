@@ -418,6 +418,23 @@ export const KanjiMessage = {
   IMG_INVALID: 'kanji.IMG_INVALID'
 } as const
 
+export const VocabularyMessage = {
+  GET_SUCCESS: 'vocabulary.GET_SUCCESS',
+  GET_LIST_SUCCESS: 'vocabulary.GET_LIST_SUCCESS',
+  GET_STATS_SUCCESS: 'vocabulary.GET_STATS_SUCCESS',
+  UPDATE_SUCCESS: 'vocabulary.UPDATE_SUCCESS',
+  DELETE_SUCCESS: 'vocabulary.DELETE_SUCCESS',
+  CREATE_FULL_SUCCESS: 'vocabulary.CREATE_FULL_SUCCESS',
+  ADD_MEANING_SUCCESS: 'vocabulary.ADD_MEANING_SUCCESS',
+  CREATE_SAMPLE_SUCCESS: 'vocabulary.CREATE_SAMPLE_SUCCESS',
+  NOT_FOUND: 'vocabulary.NOT_FOUND',
+  ALREADY_EXISTS: 'vocabulary.ALREADY_EXISTS',
+  INVALID_DATA: 'vocabulary.INVALID_DATA',
+  MEANING_ALREADY_EXISTS: 'vocabulary.MEANING_ALREADY_EXISTS',
+  JAPANESE_TEXT_INVALID: 'vocabulary.JAPANESE_TEXT_INVALID',
+  INVALID_ID: 'vocabulary.INVALID_ID'
+} as const
+
 export const LessonCategoryMessage = {
   CREATE_SUCCESS: 'lesson_category.CREATE_SUCCESS',
   UPDATE_SUCCESS: 'lesson_category.UPDATE_SUCCESS',

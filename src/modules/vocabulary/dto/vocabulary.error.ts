@@ -1,47 +1,36 @@
-import { HttpException, HttpStatus } from '@nestjs/common'
-import { VOCABULARY_MESSAGE } from '@/common/constants/message'
+import { VocabularyMessage as M } from '@/i18n/message-keys'
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common'
 
-export const VocabularyNotFoundException = new HttpException(
-  {
-    statusCode: HttpStatus.NOT_FOUND,
-    message: VOCABULARY_MESSAGE.NOT_FOUND,
-    error: 'VOCABULARY_NOT_FOUND'
-  },
-  HttpStatus.NOT_FOUND
-)
+// A new instance per throw (callers compare with instanceof; they used to
+// compare with === against shared instances). `message` is translated from
+// errorKey by ApiExceptionFilter, the old Vietnamese text is the vi value
 
-export const VocabularyAlreadyExistsException = new HttpException(
-  {
-    statusCode: HttpStatus.CONFLICT,
-    message: VOCABULARY_MESSAGE.ALREADY_EXISTS,
-    error: 'VOCABULARY_ALREADY_EXISTS'
-  },
-  HttpStatus.CONFLICT
-)
+export class VocabularyNotFoundException extends NotFoundException {
+  constructor() {
+    super({ message: M.NOT_FOUND, errorKey: M.NOT_FOUND })
+  }
+}
 
-export const InvalidVocabularyDataException = new HttpException(
-  {
-    statusCode: HttpStatus.BAD_REQUEST,
-    message: VOCABULARY_MESSAGE.INVALID_DATA,
-    error: 'INVALID_VOCABULARY_DATA'
-  },
-  HttpStatus.BAD_REQUEST
-)
+export class VocabularyAlreadyExistsException extends ConflictException {
+  constructor() {
+    super({ message: M.ALREADY_EXISTS, errorKey: M.ALREADY_EXISTS })
+  }
+}
 
-export const MeaningAlreadyExistsException = new HttpException(
-  {
-    statusCode: HttpStatus.CONFLICT,
-    message: VOCABULARY_MESSAGE.MEANING_ALREADY_EXISTS,
-    error: 'MEANING_ALREADY_EXISTS'
-  },
-  HttpStatus.CONFLICT
-)
+export class InvalidVocabularyDataException extends BadRequestException {
+  constructor() {
+    super({ message: M.INVALID_DATA, errorKey: M.INVALID_DATA })
+  }
+}
 
-export const VocabularyJapaneseTextInvalidException = new HttpException(
-  {
-    statusCode: HttpStatus.BAD_REQUEST,
-    message: 'Từ vựng phải là tiếng Nhật thuần (Hiragana/Katakana/Kanji)',
-    error: 'INVALID_JAPANESE_TEXT'
-  },
-  HttpStatus.BAD_REQUEST
-)
+export class MeaningAlreadyExistsException extends ConflictException {
+  constructor() {
+    super({ message: M.MEANING_ALREADY_EXISTS, errorKey: M.MEANING_ALREADY_EXISTS })
+  }
+}
+
+export class VocabularyJapaneseTextInvalidException extends BadRequestException {
+  constructor() {
+    super({ message: M.JAPANESE_TEXT_INVALID, errorKey: M.JAPANESE_TEXT_INVALID })
+  }
+}

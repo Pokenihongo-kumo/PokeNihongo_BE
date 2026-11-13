@@ -447,6 +447,22 @@ export const jaMessages = {
     JLPT_LEVEL_INVALID: 'JLPTレベルは1から5です',
     IMG_INVALID: '画像URLが無効です（500文字まで）'
   },
+  vocabulary: {
+    GET_SUCCESS: '単語を取得しました',
+    GET_LIST_SUCCESS: '単語一覧を取得しました',
+    GET_STATS_SUCCESS: '単語の統計を取得しました',
+    UPDATE_SUCCESS: '単語を更新しました',
+    DELETE_SUCCESS: '単語を削除しました',
+    CREATE_FULL_SUCCESS: '意味と翻訳つきで単語を作成しました',
+    ADD_MEANING_SUCCESS: '単語はすでにあるため、新しい意味を追加しました',
+    CREATE_SAMPLE_SUCCESS: 'サンプル単語を{count}件作成しました',
+    NOT_FOUND: '単語が見つかりません',
+    ALREADY_EXISTS: 'この単語はすでに存在します',
+    INVALID_DATA: '単語のデータが無効です',
+    MEANING_ALREADY_EXISTS: 'この意味はすでに存在します',
+    JAPANESE_TEXT_INVALID: '単語は日本語（ひらがな・カタカナ・漢字）でなければなりません',
+    INVALID_ID: '単語IDが無効です'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'レッスンカテゴリを作成しました',
     UPDATE_SUCCESS: 'レッスンカテゴリを更新しました',
