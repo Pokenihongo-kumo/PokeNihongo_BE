@@ -35,6 +35,7 @@ import {
   ApiTags
 } from '@nestjs/swagger'
 import { ZodSerializerDto } from 'nestjs-zod'
+import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { UserAnswerLogService } from './user-answer-log.service'
 
 @ApiTags('User Answer Log')
@@ -52,8 +53,8 @@ export class UserAnswerLogController {
     type: UserAnswerLogResponseSwaggerDTO
   })
   @ZodSerializerDto(UserAnswerLogResDTO)
-  create(@Body() body: CreateUserAnswerLogBodyDTO, @ActiveUser('userId') userId: number) {
-    return this.userAnswerLogService.create(body)
+  create(@Body() body: CreateUserAnswerLogBodyDTO, @I18nLang() lang: string) {
+    return this.userAnswerLogService.create(body, lang)
   }
 
   @Post('upsert')
@@ -68,8 +69,12 @@ export class UserAnswerLogController {
     type: UserAnswerLogResponseSwaggerDTO
   })
   @ZodSerializerDto(UserAnswerLogResDTO)
-  upsert(@Body() body: CreateUserAnswerLogBodyDTO, @ActiveUser('userId') userId: number) {
-    return this.userAnswerLogService.upsert(body, userId)
+  upsert(
+    @Body() body: CreateUserAnswerLogBodyDTO,
+    @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string
+  ) {
+    return this.userAnswerLogService.upsert(body, userId, lang)
   }
 
   @Get()
@@ -82,8 +87,8 @@ export class UserAnswerLogController {
   })
   @ApiQuery({ type: GetUserAnswerLogListQuerySwaggerDTO })
   @ZodSerializerDto(UserAnswerLogListResDTO)
-  findAll(@Query() query: GetUserAnswerLogListQueryDTO) {
-    return this.userAnswerLogService.findAll(query)
+  findAll(@Query() query: GetUserAnswerLogListQueryDTO, @I18nLang() lang: string) {
+    return this.userAnswerLogService.findAll(query, lang)
   }
 
   @Get(':id')
@@ -95,8 +100,8 @@ export class UserAnswerLogController {
     type: UserAnswerLogResponseSwaggerDTO
   })
   @ZodSerializerDto(UserAnswerLogResDTO)
-  findOne(@Param('id') id: string) {
-    return this.userAnswerLogService.findOne(Number(id))
+  findOne(@Param() params: GetUserAnswerLogByIdParamsDTO, @I18nLang() lang: string) {
+    return this.userAnswerLogService.findOne(params.id, lang)
   }
 
   @Put(':id')
@@ -110,11 +115,11 @@ export class UserAnswerLogController {
   })
   @ZodSerializerDto(UserAnswerLogResDTO)
   update(
-    @Param('id') id: string,
+    @Param() params: GetUserAnswerLogByIdParamsDTO,
     @Body() body: UpdateUserAnswerLogBodyDTO,
-    @ActiveUser('userId') userId: number
+    @I18nLang() lang: string
   ) {
-    return this.userAnswerLogService.update(Number(id), body)
+    return this.userAnswerLogService.update(params.id, body, lang)
   }
 
   @Delete(':id')
@@ -127,7 +132,7 @@ export class UserAnswerLogController {
     type: UserAnswerLogResponseSwaggerDTO
   })
   @ZodSerializerDto(UserAnswerLogResDTO)
-  remove(@Param('id') id: string) {
-    return this.userAnswerLogService.remove(Number(id))
+  remove(@Param() params: GetUserAnswerLogByIdParamsDTO, @I18nLang() lang: string) {
+    return this.userAnswerLogService.remove(params.id, lang)
   }
 }

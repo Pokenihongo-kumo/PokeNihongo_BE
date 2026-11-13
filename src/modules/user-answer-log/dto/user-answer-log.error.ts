@@ -1,39 +1,45 @@
-import { HttpException, HttpStatus } from '@nestjs/common'
+import { UserAnswerLogMessage as M } from '@/i18n/message-keys'
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException
+} from '@nestjs/common'
 
-export const USER_ANSWER_LOG_MESSAGE = {
-  NOT_FOUND: 'Không tìm thấy log câu trả lời',
-  ALREADY_EXISTS: 'Log câu trả lời đã tồn tại',
-  INVALID_DATA: 'Dữ liệu log câu trả lời không hợp lệ',
-  CREATE_SUCCESS: 'Tạo log câu trả lời thành công',
-  UPDATE_SUCCESS: 'Cập nhật log câu trả lời thành công',
-  DELETE_SUCCESS: 'Xóa log câu trả lời thành công',
-  GET_SUCCESS: 'Lấy thông tin log câu trả lời thành công',
-  GET_LIST_SUCCESS: 'Lấy danh sách log câu trả lời thành công'
+// A new instance per throw; `message` is translated from errorKey by
+// ApiExceptionFilter (Accept-Language), the old Vietnamese text is the vi value
+
+export class UserAnswerLogNotFoundException extends NotFoundException {
+  constructor(
+    key:
+      | typeof M.NOT_FOUND
+      | typeof M.ATTEMPT_NOT_FOUND
+      | typeof M.ANSWER_NOT_FOUND = M.NOT_FOUND
+  ) {
+    super({ message: key, errorKey: key })
+  }
 }
 
-export const UserAnswerLogNotFoundException = new HttpException(
-  {
-    statusCode: HttpStatus.NOT_FOUND,
-    message: USER_ANSWER_LOG_MESSAGE.NOT_FOUND,
-    error: 'USER_ANSWER_LOG_NOT_FOUND'
-  },
-  HttpStatus.NOT_FOUND
-)
+// The attempt belongs to another user
+export class AttemptNotOwnedException extends ForbiddenException {
+  constructor() {
+    super({ message: M.ATTEMPT_NOT_OWNED, errorKey: M.ATTEMPT_NOT_OWNED })
+  }
+}
 
-export const UserAnswerLogAlreadyExistsException = new HttpException(
-  {
-    statusCode: HttpStatus.CONFLICT,
-    message: USER_ANSWER_LOG_MESSAGE.ALREADY_EXISTS,
-    error: 'USER_ANSWER_LOG_ALREADY_EXISTS'
-  },
-  HttpStatus.CONFLICT
-)
+// The question/answer does not fit the attempt's exercise
+export class AnswerLogRuleViolationException extends BadRequestException {
+  constructor(
+    rule:
+      | typeof M.EXERCISE_HAS_NO_TEST_SET
+      | typeof M.QUESTION_NOT_IN_EXERCISE
+      | typeof M.ANSWER_NOT_IN_QUESTION
+  ) {
+    super({ message: rule, errorKey: rule })
+  }
+}
 
-export const InvalidUserAnswerLogDataException = new HttpException(
-  {
-    statusCode: HttpStatus.BAD_REQUEST,
-    message: USER_ANSWER_LOG_MESSAGE.INVALID_DATA,
-    error: 'INVALID_USER_ANSWER_LOG_DATA'
-  },
-  HttpStatus.BAD_REQUEST
-)
+export class InvalidUserAnswerLogDataException extends BadRequestException {
+  constructor() {
+    super({ message: M.INVALID_DATA, errorKey: M.INVALID_DATA })
+  }
+}
