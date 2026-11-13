@@ -234,7 +234,7 @@ export class UserHistoryService {
 
       return {
         statusCode: 200,
-        message: message || 'Lấy danh sách lịch sử làm bài thành công',
+        message,
         data: {
           results,
           pagination: {
@@ -492,7 +492,7 @@ export class UserHistoryService {
 
       return {
         statusCode: 200,
-        message: message || 'Lấy danh sách lịch sử làm bài thành công',
+        message,
         data: {
           results,
           pagination: {
@@ -692,7 +692,7 @@ export class UserHistoryService {
 
       return {
         statusCode: 200,
-        message: message || 'Lấy danh sách bài exercise gần đây thành công',
+        message,
         data: {
           results,
           pagination: {
@@ -841,7 +841,7 @@ export class UserHistoryService {
 
       return {
         statusCode: 200,
-        message: message || 'Lấy danh sách bài exercise gần đây thành công',
+        message,
         data: {
           results,
           allTime,
@@ -966,7 +966,7 @@ export class UserHistoryService {
 
       return {
         statusCode: 200,
-        message: message || 'Lấy danh sách bài test gần đây thành công',
+        message,
         data: {
           results,
           allTime,

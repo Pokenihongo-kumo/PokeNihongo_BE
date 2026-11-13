@@ -972,7 +972,12 @@ export const viMessages = {
     NOT_ENOUGH_ANSWERS: 'Bạn chưa trả lời đủ câu hỏi'
   },
   user_history: {
-    GET_LIST_SUCCESS: 'Lấy danh sách lịch sử làm bài thành công'
+    GET_LIST_SUCCESS: 'Lấy danh sách lịch sử làm bài thành công',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương',
+    INVALID_USER_ID: 'ID người dùng không hợp lệ',
+    INVALID_TYPE: 'Loại lịch sử không hợp lệ',
+    INVALID_STATUS: 'Trạng thái không hợp lệ'
   },
   leader_board_sesson: {
     CREATE_SUCCESS: 'Tạo mùa xếp hạng thành công',

@@ -958,7 +958,12 @@ export const enMessages = {
     NOT_ENOUGH_ANSWERS: 'You have not answered enough questions'
   },
   user_history: {
-    GET_LIST_SUCCESS: 'User history retrieved successfully'
+    GET_LIST_SUCCESS: 'User history retrieved successfully',
+    INVALID_PAGE: 'Page must be a positive integer',
+    INVALID_PAGE_SIZE: 'Page size must be a positive integer',
+    INVALID_USER_ID: 'Invalid user ID',
+    INVALID_TYPE: 'Invalid history type',
+    INVALID_STATUS: 'Invalid status'
   },
   leader_board_sesson: {
     CREATE_SUCCESS: 'Leaderboard season created successfully',

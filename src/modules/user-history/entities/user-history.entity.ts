@@ -1,6 +1,8 @@
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
+import { UserHistoryMessage } from '@/i18n/message-keys'
+import { checkIdSchema } from '@/common/utils/id.validation'
 import { TestStatus } from '@prisma/client'
 
 extendZodWithOpenApi(z)
@@ -75,16 +77,9 @@ export const AdminHistoryListResSchema = z
 // History List Query Schema
 export const GetHistoryListQuerySchema = z
   .object({
-    currentPage: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('1'),
-    pageSize: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('10'),
+    // A non-number reached Prisma as NaN (500); 0 or less gave an empty page
+    currentPage: checkIdSchema(UserHistoryMessage.INVALID_PAGE).default(1),
+    pageSize: checkIdSchema(UserHistoryMessage.INVALID_PAGE_SIZE).default(10),
     type: HistoryTypeSchema.optional(),
     status: z.string().optional()
   })
@@ -93,22 +88,12 @@ export const GetHistoryListQuerySchema = z
 // Admin History List Query Schema (có thêm userId để filter)
 export const GetAdminHistoryListQuerySchema = z
   .object({
-    currentPage: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('1'),
-    pageSize: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('10'),
+    // A non-number reached Prisma as NaN (500); 0 or less gave an empty page
+    currentPage: checkIdSchema(UserHistoryMessage.INVALID_PAGE).default(1),
+    pageSize: checkIdSchema(UserHistoryMessage.INVALID_PAGE_SIZE).default(10),
     type: HistoryTypeSchema.optional(),
     status: z.string().optional(),
-    userId: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional() // Admin có thể filter theo userId
+    userId: checkIdSchema(UserHistoryMessage.INVALID_USER_ID).optional() // Admin có thể filter theo userId
   })
   .strict()
 
@@ -195,16 +180,9 @@ export const HistoryTestsResSchema = z
 // Recent Exercises Query Schema
 export const GetRecentExercisesQuerySchema = z
   .object({
-    currentPage: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('1'),
-    pageSize: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('10'),
+    // A non-number reached Prisma as NaN (500); 0 or less gave an empty page
+    currentPage: checkIdSchema(UserHistoryMessage.INVALID_PAGE).default(1),
+    pageSize: checkIdSchema(UserHistoryMessage.INVALID_PAGE_SIZE).default(10),
     status: z
       .enum(['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED', 'FAILED', 'ABANDONED', 'SKIPPED'])
       .optional()

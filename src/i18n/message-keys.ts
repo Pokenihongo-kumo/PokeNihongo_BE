@@ -976,7 +976,12 @@ export const UserTestAttemptMessage = {
 } as const
 
 export const UserHistoryMessage = {
-  GET_LIST_SUCCESS: 'user_history.GET_LIST_SUCCESS'
+  GET_LIST_SUCCESS: 'user_history.GET_LIST_SUCCESS',
+  INVALID_PAGE: 'user_history.INVALID_PAGE',
+  INVALID_PAGE_SIZE: 'user_history.INVALID_PAGE_SIZE',
+  INVALID_USER_ID: 'user_history.INVALID_USER_ID',
+  INVALID_TYPE: 'user_history.INVALID_TYPE',
+  INVALID_STATUS: 'user_history.INVALID_STATUS'
 } as const
 
 export const LeaderboardSeasonMessage = {
