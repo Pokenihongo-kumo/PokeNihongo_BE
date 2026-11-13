@@ -1,9 +1,9 @@
-import { UserAnswerLogType } from '@/modules/user-answer-log/entities/user-answer-log.entities'
+import { UserAnswerLogType } from '@/modules/user-answer-log/entities/user-answer-log.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
 
 @Injectable()
-export class UserAnswerLogRepository {
+export class UserAnswerLogRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(params: {
