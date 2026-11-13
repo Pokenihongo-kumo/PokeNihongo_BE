@@ -10,7 +10,7 @@ import { TestService } from '@/modules/test/test.service'
 import { TestSetQuestionBankService } from '@/modules/testset-questionbank/testset-questionbank.service'
 import { TestSetService } from '@/modules/testset/testset.service'
 import { TranslationHelperService } from '@/modules/translation/translation.helper.service'
-import { UserProgressRepository } from '@/modules/user-progress/user-progress.repo'
+import { UserProgressRepo } from '@/modules/user-progress/user-progress.repo'
 import { UserTestAnswerLogService } from '@/modules/user-test-answer-log/user-test-answer-log.service'
 import {
   ForbiddenReviewAccessException,
@@ -54,7 +54,7 @@ export class UserTestAttemptService {
     private readonly prisma: PrismaService,
     private readonly userRepo: UserRepo,
     private readonly levelRepo: LevelRepo,
-    private readonly userProgressRepository: UserProgressRepository,
+    private readonly userProgressRepository: UserProgressRepo,
     private readonly rewardService: RewardService,
     private readonly lessonRepository: LessonRepo
   ) {}

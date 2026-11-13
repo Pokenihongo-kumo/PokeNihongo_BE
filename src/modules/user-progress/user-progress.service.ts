@@ -3,13 +3,13 @@ import {
   GetUserProgressByIdParamsType,
   GetUserProgressListQueryType,
   UpdateUserProgressBodyType
-} from '@/modules/user-progress/entities/user-progress.entities'
+} from '@/modules/user-progress/entities/user-progress.entity'
 import {
   InvalidUserProgressDataException,
   UserProgressNotFoundException,
   USER_PROGRESS_MESSAGE
 } from '@/modules/user-progress/dto/user-progress.error'
-import { UserProgressRepository } from '@/modules/user-progress/user-progress.repo'
+import { UserProgressRepo } from '@/modules/user-progress/user-progress.repo'
 import { isNotFoundPrismaError } from '@/shared/helpers'
 import { Injectable, Logger, HttpException } from '@nestjs/common'
 import { ProgressStatus } from '@prisma/client'
@@ -18,7 +18,7 @@ import { ProgressStatus } from '@prisma/client'
 export class UserProgressService {
   private readonly logger = new Logger(UserProgressService.name)
 
-  constructor(private readonly userProgressRepository: UserProgressRepository) {}
+  constructor(private readonly userProgressRepository: UserProgressRepo) {}
 
   async create(body: CreateUserProgressBodyType) {
     try {

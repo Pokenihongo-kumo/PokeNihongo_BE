@@ -8,7 +8,7 @@ import {
   UserProgressListResSchema,
   StartLessonBodySchema,
   CompleteLessonBodySchema
-} from '../entities/user-progress.entities'
+} from '../entities/user-progress.entity'
 
 export class CreateUserProgressBodyDTO extends createZodDto(
   CreateUserProgressBodySchema
