@@ -507,8 +507,13 @@ Convention + checklist giai đoạn 3: [docs/standardization/backend-convention.
       - [ ] lesson-content chọn nghĩa kanji bằng `languageId === 1` (id cứng) → sửa khi làm lesson-content.
       - [ ] vocabulary: chỉ sửa có chủ đích; service ~1.800 dòng và 23 warning lint có sẵn (import xlsx/txt, tạo dữ liệu mẫu) chưa tái cấu trúc.
       - [ ] kanji: logic import xlsx/txt giữ nguyên (còn 4 warning `err` không dùng).
+  - [x] Batch 5a — User/progress (phần nhỏ): attendance, attendence-config, user-srs-review. Chỉ mobile gọi. Thứ tự các batch còn lại của nhóm: 5b user-progress + user-history, 5c user-exercise-attempt + user-answer-log, 5d user-test-attempt + user-test-answer-log + user-test, 5e flashcard + user. Baseline `test/contracts/user-progress-batch5a.e2e-spec.ts` `40d274c` → merge `dev` @ `9e7d8c4` (điểm danh cộng ví và nhiệm vụ hằng ngày: spec lưu rồi khôi phục).
+    - [x] user-srs-review `2f74186` (đổi tên file `srs-review.*` → `user-srs-review.*`, `SrsReviewRepo`) + `263b6a0` → merge `dev` @ `50098e9`: controller bọc envelope của service thêm một lớp (message thô `GET_SUCCESS`) → trả thẳng; `nextReviewDate` bắt buộc không default mà upsert không truyền → mọi lần tạo SRS mới lỗi (`POST /upsert` 400, flashcard `applyReview` với thẻ mới); `dueOnly` dùng `z.boolean()` cho chuỗi query; `PATCH /:id/read` id sai 400 → 422; repo có kiểu. Mobile `af096a2` → merge `dev` @ `06b0def` (đọc một envelope).
+    - [x] attendance `48f4837` → merge `dev` @ `424441e`: `getLand` (kết quả không dùng) làm mọi route điểm danh 404 khi DB thiếu dòng ngôn ngữ của request (vd `ja`) → bỏ; contract thêm case `ja`.
+    - [x] attendence-config: baseline sạch (422/404 đúng), không cần sửa thêm.
+    - Gate batch 5a trên `dev` @ `424441e`: typecheck 0, unit 122/122, e2e 103/103 (74 snapshot), format sạch.
 - [x] Bugfix kiến trúc F02 (P1, [product-architecture-plan](docs/standardization/product-architecture-plan.md)): `payos/return`/`cancel` tin query trình duyệt để ghi PAID/CANCELLED → ai cũng tự kích hoạt gói. Nay chỉ PayOS (tra cứu server-to-server hoặc webhook có chữ ký, route mới `POST /payments/payos/webhook`) đổi trạng thái; PAID một lần (`markInvoicePaidOnce`, updateMany có điều kiện). BE `d392c17` → merge `dev` @ `1676d05`; e2e `test/payment/payos-callbacks.e2e-spec.ts` (4/5 fail trên code cũ). Web: trang failed có case `payment_pending` (FE `dev`). Deploy: đăng ký URL webhook + `PAYOS_CHECKSUM_KEY`.
-    - [ ] `modules/attendance` (điểm danh của mobile) còn `getLand` giống attendence-config → sửa ở batch user/progress.
+    - [x] `modules/attendance` (điểm danh của mobile) còn `getLand` giống attendence-config → sửa ở batch 5a (`48f4837`).
     - [ ] DB mới cần seed `Languages` (vi/en/ja): `POST /languages/create-default` nay chạy được.
 
 ### Baseline (2026-11-02, trước mọi thay đổi)
