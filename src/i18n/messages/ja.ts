@@ -463,6 +463,21 @@ export const jaMessages = {
     JAPANESE_TEXT_INVALID: '単語は日本語（ひらがな・カタカナ・漢字）でなければなりません',
     INVALID_ID: '単語IDが無効です'
   },
+  srs_review: {
+    GET_SUCCESS: '復習を取得しました',
+    GET_LIST_SUCCESS: '復習一覧を取得しました',
+    UPDATE_SUCCESS: '復習を更新しました',
+    UPSERT_SUCCESS: '復習を保存しました',
+    NOT_FOUND: '復習が見つかりません',
+    FORBIDDEN: 'この復習は別のユーザーのものです',
+    INVALID_DATA: '復習のデータが無効です',
+    INVALID_ID: '復習IDが無効です',
+    INVALID_CONTENT_TYPE: 'コンテンツの種類が無効です',
+    INVALID_CONTENT_ID: 'コンテンツIDが無効です',
+    INVALID_PAGE: 'ページは正の整数でなければなりません',
+    INVALID_PAGE_SIZE: 'ページサイズは1〜200です',
+    INVALID_FLAG: '値は true か false です'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'レッスンカテゴリを作成しました',
     UPDATE_SUCCESS: 'レッスンカテゴリを更新しました',

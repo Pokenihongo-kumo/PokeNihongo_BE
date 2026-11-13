@@ -30,7 +30,7 @@ import {
   Prisma,
   FlashcardContentType as PrismaFlashcardContentType
 } from '@prisma/client'
-import { SrsReviewService } from '@/modules/user-srs-review/srs-review.service'
+import { SrsReviewService } from '@/modules/user-srs-review/user-srs-review.service'
 import { TranslationHelperService } from '@/modules/translation/translation.helper.service'
 
 const DEFAULT_LANG = 'vi'
