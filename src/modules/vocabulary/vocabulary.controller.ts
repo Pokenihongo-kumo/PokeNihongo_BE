@@ -112,6 +112,7 @@ export class VocabularyController {
   async updateByWordJp(
     @Param('wordJp') wordJp: string,
     @Body() body: UpdateVocabularyMultipartSwaggerDTO,
+    @I18nLang() lang: string,
     @UploadedFiles()
     files?: { imageUrl?: Express.Multer.File[]; audioUrl?: Express.Multer.File[] },
     // A query value is a string: without the pipe "false" was truthy and every
@@ -126,7 +127,7 @@ export class VocabularyController {
     // Tìm vocabulary theo wordJp
     const vocabulary = await this.vocabularyService.findByWordJp(wordJp)
     if (!vocabulary) {
-      throw VocabularyNotFoundException
+      throw new VocabularyNotFoundException()
     }
 
     const updateData: any = {}
@@ -138,7 +139,8 @@ export class VocabularyController {
       updateData,
       imageFile,
       audioFile,
-      regenerateAudio
+      regenerateAudio,
+      lang
     )
   }
 
@@ -263,11 +265,11 @@ export class VocabularyController {
   })
   @ZodSerializerDto(VocabularyDetailResDTO)
   findOneBySearch(
-    @Param('id') id: string,
+    @Param() params: GetVocabularyByIdParamsDTO,
     @I18nLang() lang: string,
     @ActiveUser('userId') userId?: number
   ) {
-    return this.vocabularyService.findOneDetail(Number(id), lang, userId)
+    return this.vocabularyService.findOneDetail(params.id, lang, userId)
   }
 
   @Get('search-history')
@@ -306,8 +308,8 @@ export class VocabularyController {
     type: VocabularyStatisticsResponseSwaggerDTO
   })
   @ZodSerializerDto(VocabularyStatisticsResDTO)
-  getStatistics() {
-    return this.vocabularyService.getStatistics()
+  getStatistics(@I18nLang() lang: string) {
+    return this.vocabularyService.getStatistics(lang)
   }
 
   @Get(':id')
@@ -319,8 +321,8 @@ export class VocabularyController {
     type: VocabularyResponseSwaggerDTO
   })
   @ZodSerializerDto(VocabularyResDTO)
-  findOne(@Param('id') id: string, @I18nLang() lang: string) {
-    return this.vocabularyService.findOne(Number(id), lang)
+  findOne(@Param() params: GetVocabularyByIdParamsDTO, @I18nLang() lang: string) {
+    return this.vocabularyService.findOne(params.id, lang)
   }
 
   @Delete(':id')
@@ -333,11 +335,8 @@ export class VocabularyController {
     type: VocabularyResponseSwaggerDTO
   })
   @ZodSerializerDto(VocabularyResDTO)
-  remove(
-    @Param() params: GetVocabularyByIdParamsDTO,
-    @ActiveUser('userId') userId: number
-  ) {
-    return this.vocabularyService.remove(params.id)
+  remove(@Param() params: GetVocabularyByIdParamsDTO, @I18nLang() lang: string) {
+    return this.vocabularyService.remove(params.id, lang)
   }
 
   @Post('add-meaning')
@@ -358,11 +357,12 @@ export class VocabularyController {
     status: 404,
     description: 'Không tìm thấy từ vựng'
   })
-  addMeaning(@Body() body: AddMeaningToVocabularyDTO) {
+  addMeaning(@Body() body: AddMeaningToVocabularyDTO, @I18nLang() lang: string) {
     const { vocabularyId, ...meaningData } = body
     return this.vocabularyService.addMeaningToExistingVocabulary(
       vocabularyId,
-      meaningData
+      meaningData,
+      lang
     )
   }
 
@@ -388,6 +388,7 @@ export class VocabularyController {
     @Body() body: CreateVocabularyFullMultipartDTO,
     @UploadedFiles()
     files: { audioFile?: Express.Multer.File[]; imageFile?: Express.Multer.File[] },
+    @I18nLang() lang: string,
     @ActiveUser('userId') userId?: number
   ) {
     const audioFile = files?.audioFile?.[0]
@@ -406,7 +407,9 @@ export class VocabularyController {
       data,
       audioFile,
       imageFile,
-      userId
+      userId,
+      undefined,
+      lang
     )
   }
 
@@ -429,8 +432,11 @@ export class VocabularyController {
     description: 'Dữ liệu không hợp lệ'
   })
   @ZodSerializerDto(VocabularyListResDTO)
-  async createSampleVocabularies(@ActiveUser('userId') userId?: number) {
-    return this.vocabularyService.createSampleVocabularies(userId)
+  async createSampleVocabularies(
+    @ActiveUser('userId') userId: number | undefined,
+    @I18nLang() lang: string
+  ) {
+    return this.vocabularyService.createSampleVocabularies(userId, lang)
   }
   //#endregion
 }

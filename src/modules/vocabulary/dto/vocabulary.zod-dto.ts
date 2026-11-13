@@ -11,7 +11,7 @@ import {
   VocabularyDetailResSchema,
   VocabularySearchHistoryQuerySchema,
   VocabularySearchHistoryResSchema
-} from '@/modules/vocabulary/entities/vocabulary.entities'
+} from '@/modules/vocabulary/entities/vocabulary.entity'
 import { createZodDto } from 'nestjs-zod'
 
 export class CreateVocabularyBodyDTO extends createZodDto(CreateVocabularyBodySchema) {}

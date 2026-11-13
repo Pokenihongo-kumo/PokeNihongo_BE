@@ -44,8 +44,13 @@ export class VocabularyHelperService {
   async findOrCreateKanji(character: string): Promise<{ id: number; character: string }> {
     try {
       // Kiểm tra Kanji đã tồn tại chưa
-      let kanjiResponse = await this.kanjiService.findByCharacter(character)
-      let kanji = kanjiResponse?.data
+      // kanjiService.findByCharacter throws a 404 for a missing kanji, so the
+      // create branch below never ran: look the kanji up directly
+      let kanji: { id: number; character: string } | null =
+        await this.prismaService.kanji.findUnique({
+          where: { character },
+          select: { id: true, character: true }
+        })
 
       if (!kanji) {
         // Tạo Kanji mới với meaningKey tạm thời (sẽ được cập nhật sau)
@@ -672,7 +677,7 @@ export class VocabularyHelperService {
             this.logger.log(
               `Found duplicate translation with same value: "${newTrans.value}" (key: ${duplicateTranslation.key})`
             )
-            throw MeaningAlreadyExistsException
+            throw new MeaningAlreadyExistsException()
           }
         }
 

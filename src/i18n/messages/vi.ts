@@ -446,6 +446,22 @@ export const viMessages = {
     JLPT_LEVEL_INVALID: 'Cấp độ JLPT phải từ 1 đến 5',
     IMG_INVALID: 'URL hình ảnh không hợp lệ (tối đa 500 ký tự)'
   },
+  vocabulary: {
+    GET_SUCCESS: 'Lấy thông tin từ vựng thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách từ vựng thành công',
+    GET_STATS_SUCCESS: 'Lấy thống kê từ vựng thành công',
+    UPDATE_SUCCESS: 'Cập nhật từ vựng thành công',
+    DELETE_SUCCESS: 'Xóa từ vựng thành công',
+    CREATE_FULL_SUCCESS: 'Tạo từ vựng mới thành công với nghĩa và translations',
+    ADD_MEANING_SUCCESS: 'Từ vựng đã tồn tại. Đã thêm nghĩa mới với translations',
+    CREATE_SAMPLE_SUCCESS: 'Tạo từ vựng mẫu thành công. Đã tạo {count} từ vựng',
+    NOT_FOUND: 'Không tìm thấy từ vựng',
+    ALREADY_EXISTS: 'Từ vựng đã tồn tại',
+    INVALID_DATA: 'Dữ liệu từ vựng không hợp lệ',
+    MEANING_ALREADY_EXISTS: 'Nghĩa này đã tồn tại trong hệ thống',
+    JAPANESE_TEXT_INVALID: 'Từ vựng phải là tiếng Nhật thuần (Hiragana/Katakana/Kanji)',
+    INVALID_ID: 'ID từ vựng không hợp lệ'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Tạo danh mục bài học thành công',
     UPDATE_SUCCESS: 'Cập nhật danh mục bài học thành công',

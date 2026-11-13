@@ -433,6 +433,22 @@ export const enMessages = {
     JLPT_LEVEL_INVALID: 'JLPT level must be from 1 to 5',
     IMG_INVALID: 'Invalid image URL (500 characters at most)'
   },
+  vocabulary: {
+    GET_SUCCESS: 'Word retrieved successfully',
+    GET_LIST_SUCCESS: 'Words retrieved successfully',
+    GET_STATS_SUCCESS: 'Vocabulary statistics retrieved',
+    UPDATE_SUCCESS: 'Word updated successfully',
+    DELETE_SUCCESS: 'Word deleted successfully',
+    CREATE_FULL_SUCCESS: 'Word created with its meanings and translations',
+    ADD_MEANING_SUCCESS: 'The word already existed: a new meaning was added',
+    CREATE_SAMPLE_SUCCESS: 'Sample words created: {count}',
+    NOT_FOUND: 'Word not found',
+    ALREADY_EXISTS: 'This word already exists',
+    INVALID_DATA: 'Invalid word data',
+    MEANING_ALREADY_EXISTS: 'This meaning already exists',
+    JAPANESE_TEXT_INVALID: 'The word must be Japanese (Hiragana/Katakana/Kanji)',
+    INVALID_ID: 'Invalid word ID'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Lesson category created successfully',
     UPDATE_SUCCESS: 'Lesson category updated successfully',

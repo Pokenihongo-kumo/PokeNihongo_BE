@@ -1,10 +1,10 @@
-import { VocabularyType } from '@/modules/vocabulary/entities/vocabulary.entities'
+import { VocabularyType } from '@/modules/vocabulary/entities/vocabulary.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
 import { VocabularySortField, VocabularySortOrder } from '@/common/enum/enum'
 
 @Injectable()
-export class VocabularyRepository {
+export class VocabularyRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(params: {

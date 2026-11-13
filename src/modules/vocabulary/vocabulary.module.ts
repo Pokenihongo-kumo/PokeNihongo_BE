@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 import { VocabularyController } from './vocabulary.controller'
-import { VocabularyRepository } from './vocabulary.repo'
+import { VocabularyRepo } from './vocabulary.repo'
 import { VocabularyService } from './vocabulary.service'
 import { VocabularyHelperService } from './vocabulary.helper.service'
 import { UploadModule } from '@/3rdService/upload/upload.module'
@@ -22,7 +22,7 @@ import { WordTypeModule } from '@/modules/wordtype/wordtype.module'
     WordTypeModule
   ],
   controllers: [VocabularyController],
-  providers: [VocabularyService, VocabularyRepository, VocabularyHelperService],
-  exports: [VocabularyService, VocabularyRepository, VocabularyHelperService]
+  providers: [VocabularyService, VocabularyRepo, VocabularyHelperService],
+  exports: [VocabularyService, VocabularyRepo, VocabularyHelperService]
 })
 export class VocabularyModule {}
