@@ -31,7 +31,6 @@ import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
 import { SharedNotificationService } from '@/shared/services/shared-notification.service'
 import { SharedUserSubscriptionService } from '@/shared/services/user-subscription.service'
 import { AttendenceConfigRepo } from '../attendence-config/attendence-config.repo'
-import { LanguagesRepo } from '../languages/languages.repo'
 import { WalletTransactionRepo } from '../wallet-transaction/wallet-transaction.repo'
 import { WalletRepo } from '../wallet/wallet.repo'
 import { AttendanceRepo } from './attendence.repo'
@@ -49,7 +48,6 @@ export class AttendanceService {
     private attendanceConfigRepo: AttendenceConfigRepo,
     private shareUserRepo: SharedUserRepository,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepo,
     private readonly userDailyRequestService: UserDailyRequestService,
     private readonly walletRepo: WalletRepo,
     private readonly walletTransactionRepo: WalletTransactionRepo,
@@ -58,7 +56,6 @@ export class AttendanceService {
   ) {}
 
   async list(pagination: PaginationQueryType, lang: string = 'vi') {
-    await this.getLand(lang)
     const data = await this.attendanceRepo.list(pagination)
     return {
       statusCode: HttpStatus.OK,
@@ -68,7 +65,6 @@ export class AttendanceService {
   }
 
   async findById(id: number, lang: string = 'vi') {
-    await this.getLand(lang)
     const attendance = await this.attendanceRepo.findById(id)
     if (!attendance) {
       throw new NotFoundRecordException()
@@ -106,8 +102,7 @@ export class AttendanceService {
     date: Date = todayUTCWith0000(),
     lang: string = 'vi'
   ) {
-    const [, weekly, totalStreak, userInfo] = await Promise.all([
-      this.getLand(lang),
+    const [weekly, totalStreak, userInfo] = await Promise.all([
       this.findWeekAttendances(userId, date, true),
       this.findMaxStreakFromToday(userId),
       this.shareUserRepo.findUnique({ id: userId })
@@ -135,11 +130,8 @@ export class AttendanceService {
       console.log(date)
 
       const getWeekDate = getWeekDay(date)
-      // lay list config theo ngay trong tuan kem check xem co ngon ngu ko
-      const [attendenceConfig] = await Promise.all([
-        this.attendanceConfigRepo.findByDateOfWeek(getWeekDate),
-        this.getLand(lang)
-      ])
+      const attendenceConfig =
+        await this.attendanceConfigRepo.findByDateOfWeek(getWeekDate)
 
       if (!attendenceConfig) {
         throw new NotFoundRecordException()
@@ -271,7 +263,6 @@ export class AttendanceService {
     lang: string = 'vi'
   ) {
     try {
-      await this.getLand(lang)
       const updatedAttendanceg = await this.attendanceRepo.update({
         id,
         updatedById,
@@ -298,7 +289,6 @@ export class AttendanceService {
     lang: string = 'vi'
   ) {
     try {
-      await this.getLand(lang)
       await this.attendanceRepo.delete({
         id,
         deletedById
@@ -333,7 +323,7 @@ export class AttendanceService {
 
     // 2️⃣ Đếm streak liên tiếp
     let streakCount = 0
-    let expectedDate = new Date(today)
+    const expectedDate = new Date(today)
     expectedDate.setDate(expectedDate.getDate() - 1) // Bắt đầu từ hôm qua
 
     const streakAttendances: AttendanceType[] = []
@@ -441,7 +431,7 @@ export class AttendanceService {
 
     // Đếm streak liên tiếp từ hôm nay
     let streakCount = 0
-    let expectedDate = new Date(today)
+    const expectedDate = new Date(today)
     expectedDate.setHours(0, 0, 0, 0)
 
     for (const att of sortedAttendances) {
@@ -459,13 +449,5 @@ export class AttendanceService {
     }
 
     return streakCount
-  }
-
-  async getLand(lang: string) {
-    const langId = await this.languageRepo.getIdByCode(lang)
-    if (!langId) {
-      throw new NotFoundRecordException()
-    }
-    return langId
   }
 }

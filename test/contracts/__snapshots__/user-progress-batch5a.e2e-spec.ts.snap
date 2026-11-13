@@ -2,6 +2,14 @@
 
 exports[`User progress batch 5a contract (e2e) attendance errors 1`] = `
 {
+  "checkInJapanese": {
+    "body": {
+      "error": "CONFLICT",
+      "message": "本日は既に出席しています",
+      "statusCode": 409,
+    },
+    "httpStatus": 409,
+  },
   "invalidId": {
     "en": {
       "body": {
@@ -49,6 +57,39 @@ exports[`User progress batch 5a contract (e2e) attendance errors 1`] = `
       },
       "httpStatus": 404,
     },
+  },
+  "weekJapanese": {
+    "body": {
+      "data": {
+        "attendances": [
+          {
+            "bonusCoin": "number",
+            "coin": "number",
+            "createdAt": "string",
+            "createdById": "number",
+            "date": "string",
+            "dayOfWeek": "string",
+            "deletedAt": "null",
+            "deletedById": "null",
+            "id": "number",
+            "status": "string",
+            "updatedAt": "string",
+            "updatedById": "null",
+            "userId": "number",
+          },
+        ],
+        "count": "number",
+        "totalStreak": "number",
+        "user": {
+          "email": "string",
+          "id": "number",
+          "name": "string",
+        },
+      },
+      "message": "出席記録情報を取得しました",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
   },
   "weekUnknownLanguage": {
     "body": {

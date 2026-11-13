@@ -143,7 +143,10 @@ describe('User progress batch 5a contract (e2e)', () => {
       expect({
         notFound: await both((l) => http(l).get('/attendance/999999')),
         invalidId: await both((l) => http(l).get('/attendance/abc')),
-        weekUnknownLanguage: capture(await http('fr').get('/attendance/user'))
+        weekUnknownLanguage: capture(await http('fr').get('/attendance/user')),
+        // ja is a supported language without a Languages row in the test DB
+        weekJapanese: capture(await http('ja').get('/attendance/user')),
+        checkInJapanese: capture(await http('ja').post('/attendance'))
       }).toMatchSnapshot()
     })
   })
