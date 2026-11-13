@@ -1,29 +1,28 @@
-import { SRS_MESSAGE } from '@/common/constants/message'
-import { HttpException, HttpStatus } from '@nestjs/common'
+import { SrsReviewMessage as M } from '@/i18n/message-keys'
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException
+} from '@nestjs/common'
 
-export const ForbiddenSrsAccessException = new HttpException(
-  {
-    statusCode: HttpStatus.FORBIDDEN,
-    message: SRS_MESSAGE.FORBIDDEN_ACCESS,
-    error: 'FORBIDDEN_SRS_ACCESS'
-  },
-  HttpStatus.FORBIDDEN
-)
+// A new instance per throw; `message` is translated from errorKey by
+// ApiExceptionFilter (Accept-Language), the old Vietnamese text is the vi value
 
-export const SrsNotFoundException = new HttpException(
-  {
-    statusCode: HttpStatus.NOT_FOUND,
-    message: SRS_MESSAGE.NOT_FOUND,
-    error: 'SRS_NOT_FOUND'
-  },
-  HttpStatus.NOT_FOUND
-)
+export class SrsNotFoundException extends NotFoundException {
+  constructor() {
+    super({ message: M.NOT_FOUND, errorKey: M.NOT_FOUND })
+  }
+}
 
-export const InvalidSrsDataException = new HttpException(
-  {
-    statusCode: HttpStatus.BAD_REQUEST,
-    message: SRS_MESSAGE.INVALID_DATA,
-    error: 'INVALID_SRS_DATA'
-  },
-  HttpStatus.BAD_REQUEST
-)
+// The review belongs to another user
+export class ForbiddenSrsAccessException extends ForbiddenException {
+  constructor() {
+    super({ message: M.FORBIDDEN, errorKey: M.FORBIDDEN })
+  }
+}
+
+export class InvalidSrsDataException extends BadRequestException {
+  constructor() {
+    super({ message: M.INVALID_DATA, errorKey: M.INVALID_DATA })
+  }
+}

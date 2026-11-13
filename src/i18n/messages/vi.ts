@@ -462,6 +462,21 @@ export const viMessages = {
     JAPANESE_TEXT_INVALID: 'Từ vựng phải là tiếng Nhật thuần (Hiragana/Katakana/Kanji)',
     INVALID_ID: 'ID từ vựng không hợp lệ'
   },
+  srs_review: {
+    GET_SUCCESS: 'Lấy thông tin SRS thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách SRS thành công',
+    UPDATE_SUCCESS: 'Cập nhật SRS thành công',
+    UPSERT_SUCCESS: 'Tạo/cập nhật SRS thành công',
+    NOT_FOUND: 'Không tìm thấy bản ghi SRS',
+    FORBIDDEN: 'Bạn không có quyền truy cập bản ghi SRS này',
+    INVALID_DATA: 'Dữ liệu SRS không hợp lệ',
+    INVALID_ID: 'ID SRS không hợp lệ',
+    INVALID_CONTENT_TYPE: 'Loại nội dung không hợp lệ',
+    INVALID_CONTENT_ID: 'ID nội dung không hợp lệ',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải từ 1 đến 200',
+    INVALID_FLAG: 'Giá trị phải là true hoặc false'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Tạo danh mục bài học thành công',
     UPDATE_SUCCESS: 'Cập nhật danh mục bài học thành công',

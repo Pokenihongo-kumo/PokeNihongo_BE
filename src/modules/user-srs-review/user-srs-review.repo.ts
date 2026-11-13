@@ -1,87 +1,91 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '@/shared/services/prisma.service'
+import { Prisma, SrsContentType } from '@prisma/client'
+
+const byContent = (userId: number, contentType: SrsContentType, contentId: number) => ({
+  userId_contentType_contentId: { userId, contentType, contentId }
+})
 
 @Injectable()
 export class SrsReviewRepo {
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(where: any, take = 200) {
-    return (this.prisma as any).userSrsReview.findMany({
+  list(where: Prisma.UserSrsReviewWhereInput, take = 200) {
+    return this.prisma.userSrsReview.findMany({
       where,
       orderBy: { nextReviewDate: 'asc' },
       take
     })
   }
 
-  async findUnique(userId: number, contentType: string, contentId: number) {
-    return (this.prisma as any).userSrsReview.findUnique({
-      where: {
-        userId_contentType_contentId: { userId, contentType, contentId }
+  findUnique(userId: number, contentType: SrsContentType, contentId: number) {
+    return this.prisma.userSrsReview.findUnique({
+      where: byContent(userId, contentType, contentId)
+    })
+  }
+
+  upsert(
+    userId: number,
+    contentType: SrsContentType,
+    contentId: number,
+    message?: string
+  ) {
+    return this.prisma.userSrsReview.upsert({
+      where: byContent(userId, contentType, contentId),
+      update: { message: message ?? undefined },
+      create: {
+        userId,
+        contentType,
+        contentId,
+        message: message || '',
+        nextReviewDate: new Date()
       }
     })
   }
 
-  async upsert(userId: number, contentType: string, contentId: number, message?: string) {
-    return (this.prisma as any).userSrsReview.upsert({
-      where: {
-        userId_contentType_contentId: { userId, contentType, contentId }
-      },
-      update: { message: message ?? undefined },
-      create: { userId, contentType, contentId, message: message || '' }
-    })
-  }
-
-  async update(userId: number, contentType: string, contentId: number, data: any) {
-    return (this.prisma as any).userSrsReview.update({
-      where: {
-        userId_contentType_contentId: { userId, contentType, contentId }
-      },
+  update(
+    userId: number,
+    contentType: SrsContentType,
+    contentId: number,
+    data: Prisma.UserSrsReviewUpdateInput
+  ) {
+    return this.prisma.userSrsReview.update({
+      where: byContent(userId, contentType, contentId),
       data
     })
   }
 
+  // Unread reviews due in [start, end]: leeches and long wrong streaks first
   async listForDate(
     userId: number,
-    date: Date,
-    options?: { skip?: number; take?: number; start?: Date; end?: Date }
+    options: { skip: number; take: number; start: Date; end: Date }
   ) {
-    let start = options?.start ?? null
-    let end = options?.end ?? null
-    if (!start || !end) {
-      start = new Date(date)
-      start.setHours(0, 0, 0, 0)
-      end = new Date(date)
-      end.setHours(23, 59, 59, 999)
-    }
-    const where = {
+    const where: Prisma.UserSrsReviewWhereInput = {
       userId,
-      nextReviewDate: { gte: start, lte: end },
-      // Chỉ lấy các SRS chưa được đánh dấu đã đọc
+      nextReviewDate: { gte: options.start, lte: options.end },
       isRead: false
     }
-    const skip = options?.skip ?? 0
-    const take = options?.take
     const [rows, total] = await Promise.all([
-      (this.prisma as any).userSrsReview.findMany({
+      this.prisma.userSrsReview.findMany({
         where,
         orderBy: [
           { isLeech: 'desc' },
           { incorrectStreak: 'desc' },
           { nextReviewDate: 'asc' }
         ],
-        skip,
-        take
+        skip: options.skip,
+        take: options.take
       }),
-      (this.prisma as any).userSrsReview.count({ where })
+      this.prisma.userSrsReview.count({ where })
     ])
     return { rows, total }
   }
 
-  async findById(id: number) {
-    return (this.prisma as any).userSrsReview.findUnique({ where: { id } })
+  findById(id: number) {
+    return this.prisma.userSrsReview.findUnique({ where: { id } })
   }
 
-  async updateById(id: number, data: any) {
-    return (this.prisma as any).userSrsReview.update({ where: { id }, data })
+  updateById(id: number, data: Prisma.UserSrsReviewUpdateInput) {
+    return this.prisma.userSrsReview.update({ where: { id }, data })
   }
 }

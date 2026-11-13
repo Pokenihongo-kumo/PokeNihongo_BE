@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
 import { PrismaService } from '@/shared/services/prisma.service'
 import {
   ListSrsQueryDto,
@@ -12,273 +12,243 @@ import {
   InvalidSrsDataException,
   SrsNotFoundException
 } from './dto/user-srs-review.error'
-import { SRS_REVIEW_MESSAGE } from '@/common/constants/message'
-import {
-  isForeignKeyConstraintPrismaError,
-  isNotFoundPrismaError,
-  isUniqueConstraintPrismaError
-} from '@/shared/helpers'
 import { ListSrsTodayQuery } from './entities/user-srs-review.entity'
+import { I18nService } from '@/i18n/i18n.service'
+import { SrsReviewMessage as M } from '@/i18n/message-keys'
+import { toPaginationMeta } from '@/shared/utils/pagination'
+import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
+import { SrsContentType, UserSrsReview } from '@prisma/client'
+
+// Days until the next review for each SRS level
+const SCHEDULE_DAYS = [1, 3, 7, 14, 30, 60, 120]
+// Wrong this many times in a row: a leech
+const LEECH_STREAK = 5
 
 @Injectable()
 export class SrsReviewService {
   private readonly logger = new Logger(SrsReviewService.name)
   private static readonly HCM_TIMEZONE = 'Asia/Ho_Chi_Minh'
   private static readonly HCM_TIMEZONE_OFFSET = '+07:00'
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly repo: SrsReviewRepo,
-    private readonly translationHelper: TranslationHelperService
+    private readonly translationHelper: TranslationHelperService,
+    private readonly i18nService: I18nService
   ) {}
 
-  async list(userId: number, query: ListSrsQueryDto) {
-    try {
-      const q: any = query as any
-      const where: any = { userId }
-      if (q?.type) where.contentType = String(q.type).toUpperCase()
-      if (q?.dueOnly) where.nextReviewDate = { lte: new Date() }
-      const rows = await this.repo.list(where, 200)
-      return {
-        statusCode: 200,
-        message: SRS_REVIEW_MESSAGE.GET_LIST_SUCCESS,
-        data: {
-          results: rows,
-          pagination: {
-            current: 1,
-            pageSize: rows.length,
-            totalPage: 1,
-            totalItem: rows.length
-          }
-        }
+  // Every review of the user (200 at most), optionally of one type or due now
+  async list(userId: number, query: ListSrsQueryDto, lang: string = 'vi') {
+    const rows = await this.repo.list({
+      userId,
+      ...(query.type && { contentType: query.type }),
+      ...(query.dueOnly && { nextReviewDate: { lte: new Date() } })
+    })
+    return {
+      statusCode: 200,
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
+      data: {
+        results: rows,
+        pagination: toPaginationMeta(1, rows.length || 1, rows.length)
       }
-    } catch (error) {
-      this.logger.error('Error listing SRS reviews:', error)
-      if (isNotFoundPrismaError(error)) throw SrsNotFoundException
-      if (
-        isUniqueConstraintPrismaError(error) ||
-        isForeignKeyConstraintPrismaError(error)
-      )
-        throw InvalidSrsDataException
-      if (error instanceof HttpException) throw error
-      throw InvalidSrsDataException
     }
   }
 
-  async getOne(userId: number, type: string, id: number) {
-    try {
-      const row = await this.repo.findUnique(userId, String(type).toUpperCase(), id)
-      return {
-        statusCode: 200,
-        message: SRS_REVIEW_MESSAGE.GET_SUCCESS,
-        data: row
+  // Today's unread reviews (Ho Chi Minh day), each with its content in `lang`
+  async listToday(userId: number, query?: ListSrsTodayQuery, lang: string = 'vi') {
+    const currentPage = query?.currentPage ?? 1
+    const pageSize = query?.pageSize ?? 20
+    const { start, end } = this.getHcmDayRange(new Date())
+    const { rows, total } = await this.repo.listForDate(userId, {
+      skip: (currentPage - 1) * pageSize,
+      take: pageSize,
+      start,
+      end
+    })
+    const results = await Promise.all(
+      rows.map(async (row) => ({
+        id: row.id,
+        userId: row.userId,
+        message: row.message,
+        contentType: row.contentType,
+        contentId: row.contentId,
+        isRead: row.isRead,
+        content: await this.getContentDetail(row.contentType, row.contentId, lang)
+      }))
+    )
+    return {
+      statusCode: 200,
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
+      data: {
+        results,
+        pagination: toPaginationMeta(currentPage, pageSize, total)
       }
-    } catch (error) {
-      this.logger.error('Error getting SRS review:', error)
-      if (isNotFoundPrismaError(error)) throw SrsNotFoundException
-      if (
-        isUniqueConstraintPrismaError(error) ||
-        isForeignKeyConstraintPrismaError(error)
-      )
-        throw InvalidSrsDataException
-      if (error instanceof HttpException) throw error
-      throw InvalidSrsDataException
     }
   }
 
-  async listToday(userId: number, query?: ListSrsTodayQuery, languageCode?: string) {
+  async markRead(userId: number, srsId: number, lang: string = 'vi') {
     try {
-      const currentPage = Math.max(1, query?.currentPage ?? 1)
-      const requestedPageSize = query?.pageSize ?? 20
-      const pageSize = Math.min(200, Math.max(1, requestedPageSize))
-      const skip = (currentPage - 1) * pageSize
-      const targetDate = new Date()
-      const { start, end } = this.getHcmDayRange(targetDate)
-      const { rows, total } = await this.repo.listForDate(userId, targetDate, {
-        skip,
-        take: pageSize,
-        start,
-        end
-      })
-      const enrichedRows = await Promise.all(
-        rows.map(async (row) => {
-          const content = await this.getContentDetail(
-            userId,
-            row.contentType,
-            row.contentId,
-            languageCode || 'vi'
-          )
-          return this.sanitizeSrsRow(row, content)
-        })
-      )
-      const totalPage = Math.max(1, Math.ceil(total / pageSize))
-      return {
-        statusCode: 200,
-        message: SRS_REVIEW_MESSAGE.GET_LIST_SUCCESS,
-        data: {
-          results: enrichedRows,
-          pagination: {
-            current: currentPage,
-            pageSize,
-            totalPage,
-            totalItem: total
-          }
-        }
-      }
-    } catch (error) {
-      this.logger.error('Error listing today SRS reviews:', error)
-      if (isNotFoundPrismaError(error)) throw SrsNotFoundException
-      if (
-        isUniqueConstraintPrismaError(error) ||
-        isForeignKeyConstraintPrismaError(error)
-      )
-        throw InvalidSrsDataException
-      if (error instanceof HttpException) throw error
-      throw InvalidSrsDataException
-    }
-  }
-
-  async markRead(userId: number, srsId: number) {
-    try {
-      const row = await this.repo.findById(srsId)
-      if (!row) throw SrsNotFoundException
-      if (row.userId !== userId) throw ForbiddenSrsAccessException
+      await this.ownedReview(userId, srsId)
       const updated = await this.repo.updateById(srsId, { isRead: true })
       return {
         statusCode: 200,
-        message: SRS_REVIEW_MESSAGE.UPDATE_SUCCESS,
+        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
         data: updated
       }
     } catch (error) {
-      this.logger.error('Error marking SRS as read:', error)
-      if (isNotFoundPrismaError(error)) throw SrsNotFoundException
-      if (
-        isUniqueConstraintPrismaError(error) ||
-        isForeignKeyConstraintPrismaError(error)
-      )
-        throw InvalidSrsDataException
-      if (error instanceof HttpException) throw error
-      throw InvalidSrsDataException
+      throw this.toSrsError(error)
     }
   }
 
-  private sanitizeSrsRow(row: any, content: any) {
-    if (!row) return null
-    const { id, userId, message, contentType, contentId, isRead } = row
-    return { id, userId, message, contentType, contentId, isRead, content }
+  async getDetailBySrsId(userId: number, srsId: number, lang: string = 'vi') {
+    try {
+      const srs = await this.ownedReview(userId, srsId)
+      const content = await this.getContentDetail(srs.contentType, srs.contentId, lang)
+      return {
+        statusCode: 200,
+        message: this.i18nService.translate(M.GET_SUCCESS, lang),
+        data: {
+          srs: {
+            id: srs.id,
+            userId: srs.userId,
+            message: srs.message,
+            srsLevel: srs.srsLevel,
+            incorrectStreak: srs.incorrectStreak,
+            isLeech: srs.isLeech,
+            isRead: srs.isRead
+          },
+          content
+        }
+      }
+    } catch (error) {
+      throw this.toSrsError(error)
+    }
   }
 
-  private getHcmDayRange(date: Date) {
-    const formatter = new Intl.DateTimeFormat('en-CA', {
-      timeZone: SrsReviewService.HCM_TIMEZONE,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    })
-    const hcmDate = formatter.format(date)
-    const start = new Date(`${hcmDate}T00:00:00${SrsReviewService.HCM_TIMEZONE_OFFSET}`)
-    const end = new Date(`${hcmDate}T23:59:59.999${SrsReviewService.HCM_TIMEZONE_OFFSET}`)
-    return { start, end, date: hcmDate }
+  // A new review is due now (nextReviewDate has no default: creating one used
+  // to fail, so every upsert of new content answered 400)
+  async upsert(userId: number, body: UpsertSrsReviewDto, lang: string = 'vi') {
+    try {
+      const data = await this.repo.upsert(
+        userId,
+        body.contentType,
+        body.contentId,
+        body.message
+      )
+      return {
+        statusCode: 200,
+        message: this.i18nService.translate(M.UPSERT_SUCCESS, lang),
+        data
+      }
+    } catch (error) {
+      throw this.toSrsError(error)
+    }
   }
 
-  async getContentDetail(userId: number, type: string, id: number, languageCode: string) {
+  // Used by flashcard. Correct: one level up, next review after SCHEDULE_DAYS
+  // of that level. Wrong: back to level 0, review tomorrow
+  async applyReview(userId: number, type: string, id: number, body: ReviewActionDto) {
+    try {
+      const contentType = String(type).toUpperCase() as SrsContentType
+      const existing =
+        (await this.repo.findUnique(userId, contentType, id)) ??
+        (await this.repo.upsert(userId, contentType, id))
+      const isCorrect = body.result === 'correct'
+      const srsLevel = isCorrect
+        ? Math.min(existing.srsLevel + 1, SCHEDULE_DAYS.length - 1)
+        : 0
+      const incorrectStreak = isCorrect ? 0 : existing.incorrectStreak + 1
+      const nextReviewDate = new Date()
+      nextReviewDate.setDate(
+        nextReviewDate.getDate() + (isCorrect ? SCHEDULE_DAYS[srsLevel] || 1 : 1)
+      )
+      const updated = await this.repo.update(userId, contentType, id, {
+        srsLevel,
+        nextReviewDate,
+        incorrectStreak,
+        isLeech: incorrectStreak >= LEECH_STREAK,
+        message: body.message ?? undefined
+      })
+      return {
+        statusCode: 200,
+        message: this.i18nService.translate(M.UPDATE_SUCCESS, 'vi'),
+        data: updated
+      }
+    } catch (error) {
+      throw this.toSrsError(error)
+    }
+  }
+
+  // Grammar with its usages, kanji with its readings, or a word with its
+  // meanings; texts in `lang`, else vi. null when the content is gone
+  async getContentDetail(type: string, id: number, lang: string) {
     const t = String(type).toUpperCase()
-    const lang = (languageCode || 'vi').toLowerCase()
+    const language = (lang || 'vi').toLowerCase()
+    const text = async (key?: string | null) =>
+      key
+        ? (await this.translationHelper.getTranslation(key, language)) ||
+          (await this.translationHelper.getTranslation(key, 'vi'))
+        : null
+
     if (t === 'GRAMMAR') {
-      const grammar = await (this.prisma as any).grammar.findUnique({ where: { id } })
+      const grammar = await this.prisma.grammar.findUnique({ where: { id } })
       if (!grammar) return null
-      const usages = await (this.prisma as any).grammarUsage.findMany({
+      const usages = await this.prisma.grammarUsage.findMany({
         where: { grammarId: id },
         orderBy: { id: 'asc' }
       })
-      const mappedUsages = [] as any[]
-      for (const u of usages) {
-        const explanation = u.explanationKey
-          ? (await this.translationHelper.getTranslation(u.explanationKey, lang)) ||
-            (await this.translationHelper.getTranslation(u.explanationKey, 'vi'))
-          : null
-        const example = u.exampleSentenceKey
-          ? (await this.translationHelper.getTranslation(u.exampleSentenceKey, lang)) ||
-            (await this.translationHelper.getTranslation(u.exampleSentenceKey, 'vi'))
-          : null
-        mappedUsages.push({
-          id: u.id,
-          explanation,
-          exampleSentence: example
-        })
-      }
       return {
         type: 'grammar',
         id: grammar.id,
         structure: grammar.structure,
         level: grammar.level,
-        usages: mappedUsages
+        usages: await Promise.all(
+          usages.map(async (u) => ({
+            id: u.id,
+            explanation: await text(u.explanationKey),
+            exampleSentence: await text(u.exampleSentenceKey)
+          }))
+        )
       }
     }
     if (t === 'KANJI') {
-      const kanji = await (this.prisma as any).kanji.findUnique({
+      const kanji = await this.prisma.kanji.findUnique({
         where: { id },
-        include: {
-          readings: true
-        }
+        include: { readings: true }
       })
       if (!kanji) return null
-      let meaning: string | null = null
-      if (kanji.meaningKey) {
-        meaning =
-          (await this.translationHelper.getTranslation(kanji.meaningKey, lang)) ||
-          (await this.translationHelper.getTranslation(kanji.meaningKey, 'vi'))
-      }
-      if (meaning) {
-        const firstDotIndex = meaning.indexOf('.')
-        if (firstDotIndex > -1) {
-          meaning = meaning.substring(0, firstDotIndex).trim()
-        }
-      }
-      const onReadings =
+      // Only the first sentence of the meaning
+      const meaning = (await text(kanji.meaningKey))?.split('.')[0].trim() ?? null
+      const readings = (type: string) =>
         kanji.readings
-          ?.filter((r: any) => r.readingType?.toLowerCase() === 'onyomi')
-          .map((r: any) => r.reading) || []
-      const kunReadings =
-        kanji.readings
-          ?.filter((r: any) => r.readingType?.toLowerCase() === 'kunyomi')
-          .map((r: any) => r.reading) || []
+          .filter((r) => r.readingType?.toLowerCase() === type)
+          .map((r) => r.reading)
+          .join(', ')
       return {
         type: 'kanji',
         id: kanji.id,
         character: kanji.character,
         meaning,
         jlptLevel: kanji.jlptLevel,
-        onReading: onReadings.join(', '),
-        kunReading: kunReadings.join(', ')
+        onReading: readings('onyomi'),
+        kunReading: readings('kunyomi')
       }
     }
     if (t === 'VOCABULARY') {
-      const vocabulary = await (this.prisma as any).vocabulary.findUnique({
+      const vocabulary = await this.prisma.vocabulary.findUnique({
         where: { id },
         include: { meanings: true }
       })
       if (!vocabulary) return null
-      let meaning: string | null = null
-      if (vocabulary.meanings?.length) {
-        const meaningTexts: string[] = []
-        for (const m of vocabulary.meanings) {
-          if (m.meaningKey) {
-            const translated =
-              (await this.translationHelper.getTranslation(m.meaningKey, lang)) ||
-              (await this.translationHelper.getTranslation(m.meaningKey, 'vi'))
-            if (translated) {
-              meaningTexts.push(translated)
-            }
-          }
-        }
-        meaning = meaningTexts.join(', ') || null
-      }
+      const meanings = await Promise.all(
+        vocabulary.meanings.map((m) => text(m.meaningKey))
+      )
       return {
         type: 'vocabulary',
         id: vocabulary.id,
         wordJp: vocabulary.wordJp,
         reading: vocabulary.reading,
-        meaning,
+        meaning: meanings.filter(Boolean).join(', ') || null,
         audioUrl: vocabulary.audioUrl,
         imageUrl: vocabulary.imageUrl
       }
@@ -286,133 +256,33 @@ export class SrsReviewService {
     return { type: t.toLowerCase(), id }
   }
 
-  async getDetailBySrsId(userId: number, srsId: number, languageCode: string) {
-    try {
-      const srs = await this.repo.findById(srsId)
-      if (!srs) throw SrsNotFoundException
-      if (srs.userId !== userId) throw ForbiddenSrsAccessException
-      const content = await this.getContentDetail(
-        userId,
-        srs.contentType,
-        srs.contentId,
-        languageCode
-      )
-      // Ẩn các field không cần trả về từ srs
-      const {
-        id,
-        userId: srsUserId,
-        message,
-        srsLevel,
-        incorrectStreak,
-        isLeech,
-        isRead
-      } = srs as any
-      const sanitizedSrs = {
-        id,
-        userId: srsUserId,
-        message,
-        srsLevel,
-        incorrectStreak,
-        isLeech,
-        isRead
-      }
-      return {
-        statusCode: 200,
-        message: SRS_REVIEW_MESSAGE.GET_SUCCESS,
-        data: { srs: sanitizedSrs, content }
-      }
-    } catch (error) {
-      this.logger.error('Error getting SRS detail by id:', error)
-      if (isNotFoundPrismaError(error)) throw SrsNotFoundException
-      if (
-        isUniqueConstraintPrismaError(error) ||
-        isForeignKeyConstraintPrismaError(error)
-      )
-        throw InvalidSrsDataException
-      if (error instanceof HttpException) throw error
-      throw InvalidSrsDataException
+  //#region helpers
+  private async ownedReview(userId: number, srsId: number): Promise<UserSrsReview> {
+    const srs = await this.repo.findById(srsId)
+    if (!srs) throw new SrsNotFoundException()
+    if (srs.userId !== userId) throw new ForbiddenSrsAccessException()
+    return srs
+  }
+
+  private getHcmDayRange(date: Date) {
+    const day = new Intl.DateTimeFormat('en-CA', {
+      timeZone: SrsReviewService.HCM_TIMEZONE,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(date)
+    const offset = SrsReviewService.HCM_TIMEZONE_OFFSET
+    return {
+      start: new Date(`${day}T00:00:00${offset}`),
+      end: new Date(`${day}T23:59:59.999${offset}`)
     }
   }
 
-  async upsert(userId: number, body: UpsertSrsReviewDto) {
-    try {
-      const b: any = body as any
-      const contentType = String(b.contentType).toUpperCase()
-      const contentId = Number(b.contentId)
-      if (!contentId) throw new BadRequestException('contentId invalid')
-      const data = await this.repo.upsert(userId, contentType, contentId, b.message)
-      return {
-        statusCode: 200,
-        message: SRS_REVIEW_MESSAGE.UPSERT_SUCCESS,
-        data
-      }
-    } catch (error) {
-      this.logger.error('Error upserting SRS:', error)
-      if (isNotFoundPrismaError(error)) throw SrsNotFoundException
-      if (
-        isUniqueConstraintPrismaError(error) ||
-        isForeignKeyConstraintPrismaError(error)
-      )
-        throw InvalidSrsDataException
-      if (error instanceof HttpException) throw error
-      throw InvalidSrsDataException
-    }
+  private toSrsError(error: unknown): HttpException {
+    if (error instanceof HttpException) return error
+    this.logger.error('SRS request failed', error instanceof Error ? error.stack : error)
+    if (isNotFoundPrismaError(error)) return new SrsNotFoundException()
+    return new InvalidSrsDataException()
   }
-
-  async applyReview(userId: number, type: string, id: number, body: ReviewActionDto) {
-    try {
-      const existingRes = await this.getOne(userId, type, id)
-      const existing: any = (existingRes as any)?.data
-      if (!existing) {
-        await this.upsert(userId, {
-          contentType: String(type).toUpperCase() as any,
-          contentId: id
-        })
-      }
-
-      const b: any = body as any
-      const isCorrect = b.result === 'correct'
-      // Simple schedule: level -> days
-      const scheduleDays = [1, 3, 7, 14, 30, 60, 120]
-
-      let nextLevel = isCorrect
-        ? Math.min((existing?.srsLevel ?? 0) + 1, scheduleDays.length - 1)
-        : 0
-      let incorrectStreak = isCorrect ? 0 : (existing?.incorrectStreak ?? 0) + 1
-      const isLeech = incorrectStreak >= 5
-
-      const nextDate = new Date()
-      if (isCorrect) {
-        const days = scheduleDays[nextLevel] || 1
-        nextDate.setDate(nextDate.getDate() + days)
-      } else {
-        // review lại vào ngày hôm sau khi sai
-        nextDate.setDate(nextDate.getDate() + 1)
-      }
-
-      const updated = await this.repo.update(userId, String(type).toUpperCase(), id, {
-        srsLevel: nextLevel,
-        nextReviewDate: nextDate,
-        incorrectStreak,
-        isLeech,
-        message: b.message ?? undefined
-      })
-
-      return {
-        statusCode: 200,
-        message: SRS_REVIEW_MESSAGE.UPDATE_SUCCESS,
-        data: updated
-      }
-    } catch (error) {
-      this.logger.error('Error applying SRS review result:', error)
-      if (isNotFoundPrismaError(error)) throw SrsNotFoundException
-      if (
-        isUniqueConstraintPrismaError(error) ||
-        isForeignKeyConstraintPrismaError(error)
-      )
-        throw InvalidSrsDataException
-      if (error instanceof HttpException) throw error
-      throw InvalidSrsDataException
-    }
-  }
+  //#endregion
 }

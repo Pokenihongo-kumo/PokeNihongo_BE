@@ -16,7 +16,8 @@ import {
   UpsertSrsReviewDto,
   ReviewActionDto,
   ListSrsQueryDto,
-  ListSrsTodayQueryDto
+  ListSrsTodayQueryDto,
+  SrsReviewIdParamsDto
 } from './dto/user-srs-review.zod-dto'
 import { ApiBody, ApiResponse } from '@nestjs/swagger'
 import {
@@ -38,9 +39,14 @@ export class SrsReviewController {
   @ApiOperation({ summary: 'Danh sách SRS của user' })
   @ApiQuery({ type: ListSrsQuerySwaggerDTO })
   @ApiResponse({ status: 200, type: SrsReviewSwaggerDTO, isArray: true })
-  async list(@ActiveUser('userId') userId: number, @Query() query: ListSrsQueryDto) {
-    const data = await this.srsService.list(userId, query)
-    return { statusCode: 200, data, message: 'GET_SUCCESS' }
+  // The service answers the whole envelope (this used to wrap it in a second
+  // one with message 'GET_SUCCESS')
+  list(
+    @ActiveUser('userId') userId: number,
+    @Query() query: ListSrsQueryDto,
+    @I18nLang() lang: string
+  ) {
+    return this.srsService.list(userId, query, lang)
   }
 
   @Get('my')
@@ -50,20 +56,19 @@ export class SrsReviewController {
   async listMyToday(
     @ActiveUser('userId') userId: number,
     @Query() query: ListSrsTodayQueryDto,
-    @I18nLang() languageCode: string
+    @I18nLang() lang: string
   ) {
-    const data = await this.srsService.listToday(userId, query, languageCode)
-    return { statusCode: 200, data, message: 'GET_SUCCESS' }
+    return this.srsService.listToday(userId, query, lang)
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Lấy SRS theo contentType + contentId' })
-  async getOne(
+  getOne(
     @ActiveUser('userId') userId: number,
-    @Param('id') id: string,
-    @I18nLang() languageCode: string
+    @Param() params: SrsReviewIdParamsDto,
+    @I18nLang() lang: string
   ) {
-    return this.srsService.getDetailBySrsId(userId, Number(id), languageCode)
+    return this.srsService.getDetailBySrsId(userId, params.id, lang)
   }
 
   @Post('upsert')
@@ -71,17 +76,23 @@ export class SrsReviewController {
   @ApiOperation({ summary: 'Tạo hoặc cập nhật SRS cho 1 nội dung' })
   @ApiBody({ type: UpsertSrsReviewSwaggerDTO })
   @ApiResponse({ status: 200, type: SrsReviewSwaggerDTO })
-  async upsert(@ActiveUser('userId') userId: number, @Body() body: UpsertSrsReviewDto) {
-    const data = await this.srsService.upsert(userId, body)
-    return { statusCode: 200, data, message: 'UPSERT_SUCCESS' }
+  upsert(
+    @ActiveUser('userId') userId: number,
+    @Body() body: UpsertSrsReviewDto,
+    @I18nLang() lang: string
+  ) {
+    return this.srsService.upsert(userId, body, lang)
   }
 
   @Patch(':id/read')
   @ApiOperation({ summary: 'Đánh dấu đã đọc SRS review (theo id)' })
   @ApiParam({ name: 'id', description: 'ID của SRS review', example: 1 })
   @ApiResponse({ status: 200, type: SrsReviewSwaggerDTO })
-  async markRead(@ActiveUser('userId') userId: number, @Param('id') id: string) {
-    const data = await this.srsService.markRead(userId, Number(id))
-    return { statusCode: 200, data, message: 'UPDATE_SUCCESS' }
+  markRead(
+    @ActiveUser('userId') userId: number,
+    @Param() params: SrsReviewIdParamsDto,
+    @I18nLang() lang: string
+  ) {
+    return this.srsService.markRead(userId, params.id, lang)
   }
 }

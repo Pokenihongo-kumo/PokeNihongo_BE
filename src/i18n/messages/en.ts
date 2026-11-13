@@ -449,6 +449,21 @@ export const enMessages = {
     JAPANESE_TEXT_INVALID: 'The word must be Japanese (Hiragana/Katakana/Kanji)',
     INVALID_ID: 'Invalid word ID'
   },
+  srs_review: {
+    GET_SUCCESS: 'Review retrieved successfully',
+    GET_LIST_SUCCESS: 'Reviews retrieved successfully',
+    UPDATE_SUCCESS: 'Review updated successfully',
+    UPSERT_SUCCESS: 'Review saved successfully',
+    NOT_FOUND: 'Review not found',
+    FORBIDDEN: 'This review belongs to another user',
+    INVALID_DATA: 'Invalid review data',
+    INVALID_ID: 'Invalid review ID',
+    INVALID_CONTENT_TYPE: 'Invalid content type',
+    INVALID_CONTENT_ID: 'Invalid content ID',
+    INVALID_PAGE: 'Page must be a positive integer',
+    INVALID_PAGE_SIZE: 'Page size must be from 1 to 200',
+    INVALID_FLAG: 'The value must be true or false'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Lesson category created successfully',
     UPDATE_SUCCESS: 'Lesson category updated successfully',

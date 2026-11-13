@@ -435,6 +435,22 @@ export const VocabularyMessage = {
   INVALID_ID: 'vocabulary.INVALID_ID'
 } as const
 
+export const SrsReviewMessage = {
+  GET_SUCCESS: 'srs_review.GET_SUCCESS',
+  GET_LIST_SUCCESS: 'srs_review.GET_LIST_SUCCESS',
+  UPDATE_SUCCESS: 'srs_review.UPDATE_SUCCESS',
+  UPSERT_SUCCESS: 'srs_review.UPSERT_SUCCESS',
+  NOT_FOUND: 'srs_review.NOT_FOUND',
+  FORBIDDEN: 'srs_review.FORBIDDEN',
+  INVALID_DATA: 'srs_review.INVALID_DATA',
+  INVALID_ID: 'srs_review.INVALID_ID',
+  INVALID_CONTENT_TYPE: 'srs_review.INVALID_CONTENT_TYPE',
+  INVALID_CONTENT_ID: 'srs_review.INVALID_CONTENT_ID',
+  INVALID_PAGE: 'srs_review.INVALID_PAGE',
+  INVALID_PAGE_SIZE: 'srs_review.INVALID_PAGE_SIZE',
+  INVALID_FLAG: 'srs_review.INVALID_FLAG'
+} as const
+
 export const LessonCategoryMessage = {
   CREATE_SUCCESS: 'lesson_category.CREATE_SUCCESS',
   UPDATE_SUCCESS: 'lesson_category.UPDATE_SUCCESS',

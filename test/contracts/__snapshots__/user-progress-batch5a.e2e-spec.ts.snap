@@ -267,29 +267,25 @@ exports[`User progress batch 5a contract (e2e) user-srs-review my reviews, mark 
   "my": {
     "body": {
       "data": {
-        "data": {
-          "pagination": {
-            "current": "number",
-            "pageSize": "number",
-            "totalItem": "number",
-            "totalPage": "number",
-          },
-          "results": [
-            {
-              "content": "null",
-              "contentId": "number",
-              "contentType": "string",
-              "id": "number",
-              "isRead": "boolean",
-              "message": "contract-5a",
-              "userId": "number",
-            },
-          ],
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
         },
-        "message": "Lấy danh sách SRS thành công",
-        "statusCode": 200,
+        "results": [
+          {
+            "content": "null",
+            "contentId": "number",
+            "contentType": "string",
+            "id": "number",
+            "isRead": "boolean",
+            "message": "contract-5a",
+            "userId": "number",
+          },
+        ],
       },
-      "message": "GET_SUCCESS",
+      "message": "Lấy danh sách SRS thành công",
       "statusCode": 200,
     },
     "httpStatus": 200,
@@ -297,24 +293,20 @@ exports[`User progress batch 5a contract (e2e) user-srs-review my reviews, mark 
   "read": {
     "body": {
       "data": {
-        "data": {
-          "contentId": "number",
-          "contentType": "string",
-          "createdAt": "string",
-          "id": "number",
-          "incorrectStreak": "number",
-          "isLeech": "boolean",
-          "isRead": "boolean",
-          "message": "contract-5a",
-          "nextReviewDate": "string",
-          "srsLevel": "number",
-          "updatedAt": "string",
-          "userId": "number",
-        },
-        "message": "Cập nhật SRS thành công",
-        "statusCode": 200,
+        "contentId": "number",
+        "contentType": "string",
+        "createdAt": "string",
+        "id": "number",
+        "incorrectStreak": "number",
+        "isLeech": "boolean",
+        "isRead": "boolean",
+        "message": "contract-5a",
+        "nextReviewDate": "string",
+        "srsLevel": "number",
+        "updatedAt": "string",
+        "userId": "number",
       },
-      "message": "UPDATE_SUCCESS",
+      "message": "Cập nhật SRS thành công",
       "statusCode": 200,
     },
     "httpStatus": 200,
@@ -322,26 +314,38 @@ exports[`User progress batch 5a contract (e2e) user-srs-review my reviews, mark 
   "readInvalidId": {
     "en": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu SRS không hợp lệ",
-        "statusCode": 400,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid review ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 400,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu SRS không hợp lệ",
-        "statusCode": 400,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID SRS không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 400,
+      "httpStatus": 422,
     },
   },
   "readNotFound": {
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Không tìm thấy bản ghi SRS",
+        "message": "Review not found",
         "statusCode": 404,
       },
       "httpStatus": 404,

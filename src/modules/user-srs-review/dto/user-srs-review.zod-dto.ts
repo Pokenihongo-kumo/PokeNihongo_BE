@@ -3,6 +3,7 @@ import {
   ListSrsQueryType,
   ListSrsTodayQueryType,
   ReviewActionBodyType,
+  SrsReviewIdParamsType,
   UpsertSrsReviewBodyType
 } from '../entities/user-srs-review.entity'
 
@@ -10,3 +11,4 @@ export class UpsertSrsReviewDto extends createZodDto(UpsertSrsReviewBodyType) {}
 export class ReviewActionDto extends createZodDto(ReviewActionBodyType) {}
 export class ListSrsQueryDto extends createZodDto(ListSrsQueryType) {}
 export class ListSrsTodayQueryDto extends createZodDto(ListSrsTodayQueryType) {}
+export class SrsReviewIdParamsDto extends createZodDto(SrsReviewIdParamsType) {}
