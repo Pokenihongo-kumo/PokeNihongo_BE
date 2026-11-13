@@ -4,7 +4,7 @@ import {
   GetVocabularyListQueryType,
   UpdateVocabularyBodyType,
   VocabularyType
-} from '@/modules/vocabulary/entities/vocabulary.entities'
+} from '@/modules/vocabulary/entities/vocabulary.entity'
 import {
   InvalidVocabularyDataException,
   VocabularyAlreadyExistsException,
@@ -12,7 +12,7 @@ import {
   MeaningAlreadyExistsException,
   VocabularyJapaneseTextInvalidException
 } from '@/modules/vocabulary/dto/vocabulary.error'
-import { VocabularyRepository } from '@/modules/vocabulary/vocabulary.repo'
+import { VocabularyRepo } from '@/modules/vocabulary/vocabulary.repo'
 import { VocabularyHelperService } from '@/modules/vocabulary/vocabulary.helper.service'
 import { MeaningService } from '@/modules/meaning/meaning.service'
 import { VOCABULARY_MESSAGE } from '@/common/constants/message'
@@ -31,7 +31,7 @@ export class VocabularyService {
   private readonly logger = new Logger(VocabularyService.name)
 
   constructor(
-    private readonly vocabularyRepository: VocabularyRepository,
+    private readonly vocabularyRepository: VocabularyRepo,
     private readonly uploadService: UploadService,
     private readonly textToSpeechService: TextToSpeechService,
     private readonly vocabularyHelperService: VocabularyHelperService,
