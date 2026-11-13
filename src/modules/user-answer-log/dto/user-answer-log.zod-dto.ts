@@ -6,7 +6,7 @@ import {
   GetUserAnswerLogListQuerySchema,
   UserAnswerLogResSchema,
   UserAnswerLogListResSchema
-} from '../entities/user-answer-log.entities'
+} from '../entities/user-answer-log.entity'
 
 export class CreateUserAnswerLogBodyDTO extends createZodDto(
   CreateUserAnswerLogBodySchema

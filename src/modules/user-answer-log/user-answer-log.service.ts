@@ -1,197 +1,160 @@
 import {
   CreateUserAnswerLogBodyType,
-  GetUserAnswerLogByIdParamsType,
   GetUserAnswerLogListQueryType,
   UpdateUserAnswerLogBodyType
-} from '@/modules/user-answer-log/entities/user-answer-log.entities'
+} from '@/modules/user-answer-log/entities/user-answer-log.entity'
 import {
+  AnswerLogRuleViolationException,
+  AttemptNotOwnedException,
   InvalidUserAnswerLogDataException,
-  UserAnswerLogNotFoundException,
-  USER_ANSWER_LOG_MESSAGE
+  UserAnswerLogNotFoundException
 } from '@/modules/user-answer-log/dto/user-answer-log.error'
-import { UserAnswerLogRepository } from '@/modules/user-answer-log/user-answer-log.repo'
-import { isNotFoundPrismaError } from '@/shared/helpers'
-import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common'
+import { UserAnswerLogRepo } from '@/modules/user-answer-log/user-answer-log.repo'
+import { I18nService } from '@/i18n/i18n.service'
+import { UserAnswerLogMessage as M } from '@/i18n/message-keys'
+import { toPaginationMeta } from '@/shared/utils/pagination'
+import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
 
 @Injectable()
 export class UserAnswerLogService {
   private readonly logger = new Logger(UserAnswerLogService.name)
 
-  constructor(private readonly userAnswerLogRepository: UserAnswerLogRepository) {}
+  constructor(
+    private readonly userAnswerLogRepository: UserAnswerLogRepo,
+    private readonly i18nService: I18nService
+  ) {}
 
-  async create(body: CreateUserAnswerLogBodyType) {
+  async create(body: CreateUserAnswerLogBodyType, lang: string = 'vi') {
     try {
-      const userAnswerLog = await this.userAnswerLogRepository.create(body)
-
+      const isCorrect = await this.checkedAnswer(body.answerId, body.questionBankId)
+      const log = await this.userAnswerLogRepository.create(body, isCorrect)
       return {
-        data: userAnswerLog,
-        message: USER_ANSWER_LOG_MESSAGE.CREATE_SUCCESS
+        statusCode: 201,
+        data: log,
+        message: this.i18nService.translate(M.CREATE_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error('Error creating user answer log:', error)
-      // Preserve specific validation message from repository
-      const msg = (error as any)?.message || ''
-      if (msg.includes('Đáp án không thuộc về câu hỏi đã chọn')) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.BAD_REQUEST,
-            message: 'Đáp án không thuộc về câu hỏi đã chọn',
-            error: 'ANSWER_NOT_IN_QUESTION'
-          },
-          HttpStatus.BAD_REQUEST
-        )
-      }
-      throw InvalidUserAnswerLogDataException
+      throw this.toAnswerLogError(error)
     }
   }
 
-  async upsert(body: CreateUserAnswerLogBodyType, userId: number) {
+  // The app's answer: the attempt is the user's, the question is in its
+  // exercise and the answer is one of the question's. One log per question
+  async upsert(body: CreateUserAnswerLogBodyType, userId: number, lang: string = 'vi') {
     try {
-      const userAnswerLog = await this.userAnswerLogRepository.upsert(body, userId)
-
+      const attempt = await this.userAnswerLogRepository.findAttempt(
+        body.userExerciseAttemptId
+      )
+      // A missing attempt was a 400 "invalid data"
+      if (!attempt) throw new UserAnswerLogNotFoundException(M.ATTEMPT_NOT_FOUND)
+      if (attempt.userId !== userId) throw new AttemptNotOwnedException()
+      const testSetId = attempt.exercise?.testSetId
+      if (!testSetId)
+        throw new AnswerLogRuleViolationException(M.EXERCISE_HAS_NO_TEST_SET)
+      if (
+        !(await this.userAnswerLogRepository.isQuestionInTestSet(
+          testSetId,
+          body.questionBankId
+        ))
+      ) {
+        throw new AnswerLogRuleViolationException(M.QUESTION_NOT_IN_EXERCISE)
+      }
+      const isCorrect = await this.checkedAnswer(body.answerId, body.questionBankId)
+      const log = await this.userAnswerLogRepository.upsert(body, isCorrect)
       return {
-        data: userAnswerLog,
-        message: USER_ANSWER_LOG_MESSAGE.CREATE_SUCCESS
+        statusCode: 201,
+        data: log,
+        message: this.i18nService.translate(M.CREATE_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error('Error upserting user answer log:', error)
-      // Preserve specific validation message from repository
-      const msg = (error as any)?.message || ''
-      if (msg.includes('Đáp án không thuộc về câu hỏi đã chọn')) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.BAD_REQUEST,
-            message: 'Đáp án không thuộc về câu hỏi đã chọn',
-            error: 'ANSWER_NOT_IN_QUESTION'
-          },
-          HttpStatus.BAD_REQUEST
-        )
-      }
-      if (msg.includes('Câu hỏi không thuộc về bài tập hiện tại')) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.BAD_REQUEST,
-            message: 'Câu hỏi không thuộc về bài tập hiện tại',
-            error: 'QUESTION_NOT_IN_EXERCISE'
-          },
-          HttpStatus.BAD_REQUEST
-        )
-      }
-      if (msg.includes('Attempt không thuộc về người dùng')) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.FORBIDDEN,
-            message: 'Bạn không có quyền ghi log cho lần thử này',
-            error: 'ATTEMPT_OWNERSHIP_MISMATCH'
-          },
-          HttpStatus.FORBIDDEN
-        )
-      }
-      throw InvalidUserAnswerLogDataException
+      throw this.toAnswerLogError(error)
     }
   }
 
-  async findAll(query: GetUserAnswerLogListQueryType) {
-    const { currentPage, pageSize, userExerciseAttemptId, questionBankId, isCorrect } =
-      query
-
-    const result = await this.userAnswerLogRepository.findMany({
-      currentPage,
-      pageSize,
-      userExerciseAttemptId,
-      questionBankId,
-      isCorrect
-    })
-
+  async findAll(query: GetUserAnswerLogListQueryType, lang: string = 'vi') {
+    const { items, total } = await this.userAnswerLogRepository.findMany(query)
     return {
       statusCode: 200,
-      message: USER_ANSWER_LOG_MESSAGE.GET_LIST_SUCCESS,
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
       data: {
-        results: result.items,
-        pagination: {
-          current: result.page,
-          pageSize: result.limit,
-          totalPage: Math.ceil(result.total / result.limit),
-          totalItem: result.total
-        }
+        results: items,
+        pagination: toPaginationMeta(query.currentPage, query.pageSize, total)
       }
     }
   }
 
-  async findOne(id: number) {
-    const userAnswerLog = await this.userAnswerLogRepository.findUnique({
-      id: id
-    })
-
-    if (!userAnswerLog) {
-      throw UserAnswerLogNotFoundException
-    }
-
+  async findOne(id: number, lang: string = 'vi') {
+    const log = await this.userAnswerLogRepository.findUnique(id)
+    if (!log) throw new UserAnswerLogNotFoundException()
     return {
-      data: userAnswerLog,
-      message: USER_ANSWER_LOG_MESSAGE.GET_SUCCESS
+      statusCode: 200,
+      data: log,
+      message: this.i18nService.translate(M.GET_SUCCESS, lang)
     }
   }
 
-  async update(id: number, body: UpdateUserAnswerLogBodyType) {
+  async update(id: number, body: UpdateUserAnswerLogBodyType, lang: string = 'vi') {
     try {
-      const userAnswerLog = await this.userAnswerLogRepository.update({ id }, body)
-
-      return {
-        data: userAnswerLog,
-        message: USER_ANSWER_LOG_MESSAGE.UPDATE_SUCCESS
-      }
-    } catch (error) {
-      if (isNotFoundPrismaError(error)) {
-        throw UserAnswerLogNotFoundException
-      }
-      this.logger.error('Error updating user answer log:', error)
-      throw InvalidUserAnswerLogDataException
-    }
-  }
-
-  async remove(id: number) {
-    try {
-      const userAnswerLog = await this.userAnswerLogRepository.delete({ id })
-
-      return {
-        data: userAnswerLog,
-        message: USER_ANSWER_LOG_MESSAGE.DELETE_SUCCESS
-      }
-    } catch (error) {
-      if (isNotFoundPrismaError(error)) {
-        throw UserAnswerLogNotFoundException
-      }
-      this.logger.error('Error deleting user answer log:', error)
-      throw InvalidUserAnswerLogDataException
-    }
-  }
-
-  async findByUserExerciseAttemptId(userExerciseAttemptId: number) {
-    try {
-      this.logger.log(`Finding user answer logs for attempt: ${userExerciseAttemptId}`)
-
-      const result =
-        await this.userAnswerLogRepository.findByUserExerciseAttemptId(
-          userExerciseAttemptId
-        )
-
+      const log = await this.userAnswerLogRepository.update(id, body)
       return {
         statusCode: 200,
-        message: 'Lấy danh sách log câu trả lời thành công',
-        data: {
-          results: result,
-          pagination: {
-            current: 1,
-            pageSize: result.length,
-            totalPage: 1,
-            totalItem: result.length
-          }
-        }
+        data: log,
+        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error('Error finding user answer logs by attempt:', error)
-      throw error
+      throw this.toAnswerLogError(error)
     }
   }
+
+  async remove(id: number, lang: string = 'vi') {
+    try {
+      const log = await this.userAnswerLogRepository.delete(id)
+      return {
+        statusCode: 200,
+        data: log,
+        message: this.i18nService.translate(M.DELETE_SUCCESS, lang)
+      }
+    } catch (error) {
+      throw this.toAnswerLogError(error)
+    }
+  }
+
+  // Used by user-exercise-attempt (reads data.results)
+  async findByUserExerciseAttemptId(userExerciseAttemptId: number, lang: string = 'vi') {
+    const logs =
+      await this.userAnswerLogRepository.findByUserExerciseAttemptId(
+        userExerciseAttemptId
+      )
+    return {
+      statusCode: 200,
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
+      data: {
+        results: logs,
+        pagination: toPaginationMeta(1, logs.length || 1, logs.length)
+      }
+    }
+  }
+
+  //#region helpers
+  // The answer exists and belongs to the question; returns whether it is correct
+  private async checkedAnswer(answerId: number, questionBankId: number) {
+    const answer = await this.userAnswerLogRepository.findAnswer(answerId)
+    if (!answer) throw new UserAnswerLogNotFoundException(M.ANSWER_NOT_FOUND)
+    if (answer.questionBankId !== questionBankId) {
+      throw new AnswerLogRuleViolationException(M.ANSWER_NOT_IN_QUESTION)
+    }
+    return answer.isCorrect
+  }
+
+  private toAnswerLogError(error: unknown): HttpException {
+    if (error instanceof HttpException) return error
+    this.logger.error(
+      'Answer log request failed',
+      error instanceof Error ? error.stack : error
+    )
+    if (isNotFoundPrismaError(error)) return new UserAnswerLogNotFoundException()
+    return new InvalidUserAnswerLogDataException()
+  }
+  //#endregion
 }

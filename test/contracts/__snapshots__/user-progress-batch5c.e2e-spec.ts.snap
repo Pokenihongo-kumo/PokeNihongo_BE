@@ -80,7 +80,7 @@ exports[`User progress batch 5c contract (e2e) errors 1`] = `
         "errors": [
           {
             "field": "string",
-            "message": "Invalid format",
+            "message": "Invalid attempt ID",
           },
         ],
         "message": "Invalid data provided",
@@ -94,7 +94,7 @@ exports[`User progress batch 5c contract (e2e) errors 1`] = `
         "errors": [
           {
             "field": "string",
-            "message": "Định dạng không hợp lệ",
+            "message": "ID lần thử bài tập không hợp lệ",
           },
         ],
         "message": "Dữ liệu không hợp lệ",
@@ -106,19 +106,19 @@ exports[`User progress batch 5c contract (e2e) errors 1`] = `
   "answerMissingAttempt": {
     "en": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu log câu trả lời không hợp lệ",
-        "statusCode": 400,
+        "error": "NOT_FOUND",
+        "message": "Exercise attempt not found",
+        "statusCode": 404,
       },
-      "httpStatus": 400,
+      "httpStatus": 404,
     },
     "vi": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu log câu trả lời không hợp lệ",
-        "statusCode": 400,
+        "error": "NOT_FOUND",
+        "message": "Lần thử bài tập không tồn tại",
+        "statusCode": 404,
       },
-      "httpStatus": 400,
+      "httpStatus": 404,
     },
   },
   "checkMissing": {

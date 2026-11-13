@@ -485,6 +485,28 @@ export const enMessages = {
     INVALID_PERCENTAGE: 'Progress percentage must be from 0 to 100',
     INVALID_STATUS: 'Invalid progress status'
   },
+  user_answer_log: {
+    GET_SUCCESS: 'Answer retrieved successfully',
+    GET_LIST_SUCCESS: 'Answers retrieved successfully',
+    CREATE_SUCCESS: 'Answer saved successfully',
+    UPDATE_SUCCESS: 'Answer updated successfully',
+    DELETE_SUCCESS: 'Answer deleted successfully',
+    NOT_FOUND: 'Answer log not found',
+    INVALID_DATA: 'Invalid answer data',
+    ATTEMPT_NOT_FOUND: 'Exercise attempt not found',
+    ATTEMPT_NOT_OWNED: 'This attempt belongs to another user',
+    EXERCISE_HAS_NO_TEST_SET: 'This exercise has no test set',
+    QUESTION_NOT_IN_EXERCISE: 'This question is not in the exercise',
+    ANSWER_NOT_FOUND: 'Answer not found',
+    ANSWER_NOT_IN_QUESTION: 'This answer does not belong to the question',
+    INVALID_ID: 'Invalid answer log ID',
+    INVALID_ATTEMPT_ID: 'Invalid attempt ID',
+    INVALID_QUESTION_ID: 'Invalid question ID',
+    INVALID_ANSWER_ID: 'Invalid answer ID',
+    INVALID_PAGE: 'Page must be a positive integer',
+    INVALID_PAGE_SIZE: 'Page size must be a positive integer',
+    INVALID_FLAG: 'The value must be true or false'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Lesson category created successfully',
     UPDATE_SUCCESS: 'Lesson category updated successfully',

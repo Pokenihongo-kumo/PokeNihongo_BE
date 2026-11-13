@@ -498,6 +498,28 @@ export const viMessages = {
     INVALID_PERCENTAGE: 'Phần trăm tiến độ phải từ 0 đến 100',
     INVALID_STATUS: 'Trạng thái tiến độ không hợp lệ'
   },
+  user_answer_log: {
+    GET_SUCCESS: 'Lấy thông tin log câu trả lời thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách log câu trả lời thành công',
+    CREATE_SUCCESS: 'Tạo log câu trả lời thành công',
+    UPDATE_SUCCESS: 'Cập nhật log câu trả lời thành công',
+    DELETE_SUCCESS: 'Xóa log câu trả lời thành công',
+    NOT_FOUND: 'Không tìm thấy log câu trả lời',
+    INVALID_DATA: 'Dữ liệu log câu trả lời không hợp lệ',
+    ATTEMPT_NOT_FOUND: 'Lần thử bài tập không tồn tại',
+    ATTEMPT_NOT_OWNED: 'Bạn không có quyền ghi log cho lần thử này',
+    EXERCISE_HAS_NO_TEST_SET: 'Bài tập không có bộ đề (test set)',
+    QUESTION_NOT_IN_EXERCISE: 'Câu hỏi không thuộc về bài tập hiện tại',
+    ANSWER_NOT_FOUND: 'Không tìm thấy đáp án',
+    ANSWER_NOT_IN_QUESTION: 'Đáp án không thuộc về câu hỏi đã chọn',
+    INVALID_ID: 'ID log câu trả lời không hợp lệ',
+    INVALID_ATTEMPT_ID: 'ID lần thử bài tập không hợp lệ',
+    INVALID_QUESTION_ID: 'ID câu hỏi không hợp lệ',
+    INVALID_ANSWER_ID: 'ID đáp án không hợp lệ',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương',
+    INVALID_FLAG: 'Giá trị phải là true hoặc false'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Tạo danh mục bài học thành công',
     UPDATE_SUCCESS: 'Cập nhật danh mục bài học thành công',

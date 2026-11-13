@@ -507,6 +507,28 @@ export const jaMessages = {
     INVALID_PERCENTAGE: '進捗率は0〜100です',
     INVALID_STATUS: '進捗のステータスが無効です'
   },
+  user_answer_log: {
+    GET_SUCCESS: '回答を取得しました',
+    GET_LIST_SUCCESS: '回答一覧を取得しました',
+    CREATE_SUCCESS: '回答を保存しました',
+    UPDATE_SUCCESS: '回答を更新しました',
+    DELETE_SUCCESS: '回答を削除しました',
+    NOT_FOUND: '回答の記録が見つかりません',
+    INVALID_DATA: '回答のデータが無効です',
+    ATTEMPT_NOT_FOUND: '練習問題の挑戦が見つかりません',
+    ATTEMPT_NOT_OWNED: 'この挑戦は別のユーザーのものです',
+    EXERCISE_HAS_NO_TEST_SET: 'この練習問題にはテストセットがありません',
+    QUESTION_NOT_IN_EXERCISE: 'この問題は練習問題に含まれていません',
+    ANSWER_NOT_FOUND: '選択肢が見つかりません',
+    ANSWER_NOT_IN_QUESTION: 'この選択肢はこの問題のものではありません',
+    INVALID_ID: '回答の記録IDが無効です',
+    INVALID_ATTEMPT_ID: '挑戦IDが無効です',
+    INVALID_QUESTION_ID: '問題IDが無効です',
+    INVALID_ANSWER_ID: '選択肢IDが無効です',
+    INVALID_PAGE: 'ページは正の整数でなければなりません',
+    INVALID_PAGE_SIZE: 'ページサイズは正の整数でなければなりません',
+    INVALID_FLAG: '値は true か false です'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'レッスンカテゴリを作成しました',
     UPDATE_SUCCESS: 'レッスンカテゴリを更新しました',
