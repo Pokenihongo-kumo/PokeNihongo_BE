@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import { UserProgressMessage } from '@/i18n/message-keys'
+import { checkIdSchema } from '@/common/utils/id.validation'
 
 // ProgressStatus enum
 export const ProgressStatusSchema = z.enum([
@@ -83,38 +85,36 @@ export const UserProgressListResSchema = z
 // Params and Query schemas
 export const GetUserProgressByIdParamsSchema = z
   .object({
-    id: z.string().transform((val) => parseInt(val, 10))
+    id: checkIdSchema(UserProgressMessage.INVALID_ID)
   })
   .strict()
 
+export const UserProgressLessonParamsSchema = z
+  .object({
+    lessonId: checkIdSchema(UserProgressMessage.INVALID_LESSON_ID)
+  })
+  .strict()
+
+export const UserProgressUserParamsSchema = z
+  .object({
+    userId: checkIdSchema(UserProgressMessage.INVALID_USER_ID)
+  })
+  .strict()
+
+// A non-number used to reach Prisma as NaN (500), or turn a filter off
 export const GetUserProgressListQuerySchema = z
   .object({
-    currentPage: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('1'),
-    pageSize: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('10'),
-    userId: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional(),
-    lessonId: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional(),
-    lessonCategoryId: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional(),
+    currentPage: checkIdSchema(UserProgressMessage.INVALID_PAGE).default(1),
+    pageSize: checkIdSchema(UserProgressMessage.INVALID_PAGE_SIZE).default(10),
+    userId: checkIdSchema(UserProgressMessage.INVALID_USER_ID).optional(),
+    lessonId: checkIdSchema(UserProgressMessage.INVALID_LESSON_ID).optional(),
+    lessonCategoryId: checkIdSchema(UserProgressMessage.INVALID_CATEGORY_ID).optional(),
     status: ProgressStatusSchema.optional(),
-    progressPercentage: z
-      .string()
-      .transform((val) => parseInt(val, 10))
+    progressPercentage: z.coerce
+      .number({ invalid_type_error: UserProgressMessage.INVALID_PERCENTAGE })
+      .int(UserProgressMessage.INVALID_PERCENTAGE)
+      .min(0, UserProgressMessage.INVALID_PERCENTAGE)
+      .max(100, UserProgressMessage.INVALID_PERCENTAGE)
       .optional()
   })
   .strict()

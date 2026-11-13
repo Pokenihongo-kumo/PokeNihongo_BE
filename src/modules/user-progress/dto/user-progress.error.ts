@@ -1,39 +1,23 @@
-import { HttpException, HttpStatus } from '@nestjs/common'
+import { UserProgressMessage as M } from '@/i18n/message-keys'
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common'
 
-export const USER_PROGRESS_MESSAGE = {
-  NOT_FOUND: 'Không tìm thấy tiến độ học tập',
-  ALREADY_EXISTS: 'Tiến độ học tập đã tồn tại',
-  INVALID_DATA: 'Dữ liệu tiến độ học tập không hợp lệ',
-  CREATE_SUCCESS: 'Tạo tiến độ học tập thành công',
-  UPDATE_SUCCESS: 'Cập nhật tiến độ học tập thành công',
-  DELETE_SUCCESS: 'Xóa tiến độ học tập thành công',
-  GET_SUCCESS: 'Lấy thông tin tiến độ học tập thành công',
-  GET_LIST_SUCCESS: 'Lấy danh sách tiến độ học tập thành công'
+// A new instance per throw; `message` is translated from errorKey by
+// ApiExceptionFilter (Accept-Language), the old Vietnamese text is the vi value
+
+export class UserProgressNotFoundException extends NotFoundException {
+  constructor() {
+    super({ message: M.NOT_FOUND, errorKey: M.NOT_FOUND })
+  }
 }
 
-export const UserProgressNotFoundException = new HttpException(
-  {
-    statusCode: HttpStatus.NOT_FOUND,
-    message: USER_PROGRESS_MESSAGE.NOT_FOUND,
-    error: 'USER_PROGRESS_NOT_FOUND'
-  },
-  HttpStatus.NOT_FOUND
-)
+export class UserProgressAlreadyExistsException extends ConflictException {
+  constructor() {
+    super({ message: M.ALREADY_EXISTS, errorKey: M.ALREADY_EXISTS })
+  }
+}
 
-export const UserProgressAlreadyExistsException = new HttpException(
-  {
-    statusCode: HttpStatus.CONFLICT,
-    message: USER_PROGRESS_MESSAGE.ALREADY_EXISTS,
-    error: 'USER_PROGRESS_ALREADY_EXISTS'
-  },
-  HttpStatus.CONFLICT
-)
-
-export const InvalidUserProgressDataException = new HttpException(
-  {
-    statusCode: HttpStatus.BAD_REQUEST,
-    message: USER_PROGRESS_MESSAGE.INVALID_DATA,
-    error: 'INVALID_USER_PROGRESS_DATA'
-  },
-  HttpStatus.BAD_REQUEST
-)
+export class InvalidUserProgressDataException extends BadRequestException {
+  constructor() {
+    super({ message: M.INVALID_DATA, errorKey: M.INVALID_DATA })
+  }
+}

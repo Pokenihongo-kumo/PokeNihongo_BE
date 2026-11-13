@@ -464,6 +464,27 @@ export const enMessages = {
     INVALID_PAGE_SIZE: 'Page size must be from 1 to 200',
     INVALID_FLAG: 'The value must be true or false'
   },
+  user_progress: {
+    GET_SUCCESS: 'Progress retrieved successfully',
+    GET_LIST_SUCCESS: 'Progress list retrieved successfully',
+    GET_MY_SUCCESS: 'Your progress retrieved successfully',
+    CREATE_SUCCESS: 'Progress created successfully',
+    UPDATE_SUCCESS: 'Progress updated successfully',
+    DELETE_SUCCESS: 'Progress deleted successfully',
+    START_LESSON_SUCCESS: 'Lesson started',
+    COMPLETE_LESSON_SUCCESS: 'Lesson completed',
+    NOT_FOUND: 'Progress not found',
+    ALREADY_EXISTS: 'This progress already exists',
+    INVALID_DATA: 'Invalid progress data',
+    INVALID_ID: 'Invalid progress ID',
+    INVALID_LESSON_ID: 'Invalid lesson ID',
+    INVALID_USER_ID: 'Invalid user ID',
+    INVALID_CATEGORY_ID: 'Invalid lesson category ID',
+    INVALID_PAGE: 'Page must be a positive integer',
+    INVALID_PAGE_SIZE: 'Page size must be a positive integer',
+    INVALID_PERCENTAGE: 'Progress percentage must be from 0 to 100',
+    INVALID_STATUS: 'Invalid progress status'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Lesson category created successfully',
     UPDATE_SUCCESS: 'Lesson category updated successfully',

@@ -3,6 +3,8 @@ import {
   CreateUserProgressBodySchema,
   UpdateUserProgressBodySchema,
   GetUserProgressByIdParamsSchema,
+  UserProgressLessonParamsSchema,
+  UserProgressUserParamsSchema,
   GetUserProgressListQuerySchema,
   UserProgressResSchema,
   UserProgressListResSchema,
@@ -26,3 +28,9 @@ export class UserProgressResDTO extends createZodDto(UserProgressResSchema) {}
 export class UserProgressListResDTO extends createZodDto(UserProgressListResSchema) {}
 export class StartLessonBodyDTO extends createZodDto(StartLessonBodySchema) {}
 export class CompleteLessonBodyDTO extends createZodDto(CompleteLessonBodySchema) {}
+export class UserProgressLessonParamsDTO extends createZodDto(
+  UserProgressLessonParamsSchema
+) {}
+export class UserProgressUserParamsDTO extends createZodDto(
+  UserProgressUserParamsSchema
+) {}

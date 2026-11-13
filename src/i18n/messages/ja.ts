@@ -486,6 +486,27 @@ export const jaMessages = {
     INVALID_TYPE: '履歴の種類が無効です',
     INVALID_STATUS: 'ステータスが無効です'
   },
+  user_progress: {
+    GET_SUCCESS: '学習の進捗を取得しました',
+    GET_LIST_SUCCESS: '学習の進捗一覧を取得しました',
+    GET_MY_SUCCESS: 'あなたの学習の進捗を取得しました',
+    CREATE_SUCCESS: '学習の進捗を作成しました',
+    UPDATE_SUCCESS: '学習の進捗を更新しました',
+    DELETE_SUCCESS: '学習の進捗を削除しました',
+    START_LESSON_SUCCESS: 'レッスンを開始しました',
+    COMPLETE_LESSON_SUCCESS: 'レッスンを完了しました',
+    NOT_FOUND: '学習の進捗が見つかりません',
+    ALREADY_EXISTS: 'この学習の進捗はすでに存在します',
+    INVALID_DATA: '学習の進捗のデータが無効です',
+    INVALID_ID: '進捗IDが無効です',
+    INVALID_LESSON_ID: 'レッスンIDが無効です',
+    INVALID_USER_ID: 'ユーザーIDが無効です',
+    INVALID_CATEGORY_ID: 'レッスンカテゴリIDが無効です',
+    INVALID_PAGE: 'ページは正の整数でなければなりません',
+    INVALID_PAGE_SIZE: 'ページサイズは正の整数でなければなりません',
+    INVALID_PERCENTAGE: '進捗率は0〜100です',
+    INVALID_STATUS: '進捗のステータスが無効です'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'レッスンカテゴリを作成しました',
     UPDATE_SUCCESS: 'レッスンカテゴリを更新しました',
