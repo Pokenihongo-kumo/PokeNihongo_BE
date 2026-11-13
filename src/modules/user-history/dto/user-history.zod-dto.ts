@@ -9,7 +9,7 @@ import {
   HistoryExerciseItemSchema,
   HistoryExercisesResSchema,
   HistoryTestsResSchema
-} from '../entities/user-history.entities'
+} from '../entities/user-history.entity'
 
 export class GetHistoryListQueryDTO extends createZodDto(GetHistoryListQuerySchema) {}
 export class GetAdminHistoryListQueryDTO extends createZodDto(
