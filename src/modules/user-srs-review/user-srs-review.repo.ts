@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { PrismaService } from '@/shared/services/prisma.service'
 
 @Injectable()
-export class SrsReviewRepository {
+export class SrsReviewRepo {
   constructor(private readonly prisma: PrismaService) {}
 
   async list(where: any, take = 200) {

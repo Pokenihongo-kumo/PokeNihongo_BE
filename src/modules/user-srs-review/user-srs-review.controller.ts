@@ -10,14 +10,14 @@ import {
   HttpStatus
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
-import { SrsReviewService } from './srs-review.service'
+import { SrsReviewService } from './user-srs-review.service'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import {
   UpsertSrsReviewDto,
   ReviewActionDto,
   ListSrsQueryDto,
   ListSrsTodayQueryDto
-} from './dto/srs-review.zod-dto'
+} from './dto/user-srs-review.zod-dto'
 import { ApiBody, ApiResponse } from '@nestjs/swagger'
 import {
   ListSrsQuerySwaggerDTO,
@@ -25,7 +25,7 @@ import {
   ReviewActionSwaggerDTO,
   SrsReviewSwaggerDTO,
   UpsertSrsReviewSwaggerDTO
-} from './dto/srs-review.dto'
+} from './dto/user-srs-review.dto'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 
 @ApiTags('User SRS Review')

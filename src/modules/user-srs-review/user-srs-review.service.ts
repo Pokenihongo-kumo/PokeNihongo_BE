@@ -4,21 +4,21 @@ import {
   ListSrsQueryDto,
   ReviewActionDto,
   UpsertSrsReviewDto
-} from './dto/srs-review.zod-dto'
-import { SrsReviewRepository } from './srs-review.repo'
+} from './dto/user-srs-review.zod-dto'
+import { SrsReviewRepo } from './user-srs-review.repo'
 import { TranslationHelperService } from '@/modules/translation/translation.helper.service'
 import {
   ForbiddenSrsAccessException,
   InvalidSrsDataException,
   SrsNotFoundException
-} from './dto/srs-review.error'
+} from './dto/user-srs-review.error'
 import { SRS_REVIEW_MESSAGE } from '@/common/constants/message'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { ListSrsTodayQuery } from './entities/srs-review.entities'
+import { ListSrsTodayQuery } from './entities/user-srs-review.entity'
 
 @Injectable()
 export class SrsReviewService {
@@ -27,7 +27,7 @@ export class SrsReviewService {
   private static readonly HCM_TIMEZONE_OFFSET = '+07:00'
   constructor(
     private readonly prisma: PrismaService,
-    private readonly repo: SrsReviewRepository,
+    private readonly repo: SrsReviewRepo,
     private readonly translationHelper: TranslationHelperService
   ) {}
 
