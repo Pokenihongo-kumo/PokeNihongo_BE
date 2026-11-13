@@ -5,14 +5,14 @@ import {
   GetAdminHistoryListQueryType,
   GetRecentExercisesQueryType,
   HistoryTestsResType
-} from './entities/user-history.entities'
+} from './entities/user-history.entity'
 import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { TestAttemptStatus, ExerciseAttemptStatus } from '@prisma/client'
 import { I18nService } from '@/i18n/i18n.service'
 import { UserHistoryMessage } from '@/i18n/message-keys'
 import { TranslationService } from '@/modules/translation/translation.service'
 import { LanguagesService } from '@/modules/languages/languages.service'
-import { UserHistoryRepository } from './user-history.repo'
+import { UserHistoryRepo } from './user-history.repo'
 
 @Injectable()
 export class UserHistoryService {
@@ -20,7 +20,7 @@ export class UserHistoryService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly userHistoryRepository: UserHistoryRepository,
+    private readonly userHistoryRepository: UserHistoryRepo,
     private readonly i18nService: I18nService,
     private readonly translationService: TranslationService,
     private readonly languagesService: LanguagesService
@@ -234,7 +234,7 @@ export class UserHistoryService {
 
       return {
         statusCode: 200,
-        message: message || 'Lấy danh sách lịch sử làm bài thành công',
+        message,
         data: {
           results,
           pagination: {
@@ -492,7 +492,7 @@ export class UserHistoryService {
 
       return {
         statusCode: 200,
-        message: message || 'Lấy danh sách lịch sử làm bài thành công',
+        message,
         data: {
           results,
           pagination: {
@@ -692,7 +692,7 @@ export class UserHistoryService {
 
       return {
         statusCode: 200,
-        message: message || 'Lấy danh sách bài exercise gần đây thành công',
+        message,
         data: {
           results,
           pagination: {
@@ -841,7 +841,7 @@ export class UserHistoryService {
 
       return {
         statusCode: 200,
-        message: message || 'Lấy danh sách bài exercise gần đây thành công',
+        message,
         data: {
           results,
           allTime,
@@ -966,7 +966,7 @@ export class UserHistoryService {
 
       return {
         statusCode: 200,
-        message: message || 'Lấy danh sách bài test gần đây thành công',
+        message,
         data: {
           results,
           allTime,

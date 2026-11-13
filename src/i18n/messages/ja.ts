@@ -478,6 +478,14 @@ export const jaMessages = {
     INVALID_PAGE_SIZE: 'ページサイズは1〜200です',
     INVALID_FLAG: '値は true か false です'
   },
+  user_history: {
+    GET_LIST_SUCCESS: '学習履歴を取得しました',
+    INVALID_PAGE: 'ページは正の整数でなければなりません',
+    INVALID_PAGE_SIZE: 'ページサイズは正の整数でなければなりません',
+    INVALID_USER_ID: 'ユーザーIDが無効です',
+    INVALID_TYPE: '履歴の種類が無効です',
+    INVALID_STATUS: 'ステータスが無効です'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'レッスンカテゴリを作成しました',
     UPDATE_SUCCESS: 'レッスンカテゴリを更新しました',

@@ -5,19 +5,31 @@ exports[`User progress batch 5b contract (e2e) errors: bad query values 1`] = `
   "historyBadPageSize": {
     "en": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "Internal Server Error",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Page size must be a positive integer",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "Internal Server Error",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Kích thước trang phải là số nguyên dương",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
   },
   "progressBadCategory": {
@@ -143,47 +155,31 @@ exports[`User progress batch 5b contract (e2e) errors: bad query values 1`] = `
   "testsBadPage": {
     "en": {
       "body": {
-        "data": {
-          "abandonedAttempts": "number",
-          "allAttempts": "number",
-          "allTime": "number",
-          "completedAttempts": "number",
-          "failedAttempts": "number",
-          "pagination": {
-            "current": "number",
-            "pageSize": "number",
-            "totalItem": "number",
-            "totalPage": "number",
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Page must be a positive integer",
           },
-          "results": [],
-          "skippedAttempts": "number",
-        },
-        "message": "User history retrieved successfully",
-        "statusCode": 200,
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 200,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "data": {
-          "abandonedAttempts": "number",
-          "allAttempts": "number",
-          "allTime": "number",
-          "completedAttempts": "number",
-          "failedAttempts": "number",
-          "pagination": {
-            "current": "number",
-            "pageSize": "number",
-            "totalItem": "number",
-            "totalPage": "number",
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Trang phải là số nguyên dương",
           },
-          "results": [],
-          "skippedAttempts": "number",
-        },
-        "message": "Lấy danh sách lịch sử làm bài thành công",
-        "statusCode": 200,
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 200,
+      "httpStatus": 422,
     },
   },
 }

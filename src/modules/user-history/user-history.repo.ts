@@ -3,7 +3,7 @@ import { PrismaService } from '@/shared/services/prisma.service'
 import { ExerciseAttemptStatus, TestAttemptStatus } from '@prisma/client'
 
 @Injectable()
-export class UserHistoryRepository {
+export class UserHistoryRepo {
   constructor(private readonly prisma: PrismaService) {}
 
   async findRecentExerciseAttempts(params: {
