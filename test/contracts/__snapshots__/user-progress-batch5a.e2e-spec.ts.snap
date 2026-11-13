@@ -1,0 +1,359 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`User progress batch 5a contract (e2e) attendance errors 1`] = `
+{
+  "invalidId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "notFound": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Record not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bản ghi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "weekUnknownLanguage": {
+    "body": {
+      "data": {
+        "attendances": [
+          {
+            "bonusCoin": "number",
+            "coin": "number",
+            "createdAt": "string",
+            "createdById": "number",
+            "date": "string",
+            "dayOfWeek": "string",
+            "deletedAt": "null",
+            "deletedById": "null",
+            "id": "number",
+            "status": "string",
+            "updatedAt": "string",
+            "updatedById": "null",
+            "userId": "number",
+          },
+        ],
+        "count": "number",
+        "totalStreak": "number",
+        "user": {
+          "email": "string",
+          "id": "number",
+          "name": "string",
+        },
+      },
+      "message": "Lấy chi tiết điểm danh thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`User progress batch 5a contract (e2e) attendance week before, check in, check in again, week after 1`] = `
+{
+  "checkIn": {
+    "body": {
+      "data": {
+        "bonusCoin": "number",
+        "coin": "number",
+        "createdAt": "string",
+        "createdById": "number",
+        "date": "string",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "id": "number",
+        "status": "string",
+        "updatedAt": "string",
+        "updatedById": "null",
+        "userId": "number",
+      },
+      "message": "Điểm danh thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "checkInAgain": {
+    "en": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Bạn đã điểm danh hôm nay",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+    "vi": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Bạn đã điểm danh hôm nay",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+  },
+  "weekAfter": {
+    "body": {
+      "data": {
+        "attendances": [
+          {
+            "bonusCoin": "number",
+            "coin": "number",
+            "createdAt": "string",
+            "createdById": "number",
+            "date": "string",
+            "dayOfWeek": "string",
+            "deletedAt": "null",
+            "deletedById": "null",
+            "id": "number",
+            "status": "string",
+            "updatedAt": "string",
+            "updatedById": "null",
+            "userId": "number",
+          },
+        ],
+        "count": "number",
+        "totalStreak": "number",
+        "user": {
+          "email": "string",
+          "id": "number",
+          "name": "string",
+        },
+      },
+      "message": "Lấy chi tiết điểm danh thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "weekBefore": {
+    "body": {
+      "data": {
+        "attendances": [],
+        "count": "number",
+        "totalStreak": "number",
+        "user": {
+          "email": "string",
+          "id": "number",
+          "name": "string",
+        },
+      },
+      "message": "Lấy chi tiết điểm danh thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`User progress batch 5a contract (e2e) attendence-config list (the rewards the check-in screen shows) and errors 1`] = `
+{
+  "invalidId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "list": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "baseCoin": "number",
+            "bonusCoin": "number",
+            "createdAt": "string",
+            "createdById": "null",
+            "dayOfWeek": "string",
+            "deletedAt": "null",
+            "deletedById": "null",
+            "id": "number",
+            "updatedAt": "string",
+            "updatedById": "null",
+          },
+        ],
+      },
+      "message": "Lấy danh sách cấu hình điểm danh thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "notFound": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Record not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bản ghi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+}
+`;
+
+exports[`User progress batch 5a contract (e2e) user-srs-review my reviews, mark as read, errors 1`] = `
+{
+  "my": {
+    "body": {
+      "data": {
+        "data": {
+          "pagination": {
+            "current": "number",
+            "pageSize": "number",
+            "totalItem": "number",
+            "totalPage": "number",
+          },
+          "results": [
+            {
+              "content": "null",
+              "contentId": "number",
+              "contentType": "string",
+              "id": "number",
+              "isRead": "boolean",
+              "message": "contract-5a",
+              "userId": "number",
+            },
+          ],
+        },
+        "message": "Lấy danh sách SRS thành công",
+        "statusCode": 200,
+      },
+      "message": "GET_SUCCESS",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "read": {
+    "body": {
+      "data": {
+        "data": {
+          "contentId": "number",
+          "contentType": "string",
+          "createdAt": "string",
+          "id": "number",
+          "incorrectStreak": "number",
+          "isLeech": "boolean",
+          "isRead": "boolean",
+          "message": "contract-5a",
+          "nextReviewDate": "string",
+          "srsLevel": "number",
+          "updatedAt": "string",
+          "userId": "number",
+        },
+        "message": "Cập nhật SRS thành công",
+        "statusCode": 200,
+      },
+      "message": "UPDATE_SUCCESS",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "readInvalidId": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu SRS không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu SRS không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+  "readNotFound": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bản ghi SRS",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bản ghi SRS",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+}
+`;
