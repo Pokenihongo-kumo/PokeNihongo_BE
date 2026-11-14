@@ -33,7 +33,7 @@ import { TranslationService } from '../translation/translation.service'
 import { LanguagesService } from '../languages/languages.service'
 import { MeaningService } from '../meaning/meaning.service'
 import { LessonRepo } from '../lesson/lesson.repo'
-import { UserExerciseAttemptRepository } from '../user-exercise-attempt/user-exercise-attempt.repo'
+import { UserExerciseAttemptRepo } from '../user-exercise-attempt/user-exercise-attempt.repo'
 import { ExercisesService } from '../exercises/exercises.service'
 
 @Injectable()
@@ -49,7 +49,7 @@ export class LessonContentService {
     private readonly languagesService: LanguagesService,
     private readonly meaningService: MeaningService,
     private readonly lessonRepository: LessonRepo,
-    private readonly userExerciseAttemptRepository: UserExerciseAttemptRepository,
+    private readonly userExerciseAttemptRepository: UserExerciseAttemptRepo,
     private readonly exercisesService: ExercisesService
   ) {}
 

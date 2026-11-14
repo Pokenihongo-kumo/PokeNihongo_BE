@@ -9,7 +9,7 @@ import {
   UserExerciseAttemptListResSchema,
   LatestExerciseAttemptsByLessonResSchema,
   CheckExerciseCompletionBodySchema
-} from '../entities/user-exercise-attempt.entities'
+} from '../entities/user-exercise-attempt.entity'
 
 export class CreateUserExerciseAttemptBodyDTO extends createZodDto(
   CreateUserExerciseAttemptBodySchema

@@ -1,13 +1,13 @@
 import {
   LatestExerciseAttemptType,
   UserExerciseAttemptType
-} from '@/modules/user-exercise-attempt/entities/user-exercise-attempt.entities'
+} from '@/modules/user-exercise-attempt/entities/user-exercise-attempt.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
 import { LessonContentsType } from '@prisma/client'
 
 @Injectable()
-export class UserExerciseAttemptRepository {
+export class UserExerciseAttemptRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(params: {

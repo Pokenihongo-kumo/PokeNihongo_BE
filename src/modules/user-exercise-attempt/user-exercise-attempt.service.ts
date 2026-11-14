@@ -4,7 +4,7 @@ import {
   GetUserExerciseAttemptListQueryType,
   UpdateUserExerciseAttemptBodyType,
   LatestExerciseAttemptsByLessonResType
-} from '@/modules/user-exercise-attempt/entities/user-exercise-attempt.entities'
+} from '@/modules/user-exercise-attempt/entities/user-exercise-attempt.entity'
 import {
   InvalidUserExerciseAttemptDataException,
   UserExerciseAttemptNotFoundException,
@@ -19,7 +19,7 @@ import {
   EXERCISES_MESSAGE,
   USER_EXERCISE_ATTEMPT_MESSAGE
 } from '@/common/constants/message'
-import { UserExerciseAttemptRepository } from '@/modules/user-exercise-attempt/user-exercise-attempt.repo'
+import { UserExerciseAttemptRepo } from '@/modules/user-exercise-attempt/user-exercise-attempt.repo'
 import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
 import { UserAnswerLogService } from '@/modules/user-answer-log/user-answer-log.service'
 import { UserProgressService } from '@/modules/user-progress/user-progress.service'
@@ -42,7 +42,7 @@ export class UserExerciseAttemptService {
   private readonly logger = new Logger(UserExerciseAttemptService.name)
 
   constructor(
-    private readonly userExerciseAttemptRepository: UserExerciseAttemptRepository,
+    private readonly userExerciseAttemptRepository: UserExerciseAttemptRepo,
     private readonly questionBankService: QuestionBankService,
     private readonly userAnswerLogService: UserAnswerLogService,
     private readonly userProgressService: UserProgressService,
