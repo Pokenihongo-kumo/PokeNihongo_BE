@@ -1,0 +1,553 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`User progress batch 5d contract (e2e) a second attempt: abandon (no body), then delete 1`] = `
+{
+  "abandon": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "id": "number",
+        "score": "number",
+        "status": "string",
+        "testId": "number",
+        "time": "number",
+        "updatedAt": "string",
+        "userId": "number",
+      },
+      "message": "Đã đánh dấu bài test là bỏ dở",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "remove": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "id": "number",
+        "score": "number",
+        "status": "string",
+        "testId": "number",
+        "time": "number",
+        "updatedAt": "string",
+        "userId": "number",
+      },
+      "message": "Xóa lần thử bài test thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "second": {
+    "body": {
+      "data": {
+        "answeredQuestions": "number",
+        "description": "null",
+        "id": "number",
+        "name": "string",
+        "testSets": [
+          {
+            "audioUrl": "null",
+            "content": "null",
+            "description": "null",
+            "id": "number",
+            "name": "string",
+            "testSetQuestionBanks": [
+              {
+                "id": "number",
+                "questionBank": {
+                  "answers": [
+                    {
+                      "answer": "string",
+                      "id": "number",
+                    },
+                  ],
+                  "audioUrl": "null",
+                  "id": "number",
+                  "pronunciation": "null",
+                  "question": "string",
+                  "questionType": "string",
+                },
+                "questionOrder": "number",
+              },
+            ],
+            "testType": "string",
+          },
+        ],
+        "testType": "string",
+        "time": "number",
+        "totalQuestions": "number",
+        "userTestAttemptId": "number",
+      },
+      "message": "Lấy thông tin bài test thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`User progress batch 5d contract (e2e) errors 1`] = `
+{
+  "abandonMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy lần thử bài test",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy lần thử bài test",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "answerInvalidBody": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid format",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Định dạng không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "answerMissingAttempt": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu log câu trả lời test không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Dữ liệu log câu trả lời test không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+  "checkMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy lần thử bài test",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy lần thử bài test",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "lessonReviewMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy lần thử bài test",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy lần thử bài test",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "myBadPageSize": {
+    "en": {
+      "body": {
+        "error": "INTERNAL_SERVER_ERROR",
+        "message": "An error occurred",
+        "statusCode": 500,
+      },
+      "httpStatus": 500,
+    },
+    "vi": {
+      "body": {
+        "error": "INTERNAL_SERVER_ERROR",
+        "message": "Đã xảy ra lỗi",
+        "statusCode": 500,
+      },
+      "httpStatus": 500,
+    },
+  },
+  "openInvalidId": {
+    "en": {
+      "body": {
+        "error": "INTERNAL_SERVER_ERROR",
+        "message": "An error occurred",
+        "statusCode": 500,
+      },
+      "httpStatus": 500,
+    },
+    "vi": {
+      "body": {
+        "error": "INTERNAL_SERVER_ERROR",
+        "message": "Đã xảy ra lỗi",
+        "statusCode": 500,
+      },
+      "httpStatus": 500,
+    },
+  },
+  "openNoUserTest": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "UserTest not found",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Không tìm thấy UserTest",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+  "placementMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy lần thử bài test",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy lần thử bài test",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "reviewMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy lần thử bài test",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy lần thử bài test",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "statusInvalidId": {
+    "en": {
+      "body": {
+        "error": "INTERNAL_SERVER_ERROR",
+        "message": "An error occurred",
+        "statusCode": 500,
+      },
+      "httpStatus": 500,
+    },
+    "vi": {
+      "body": {
+        "error": "INTERNAL_SERVER_ERROR",
+        "message": "Đã xảy ra lỗi",
+        "statusCode": 500,
+      },
+      "httpStatus": 500,
+    },
+  },
+  "submitInvalidBody": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid format",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Định dạng không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "submitMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy lần thử bài test",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy lần thử bài test",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+}
+`;
+
+exports[`User progress batch 5d contract (e2e) my tests, open, answer, check, submit, review, status 1`] = `
+{
+  "answer": {
+    "body": {
+      "data": {
+        "answerId": "number",
+        "createdAt": "string",
+        "id": "number",
+        "isCorrect": "boolean",
+        "questionBankId": "number",
+        "updatedAt": "string",
+        "userTestAttemptId": "number",
+      },
+      "message": "Tạo log câu trả lời test thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "check": {
+    "body": {
+      "data": {
+        "allCorrect": "boolean",
+        "answeredQuestions": "number",
+        "isCompleted": "boolean",
+        "status": "string",
+        "totalQuestions": "number",
+        "unansweredQuestions": "number",
+      },
+      "message": "Chúc mừng! Bạn đã hoàn thành bài test và trả lời đúng hết",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "my": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "id": "number",
+            "limit": "number",
+            "status": "string",
+            "test": {
+              "description": "null",
+              "id": "number",
+              "levelN": "number",
+              "limit": "number",
+              "name": "string",
+              "price": "null",
+              "status": "string",
+              "testType": "string",
+            },
+            "userId": "number",
+          },
+        ],
+      },
+      "message": "Lấy danh sách UserTest thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "myOfTest": {
+    "body": {
+      "error": "INTERNAL_SERVER_ERROR",
+      "message": "Đã xảy ra lỗi",
+      "statusCode": 500,
+    },
+    "httpStatus": 500,
+  },
+  "open": {
+    "body": {
+      "data": {
+        "answeredQuestions": "number",
+        "description": "null",
+        "id": "number",
+        "name": "string",
+        "testSets": [
+          {
+            "audioUrl": "null",
+            "content": "null",
+            "description": "null",
+            "id": "number",
+            "name": "string",
+            "testSetQuestionBanks": [
+              {
+                "id": "number",
+                "questionBank": {
+                  "answers": [
+                    {
+                      "answer": "string",
+                      "id": "number",
+                    },
+                  ],
+                  "audioUrl": "null",
+                  "id": "number",
+                  "pronunciation": "null",
+                  "question": "string",
+                  "questionType": "string",
+                },
+                "questionOrder": "number",
+              },
+            ],
+            "testType": "string",
+          },
+        ],
+        "testType": "string",
+        "time": "number",
+        "totalQuestions": "number",
+        "userTestAttemptId": "number",
+      },
+      "message": "Lấy thông tin bài test thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "review": {
+    "body": {
+      "data": {
+        "answeredCorrect": "number",
+        "answeredInCorrect": "number",
+        "description": "null",
+        "id": "number",
+        "name": "string",
+        "score": "number",
+        "status": "string",
+        "testSets": [
+          {
+            "audioUrl": "null",
+            "content": "null",
+            "description": "null",
+            "id": "number",
+            "name": "string",
+            "testSetQuestionBanks": [
+              {
+                "id": "number",
+                "questionBank": {
+                  "answers": [
+                    {
+                      "answer": "string",
+                      "explantion": "string",
+                      "id": "number",
+                      "type": "string",
+                    },
+                  ],
+                  "id": "number",
+                  "isCorrect": "boolean",
+                  "question": "string",
+                },
+                "questionOrder": "number",
+              },
+            ],
+            "testType": "string",
+          },
+        ],
+        "testType": "string",
+        "time": "number",
+        "totalQuestions": "number",
+      },
+      "message": "Lấy thông tin đáp án bài test thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "status": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "id": "number",
+        "score": "number",
+        "status": "string",
+        "testId": "number",
+        "time": "number",
+        "updatedAt": "string",
+        "userId": "number",
+      },
+      "message": "Lấy trạng thái bài test thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "submit": {
+    "body": {
+      "data": {
+        "allCorrect": "boolean",
+        "answeredQuestions": "number",
+        "isCompleted": "boolean",
+        "score": "number",
+        "status": "string",
+        "totalQuestions": "number",
+        "unansweredQuestions": "number",
+      },
+      "message": "Chúc mừng! Bạn đã hoàn thành bài test và trả lời đúng hết",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
