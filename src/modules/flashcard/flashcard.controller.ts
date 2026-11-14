@@ -25,7 +25,7 @@ import {
   FlashcardReviewQuery,
   UpdateFlashcardCardBody,
   UpdateFlashcardDeckBody
-} from './entities/flashcard.entities'
+} from './entities/flashcard.entity'
 import { FlashcardService } from './flashcard.service'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
@@ -146,11 +146,11 @@ export class FlashcardController {
   @ApiResponse({ status: 200, type: MessageResDTO })
   @ZodSerializerDto(MessageResDTO)
   async getDeckById(
-    @Param('deckId') id: number,
+    @Param() { deckId }: FlashcardDeckParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.flashcardService.getDeckById(Number(id), userId, lang ?? undefined)
+    return this.flashcardService.getDeckById(deckId, userId, lang ?? undefined)
   }
 
   @Get('decks/:deckId/export')
@@ -171,13 +171,13 @@ export class FlashcardController {
   @ApiBody({ type: UpdateFlashcardDeckSwaggerDTO })
   @ZodSerializerDto(MessageResDTO)
   async updateDeck(
-    @Param('deckId') id: string,
+    @Param() { deckId }: FlashcardDeckParamsDTO,
     @Body() body: UpdateFlashcardDeckBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
     return this.flashcardService.updateDeck(
-      Number(id),
+      deckId,
       userId,
       body as UpdateFlashcardDeckBody,
       lang ?? undefined
@@ -202,19 +202,32 @@ export class FlashcardController {
     )
   }
 
+  // The app's delete deck (src/services/flashcard deleteDeck): soft delete
+  @Delete('decks/:deckId')
+  @ApiOperation({ summary: 'Xóa bộ flashcard' })
+  @ApiResponse({ status: 200, type: MessageResDTO })
+  @ZodSerializerDto(MessageResDTO)
+  async deleteDeck(
+    @Param() { deckId }: FlashcardDeckParamsDTO,
+    @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string
+  ) {
+    return this.flashcardService.deleteDeck(deckId, userId, lang ?? undefined)
+  }
+
   @Get('decks/:deckId/cards')
   @ApiOperation({ summary: 'Lấy danh sách thẻ trong bộ flashcard' })
   @ApiResponse({ status: 200, type: PaginationResponseDTO })
   @ApiQuery({ type: GetFlashcardCardListQuerySwaggerDTO })
   @ZodSerializerDto(PaginationResponseDTO)
   async getDeckCards(
-    @Param('deckId') id: string,
+    @Param() { deckId }: FlashcardDeckParamsDTO,
     @Query() query: GetFlashcardCardListQueryDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
     return this.flashcardService.getDeckCards(
-      Number(id),
+      deckId,
       userId,
       query as GetFlashcardCardListQuery,
       lang ?? undefined
@@ -227,13 +240,13 @@ export class FlashcardController {
   @ApiBody({ type: CreateFlashcardCardSwaggerDTO })
   @ZodSerializerDto(MessageResDTO)
   async createCard(
-    @Param('deckId') id: string,
+    @Param() { deckId }: FlashcardDeckParamsDTO,
     @Body() body: CreateFlashcardCardBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
     return this.flashcardService.createCard(
-      Number(id),
+      deckId,
       userId,
       body as CreateFlashcardCardBody,
       lang ?? undefined

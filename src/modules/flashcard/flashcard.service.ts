@@ -15,7 +15,7 @@ import {
   ImportFlashcardCardsBody,
   UpdateFlashcardCardBody,
   UpdateFlashcardDeckBody
-} from './entities/flashcard.entities'
+} from './entities/flashcard.entity'
 import {
   FlashcardCardNotFoundException,
   FlashcardContentAlreadyExistsException,
@@ -23,7 +23,7 @@ import {
   InvalidFlashcardImportException
 } from './dto/flashcard.error'
 import { FlashcardMessage } from '@/i18n/message-keys'
-import { FlashcardRepository } from './flashcard.repo'
+import { FlashcardRepo } from './flashcard.repo'
 import { I18nService } from '@/i18n/i18n.service'
 import { Injectable, Logger } from '@nestjs/common'
 import {
@@ -40,7 +40,7 @@ export class FlashcardService {
   private readonly logger = new Logger(FlashcardService.name)
 
   constructor(
-    private readonly flashcardRepository: FlashcardRepository,
+    private readonly flashcardRepository: FlashcardRepo,
     private readonly srsReviewService: SrsReviewService,
     private readonly i18n: I18nService,
     private readonly translationHelper: TranslationHelperService

@@ -7,7 +7,7 @@ import {
   GetFlashcardDeckListQuery,
   UpdateFlashcardCardBody,
   UpdateFlashcardDeckBody
-} from './entities/flashcard.entities'
+} from './entities/flashcard.entity'
 import { Injectable } from '@nestjs/common'
 import {
   Prisma,
@@ -57,7 +57,7 @@ const CARD_RELATION_INCLUDE = {
 } satisfies Prisma.FlashcardCardInclude
 
 @Injectable()
-export class FlashcardRepository {
+export class FlashcardRepo {
   constructor(private readonly prisma: PrismaService) {}
 
   async createDeck(userId: number, data: CreateFlashcardDeckBody) {

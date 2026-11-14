@@ -742,7 +742,16 @@ export const enMessages = {
     GET_LIBRARY_SUCCESS: 'Flashcard library fetched successfully',
     GET_REVIEW_LIST_SUCCESS: 'Flashcard review queue fetched successfully',
     REVIEW_CARD_SUCCESS: 'Flashcard review result recorded successfully',
-    EXPORT_DECK_SUCCESS: 'Flashcard deck exported successfully'
+    EXPORT_DECK_SUCCESS: 'Flashcard deck exported successfully',
+    CONTENT_NOT_FOUND: '{contentType} with id {id} does not exist',
+    UPDATE_ONE_FIELD: 'Update at least one field',
+    CUSTOM_NOT_SUPPORTED: 'CUSTOM is not supported',
+    METADATA_REQUIRED: 'Without an id, give metadata to make a custom card',
+    IMPORT_ITEMS_REQUIRED: 'Import at least one item',
+    INVALID_DECK_ID: 'Invalid flashcard deck ID',
+    INVALID_CARD_ID: 'Invalid flashcard ID',
+    INVALID_PAGE: 'Page must be a positive integer',
+    INVALID_PAGE_SIZE: 'Page size must be a positive integer'
   },
   role: {
     CREATE_SUCCESS: 'Role created successfully',

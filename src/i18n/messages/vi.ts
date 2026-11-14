@@ -754,7 +754,16 @@ export const viMessages = {
     GET_LIBRARY_SUCCESS: 'Lấy thư viện flashcard thành công',
     GET_REVIEW_LIST_SUCCESS: 'Lấy danh sách thẻ đến hạn ôn tập thành công',
     REVIEW_CARD_SUCCESS: 'Cập nhật kết quả ôn tập thành công',
-    EXPORT_DECK_SUCCESS: 'Xuất dữ liệu flashcard thành công'
+    EXPORT_DECK_SUCCESS: 'Xuất dữ liệu flashcard thành công',
+    CONTENT_NOT_FOUND: '{contentType} với id {id} không tồn tại trong hệ thống',
+    UPDATE_ONE_FIELD: 'Ít nhất phải cập nhật một trường',
+    CUSTOM_NOT_SUPPORTED: 'CUSTOM không được hỗ trợ',
+    METADATA_REQUIRED: 'Khi không có id, phải cung cấp metadata để tạo card tùy chỉnh',
+    IMPORT_ITEMS_REQUIRED: 'Cần ít nhất một phần tử để import',
+    INVALID_DECK_ID: 'ID bộ flashcard không hợp lệ',
+    INVALID_CARD_ID: 'ID thẻ flashcard không hợp lệ',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương'
   },
   role: {
     CREATE_SUCCESS: 'Tạo vai trò thành công',
