@@ -1,183 +1,156 @@
 import {
-  CreateAIConversationRoomBodyType,
-  GetAIConversationRoomByIdParamsType,
-  GetAIConversationRoomListQueryType,
-  UpdateAIConversationRoomBodyType
-} from '@/modules/ai-conversation-room/entities/ai-conversation-room.entities'
-import {
-  InvalidAIConversationRoomDataException,
-  AIConversationRoomNotFoundException
+  AIConversationTakenException,
+  AIConversationRoomNotFoundException,
+  InvalidAIConversationRoomDataException
 } from '@/modules/ai-conversation-room/dto/ai-conversation-room.error'
-import { AIConversationRoomRepository } from '@/modules/ai-conversation-room/ai-conversation-room.repo'
-import { isNotFoundPrismaError } from '@/shared/helpers'
-import { Injectable, Logger, HttpException } from '@nestjs/common'
+import {
+  CreateAIConversationRoomInput,
+  GetAIConversationRoomListQueryType,
+  UpdateAIConversationRoomData
+} from '@/modules/ai-conversation-room/entities/ai-conversation-room.entity'
+import { AIConversationRoomRepo } from '@/modules/ai-conversation-room/ai-conversation-room.repo'
+import { I18nService } from '@/i18n/i18n.service'
+import { AIConversationRoomMessage as M } from '@/i18n/message-keys'
+import { toPaginationMeta } from '@/shared/utils/pagination'
+import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
 
 @Injectable()
 export class AIConversationRoomService {
   private readonly logger = new Logger(AIConversationRoomService.name)
 
   constructor(
-    private readonly aiConversationRoomRepository: AIConversationRoomRepository
+    private readonly aiConversationRoomRepository: AIConversationRoomRepo,
+    private readonly i18nService: I18nService
   ) {}
 
-  async create(body: CreateAIConversationRoomBodyType) {
+  // Creates the room of a conversation, or updates the user's own one. The
+  // kaiwa gateway calls this too
+  async create(body: CreateAIConversationRoomInput, lang: string = 'vi') {
     try {
-      const room = await this.aiConversationRoomRepository.upsert({
-        userId: body.userId,
-        conversationId: body.conversationId,
-        title: body.title || null,
-        voiceName: body.voiceName || 'ja-JP-Wavenet-A'
-      })
-
+      const owner = await this.aiConversationRoomRepository.findOwnerOfConversation(
+        body.conversationId
+      )
+      if (owner !== null && owner !== body.userId)
+        throw new AIConversationTakenException()
+      const room = await this.aiConversationRoomRepository.upsert(body)
       return {
+        statusCode: 201,
         data: room,
-        message: 'Tạo phòng hội thoại AI thành công'
+        message: this.i18nService.translate(M.CREATE_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error('Error creating AI conversation room:', error)
-      if (
-        error instanceof HttpException ||
-        error.message?.includes('không tồn tại') ||
-        error.message?.includes('đã tồn tại')
-      ) {
-        throw error
-      }
-      throw InvalidAIConversationRoomDataException
+      throw this.toRoomError(error)
     }
   }
 
-  async findAll(query: GetAIConversationRoomListQueryType, userId?: number) {
-    try {
-      const { currentPage, pageSize, isArchived } = query
-
-      this.logger.log(
-        `[AIConversationRoom] findAll - userId: ${userId}, currentPage: ${currentPage}, pageSize: ${pageSize}`
-      )
-
-      const result = await this.aiConversationRoomRepository.findMany({
-        currentPage,
-        pageSize,
-        userId,
-        isArchived
-      })
-
-      this.logger.log(
-        `[AIConversationRoom] Found ${result.items.length} rooms, total: ${result.total}`
-      )
-
-      return {
-        statusCode: 200,
-        message: 'Lấy danh sách phòng hội thoại AI thành công',
-        data: {
-          results: result.items,
-          pagination: {
-            current: result.page,
-            pageSize: result.limit,
-            totalPage: Math.ceil(result.total / result.limit),
-            totalItem: result.total
-          }
-        }
-      }
-    } catch (error) {
-      this.logger.error(
-        `[AIConversationRoom] Error in findAll: ${error.message}`,
-        error.stack
-      )
-      throw error
+  async findAll(query: GetAIConversationRoomListQueryType, userId: number, lang = 'vi') {
+    const { currentPage, pageSize, isArchived } = query
+    const { items, total } = await this.aiConversationRoomRepository.findMany({
+      currentPage,
+      pageSize,
+      userId,
+      isArchived
+    })
+    return {
+      statusCode: 200,
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
+      data: { results: items, pagination: toPaginationMeta(currentPage, pageSize, total) }
     }
   }
 
-  async findByConversationId(conversationId: string, userId?: number) {
+  // data is null when the user has no room for it (the gateway reads that)
+  async findByConversationId(conversationId: string, userId?: number, lang = 'vi') {
     const room = await this.aiConversationRoomRepository.findByConversationId(
       conversationId,
       userId
     )
-
     return {
       statusCode: 200,
-      message: 'Lấy thông tin phòng hội thoại AI thành công',
+      message: this.i18nService.translate(M.GET_SUCCESS, lang),
       data: room
     }
   }
 
-  async findOne(params: GetAIConversationRoomByIdParamsType) {
-    const room = await this.aiConversationRoomRepository.findUnique({
-      id: params.id
-    })
-
-    if (!room) {
-      throw AIConversationRoomNotFoundException
-    }
-
+  async findOne(id: string, userId: number, lang = 'vi') {
+    const room = await this.ownRoom(id, userId)
     return {
+      statusCode: 200,
       data: room,
-      message: 'Lấy thông tin phòng hội thoại AI thành công'
+      message: this.i18nService.translate(M.GET_SUCCESS, lang)
     }
   }
 
-  async update(id: string, body: UpdateAIConversationRoomBodyType) {
+  async update(
+    id: string,
+    userId: number,
+    body: UpdateAIConversationRoomData,
+    lang = 'vi'
+  ) {
     try {
+      await this.ownRoom(id, userId)
       const room = await this.aiConversationRoomRepository.update({ id }, body)
-
       return {
+        statusCode: 200,
         data: room,
-        message: 'Cập nhật phòng hội thoại AI thành công'
+        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error('Error updating AI conversation room:', error)
-      if (isNotFoundPrismaError(error)) {
-        throw AIConversationRoomNotFoundException
-      }
-      if (error instanceof HttpException || error.message?.includes('không tồn tại')) {
-        throw error
-      }
-      throw InvalidAIConversationRoomDataException
+      throw this.toRoomError(error)
     }
   }
 
+  // The kaiwa gateway: title, last message
   async updateByConversationId(
     conversationId: string,
-    body: UpdateAIConversationRoomBodyType
+    body: UpdateAIConversationRoomData,
+    lang = 'vi'
   ) {
     try {
       const room = await this.aiConversationRoomRepository.update(
         { conversationId },
         body
       )
-
       return {
+        statusCode: 200,
         data: room,
-        message: 'Cập nhật phòng hội thoại AI thành công'
+        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error('Error updating AI conversation room by conversationId:', error)
-      if (isNotFoundPrismaError(error)) {
-        throw AIConversationRoomNotFoundException
-      }
-      if (error instanceof HttpException || error.message?.includes('không tồn tại')) {
-        throw error
-      }
-      throw InvalidAIConversationRoomDataException
+      throw this.toRoomError(error)
     }
   }
 
-  async remove(id: string) {
+  async remove(id: string, userId: number, lang = 'vi') {
     try {
-      const room = await this.aiConversationRoomRepository.delete({ id })
-
+      await this.ownRoom(id, userId)
+      const room = await this.aiConversationRoomRepository.delete(id)
       return {
+        statusCode: 200,
         data: room,
-        message: 'Xóa phòng hội thoại AI thành công'
+        message: this.i18nService.translate(M.DELETE_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error('Error deleting AI conversation room:', error)
-      if (isNotFoundPrismaError(error)) {
-        throw AIConversationRoomNotFoundException
-      }
-      if (error instanceof HttpException || error.message?.includes('không tồn tại')) {
-        throw error
-      }
-      throw InvalidAIConversationRoomDataException
+      throw this.toRoomError(error)
     }
   }
+
+  //#region helpers
+  // Another user's room is "not found"
+  private async ownRoom(id: string, userId: number) {
+    const room = await this.aiConversationRoomRepository.findOwned(id, userId)
+    if (!room) throw new AIConversationRoomNotFoundException()
+    return room
+  }
+
+  private toRoomError(error: unknown): HttpException {
+    if (error instanceof HttpException) return error
+    this.logger.error(
+      'AI conversation room request failed',
+      error instanceof Error ? error.stack : error
+    )
+    if (isNotFoundPrismaError(error)) return new AIConversationRoomNotFoundException()
+    return new InvalidAIConversationRoomDataException()
+  }
+  //#endregion
 }

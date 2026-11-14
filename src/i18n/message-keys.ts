@@ -548,6 +548,41 @@ export const DashboardMessage = {
   INVALID_YEAR: 'dashboard.INVALID_YEAR'
 } as const
 
+export const AIConversationRoomMessage = {
+  CREATE_SUCCESS: 'ai_conversation_room.CREATE_SUCCESS',
+  GET_SUCCESS: 'ai_conversation_room.GET_SUCCESS',
+  GET_LIST_SUCCESS: 'ai_conversation_room.GET_LIST_SUCCESS',
+  UPDATE_SUCCESS: 'ai_conversation_room.UPDATE_SUCCESS',
+  DELETE_SUCCESS: 'ai_conversation_room.DELETE_SUCCESS',
+  NOT_FOUND: 'ai_conversation_room.NOT_FOUND',
+  INVALID_DATA: 'ai_conversation_room.INVALID_DATA',
+  INVALID_ID: 'ai_conversation_room.INVALID_ID',
+  INVALID_CONVERSATION_ID: 'ai_conversation_room.INVALID_CONVERSATION_ID',
+  INVALID_PAGE: 'ai_conversation_room.INVALID_PAGE',
+  INVALID_PAGE_SIZE: 'ai_conversation_room.INVALID_PAGE_SIZE',
+  CONVERSATION_TAKEN: 'ai_conversation_room.CONVERSATION_TAKEN',
+  INVALID_FLAG: 'ai_conversation_room.INVALID_FLAG',
+  INVALID_TITLE: 'ai_conversation_room.INVALID_TITLE',
+  INVALID_VOICE: 'ai_conversation_room.INVALID_VOICE'
+} as const
+
+export const UserAIConversationMessage = {
+  CREATE_SUCCESS: 'user_ai_conversation.CREATE_SUCCESS',
+  GET_SUCCESS: 'user_ai_conversation.GET_SUCCESS',
+  GET_LIST_SUCCESS: 'user_ai_conversation.GET_LIST_SUCCESS',
+  UPDATE_SUCCESS: 'user_ai_conversation.UPDATE_SUCCESS',
+  DELETE_SUCCESS: 'user_ai_conversation.DELETE_SUCCESS',
+  NOT_FOUND: 'user_ai_conversation.NOT_FOUND',
+  INVALID_DATA: 'user_ai_conversation.INVALID_DATA',
+  INVALID_ID: 'user_ai_conversation.INVALID_ID',
+  INVALID_CONVERSATION_ID: 'user_ai_conversation.INVALID_CONVERSATION_ID',
+  INVALID_PAGE: 'user_ai_conversation.INVALID_PAGE',
+  INVALID_PAGE_SIZE: 'user_ai_conversation.INVALID_PAGE_SIZE',
+  DELETE_BY_CONVERSATION_SUCCESS: 'user_ai_conversation.DELETE_BY_CONVERSATION_SUCCESS',
+  INVALID_ROLE: 'user_ai_conversation.INVALID_ROLE',
+  INVALID_MESSAGE: 'user_ai_conversation.INVALID_MESSAGE'
+} as const
+
 export const LessonCategoryMessage = {
   CREATE_SUCCESS: 'lesson_category.CREATE_SUCCESS',
   UPDATE_SUCCESS: 'lesson_category.UPDATE_SUCCESS',

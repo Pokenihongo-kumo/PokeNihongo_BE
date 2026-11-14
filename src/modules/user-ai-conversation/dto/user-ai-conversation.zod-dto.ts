@@ -1,11 +1,12 @@
 import { createZodDto } from 'nestjs-zod'
 import {
   CreateUserAIConversationBodySchema,
-  UpdateUserAIConversationBodySchema,
+  GetUserAIConversationByConversationParamsSchema,
   GetUserAIConversationByIdParamsSchema,
   GetUserAIConversationListQuerySchema,
-  UserAIConversationSchema
-} from '../entities/user-ai-conversation.entities'
+  UpdateUserAIConversationBodySchema,
+  UserAIConversationResSchema
+} from '../entities/user-ai-conversation.entity'
 
 export class CreateUserAIConversationBodyDTO extends createZodDto(
   CreateUserAIConversationBodySchema
@@ -16,7 +17,10 @@ export class UpdateUserAIConversationBodyDTO extends createZodDto(
 export class GetUserAIConversationByIdParamsDTO extends createZodDto(
   GetUserAIConversationByIdParamsSchema
 ) {}
+export class GetUserAIConversationByConversationParamsDTO extends createZodDto(
+  GetUserAIConversationByConversationParamsSchema
+) {}
 export class GetUserAIConversationListQueryDTO extends createZodDto(
   GetUserAIConversationListQuerySchema
 ) {}
-export class UserAIConversationResDTO extends createZodDto(UserAIConversationSchema) {}
+export class UserAIConversationResDTO extends createZodDto(UserAIConversationResSchema) {}
