@@ -612,6 +612,9 @@ export const jaMessages = {
     INVALID_ROLE: 'ロールは USER か AI です',
     INVALID_MESSAGE: 'メッセージは空にできません'
   },
+  mail: {
+    UNAVAILABLE: '現在メールを送信できません。しばらくしてから再度お試しください'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'レッスンカテゴリを作成しました',
     UPDATE_SUCCESS: 'レッスンカテゴリを更新しました',

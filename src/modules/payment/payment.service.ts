@@ -19,6 +19,7 @@ import {
   ConflictException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
   forwardRef
 } from '@nestjs/common'
@@ -38,6 +39,8 @@ import { PaymentRepo } from './payment.repo'
 
 @Injectable()
 export class PaymentService {
+  private readonly logger = new Logger(PaymentService.name)
+
   constructor(
     private readonly paymentRepo: PaymentRepo,
     private readonly invoiceRepo: InvoiceRepo,
@@ -335,8 +338,15 @@ export class PaymentService {
     if (!claimed) return
     // Delegate subscription creation + job cleanup to invoice service
     await this.invoiceService.updateInvoiceWhenPaymentSuccess(payment.invoiceId)
-    // Gửi mail (tạm thời no-op)
-    this.sendMailPayment(payment.invoiceId)
+    // The confirmation mail is a courtesy: the plan is granted either way. Its
+    // failure (mail provider down) is logged, never left as an unhandled rejection
+    this.sendMailPayment(payment.invoiceId).catch((error: unknown) =>
+      this.logger.error(
+        `Payment mail for invoice ${payment.invoiceId} failed`,
+        // name only: the provider message may repeat the address
+        error instanceof Error ? error.name : 'error'
+      )
+    )
   }
 
   // PayOS says the order was cancelled/expired/failed: close it if it is still pending

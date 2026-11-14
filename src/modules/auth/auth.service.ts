@@ -1,4 +1,6 @@
 import { BullQueueService } from '@/3rdService/bull/bull-queue.service'
+import { codeOfStoredOtp } from '@/3rdService/mail/otp-value'
+import { maskEmail } from '@/common/utils/mask'
 import { MailService } from '@/3rdService/mail/mail.service'
 import { UploadService } from '@/3rdService/upload/upload.service'
 import { TypeOfVerificationCode } from '@/common/constants/auth.constant'
@@ -328,7 +330,7 @@ export class AuthService {
     const template = 'otp'
     const content = 'Mã OTP của bạn là: '
     const bodyContent = 'Vui lòng nhập mã OTP để làm bước tiếp theo.'
-    this.mailService.generateAndSendOtp(
+    await this.mailService.generateAndSendOtp(
       registerEmailLowerCase,
       template,
       content,
@@ -540,7 +542,7 @@ export class AuthService {
     const template = 'otp'
     const content = 'XÁC THỰC MAIL CỦA BẠN: '
     const bodyContent = 'Vui lòng nhập nhấn nút XÁC THỰC để xác thực tài khoản của bạn.'
-    this.mailService.generateAndSendOtp(email, template, content, bodyContent)
+    await this.mailService.generateAndSendOtp(email, template, content, bodyContent)
 
     return {
       data: null,
@@ -563,7 +565,12 @@ export class AuthService {
       const template = 'otp'
       const content = 'MÃ OTP MAIL ĐĂNG KÝ CỦA BẠN: '
       const bodyContent = 'Vui lòng nhập mã OTP để tiếp tục bước tiếp theo.'
-      this.mailService.generateAndSendOtp(emailLower, template, content, bodyContent)
+      await this.mailService.generateAndSendOtp(
+        emailLower,
+        template,
+        content,
+        bodyContent
+      )
       return {
         statusCode: HttpStatus.OK,
         data: {
@@ -591,7 +598,7 @@ export class AuthService {
       const bodyContent = `Chúng tôi phát hiện lần đăng nhập đầu tiên từ thiết bị mới
       Vui lòng nhập mã OTP để xác thực thiết bị này.`
 
-      this.mailService.generateAndSendOtp(email, template, content, bodyContent)
+      await this.mailService.generateAndSendOtp(email, template, content, bodyContent)
 
       // Bước tiếp theo nằm ở `requiresOtp`, statusCode luôn là HTTP status (200)
       return {
@@ -623,12 +630,12 @@ export class AuthService {
   ) {
     try {
       const { email, code, type } = body
-      const storedOtp = await this.redisClient.get(email)
+      const storedOtp = codeOfStoredOtp(await this.redisClient.get(email))
 
       if (storedOtp === code) {
         // Xóa OTP sau khi xác thực thành công
         await this.redisClient.del(email)
-        this.logger.log(`OTP verified and deleted for ${email}`)
+        this.logger.log(`OTP verified and deleted for ${maskEmail(email)}`)
 
         // neu type === 'login' thi tao device
         if (type === TypeOfVerificationCode.LOGIN) {
@@ -653,7 +660,9 @@ export class AuthService {
 
       throw new InvalidOTPExceptionForEmail()
     } catch (error) {
-      this.logger.error(`Failed to verify OTP for ${body.email}: ${error.message}`)
+      this.logger.error(
+        `Failed to verify OTP for ${maskEmail(body.email)}: ${error.message}`
+      )
       throw error
     }
   }

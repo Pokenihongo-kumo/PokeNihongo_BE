@@ -584,6 +584,10 @@ export const UserAIConversationMessage = {
   INVALID_MESSAGE: 'user_ai_conversation.INVALID_MESSAGE'
 } as const
 
+export const MailMessage = {
+  UNAVAILABLE: 'mail.UNAVAILABLE'
+} as const
+
 export const LessonCategoryMessage = {
   CREATE_SUCCESS: 'lesson_category.CREATE_SUCCESS',
   UPDATE_SUCCESS: 'lesson_category.UPDATE_SUCCESS',

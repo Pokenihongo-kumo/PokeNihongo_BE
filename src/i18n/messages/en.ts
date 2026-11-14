@@ -590,6 +590,9 @@ export const enMessages = {
     INVALID_ROLE: 'Role must be USER or AI',
     INVALID_MESSAGE: 'The message cannot be empty'
   },
+  mail: {
+    UNAVAILABLE: 'Email cannot be sent right now, please try again later'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Lesson category created successfully',
     UPDATE_SUCCESS: 'Lesson category updated successfully',
