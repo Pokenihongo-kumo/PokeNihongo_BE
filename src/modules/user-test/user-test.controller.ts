@@ -24,6 +24,7 @@ import {
   UpdateUserTestBodyDTO,
   GetUserTestByIdParamsDTO,
   GetUserTestListQueryDTO,
+  GetUserTestMyListQueryDTO,
   UserTestResDTO,
   UserTestListResDTO,
   UserTestMyListResDTO
@@ -53,8 +54,8 @@ export class UserTestController {
     description: 'Tạo UserTest thành công',
     type: UserTestResponseSwaggerDTO
   })
-  async create(@Body() body: CreateUserTestBodyDTO) {
-    return this.userTestService.create(body)
+  async create(@Body() body: CreateUserTestBodyDTO, @I18nLang() lang: string) {
+    return this.userTestService.create(body, lang)
   }
 
   @Get()
@@ -67,8 +68,8 @@ export class UserTestController {
     type: UserTestListResponseSwaggerDTO
   })
   @ZodSerializerDto(UserTestListResDTO)
-  async findAll(@Query() query: GetUserTestListQueryDTO) {
-    return this.userTestService.findAll(query)
+  async findAll(@Query() query: GetUserTestListQueryDTO, @I18nLang() lang: string) {
+    return this.userTestService.findAll(query, lang)
   }
 
   @Get('my')
@@ -82,19 +83,12 @@ export class UserTestController {
   })
   @ZodSerializerDto(UserTestMyListResDTO)
   async getMy(
-    @Query() query: any,
+    @Query() query: GetUserTestMyListQueryDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    // Map 'type' parameter to 'testType' for service
-    const { type, ...restQuery } = query
-    const queryParams: GetUserTestListQueryDTO = {
-      ...restQuery,
-      userId,
-      ...(type && { testType: type })
-    }
-
-    return this.userTestService.findAll(queryParams, lang)
+    const { type, ...rest } = query
+    return this.userTestService.findAll({ ...rest, userId, testType: type }, lang, true)
   }
 
   @Get(':id')
@@ -105,8 +99,8 @@ export class UserTestController {
     description: 'Lấy thông tin UserTest thành công',
     type: UserTestResponseSwaggerDTO
   })
-  async findOne(@Param('id') id: string) {
-    return this.userTestService.findOne(Number(id))
+  async findOne(@Param() { id }: GetUserTestByIdParamsDTO, @I18nLang() lang: string) {
+    return this.userTestService.findOne(id, lang)
   }
 
   @Put(':id')
@@ -117,8 +111,12 @@ export class UserTestController {
     description: 'Cập nhật UserTest thành công',
     type: UserTestResponseSwaggerDTO
   })
-  async update(@Param('id') id: string, @Body() body: UpdateUserTestBodyDTO) {
-    return this.userTestService.update(Number(id), body)
+  async update(
+    @Param() { id }: GetUserTestByIdParamsDTO,
+    @Body() body: UpdateUserTestBodyDTO,
+    @I18nLang() lang: string
+  ) {
+    return this.userTestService.update(id, body, lang)
   }
 
   @Delete(':id')
@@ -129,8 +127,8 @@ export class UserTestController {
     status: 200,
     description: 'Xóa UserTest thành công'
   })
-  async delete(@Param('id') id: string) {
-    return this.userTestService.delete(Number(id))
+  async delete(@Param() { id }: GetUserTestByIdParamsDTO, @I18nLang() lang: string) {
+    return this.userTestService.delete(id, lang)
   }
 
   @Post('init-all')
@@ -141,8 +139,8 @@ export class UserTestController {
     status: 200,
     description: 'Khởi tạo UserTest thành công'
   })
-  async initAllUsersTests() {
-    return this.userTestService.initAllUsersTests()
+  async initAllUsersTests(@I18nLang() lang: string) {
+    return this.userTestService.initAllUsersTests(lang)
   }
 
   @Post('auto-update-limit')

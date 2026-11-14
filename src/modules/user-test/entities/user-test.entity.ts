@@ -2,12 +2,26 @@ import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
 import { UserTestStatus, TestStatus } from '@prisma/client'
+import { UserTestMessage as M } from '@/i18n/message-keys'
+import { checkIdSchema } from '@/common/utils/id.validation'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
 
 // UserTestStatus enum schema
 export const UserTestStatusSchema = z.nativeEnum(UserTestStatus)
+
+const statusOf = z.nativeEnum(UserTestStatus, {
+  errorMap: () => ({ message: M.INVALID_STATUS })
+})
+const idOf = (key: string) =>
+  z.number({ invalid_type_error: key, required_error: key }).int(key).positive(key)
+const limitSchema = z
+  .number({ invalid_type_error: M.INVALID_LIMIT })
+  .int(M.INVALID_LIMIT)
+  .min(0, M.INVALID_LIMIT)
+  .nullable()
+  .optional()
 
 // TestInfo schema (simplified Test without timestamps, creatorId)
 export const TestInfoSchema = z.object({
@@ -44,18 +58,18 @@ export const UserTestWithTestSchema = z.object({
 // Create UserTest schema
 export const CreateUserTestBodySchema = z
   .object({
-    userId: z.number(),
-    testId: z.number(),
-    status: UserTestStatusSchema.optional().default(UserTestStatus.NOT_STARTED),
-    limit: z.number().int().min(0).nullable().optional()
+    userId: idOf(M.INVALID_USER_ID),
+    testId: idOf(M.INVALID_TEST_ID),
+    status: statusOf.optional().default(UserTestStatus.NOT_STARTED),
+    limit: limitSchema
   })
   .strict()
 
 // Update UserTest schema
 export const UpdateUserTestBodySchema = z
   .object({
-    status: UserTestStatusSchema.optional(),
-    limit: z.number().int().min(0).nullable().optional()
+    status: statusOf.optional(),
+    limit: limitSchema
   })
   .strict()
 
@@ -102,35 +116,36 @@ export const UserTestMyListResSchema = z
 
 // Params and Query schemas
 export const GetUserTestByIdParamsSchema = z
-  .object({
-    id: z.string().transform((val) => parseInt(val, 10))
-  })
+  .object({ id: checkIdSchema(M.INVALID_ID) })
   .strict()
 
-const OrderSchema = z.enum(['asc', 'desc'])
+const OrderSchema = z.enum(['asc', 'desc'], {
+  errorMap: () => ({ message: M.INVALID_ORDER })
+})
+const testTypeOf = z.nativeEnum(TestStatus, {
+  errorMap: () => ({ message: M.INVALID_TEST_TYPE })
+})
 
 export const GetUserTestListQuerySchema = z
   .object({
-    currentPage: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('1'),
-    pageSize: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('10'),
-    userId: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional(),
-    testId: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional(),
-    status: UserTestStatusSchema.optional(),
-    testType: z.nativeEnum(TestStatus).optional(),
+    currentPage: checkIdSchema(M.INVALID_PAGE).default(1),
+    pageSize: checkIdSchema(M.INVALID_PAGE_SIZE).default(10),
+    userId: checkIdSchema(M.INVALID_USER_ID).optional(),
+    testId: checkIdSchema(M.INVALID_TEST_ID).optional(),
+    status: statusOf.optional(),
+    testType: testTypeOf.optional(),
+    order: OrderSchema.optional().default('asc')
+  })
+  .strict()
+
+// The app's own tests: type is the test type, the user comes from the token
+export const GetUserTestMyListQuerySchema = z
+  .object({
+    currentPage: checkIdSchema(M.INVALID_PAGE).default(1),
+    pageSize: checkIdSchema(M.INVALID_PAGE_SIZE).default(10),
+    testId: checkIdSchema(M.INVALID_TEST_ID).optional(),
+    status: statusOf.optional(),
+    type: testTypeOf.optional(),
     order: OrderSchema.optional().default('asc')
   })
   .strict()
@@ -146,3 +161,4 @@ export type UserTestListResType = z.infer<typeof UserTestListResSchema>
 export type UserTestMyListResType = z.infer<typeof UserTestMyListResSchema>
 export type GetUserTestByIdParamsType = z.infer<typeof GetUserTestByIdParamsSchema>
 export type GetUserTestListQueryType = z.infer<typeof GetUserTestListQuerySchema>
+export type GetUserTestMyListQueryType = z.infer<typeof GetUserTestMyListQuerySchema>

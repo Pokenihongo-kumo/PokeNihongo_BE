@@ -5,11 +5,11 @@ import {
   CreateUserTestBodyType,
   UpdateUserTestBodyType,
   GetUserTestListQueryType
-} from './entities/user-test.entities'
+} from './entities/user-test.entity'
 import { UserTestStatus, TestSetStatus, TestStatus } from '@prisma/client'
 
 @Injectable()
-export class UserTestRepository {
+export class UserTestRepo {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: CreateUserTestBodyType): Promise<UserTestType> {

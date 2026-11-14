@@ -20,7 +20,7 @@ import { PrismaService } from '@/shared/services/prisma.service'
 import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { TestSetQuestionBankService } from '../testset-questionbank/testset-questionbank.service'
 import { UserTestAttemptRepository } from '../user-test-attempt/user-test-attempt.repo'
-import { UserTestRepository } from '../user-test/user-test.repo'
+import { UserTestRepo } from '../user-test/user-test.repo'
 import { UserTestService } from '../user-test/user-test.service'
 import { TestStatus, UserTestStatus } from '@prisma/client'
 import { pickLabelFromComposite } from '@/common/utils/prase.utils'
@@ -43,7 +43,7 @@ export class TestService {
     private readonly prisma: PrismaService,
     private readonly testSetQuestionBankService: TestSetQuestionBankService,
     private readonly userTestAttemptRepo: UserTestAttemptRepository,
-    private readonly userTestRepo: UserTestRepository,
+    private readonly userTestRepo: UserTestRepo,
     private readonly userTestService: UserTestService,
     private readonly i18nService: I18nService
   ) {}

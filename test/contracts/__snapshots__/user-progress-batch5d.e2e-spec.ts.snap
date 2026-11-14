@@ -192,19 +192,31 @@ exports[`User progress batch 5d contract (e2e) errors 1`] = `
   "myBadPageSize": {
     "en": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "An error occurred",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Page size must be a positive integer",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "Đã xảy ra lỗi",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Kích thước trang phải là số nguyên dương",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
   },
   "openInvalidId": {
@@ -416,11 +428,36 @@ exports[`User progress batch 5d contract (e2e) my tests, open, answer, check, su
   },
   "myOfTest": {
     "body": {
-      "error": "INTERNAL_SERVER_ERROR",
-      "message": "Đã xảy ra lỗi",
-      "statusCode": 500,
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "id": "number",
+            "limit": "number",
+            "status": "string",
+            "test": {
+              "description": "null",
+              "id": "number",
+              "levelN": "number",
+              "limit": "number",
+              "name": "string",
+              "price": "null",
+              "status": "string",
+              "testType": "string",
+            },
+            "userId": "number",
+          },
+        ],
+      },
+      "message": "Lấy danh sách UserTest thành công",
+      "statusCode": 200,
     },
-    "httpStatus": 500,
+    "httpStatus": 200,
   },
   "open": {
     "body": {

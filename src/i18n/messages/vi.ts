@@ -542,6 +542,28 @@ export const viMessages = {
     INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương',
     INVALID_FLAG: 'Giá trị phải là true hoặc false'
   },
+  user_test: {
+    CREATE_SUCCESS: 'Tạo UserTest thành công',
+    UPDATE_SUCCESS: 'Cập nhật UserTest thành công',
+    DELETE_SUCCESS: 'Xóa UserTest thành công',
+    GET_SUCCESS: 'Lấy thông tin UserTest thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách UserTest thành công',
+    INIT_ALL_SUCCESS: 'Khởi tạo thành công {tests} test cho {users} user',
+    INIT_ALL_NO_USERS: 'Không có user nào trong hệ thống',
+    INIT_ALL_NO_TESTS: 'Không có test nào ACTIVE trong hệ thống',
+    NOT_FOUND: 'Không tìm thấy UserTest',
+    ALREADY_EXISTS: 'UserTest đã tồn tại',
+    INVALID_DATA: 'Dữ liệu UserTest không hợp lệ',
+    INVALID_ID: 'ID UserTest không hợp lệ',
+    INVALID_USER_ID: 'ID người dùng không hợp lệ',
+    INVALID_TEST_ID: 'ID bài test không hợp lệ',
+    INVALID_STATUS: 'Trạng thái không hợp lệ',
+    INVALID_TEST_TYPE: 'Loại bài test không hợp lệ',
+    INVALID_ORDER: 'Thứ tự phải là asc hoặc desc',
+    INVALID_LIMIT: 'Số lượt phải là số nguyên không âm',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Tạo danh mục bài học thành công',
     UPDATE_SUCCESS: 'Cập nhật danh mục bài học thành công',
