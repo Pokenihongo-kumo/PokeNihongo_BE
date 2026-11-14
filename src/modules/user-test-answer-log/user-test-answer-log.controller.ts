@@ -35,6 +35,7 @@ import {
   ApiTags
 } from '@nestjs/swagger'
 import { ZodSerializerDto } from 'nestjs-zod'
+import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { UserTestAnswerLogService } from './user-test-answer-log.service'
 
 @ApiTags('User Test Answer Log')
@@ -52,11 +53,8 @@ export class UserTestAnswerLogController {
     type: UserTestAnswerLogResponseSwaggerDTO
   })
   @ZodSerializerDto(UserTestAnswerLogResDTO)
-  create(
-    @Body() body: CreateUserTestAnswerLogBodyDTO,
-    @ActiveUser('userId') userId: number
-  ) {
-    return this.userTestAnswerLogService.create(body)
+  create(@Body() body: CreateUserTestAnswerLogBodyDTO, @I18nLang() lang: string) {
+    return this.userTestAnswerLogService.create(body, lang)
   }
 
   @Post('upsert')
@@ -74,9 +72,10 @@ export class UserTestAnswerLogController {
   @ZodSerializerDto(UserTestAnswerLogResDTO)
   upsert(
     @Body() body: CreateUserTestAnswerLogBodyDTO,
-    @ActiveUser('userId') userId: number
+    @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string
   ) {
-    return this.userTestAnswerLogService.upsert(body, userId)
+    return this.userTestAnswerLogService.upsert(body, userId, lang)
   }
 
   @Get()
@@ -89,8 +88,8 @@ export class UserTestAnswerLogController {
   })
   @ApiQuery({ type: GetUserTestAnswerLogListQuerySwaggerDTO })
   @ZodSerializerDto(UserTestAnswerLogListResDTO)
-  findAll(@Query() query: GetUserTestAnswerLogListQueryDTO) {
-    return this.userTestAnswerLogService.findAll(query)
+  findAll(@Query() query: GetUserTestAnswerLogListQueryDTO, @I18nLang() lang: string) {
+    return this.userTestAnswerLogService.findAll(query, lang)
   }
 
   @Get(':id')
@@ -102,8 +101,8 @@ export class UserTestAnswerLogController {
     type: UserTestAnswerLogResponseSwaggerDTO
   })
   @ZodSerializerDto(UserTestAnswerLogResDTO)
-  findOne(@Param('id') id: string) {
-    return this.userTestAnswerLogService.findOne(Number(id))
+  findOne(@Param() params: GetUserTestAnswerLogByIdParamsDTO, @I18nLang() lang: string) {
+    return this.userTestAnswerLogService.findOne(params.id, lang)
   }
 
   @Put(':id')
@@ -117,11 +116,11 @@ export class UserTestAnswerLogController {
   })
   @ZodSerializerDto(UserTestAnswerLogResDTO)
   update(
-    @Param('id') id: string,
+    @Param() params: GetUserTestAnswerLogByIdParamsDTO,
     @Body() body: UpdateUserTestAnswerLogBodyDTO,
-    @ActiveUser('userId') userId: number
+    @I18nLang() lang: string
   ) {
-    return this.userTestAnswerLogService.update(Number(id), body)
+    return this.userTestAnswerLogService.update(params.id, body, lang)
   }
 
   @Delete(':id')
@@ -134,7 +133,7 @@ export class UserTestAnswerLogController {
     type: UserTestAnswerLogResponseSwaggerDTO
   })
   @ZodSerializerDto(UserTestAnswerLogResDTO)
-  remove(@Param('id') id: string) {
-    return this.userTestAnswerLogService.remove(Number(id))
+  remove(@Param() params: GetUserTestAnswerLogByIdParamsDTO, @I18nLang() lang: string) {
+    return this.userTestAnswerLogService.remove(params.id, lang)
   }
 }

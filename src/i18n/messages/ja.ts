@@ -529,6 +529,28 @@ export const jaMessages = {
     INVALID_PAGE_SIZE: 'ページサイズは正の整数でなければなりません',
     INVALID_FLAG: '値は true か false です'
   },
+  user_test_answer_log: {
+    GET_SUCCESS: 'テストの解答を取得しました',
+    GET_LIST_SUCCESS: 'テストの解答一覧を取得しました',
+    CREATE_SUCCESS: 'テストの解答を保存しました',
+    UPDATE_SUCCESS: 'テストの解答を更新しました',
+    DELETE_SUCCESS: 'テストの解答を削除しました',
+    NOT_FOUND: 'テストの解答記録が見つかりません',
+    INVALID_DATA: 'テストの解答データが無効です',
+    ATTEMPT_NOT_FOUND: 'テストの挑戦が見つかりません',
+    ATTEMPT_NOT_OWNED: 'この挑戦は別のユーザーのものです',
+    TEST_HAS_NO_TEST_SET: 'このテストにはテストセットがありません',
+    QUESTION_NOT_IN_TEST: 'この問題はテストに含まれていません',
+    ANSWER_NOT_FOUND: '解答が見つかりません',
+    ANSWER_NOT_IN_QUESTION: 'この解答は問題のものではありません',
+    INVALID_ID: 'テストの解答記録IDが無効です',
+    INVALID_ATTEMPT_ID: 'テストの挑戦IDが無効です',
+    INVALID_QUESTION_ID: '問題IDが無効です',
+    INVALID_ANSWER_ID: '解答IDが無効です',
+    INVALID_PAGE: 'ページは正の整数でなければなりません',
+    INVALID_PAGE_SIZE: 'ページサイズは正の整数でなければなりません',
+    INVALID_FLAG: '値は true か false です'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'レッスンカテゴリを作成しました',
     UPDATE_SUCCESS: 'レッスンカテゴリを更新しました',

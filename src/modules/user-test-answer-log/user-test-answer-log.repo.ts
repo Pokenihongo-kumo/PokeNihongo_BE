@@ -1,9 +1,27 @@
-import { UserTestAnswerLogType } from '@/modules/user-test-answer-log/entities/user-test-answer-log.entities'
+import { UserTestAnswerLogType } from '@/modules/user-test-answer-log/entities/user-test-answer-log.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
+import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
+import { Prisma, UserTestAnswerLog } from '@prisma/client'
+
+const toLog = (log: UserTestAnswerLog): UserTestAnswerLogType => ({
+  id: log.id,
+  isCorrect: log.isCorrect,
+  userTestAttemptId: log.userTestAttemptId,
+  questionBankId: log.questionBankId,
+  answerId: log.answerId,
+  createdAt: log.createdAt,
+  updatedAt: log.updatedAt
+})
+
+type LogInput = {
+  userTestAttemptId: number
+  questionBankId: number
+  answerId: number
+}
 
 @Injectable()
-export class UserTestAnswerLogRepository {
+export class UserTestAnswerLogRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(params: {
@@ -13,234 +31,103 @@ export class UserTestAnswerLogRepository {
     questionBankId?: number
     isCorrect?: boolean
   }) {
-    const { currentPage, pageSize, userTestAttemptId, questionBankId, isCorrect } = params
-    const skip = (currentPage - 1) * pageSize
-
-    const where: any = {}
-
-    if (userTestAttemptId) {
-      where.userTestAttemptId = userTestAttemptId
+    const where: Prisma.UserTestAnswerLogWhereInput = {
+      ...(params.userTestAttemptId && { userTestAttemptId: params.userTestAttemptId }),
+      ...(params.questionBankId && { questionBankId: params.questionBankId }),
+      ...(params.isCorrect !== undefined && { isCorrect: params.isCorrect })
     }
-
-    if (questionBankId) {
-      where.questionBankId = questionBankId
-    }
-
-    if (isCorrect !== undefined) {
-      where.isCorrect = isCorrect
-    }
-
     const [items, total] = await Promise.all([
       this.prismaService.userTestAnswerLog.findMany({
         where,
-        skip,
-        take: pageSize,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          userTestAttempt: true,
-          questionBank: true,
-          answer: true
-        }
+        ...toSkipTake(params.currentPage, params.pageSize),
+        orderBy: { createdAt: 'desc' }
       }),
       this.prismaService.userTestAnswerLog.count({ where })
     ])
-
-    return {
-      items: items.map((item) => this.transformUserTestAnswerLog(item)),
-      total,
-      page: currentPage,
-      limit: pageSize
-    }
+    return { items: items.map(toLog), total }
   }
 
-  async findUnique(where: { id?: number }): Promise<UserTestAnswerLogType | null> {
-    if (!where.id) return null
-
-    const result = await this.prismaService.userTestAnswerLog.findUnique({
-      where: { id: where.id },
-      include: {
-        userTestAttempt: true,
-        questionBank: true,
-        answer: true
-      }
-    })
-    return result ? this.transformUserTestAnswerLog(result) : null
+  async findUnique(id: number): Promise<UserTestAnswerLogType | null> {
+    const log = await this.prismaService.userTestAnswerLog.findUnique({ where: { id } })
+    return log ? toLog(log) : null
   }
 
-  async create(data: {
-    userTestAttemptId: number
-    questionBankId: number
-    answerId: number
-  }): Promise<UserTestAnswerLogType> {
-    // Lấy thông tin answer để kiểm tra isCorrect và ràng buộc cùng câu hỏi
-    const answer = await this.prismaService.answer.findUnique({
-      where: { id: data.answerId },
-      select: { id: true, isCorrect: true, questionBankId: true }
-    })
-
-    if (!answer) {
-      throw new Error('Answer not found')
-    }
-
-    // Không cho phép chọn đáp án không thuộc câu hỏi
-    if (answer.questionBankId !== data.questionBankId) {
-      throw new Error('Đáp án không thuộc về câu hỏi đã chọn')
-    }
-
-    const result = await this.prismaService.userTestAnswerLog.create({
-      data: {
-        ...data,
-        isCorrect: answer.isCorrect
-      }
-    })
-    return this.transformUserTestAnswerLog(result)
-  }
-
-  async upsert(
-    data: {
-      userTestAttemptId: number
-      questionBankId: number
-      answerId: number
-    },
-    userId: number
-  ): Promise<UserTestAnswerLogType> {
-    // Validate question belongs to the testSets of this attempt
+  // The attempt's owner and the test sets of its test
+  async findAttempt(id: number) {
     const attempt = await this.prismaService.userTestAttempt.findUnique({
-      where: { id: data.userTestAttemptId },
+      where: { id },
       select: {
-        id: true,
         userId: true,
-        test: {
-          select: {
-            id: true,
-            testTestSets: {
-              select: {
-                testSet: {
-                  select: {
-                    id: true
-                  }
-                }
-              }
-            }
-          }
-        }
+        test: { select: { testTestSets: { select: { testSetId: true } } } }
       }
     })
-    if (!attempt) {
-      throw new Error('Lần thử bài test không tồn tại')
+    if (!attempt) return null
+    return {
+      userId: attempt.userId,
+      testSetIds: attempt.test.testTestSets.map((link) => link.testSetId)
     }
-    if (attempt.userId !== userId) {
-      throw new Error('Attempt không thuộc về người dùng')
-    }
-    if (!attempt.test?.testTestSets || attempt.test.testTestSets.length === 0) {
-      throw new Error('Bài test không có bộ đề (test set)')
-    }
+  }
 
-    // Kiểm tra questionBank có thuộc về một trong các testSet của test này không
-    const testSetIds = attempt.test.testTestSets.map((tts: any) => tts.testSet.id)
+  async isQuestionInTestSets(testSetIds: number[], questionBankId: number) {
     const link = await this.prismaService.testSetQuestionBank.findFirst({
-      where: {
-        testSetId: { in: testSetIds },
-        questionBankId: data.questionBankId
-      }
+      where: { testSetId: { in: testSetIds }, questionBankId },
+      select: { id: true }
     })
-    if (!link) {
-      throw new Error('Câu hỏi không thuộc về bài test hiện tại')
-    }
+    return !!link
+  }
 
-    // Lấy thông tin answer để kiểm tra isCorrect và ràng buộc cùng câu hỏi
-    const answer = await this.prismaService.answer.findUnique({
-      where: { id: data.answerId },
-      select: { id: true, isCorrect: true, questionBankId: true }
+  findAnswer(id: number) {
+    return this.prismaService.answer.findUnique({
+      where: { id },
+      select: { isCorrect: true, questionBankId: true }
     })
+  }
 
-    if (!answer) {
-      throw new Error('Answer not found')
-    }
+  async create(data: LogInput, isCorrect: boolean): Promise<UserTestAnswerLogType> {
+    return toLog(
+      await this.prismaService.userTestAnswerLog.create({ data: { ...data, isCorrect } })
+    )
+  }
 
-    // Không cho phép chọn đáp án không thuộc câu hỏi
-    if (answer.questionBankId !== data.questionBankId) {
-      throw new Error('Đáp án không thuộc về câu hỏi đã chọn')
-    }
-
-    // Tìm xem đã có UserTestAnswerLog cho userTestAttemptId + questionBankId chưa
-    const existingLog = await this.prismaService.userTestAnswerLog.findFirst({
+  // One log per question of an attempt: a new answer replaces the old one
+  async upsert(data: LogInput, isCorrect: boolean): Promise<UserTestAnswerLogType> {
+    const existing = await this.prismaService.userTestAnswerLog.findFirst({
       where: {
         userTestAttemptId: data.userTestAttemptId,
         questionBankId: data.questionBankId
-      }
+      },
+      select: { id: true }
     })
-
-    if (existingLog) {
-      // Nếu đã có thì update
-      const result = await this.prismaService.userTestAnswerLog.update({
-        where: { id: existingLog.id },
-        data: {
-          answerId: data.answerId,
-          isCorrect: answer.isCorrect
-        }
-      })
-      return this.transformUserTestAnswerLog(result)
-    } else {
-      // Nếu chưa có thì create
-      const result = await this.prismaService.userTestAnswerLog.create({
-        data: {
-          ...data,
-          isCorrect: answer.isCorrect
-        }
-      })
-      return this.transformUserTestAnswerLog(result)
-    }
+    const log = existing
+      ? await this.prismaService.userTestAnswerLog.update({
+          where: { id: existing.id },
+          data: { answerId: data.answerId, isCorrect }
+        })
+      : await this.prismaService.userTestAnswerLog.create({
+          data: { ...data, isCorrect }
+        })
+    return toLog(log)
   }
 
   async update(
-    where: { id: number },
-    data: {
-      isCorrect?: boolean
-    }
+    id: number,
+    data: { isCorrect?: boolean }
   ): Promise<UserTestAnswerLogType> {
-    const result = await this.prismaService.userTestAnswerLog.update({
-      where,
-      data
+    return toLog(
+      await this.prismaService.userTestAnswerLog.update({ where: { id }, data })
+    )
+  }
+
+  async delete(id: number): Promise<UserTestAnswerLogType> {
+    return toLog(await this.prismaService.userTestAnswerLog.delete({ where: { id } }))
+  }
+
+  // Used by user-test-attempt
+  async findByUserTestAttemptId(userTestAttemptId: number) {
+    const logs = await this.prismaService.userTestAnswerLog.findMany({
+      where: { userTestAttemptId },
+      orderBy: { createdAt: 'asc' }
     })
-    return this.transformUserTestAnswerLog(result)
-  }
-
-  async delete(where: { id: number }): Promise<UserTestAnswerLogType> {
-    const result = await this.prismaService.userTestAnswerLog.delete({
-      where
-    })
-    return this.transformUserTestAnswerLog(result)
-  }
-
-  async count(where?: any): Promise<number> {
-    return this.prismaService.userTestAnswerLog.count({ where })
-  }
-
-  private transformUserTestAnswerLog(userTestAnswerLog: any): UserTestAnswerLogType {
-    return {
-      id: userTestAnswerLog.id,
-      isCorrect: userTestAnswerLog.isCorrect,
-      userTestAttemptId: userTestAnswerLog.userTestAttemptId,
-      questionBankId: userTestAnswerLog.questionBankId,
-      answerId: userTestAnswerLog.answerId,
-      createdAt: userTestAnswerLog.createdAt,
-      updatedAt: userTestAnswerLog.updatedAt
-    }
-  }
-
-  async findByUserTestAttemptId(
-    userTestAttemptId: number
-  ): Promise<UserTestAnswerLogType[]> {
-    const result = await this.prismaService.userTestAnswerLog.findMany({
-      where: {
-        userTestAttemptId: userTestAttemptId
-      },
-      orderBy: {
-        createdAt: 'asc'
-      }
-    })
-
-    return result.map((item) => this.transformUserTestAnswerLog(item))
+    return logs.map(toLog)
   }
 }

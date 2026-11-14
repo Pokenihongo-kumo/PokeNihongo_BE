@@ -496,6 +496,29 @@ export const UserAnswerLogMessage = {
   INVALID_FLAG: 'user_answer_log.INVALID_FLAG'
 } as const
 
+export const UserTestAnswerLogMessage = {
+  GET_SUCCESS: 'user_test_answer_log.GET_SUCCESS',
+  GET_LIST_SUCCESS: 'user_test_answer_log.GET_LIST_SUCCESS',
+  CREATE_SUCCESS: 'user_test_answer_log.CREATE_SUCCESS',
+  UPDATE_SUCCESS: 'user_test_answer_log.UPDATE_SUCCESS',
+  DELETE_SUCCESS: 'user_test_answer_log.DELETE_SUCCESS',
+  NOT_FOUND: 'user_test_answer_log.NOT_FOUND',
+  INVALID_DATA: 'user_test_answer_log.INVALID_DATA',
+  ATTEMPT_NOT_FOUND: 'user_test_answer_log.ATTEMPT_NOT_FOUND',
+  ATTEMPT_NOT_OWNED: 'user_test_answer_log.ATTEMPT_NOT_OWNED',
+  TEST_HAS_NO_TEST_SET: 'user_test_answer_log.TEST_HAS_NO_TEST_SET',
+  QUESTION_NOT_IN_TEST: 'user_test_answer_log.QUESTION_NOT_IN_TEST',
+  ANSWER_NOT_FOUND: 'user_test_answer_log.ANSWER_NOT_FOUND',
+  ANSWER_NOT_IN_QUESTION: 'user_test_answer_log.ANSWER_NOT_IN_QUESTION',
+  INVALID_ID: 'user_test_answer_log.INVALID_ID',
+  INVALID_ATTEMPT_ID: 'user_test_answer_log.INVALID_ATTEMPT_ID',
+  INVALID_QUESTION_ID: 'user_test_answer_log.INVALID_QUESTION_ID',
+  INVALID_ANSWER_ID: 'user_test_answer_log.INVALID_ANSWER_ID',
+  INVALID_PAGE: 'user_test_answer_log.INVALID_PAGE',
+  INVALID_PAGE_SIZE: 'user_test_answer_log.INVALID_PAGE_SIZE',
+  INVALID_FLAG: 'user_test_answer_log.INVALID_FLAG'
+} as const
+
 export const LessonCategoryMessage = {
   CREATE_SUCCESS: 'lesson_category.CREATE_SUCCESS',
   UPDATE_SUCCESS: 'lesson_category.UPDATE_SUCCESS',

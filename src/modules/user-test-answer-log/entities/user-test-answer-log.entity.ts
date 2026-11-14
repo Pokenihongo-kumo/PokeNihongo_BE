@@ -1,6 +1,8 @@
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
+import { UserTestAnswerLogMessage as M } from '@/i18n/message-keys'
+import { checkIdSchema } from '@/common/utils/id.validation'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
@@ -16,11 +18,16 @@ export const UserTestAnswerLogSchema = z.object({
   updatedAt: z.date()
 })
 
-export const CreateUserTestAnswerLogBodySchema = UserTestAnswerLogSchema.pick({
-  userTestAttemptId: true,
-  questionBankId: true,
-  answerId: true
-}).strict()
+const idOf = (key: string) =>
+  z.number({ invalid_type_error: key, required_error: key }).int(key).positive(key)
+
+export const CreateUserTestAnswerLogBodySchema = z
+  .object({
+    userTestAttemptId: idOf(M.INVALID_ATTEMPT_ID),
+    questionBankId: idOf(M.INVALID_QUESTION_ID),
+    answerId: idOf(M.INVALID_ANSWER_ID)
+  })
+  .strict()
 
 export const UpdateUserTestAnswerLogBodySchema = UserTestAnswerLogSchema.pick({
   isCorrect: true
@@ -54,32 +61,18 @@ export const UserTestAnswerLogListResSchema = z
 
 export const GetUserTestAnswerLogByIdParamsSchema = z
   .object({
-    id: z.string().transform((val) => parseInt(val, 10))
+    id: checkIdSchema(M.INVALID_ID)
   })
   .strict()
 
 export const GetUserTestAnswerLogListQuerySchema = z
   .object({
-    currentPage: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('1'),
-    pageSize: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('10'),
-    userTestAttemptId: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional(),
-    questionBankId: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional(),
+    currentPage: checkIdSchema(M.INVALID_PAGE).default(1),
+    pageSize: checkIdSchema(M.INVALID_PAGE_SIZE).default(10),
+    userTestAttemptId: checkIdSchema(M.INVALID_ATTEMPT_ID).optional(),
+    questionBankId: checkIdSchema(M.INVALID_QUESTION_ID).optional(),
     isCorrect: z
-      .string()
+      .enum(['true', 'false'], { errorMap: () => ({ message: M.INVALID_FLAG }) })
       .transform((val) => val === 'true')
       .optional()
   })
