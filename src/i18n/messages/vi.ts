@@ -564,6 +564,11 @@ export const viMessages = {
     INVALID_PAGE: 'Trang phải là số nguyên dương',
     INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương'
   },
+  dashboard: {
+    INVALID_PERIOD: 'Kỳ thống kê phải là day, week hoặc month',
+    INVALID_MONTH: 'Tháng phải từ 1 đến 12',
+    INVALID_YEAR: 'Năm không hợp lệ'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Tạo danh mục bài học thành công',
     UPDATE_SUCCESS: 'Cập nhật danh mục bài học thành công',
@@ -718,7 +723,9 @@ export const viMessages = {
     ADD_EXP_SUCCESS: 'Thêm EXP cho Pokemon thành công',
     LEVEL_UP_SUCCESS: 'Pokemon đã lên cấp!',
     GET_STATS_SUCCESS: 'Lấy thống kê User Pokemon thành công',
-    USER_NOT_IN_ROUND: 'Người dùng không tham gia vào vòng đấu nào'
+    USER_NOT_IN_ROUND: 'Người dùng không tham gia vào vòng đấu nào',
+    INVALID_POKEMON_ID: 'ID Pokemon không hợp lệ',
+    INVALID_HAS_POKEMON: 'hasPokemon phải là true hoặc false'
   },
   user: {
     GET_LIST_SUCCESS: 'Lấy danh sách người dùng thành công',

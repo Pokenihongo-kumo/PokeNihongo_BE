@@ -573,6 +573,11 @@ export const jaMessages = {
     INVALID_PAGE: 'ページは正の整数でなければなりません',
     INVALID_PAGE_SIZE: 'ページサイズは正の整数でなければなりません'
   },
+  dashboard: {
+    INVALID_PERIOD: '期間は day、week、month のいずれかです',
+    INVALID_MONTH: '月は1から12です',
+    INVALID_YEAR: '年が無効です'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'レッスンカテゴリを作成しました',
     UPDATE_SUCCESS: 'レッスンカテゴリを更新しました',
@@ -727,7 +732,9 @@ export const jaMessages = {
     ADD_EXP_SUCCESS: 'ポケモンへのEXP追加が完了しました',
     LEVEL_UP_SUCCESS: 'ポケモンがレベルアップしました！',
     GET_STATS_SUCCESS: 'ユーザーポケモンの統計情報が取得されました',
-    USER_NOT_IN_ROUND: 'ユーザーはどのラウンドにも参加していません'
+    USER_NOT_IN_ROUND: 'ユーザーはどのラウンドにも参加していません',
+    INVALID_POKEMON_ID: 'ポケモンIDが無効です',
+    INVALID_HAS_POKEMON: 'hasPokemon は true か false です'
   },
   user: {
     GET_LIST_SUCCESS: 'ユーザーリストの取得に成功しました',

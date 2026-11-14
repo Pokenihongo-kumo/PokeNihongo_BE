@@ -8,6 +8,7 @@ import {
   CreateUserPokemonBodyDTO,
   CreateUserPokemonResDTO,
   GetUserPokemonByPokemonIdParamsDTO,
+  GetUserPokemonListWithUserQueryDTO,
   GetUserPokemonByPokemonIdwithListOwnershipResDTO,
   GetUserPokemonDetailResDTO,
   GetUserPokemonParamsDTO,
@@ -50,14 +51,17 @@ export class UserPokemonController {
   @Get('user/pokemons')
   @ZodSerializerDto(PaginationResponseDTO)
   getPokemonListWithUser(
-    @Query() query: PaginationQueryDTO,
-    @Query('hasPokemon') hasPokemon: string,
+    @Query() query: GetUserPokemonListWithUserQueryDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    console.log(hasPokemon)
-
-    return this.userPokemonService.getPokemonListWithUser(query, userId, lang, hasPokemon)
+    const { hasPokemon, ...pagination } = query
+    return this.userPokemonService.getPokemonListWithUser(
+      pagination,
+      userId,
+      lang,
+      hasPokemon
+    )
   }
 
   @Get('/pokemons')
@@ -72,8 +76,6 @@ export class UserPokemonController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    console.log('vo evolves/:pokemonId')
-
     return this.userPokemonService.getWithEvolvesPokemon(params.pokemonId, userId, lang)
   }
 

@@ -152,15 +152,8 @@ export class UserPokemonService {
     query: PaginationQueryType,
     userId: number,
     lang: string = 'vi',
-    hasPokemon: string | undefined = undefined
+    filterHasPoke?: boolean
   ) {
-    console.log('ser - hasPokemon: ', hasPokemon)
-    console.log('currentP: ', query.currentPage)
-    console.log('pageS: ', query.pageSize)
-
-    const filterHasPoke =
-      hasPokemon === 'true' ? true : hasPokemon === 'false' ? false : undefined
-
     // 1. Lấy danh sách tất cả pokemon
     const pokemonData = await this.pokemonRepo.getPokemonListWithPokemonUser(
       query,
@@ -389,7 +382,7 @@ export class UserPokemonService {
         const nextWeaknesses = await this.getWeaknessesForPokemon(nextPokemon.types)
 
         // Get level info for this pokemon if user owns it
-        let userLevel: any = null
+        const userLevel: any = null
         const userOwnedPokemon = await this.userPokemonRepo.findByUserAndPokemon(
           userPokemon.userId,
           nextPokemon.id
@@ -608,15 +601,6 @@ export class UserPokemonService {
     }
   }
 
-  async getUserPokemons(userId: number) {
-    const data = await this.userPokemonRepo.getUserPokemons(userId)
-    return {
-      statusCode: 200,
-      data,
-      message: 'Lấy danh sách Pokemon của người dùng thành công'
-    }
-  }
-
   async getWithEvolvesPokemon(pokemonId: number, userId: number, lang: string = 'vi') {
     // 1. Lấy userPokemon với pokemon, level và evolution chain
     const userPokemon = await this.userPokemonRepo.findByPokemonId(pokemonId, userId)
@@ -626,9 +610,6 @@ export class UserPokemonService {
     }
 
     const weaknesses = await this.getWeaknessesForPokemon(userPokemon.pokemon?.types)
-    console.log('userId: ', userId)
-
-    console.log('userpokemon.userId: ', userPokemon.userId)
 
     // 2. Verify ownership
     if (userPokemon.userId !== userId) {

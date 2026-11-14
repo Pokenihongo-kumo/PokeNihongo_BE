@@ -551,6 +551,11 @@ export const enMessages = {
     INVALID_PAGE: 'Page must be a positive integer',
     INVALID_PAGE_SIZE: 'Page size must be a positive integer'
   },
+  dashboard: {
+    INVALID_PERIOD: 'Period must be day, week or month',
+    INVALID_MONTH: 'Month must be from 1 to 12',
+    INVALID_YEAR: 'Invalid year'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Lesson category created successfully',
     UPDATE_SUCCESS: 'Lesson category updated successfully',
@@ -706,7 +711,9 @@ export const enMessages = {
     ADD_EXP_SUCCESS: 'EXP added to Pokemon successfully',
     LEVEL_UP_SUCCESS: 'Pokemon leveled up successfully',
     GET_STATS_SUCCESS: 'User Pokemon stats retrieved successfully',
-    USER_NOT_IN_ROUND: 'User is not participating in any round'
+    USER_NOT_IN_ROUND: 'User is not participating in any round',
+    INVALID_POKEMON_ID: 'Invalid Pokemon ID',
+    INVALID_HAS_POKEMON: 'hasPokemon must be true or false'
   },
   user: {
     GET_LIST_SUCCESS: 'User list retrieved successfully',
