@@ -172,6 +172,15 @@ describe('Auth batch 5i contract (e2e)', () => {
     }).toMatchSnapshot()
   })
 
+  it('verify-otp: the sixth wrong code in five minutes is refused', async () => {
+    const email = `contract-5i-limit-${stamp}@example.test`
+    const attempt = () =>
+      http().post('/auth/verify-otp').send({ email, code: '000000', type: 'REGISTER' })
+    const statuses: number[] = []
+    for (let i = 0; i < 5; i++) statuses.push((await attempt()).status)
+    expect({ firstFive: statuses, sixth: capture(await attempt()) }).toMatchSnapshot()
+  })
+
   it('errors', async () => {
     expect({
       loginWrongPassword: await both((l) =>

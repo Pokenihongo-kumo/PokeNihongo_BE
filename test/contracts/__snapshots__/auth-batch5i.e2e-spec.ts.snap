@@ -81,25 +81,31 @@ exports[`Auth batch 5i contract (e2e) errors 1`] = `
   "checkEmailInvalid": {
     "en": {
       "body": {
-        "data": {
-          "requiresOtp": "boolean",
-          "type": "string",
-        },
-        "message": "OTP sent successfully",
-        "statusCode": 200,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid email",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 200,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "data": {
-          "requiresOtp": "boolean",
-          "type": "string",
-        },
-        "message": "Gửi mã OTP thành công",
-        "statusCode": 200,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Email không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 200,
+      "httpStatus": 422,
     },
   },
   "forgotUnknown": {
@@ -225,19 +231,19 @@ exports[`Auth batch 5i contract (e2e) errors 1`] = `
   "refreshGarbage": {
     "en": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "An error occurred",
-        "statusCode": 500,
+        "error": "UNAUTHORIZED",
+        "message": "Unauthorized access",
+        "statusCode": 401,
       },
-      "httpStatus": 500,
+      "httpStatus": 401,
     },
     "vi": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "Đã xảy ra lỗi",
-        "statusCode": 500,
+        "error": "UNAUTHORIZED",
+        "message": "Truy cập không được phép",
+        "statusCode": 401,
       },
-      "httpStatus": 500,
+      "httpStatus": 401,
     },
   },
   "registerMismatch": {
@@ -261,19 +267,19 @@ exports[`Auth batch 5i contract (e2e) errors 1`] = `
   "registerTaken": {
     "en": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "An error occurred",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "message": "Email already exists",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "Đã xảy ra lỗi",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "message": "Email đã tồn tại",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
   },
   "resetPasswordOtherEmail": {
@@ -544,11 +550,31 @@ exports[`Auth batch 5i contract (e2e) the admin: check, login, refresh, refresh 
   },
   "refreshAgain": {
     "body": {
-      "error": "INTERNAL_SERVER_ERROR",
-      "message": "Đã xảy ra lỗi",
-      "statusCode": 500,
+      "error": "UNAUTHORIZED",
+      "message": "Token làm mới đã được sử dụng",
+      "statusCode": 401,
     },
-    "httpStatus": 500,
+    "httpStatus": 401,
+  },
+}
+`;
+
+exports[`Auth batch 5i contract (e2e) verify-otp: the sixth wrong code in five minutes is refused 1`] = `
+{
+  "firstFive": [
+    401,
+    401,
+    401,
+    401,
+    401,
+  ],
+  "sixth": {
+    "body": {
+      "error": "TOO_MANY_REQUESTS",
+      "message": "Quá nhiều yêu cầu. Vui lòng thử lại sau N giây.",
+      "statusCode": 429,
+    },
+    "httpStatus": 429,
   },
 }
 `;

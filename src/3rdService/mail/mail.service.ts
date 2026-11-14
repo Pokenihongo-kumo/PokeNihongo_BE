@@ -58,7 +58,8 @@ export class MailService {
     }
     await this.redisClient.set(email, otp, 'EX', 300) // Lưu OTP vào Redis với thời gian hết hạn 5 phút
     await this.sendOtpMail(email, otp, template, content, body)
-    this.logger.log(`OTP sent to ${email}: ${otp}`)
+    // Never log the code itself
+    this.logger.log(`OTP sent to ${email}`)
   }
 
   async verifyOtpStrict(email: string, otp: string): Promise<boolean> {

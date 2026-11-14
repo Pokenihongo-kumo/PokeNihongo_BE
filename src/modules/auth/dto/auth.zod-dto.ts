@@ -1,4 +1,5 @@
 import {
+  CheckEmailParamsSchema,
   AccountResSchema,
   ChangePasswordBodySchema,
   ForgotPasswordBodySchema,
@@ -72,3 +73,5 @@ export class UpdateLevelJLPTResDTO extends createZodDto(UpdateLevelJLPTResSchema
 export class UpdateFcmTokenDeviceBodyDTO extends createZodDto(
   UpdateFcmTokenDeviceBodySchema
 ) {}
+
+export class CheckEmailParamsDTO extends createZodDto(CheckEmailParamsSchema) {}

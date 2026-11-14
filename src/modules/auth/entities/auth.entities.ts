@@ -37,6 +37,11 @@ export const SendOTPBodySchema = VerificationCodeSchema.pick({
   type: true
 }).strict()
 
+// GET /auth/check-email/:email (any string used to be taken as a new email)
+export const CheckEmailParamsSchema = z
+  .object({ email: z.string().trim().email(AuthMessage.INVALID_EMAIL) })
+  .strict()
+
 export const VerifyOTPBodySchema = VerificationCodeSchema.pick({
   email: true,
   code: true,

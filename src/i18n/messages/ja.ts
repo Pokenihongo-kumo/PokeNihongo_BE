@@ -49,7 +49,8 @@ export const jaMessages = {
     MISSING_TOKEN: '認証トークンが見つかりません',
     INVALID_TOKEN: '無効な認証トークンです',
     UPDATE_LEVEL_JLPT_SUCCESS: 'JLPTレベルの更新が完了しました',
-    UPDATE_SUCCESS: '更新が完了しました'
+    UPDATE_SUCCESS: '更新が完了しました',
+    INVALID_EMAIL: 'メールアドレスが無効です'
   },
   reward: {
     CREATE_SUCCESS: '報酬の作成が完了しました',

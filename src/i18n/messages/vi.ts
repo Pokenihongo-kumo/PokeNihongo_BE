@@ -48,7 +48,8 @@ export const viMessages = {
     MISSING_TOKEN: 'Thiếu token xác thực',
     INVALID_TOKEN: 'Token xác thực không hợp lệ',
     UPDATE_LEVEL_JLPT_SUCCESS: 'Cập nhật cấp độ JLPT thành công',
-    UPDATE_SUCCESS: 'Cập nhật thành công'
+    UPDATE_SUCCESS: 'Cập nhật thành công',
+    INVALID_EMAIL: 'Email không hợp lệ'
   },
   reward: {
     CREATE_SUCCESS: 'Tạo phần thưởng thành công',

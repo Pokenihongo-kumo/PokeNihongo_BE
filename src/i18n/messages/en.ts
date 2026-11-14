@@ -49,7 +49,8 @@ export const enMessages = {
     MISSING_TOKEN: 'Missing authentication token',
     INVALID_TOKEN: 'Invalid authentication token',
     UPDATE_LEVEL_JLPT_SUCCESS: 'JLPT level updated successfully',
-    UPDATE_SUCCESS: 'Update successful'
+    UPDATE_SUCCESS: 'Update successful',
+    INVALID_EMAIL: 'Invalid email'
   },
   reward: {
     CREATE_SUCCESS: 'Reward created successfully',
