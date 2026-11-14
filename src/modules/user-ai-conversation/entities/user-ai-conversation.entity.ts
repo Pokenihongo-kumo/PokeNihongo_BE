@@ -1,6 +1,8 @@
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { UserAIConversationMessage as M } from '@/i18n/message-keys'
 import { z } from 'zod'
 
-// UserAIConversation schema
+// UserAIConversation schema: one message of a kaiwa conversation
 export const UserAIConversationSchema = z.object({
   id: z.number(),
   userId: z.number(),
@@ -13,43 +15,63 @@ export const UserAIConversationSchema = z.object({
   updatedAt: z.date()
 })
 
-// Create UserAIConversation schema
+const roleSchema = z.enum(['USER', 'AI'], {
+  errorMap: () => ({ message: M.INVALID_ROLE })
+})
+const conversationIdSchema = z
+  .string({ required_error: M.INVALID_CONVERSATION_ID })
+  .trim()
+  .min(1, M.INVALID_CONVERSATION_ID)
+  .max(100, M.INVALID_CONVERSATION_ID)
+
+// The client's body; the owner comes from the token (userId in the body was
+// required and then overwritten)
 export const CreateUserAIConversationBodySchema = z
   .object({
-    userId: z.number(),
-    conversationId: z.string(),
-    role: z.enum(['USER', 'AI']),
-    message: z.string(),
+    conversationId: conversationIdSchema,
+    role: roleSchema,
+    message: z.string({ required_error: M.INVALID_MESSAGE }).min(1, M.INVALID_MESSAGE),
     audioUrl: z.string().optional().nullable()
   })
   .strict()
 
-// Update UserAIConversation schema
+export type CreateUserAIConversationInput = z.infer<
+  typeof CreateUserAIConversationBodySchema
+> & { userId: number }
+
 export const UpdateUserAIConversationBodySchema = z
   .object({
-    message: z.string().optional(),
+    message: z.string().min(1, M.INVALID_MESSAGE).optional(),
     audioUrl: z.string().optional().nullable()
   })
   .strict()
 
-// Query params
 export const GetUserAIConversationListQuerySchema = z
   .object({
-    currentPage: z.coerce.number().int().positive().default(1),
-    pageSize: z.coerce.number().int().positive().max(100).default(10),
-    conversationId: z.string().optional(),
-    role: z.enum(['USER', 'AI']).optional()
+    currentPage: checkIdSchema(M.INVALID_PAGE).default(1),
+    pageSize: checkIdSchema(M.INVALID_PAGE_SIZE)
+      .max(100, M.INVALID_PAGE_SIZE)
+      .default(10),
+    conversationId: conversationIdSchema.optional(),
+    role: roleSchema.optional()
   })
   .strict()
 
-// Params
 export const GetUserAIConversationByIdParamsSchema = z
-  .object({
-    id: z.coerce.number().int().positive()
-  })
+  .object({ id: checkIdSchema(M.INVALID_ID) })
   .strict()
 
-// Type exports
+export const GetUserAIConversationByConversationParamsSchema = z
+  .object({ conversationId: conversationIdSchema })
+  .strict()
+
+// Was the bare entity: every single-message response failed serialization (500)
+export const UserAIConversationResSchema = z.object({
+  statusCode: z.number(),
+  data: UserAIConversationSchema,
+  message: z.string()
+})
+
 export type UserAIConversationType = z.infer<typeof UserAIConversationSchema>
 export type CreateUserAIConversationBodyType = z.infer<
   typeof CreateUserAIConversationBodySchema
@@ -59,7 +81,4 @@ export type UpdateUserAIConversationBodyType = z.infer<
 >
 export type GetUserAIConversationListQueryType = z.infer<
   typeof GetUserAIConversationListQuerySchema
->
-export type GetUserAIConversationByIdParamsType = z.infer<
-  typeof GetUserAIConversationByIdParamsSchema
 >

@@ -20,10 +20,12 @@ import {
 } from '@nestjs/swagger'
 import { ZodSerializerDto } from 'nestjs-zod'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
+import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { UserAIConversationService } from './user-ai-conversation.service'
 import {
   CreateUserAIConversationBodyDTO,
   UpdateUserAIConversationBodyDTO,
+  GetUserAIConversationByConversationParamsDTO,
   GetUserAIConversationByIdParamsDTO,
   GetUserAIConversationListQueryDTO,
   UserAIConversationResDTO
@@ -57,12 +59,10 @@ export class UserAIConversationController {
   @ZodSerializerDto(UserAIConversationResDTO)
   async create(
     @Body() body: CreateUserAIConversationBodyDTO,
-    @ActiveUser('userId') userId: number
+    @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string
   ) {
-    return this.userAIConversationService.create({
-      ...body,
-      userId
-    })
+    return this.userAIConversationService.create({ ...body, userId }, lang)
   }
 
   @Get()
@@ -76,9 +76,10 @@ export class UserAIConversationController {
   })
   async findAll(
     @Query() query: GetUserAIConversationListQueryDTO,
-    @ActiveUser('userId') userId: number
+    @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string
   ) {
-    return this.userAIConversationService.findAll(query, userId)
+    return this.userAIConversationService.findAll(query, userId, lang)
   }
 
   @Get('conversation/:conversationId')
@@ -90,10 +91,15 @@ export class UserAIConversationController {
     type: UserAIConversationListResponseSwaggerDTO
   })
   async findByConversationId(
-    @Param('conversationId') conversationId: string,
-    @ActiveUser('userId') userId: number
+    @Param() { conversationId }: GetUserAIConversationByConversationParamsDTO,
+    @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string
   ) {
-    return this.userAIConversationService.findByConversationId(conversationId, userId)
+    return this.userAIConversationService.findByConversationId(
+      conversationId,
+      userId,
+      lang
+    )
   }
 
   @Get(':id')
@@ -105,8 +111,12 @@ export class UserAIConversationController {
     type: UserAIConversationResponseSwaggerDTO
   })
   @ZodSerializerDto(UserAIConversationResDTO)
-  async findOne(@Param() params: GetUserAIConversationByIdParamsDTO) {
-    return this.userAIConversationService.findOne(params)
+  async findOne(
+    @Param() { id }: GetUserAIConversationByIdParamsDTO,
+    @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string
+  ) {
+    return this.userAIConversationService.findOne(id, userId, lang)
   }
 
   @Patch(':id')
@@ -120,10 +130,12 @@ export class UserAIConversationController {
   })
   @ZodSerializerDto(UserAIConversationResDTO)
   async update(
-    @Param() params: GetUserAIConversationByIdParamsDTO,
-    @Body() body: UpdateUserAIConversationBodyDTO
+    @Param() { id }: GetUserAIConversationByIdParamsDTO,
+    @Body() body: UpdateUserAIConversationBodyDTO,
+    @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string
   ) {
-    return this.userAIConversationService.update(params.id, body)
+    return this.userAIConversationService.updateOwned(id, userId, body, lang)
   }
 
   @Delete(':id')
@@ -136,8 +148,12 @@ export class UserAIConversationController {
     type: UserAIConversationResponseSwaggerDTO
   })
   @ZodSerializerDto(UserAIConversationResDTO)
-  async remove(@Param() params: GetUserAIConversationByIdParamsDTO) {
-    return this.userAIConversationService.remove(params.id)
+  async remove(
+    @Param() { id }: GetUserAIConversationByIdParamsDTO,
+    @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string
+  ) {
+    return this.userAIConversationService.remove(id, userId, lang)
   }
 
   @Delete('conversation/:conversationId')
@@ -150,9 +166,14 @@ export class UserAIConversationController {
     type: DeleteByConversationIdResponseSwaggerDTO
   })
   async removeByConversationId(
-    @Param('conversationId') conversationId: string,
-    @ActiveUser('userId') userId: number
+    @Param() { conversationId }: GetUserAIConversationByConversationParamsDTO,
+    @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string
   ) {
-    return this.userAIConversationService.removeByConversationId(conversationId, userId)
+    return this.userAIConversationService.removeByConversationId(
+      conversationId,
+      userId,
+      lang
+    )
   }
 }

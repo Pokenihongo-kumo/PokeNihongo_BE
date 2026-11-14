@@ -1,3 +1,5 @@
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { AIConversationRoomMessage as M } from '@/i18n/message-keys'
 import { z } from 'zod'
 
 // AIConversationRoom schema
@@ -15,44 +17,74 @@ export const AIConversationRoomSchema = z.object({
   updatedAt: z.date()
 })
 
-// Create AIConversationRoom schema
+const titleSchema = z.string().max(200, M.INVALID_TITLE).nullable().optional()
+const voiceSchema = z.string().max(50, M.INVALID_VOICE).nullable().optional()
+
+// The client's body; the owner comes from the token
 export const CreateAIConversationRoomBodySchema = z
   .object({
-    userId: z.number(),
-    conversationId: z.string(),
-    title: z.string().optional().nullable(),
-    voiceName: z.string().optional().nullable()
+    conversationId: z
+      .string({ required_error: M.INVALID_CONVERSATION_ID })
+      .trim()
+      .min(1, M.INVALID_CONVERSATION_ID)
+      .max(100, M.INVALID_CONVERSATION_ID),
+    title: titleSchema,
+    voiceName: voiceSchema
   })
   .strict()
 
-// Update AIConversationRoom schema
+// What the service writes: the client's body plus its owner (the kaiwa
+// gateway calls the service with these too)
+export type CreateAIConversationRoomInput = z.infer<
+  typeof CreateAIConversationRoomBodySchema
+> & { userId: number }
+
 export const UpdateAIConversationRoomBodySchema = z
   .object({
-    title: z.string().optional().nullable(),
-    lastMessage: z.string().optional().nullable(),
-    lastMessageAt: z.date().optional().nullable(),
-    isArchived: z.boolean().optional(),
-    voiceName: z.string().optional().nullable()
+    title: titleSchema,
+    isArchived: z.boolean({ invalid_type_error: M.INVALID_FLAG }).optional(),
+    voiceName: voiceSchema
   })
   .strict()
 
-// Query params
+// The gateway also writes the last message of a room
+export type UpdateAIConversationRoomData = z.infer<
+  typeof UpdateAIConversationRoomBodySchema
+> & { lastMessage?: string | null; lastMessageAt?: Date | null }
+
 export const GetAIConversationRoomListQuerySchema = z
   .object({
-    currentPage: z.coerce.number().int().positive().default(1),
-    pageSize: z.coerce.number().int().positive().max(100).default(10),
-    isArchived: z.coerce.boolean().optional()
+    currentPage: checkIdSchema(M.INVALID_PAGE).default(1),
+    pageSize: checkIdSchema(M.INVALID_PAGE_SIZE)
+      .max(100, M.INVALID_PAGE_SIZE)
+      .default(10),
+    isArchived: z
+      .enum(['true', 'false'], { errorMap: () => ({ message: M.INVALID_FLAG }) })
+      .transform((value) => value === 'true')
+      .optional()
   })
   .strict()
 
-// Params
 export const GetAIConversationRoomByIdParamsSchema = z
+  .object({ id: z.string().trim().min(1, M.INVALID_ID).max(100, M.INVALID_ID) })
+  .strict()
+
+export const GetAIConversationRoomByConversationParamsSchema = z
   .object({
-    id: z.string()
+    conversationId: z
+      .string()
+      .trim()
+      .min(1, M.INVALID_CONVERSATION_ID)
+      .max(100, M.INVALID_CONVERSATION_ID)
   })
   .strict()
 
-// Type exports
+export const AIConversationRoomResSchema = z.object({
+  statusCode: z.number(),
+  data: AIConversationRoomSchema,
+  message: z.string()
+})
+
 export type AIConversationRoomType = z.infer<typeof AIConversationRoomSchema>
 export type CreateAIConversationRoomBodyType = z.infer<
   typeof CreateAIConversationRoomBodySchema
@@ -62,7 +94,4 @@ export type UpdateAIConversationRoomBodyType = z.infer<
 >
 export type GetAIConversationRoomListQueryType = z.infer<
   typeof GetAIConversationRoomListQuerySchema
->
-export type GetAIConversationRoomByIdParamsType = z.infer<
-  typeof GetAIConversationRoomByIdParamsSchema
 >

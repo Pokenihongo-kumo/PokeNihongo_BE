@@ -141,7 +141,7 @@ describe('User batch 5h contract (e2e)', () => {
   it('messages: create, list, by conversation, detail, update, delete, delete all', async () => {
     const create = await http()
       .post('/user-ai-conversation')
-      .send({ userId, conversationId: mine, role: 'USER', message: 'こんにちは' })
+      .send({ conversationId: mine, role: 'USER', message: 'こんにちは' })
     const id: number =
       create.body.data?.id ??
       (
@@ -206,20 +206,24 @@ describe('User batch 5h contract (e2e)', () => {
       roomListBadPage: await both((l) =>
         http(l).get('/ai-conversation-room').query({ currentPage: 'abc' })
       ),
+      roomTakenConversation: await both((l) =>
+        http(l).post('/ai-conversation-room').send({ conversationId: theirs })
+      ),
       roomDeleteMissing: await both((l) =>
         http(l).delete('/ai-conversation-room/missing-room')
       ),
       messageMissing: await both((l) => http(l).get('/user-ai-conversation/999999')),
       messageInvalidId: await both((l) => http(l).get('/user-ai-conversation/abc')),
-      messageCreateNoUserId: await both((l) =>
+      // The owner is the token's user: a userId in the body is refused
+      messageCreateWithUserId: await both((l) =>
         http(l)
           .post('/user-ai-conversation')
-          .send({ conversationId: mine, role: 'USER', message: 'x' })
+          .send({ userId, conversationId: mine, role: 'USER', message: 'x' })
       ),
       messageCreateBadRole: await both((l) =>
         http(l)
           .post('/user-ai-conversation')
-          .send({ userId, conversationId: mine, role: 'BOT', message: 'x' })
+          .send({ conversationId: mine, role: 'BOT', message: 'x' })
       ),
       messageDeleteMissing: await both((l) =>
         http(l).delete('/user-ai-conversation/999999')
