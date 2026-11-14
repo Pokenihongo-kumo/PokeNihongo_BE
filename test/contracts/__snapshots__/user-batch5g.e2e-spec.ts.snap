@@ -171,7 +171,7 @@ exports[`User batch 5g contract (e2e) errors 1`] = `
         "errors": [
           {
             "field": "string",
-            "message": "Invalid User Pokemon ID",
+            "message": "Invalid Pokemon ID",
           },
         ],
         "message": "Invalid data provided",
@@ -185,7 +185,7 @@ exports[`User batch 5g contract (e2e) errors 1`] = `
         "errors": [
           {
             "field": "string",
-            "message": "ID User Pokemon không hợp lệ",
+            "message": "ID Pokemon không hợp lệ",
           },
         ],
         "message": "Dữ liệu không hợp lệ",
@@ -215,26 +215,38 @@ exports[`User batch 5g contract (e2e) errors 1`] = `
   "gachaInvalidId": {
     "en": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "An error occurred",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "Đã xảy ra lỗi",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
   },
   "gachaMissing": {
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Not Found",
+        "message": "Gacha banner not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -242,7 +254,7 @@ exports[`User batch 5g contract (e2e) errors 1`] = `
     "vi": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Not Found",
+        "message": "Không tìm thấy banner gacha",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -251,57 +263,61 @@ exports[`User batch 5g contract (e2e) errors 1`] = `
   "mineBadHasPokemon": {
     "en": {
       "body": {
-        "data": {
-          "pagination": {
-            "current": "number",
-            "pageSize": "number",
-            "totalItem": "number",
-            "totalPage": "number",
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "hasPokemon must be true or false",
           },
-          "results": [],
-        },
-        "message": "User Pokemon list retrieved successfully",
-        "statusCode": 200,
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 200,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "data": {
-          "pagination": {
-            "current": "number",
-            "pageSize": "number",
-            "totalItem": "number",
-            "totalPage": "number",
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "hasPokemon phải là true hoặc false",
           },
-          "results": [],
-        },
-        "message": "Lấy danh sách User Pokemon thành công",
-        "statusCode": 200,
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 200,
+      "httpStatus": 422,
     },
   },
   "newUsersBadPeriod": {
     "en": {
       "body": {
-        "data": {
-          "count": "number",
-          "period": "string",
-        },
-        "statusCode": 200,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Period must be day, week or month",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 200,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "data": {
-          "count": "number",
-          "period": "string",
-        },
-        "statusCode": 200,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Kỳ thống kê phải là day, week hoặc month",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 200,
+      "httpStatus": 422,
     },
   },
   "readInvalidId": {
@@ -385,62 +401,68 @@ exports[`User batch 5g contract (e2e) errors 1`] = `
   "revenueBadMonth": {
     "en": {
       "body": {
-        "data": {
-          "period": {
-            "month": "number",
-            "year": "number",
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Month must be from 1 to 12",
           },
-          "plans": [],
-          "totalRevenue": {
-            "month": "number",
-            "year": "number",
-          },
-        },
-        "statusCode": 200,
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 200,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "data": {
-          "period": {
-            "month": "number",
-            "year": "number",
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Tháng phải từ 1 đến 12",
           },
-          "plans": [],
-          "totalRevenue": {
-            "month": "number",
-            "year": "number",
-          },
-        },
-        "statusCode": 200,
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 200,
+      "httpStatus": 422,
     },
   },
   "seasonInvalidId": {
     "en": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "An error occurred",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "Đã xảy ra lỗi",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
   },
   "seasonMissing": {
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Not Found",
+        "message": "Leaderboard season not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -448,7 +470,7 @@ exports[`User batch 5g contract (e2e) errors 1`] = `
     "vi": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Not Found",
+        "message": "Không tìm thấy mùa giải bảng xếp hạng",
         "statusCode": 404,
       },
       "httpStatus": 404,

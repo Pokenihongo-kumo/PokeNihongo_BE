@@ -542,6 +542,12 @@ export const UserTestMessage = {
   INVALID_PAGE_SIZE: 'user_test.INVALID_PAGE_SIZE'
 } as const
 
+export const DashboardMessage = {
+  INVALID_PERIOD: 'dashboard.INVALID_PERIOD',
+  INVALID_MONTH: 'dashboard.INVALID_MONTH',
+  INVALID_YEAR: 'dashboard.INVALID_YEAR'
+} as const
+
 export const LessonCategoryMessage = {
   CREATE_SUCCESS: 'lesson_category.CREATE_SUCCESS',
   UPDATE_SUCCESS: 'lesson_category.UPDATE_SUCCESS',
@@ -702,7 +708,9 @@ export const UserPokemonMessage = {
   EVOLVE_SUCCESS: 'user_pokemon.EVOLVE_SUCCESS',
   ADD_EXP_SUCCESS: 'user_pokemon.ADD_EXP_SUCCESS',
   LEVEL_UP_SUCCESS: 'user_pokemon.LEVEL_UP_SUCCESS',
-  USER_NOT_IN_ROUND: 'user_pokemon.USER_NOT_IN_ROUND'
+  USER_NOT_IN_ROUND: 'user_pokemon.USER_NOT_IN_ROUND',
+  INVALID_POKEMON_ID: 'user_pokemon.INVALID_POKEMON_ID',
+  INVALID_HAS_POKEMON: 'user_pokemon.INVALID_HAS_POKEMON'
 } as const
 
 export const UserMessage = {

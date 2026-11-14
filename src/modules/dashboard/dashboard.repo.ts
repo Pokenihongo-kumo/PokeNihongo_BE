@@ -1,7 +1,8 @@
 import { RoleName } from '@/common/constants/role.constant'
 import { parseQs } from '@/common/utils/qs-parser'
 import { PaginationQueryType } from '@/shared/models/request.model'
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
+import { DashboardGachaBannerNotFoundException } from './dto/dashboard.error'
 import { InvoiceStatus, PrismaClient, UserSubscriptionStatus } from '@prisma/client'
 import { todayUTCWith0000 } from 'src/shared/helpers'
 import { PrismaService } from 'src/shared/services/prisma.service'
@@ -1558,7 +1559,7 @@ export class DashboardRepo {
     })
 
     if (!banner) {
-      throw new NotFoundException()
+      throw new DashboardGachaBannerNotFoundException()
     }
 
     // Format nameTranslations

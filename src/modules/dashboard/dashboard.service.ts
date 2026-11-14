@@ -2,7 +2,8 @@ import { RoleName } from '@/common/constants/role.constant'
 import { convertEloToRank } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { PrismaService } from '@/shared/services/prisma.service'
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
+import { DashboardSeasonNotFoundException } from './dto/dashboard.error'
 import { LanguagesRepo } from '../languages/languages.repo'
 import { DashboardRepo } from './dashboard.repo'
 
@@ -623,7 +624,7 @@ export class DashboardService {
     })
 
     if (!season) {
-      throw new NotFoundException()
+      throw new DashboardSeasonNotFoundException()
     }
 
     // Format nameTranslations

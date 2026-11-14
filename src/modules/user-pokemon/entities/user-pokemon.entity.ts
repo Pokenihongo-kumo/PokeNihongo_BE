@@ -1,6 +1,7 @@
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { UserPokemonMessage } from '@/i18n/message-keys'
 import { PokemonSchema } from '@/modules/pokemon/entities/pokemon.entity'
+import { PaginationQuerySchema } from '@/shared/models/request.model'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -62,8 +63,18 @@ export const GetUserPokemonParamsSchema = z.object({
   userPokemonId: checkIdSchema(UserPokemonMessage.INVALID_ID)
 })
 
+// The app's Pokemon list: hasPokemon true/false filters owned ones
+export const GetUserPokemonListWithUserQuerySchema = PaginationQuerySchema.extend({
+  hasPokemon: z
+    .enum(['true', 'false'], {
+      errorMap: () => ({ message: UserPokemonMessage.INVALID_HAS_POKEMON })
+    })
+    .transform((value) => value === 'true')
+    .optional()
+})
+
 export const GetUserPokemonByPokemonIdParamsSchema = z.object({
-  pokemonId: checkIdSchema(UserPokemonMessage.INVALID_ID)
+  pokemonId: checkIdSchema(UserPokemonMessage.INVALID_POKEMON_ID)
 })
 
 export const GetUserPokemonDetailResSchema = z.object({
