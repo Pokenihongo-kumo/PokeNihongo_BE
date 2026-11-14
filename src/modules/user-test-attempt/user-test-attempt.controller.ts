@@ -7,7 +7,8 @@ import {
   UpdateUserTestAttemptBodyDTO,
   UserTestAttemptListResDTO,
   UserTestAttemptResDTO,
-  CheckTestCompletionBodyDTO
+  CheckTestCompletionBodyDTO,
+  UserTestAttemptTestParamsDTO
 } from '@/modules/user-test-attempt/dto/user-test-attempt.zod-dto'
 import {
   UserTestAttemptResponseSwaggerDTO,
@@ -57,8 +58,12 @@ export class UserTestAttemptController {
     type: UserTestAttemptResponseSwaggerDTO
   })
   @ZodSerializerDto(UserTestAttemptResDTO)
-  create(@Param('testId') testId: string, @ActiveUser('userId') userId: number) {
-    return this.userTestAttemptService.create(userId, parseInt(testId, 10))
+  create(
+    @Param() { testId }: CreateUserTestAttemptParamsDTO,
+    @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string
+  ) {
+    return this.userTestAttemptService.create(userId, testId, lang)
   }
 
   @Get()
@@ -71,8 +76,8 @@ export class UserTestAttemptController {
   })
   @ApiQuery({ type: GetUserTestAttemptListQuerySwaggerDTO })
   @ZodSerializerDto(UserTestAttemptListResDTO)
-  findAll(@Query() query: GetUserTestAttemptListQueryDTO) {
-    return this.userTestAttemptService.findAll(query)
+  findAll(@Query() query: GetUserTestAttemptListQueryDTO, @I18nLang() lang: string) {
+    return this.userTestAttemptService.findAll(query, lang)
   }
 
   @Get(':id')
@@ -84,8 +89,8 @@ export class UserTestAttemptController {
     type: UserTestAttemptResponseSwaggerDTO
   })
   @ZodSerializerDto(UserTestAttemptResDTO)
-  findOne(@Param('id') id: string, @I18nLang() lang: string) {
-    return this.userTestAttemptService.findOne(Number(id), lang)
+  findOne(@Param() { id }: GetUserTestAttemptByIdParamsDTO, @I18nLang() lang: string) {
+    return this.userTestAttemptService.findOne(id, lang)
   }
 
   @Put(':id')
@@ -99,11 +104,11 @@ export class UserTestAttemptController {
   })
   @ZodSerializerDto(UserTestAttemptResDTO)
   update(
-    @Param('id') id: string,
+    @Param() { id }: GetUserTestAttemptByIdParamsDTO,
     @Body() body: UpdateUserTestAttemptBodyDTO,
-    @ActiveUser('userId') userId: number
+    @I18nLang() lang: string
   ) {
-    return this.userTestAttemptService.update(Number(id), body)
+    return this.userTestAttemptService.update(id, body, lang)
   }
 
   @Delete(':id')
@@ -116,8 +121,12 @@ export class UserTestAttemptController {
     type: UserTestAttemptResponseSwaggerDTO
   })
   @ZodSerializerDto(UserTestAttemptResDTO)
-  remove(@Param('id') id: string) {
-    return this.userTestAttemptService.remove(Number(id))
+  remove(
+    @Param() { id }: GetUserTestAttemptByIdParamsDTO,
+    @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string
+  ) {
+    return this.userTestAttemptService.remove(id, userId, lang)
   }
 
   @Put(':id/submit-completion')
@@ -130,15 +139,12 @@ export class UserTestAttemptController {
     type: TestCompletionResponseSwaggerDTO
   })
   submitCompletion(
-    @Param('id') id: string,
+    @Param() { id }: GetUserTestAttemptByIdParamsDTO,
     @ActiveUser('userId') userId: number,
-    @Body() body: CheckTestCompletionBodyDTO
+    @Body() body: CheckTestCompletionBodyDTO,
+    @I18nLang() lang: string
   ) {
-    return this.userTestAttemptService.submitTestCompletion(
-      Number(id),
-      userId,
-      body?.time
-    )
+    return this.userTestAttemptService.submitTestCompletion(id, userId, body.time, lang)
   }
 
   @Put(':id/placement-test/submit-completion')
@@ -150,15 +156,17 @@ export class UserTestAttemptController {
     description: 'Nộp bài placement test thành công',
     type: MessageResDTO
   })
-  supmitPlacementTestCompletion(
-    @Param('id') id: string,
+  submitPlacementTestCompletion(
+    @Param() { id }: GetUserTestAttemptByIdParamsDTO,
     @ActiveUser('userId') userId: number,
-    @Body() body: CheckTestCompletionBodyDTO
+    @Body() body: CheckTestCompletionBodyDTO,
+    @I18nLang() lang: string
   ) {
     return this.userTestAttemptService.submitPlacementTestCompletion(
-      Number(id),
+      id,
       userId,
-      body?.time
+      body.time,
+      lang
     )
   }
 
@@ -171,15 +179,11 @@ export class UserTestAttemptController {
     type: TestCompletionResponseSwaggerDTO
   })
   checkCompletion(
-    @Param('id') id: string,
+    @Param() { id }: GetUserTestAttemptByIdParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() languageCode: string
   ) {
-    return this.userTestAttemptService.checkTestCompletion(
-      Number(id),
-      userId,
-      languageCode
-    )
+    return this.userTestAttemptService.checkTestCompletion(id, userId, languageCode)
   }
 
   @Put(':id/abandon')
@@ -193,11 +197,12 @@ export class UserTestAttemptController {
   })
   @ZodSerializerDto(UserTestAttemptResDTO)
   abandon(
-    @Param('id') id: string,
+    @Param() { id }: GetUserTestAttemptByIdParamsDTO,
     @ActiveUser('userId') userId: number,
-    @Body() body: TimeSwaggerDTO
+    @Body() body: CheckTestCompletionBodyDTO,
+    @I18nLang() lang: string
   ) {
-    return this.userTestAttemptService.abandon(Number(id), userId, body?.time)
+    return this.userTestAttemptService.abandon(id, userId, body.time, lang)
   }
 
   @Get(':id/status')
@@ -210,11 +215,11 @@ export class UserTestAttemptController {
   })
   @ZodSerializerDto(UserTestAttemptResDTO)
   getStatus(
-    @Param('id') id: string,
+    @Param() { id }: GetUserTestAttemptByIdParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userTestAttemptService.getStatus(Number(id), userId, lang)
+    return this.userTestAttemptService.getStatus(id, userId, lang)
   }
 
   @Get('/test/:id')
@@ -230,15 +235,11 @@ export class UserTestAttemptController {
     type: UserTestAttemptResponseSwaggerDTO
   })
   getTestAttemptByTestId(
-    @Param('id') id: string,
+    @Param() { id }: UserTestAttemptTestParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() languageCode: string
   ) {
-    return this.userTestAttemptService.getTestAttemptByTestId(
-      Number(id),
-      userId,
-      languageCode
-    )
+    return this.userTestAttemptService.getTestAttemptByTestId(id, userId, languageCode)
   }
 
   @Get('/test/:id/review')
@@ -252,15 +253,11 @@ export class UserTestAttemptController {
     type: UserTestAttemptResponseSwaggerDTO
   })
   getTestAttemptReview(
-    @Param('id') id: string,
+    @Param() { id }: GetUserTestAttemptByIdParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() languageCode: string
   ) {
-    return this.userTestAttemptService.getTestAttemptReview(
-      Number(id),
-      userId,
-      languageCode
-    )
+    return this.userTestAttemptService.getTestAttemptReview(id, userId, languageCode)
   }
 
   //KUMO new
@@ -275,12 +272,12 @@ export class UserTestAttemptController {
     type: UserTestAttemptResponseSwaggerDTO
   })
   getLessonTestAttemptReview(
-    @Param('id') id: string,
+    @Param() { id }: GetUserTestAttemptByIdParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() languageCode: string
   ) {
     return this.userTestAttemptService.getLessonTestAttemptReview(
-      Number(id),
+      id,
       userId,
       languageCode
     )

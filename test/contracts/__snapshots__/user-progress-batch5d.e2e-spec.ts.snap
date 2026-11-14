@@ -91,7 +91,7 @@ exports[`User progress batch 5d contract (e2e) errors 1`] = `
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Không tìm thấy lần thử bài test",
+        "message": "Test attempt not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -157,7 +157,7 @@ exports[`User progress batch 5d contract (e2e) errors 1`] = `
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Không tìm thấy lần thử bài test",
+        "message": "Test attempt not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -175,7 +175,7 @@ exports[`User progress batch 5d contract (e2e) errors 1`] = `
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Không tìm thấy lần thử bài test",
+        "message": "Test attempt not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -222,44 +222,56 @@ exports[`User progress batch 5d contract (e2e) errors 1`] = `
   "openInvalidId": {
     "en": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "An error occurred",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid test ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "Đã xảy ra lỗi",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID bài test không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
   },
   "openNoUserTest": {
     "en": {
       "body": {
-        "error": "BAD_REQUEST",
+        "error": "NOT_FOUND",
         "message": "UserTest not found",
-        "statusCode": 400,
+        "statusCode": 404,
       },
-      "httpStatus": 400,
+      "httpStatus": 404,
     },
     "vi": {
       "body": {
-        "error": "BAD_REQUEST",
+        "error": "NOT_FOUND",
         "message": "Không tìm thấy UserTest",
-        "statusCode": 400,
+        "statusCode": 404,
       },
-      "httpStatus": 400,
+      "httpStatus": 404,
     },
   },
   "placementMissing": {
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Không tìm thấy lần thử bài test",
+        "message": "Test attempt not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -277,7 +289,7 @@ exports[`User progress batch 5d contract (e2e) errors 1`] = `
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Không tìm thấy lần thử bài test",
+        "message": "Test attempt not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -294,29 +306,11 @@ exports[`User progress batch 5d contract (e2e) errors 1`] = `
   "statusInvalidId": {
     "en": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "An error occurred",
-        "statusCode": 500,
-      },
-      "httpStatus": 500,
-    },
-    "vi": {
-      "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "Đã xảy ra lỗi",
-        "statusCode": 500,
-      },
-      "httpStatus": 500,
-    },
-  },
-  "submitInvalidBody": {
-    "en": {
-      "body": {
         "error": "UNPROCESSABLE_ENTITY",
         "errors": [
           {
             "field": "string",
-            "message": "Invalid format",
+            "message": "Invalid test attempt ID",
           },
         ],
         "message": "Invalid data provided",
@@ -330,7 +324,37 @@ exports[`User progress batch 5d contract (e2e) errors 1`] = `
         "errors": [
           {
             "field": "string",
-            "message": "Định dạng không hợp lệ",
+            "message": "ID lần thử bài test không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "submitInvalidBody": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Time must be a non-negative number of seconds",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Thời gian phải là số giây không âm",
           },
         ],
         "message": "Dữ liệu không hợp lệ",
@@ -343,7 +367,7 @@ exports[`User progress batch 5d contract (e2e) errors 1`] = `
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Không tìm thấy lần thử bài test",
+        "message": "Test attempt not found",
         "statusCode": 404,
       },
       "httpStatus": 404,

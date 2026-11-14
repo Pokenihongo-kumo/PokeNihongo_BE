@@ -4,11 +4,12 @@ import {
   UpdateUserTestAttemptBodySchema,
   GetUserTestAttemptByIdParamsSchema,
   CreateUserTestAttemptParamsSchema,
+  UserTestAttemptTestParamsSchema,
   GetUserTestAttemptListQuerySchema,
   UserTestAttemptResSchema,
   UserTestAttemptListResSchema,
   CheckTestCompletionBodySchema
-} from '../entities/user-test-attempt.entities'
+} from '../entities/user-test-attempt.entity'
 
 export class CreateUserTestAttemptBodyDTO extends createZodDto(
   CreateUserTestAttemptBodySchema
@@ -21,6 +22,9 @@ export class GetUserTestAttemptByIdParamsDTO extends createZodDto(
 ) {}
 export class CreateUserTestAttemptParamsDTO extends createZodDto(
   CreateUserTestAttemptParamsSchema
+) {}
+export class UserTestAttemptTestParamsDTO extends createZodDto(
+  UserTestAttemptTestParamsSchema
 ) {}
 export class GetUserTestAttemptListQueryDTO extends createZodDto(
   GetUserTestAttemptListQuerySchema
