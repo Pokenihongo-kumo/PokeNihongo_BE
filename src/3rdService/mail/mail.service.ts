@@ -2,6 +2,10 @@ import { I18nService } from '@/i18n/i18n.service'
 import { MailerService } from '@nestjs-modules/mailer'
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common'
 import { Redis } from 'ioredis' // Dùng Redis từ ioredis thay vì RedisClientType
+import { maskEmail } from '@/common/utils/mask'
+import { randomUUID } from 'crypto'
+import { MailUnavailableException } from './mail.error'
+import { codeOfStoredOtp, DELETE_IF_UNCHANGED, toStoredOtp } from './otp-value'
 
 @Injectable()
 export class MailService {
@@ -26,9 +30,12 @@ export class MailService {
         template,
         context
       })
-      this.logger.log(`Email sent to ${to} with subject "${subject}"`)
+      this.logger.log(`Email sent to ${maskEmail(to)}`)
     } catch (error) {
-      this.logger.error(`Failed to send email to ${to}: ${error.message}`)
+      // The provider error may repeat the address or the subject (an OTP is in it)
+      this.logger.error(
+        `Failed to send email to ${maskEmail(to)}: ${error instanceof Error ? error.name : 'error'}`
+      )
       throw error
     }
   }
@@ -53,29 +60,34 @@ export class MailService {
     body: string
   ): Promise<void> {
     const otp = Math.floor(100000 + Math.random() * 900000).toString() // Tạo OTP 6 chữ số
-    if (await this.redisClient.exists(email)) {
-      await this.redisClient.del(email) // Xóa OTP cũ nếu có
+    // Replaces the previous code, valid 5 minutes
+    const stored = toStoredOtp(otp, randomUUID())
+    await this.redisClient.set(email, stored, 'EX', 300)
+    try {
+      await this.sendOtpMail(email, otp, template, content, body)
+    } catch {
+      // Nobody received this code: drop it, unless a newer send has replaced it
+      await this.redisClient.eval(DELETE_IF_UNCHANGED, 1, email, stored)
+      throw new MailUnavailableException()
     }
-    await this.redisClient.set(email, otp, 'EX', 300) // Lưu OTP vào Redis với thời gian hết hạn 5 phút
-    await this.sendOtpMail(email, otp, template, content, body)
     // Never log the code itself
-    this.logger.log(`OTP sent to ${email}`)
+    this.logger.log(`OTP sent to ${maskEmail(email)}`)
   }
 
   async verifyOtpStrict(email: string, otp: string): Promise<boolean> {
     try {
-      const storedOtp = await this.redisClient.get(email)
+      const storedOtp = codeOfStoredOtp(await this.redisClient.get(email))
       if (storedOtp === otp) {
         // Xóa OTP sau khi xác thực thành công
         await this.redisClient.del(email)
-        this.logger.log(`OTP verified and deleted for ${email}`)
+        this.logger.log(`OTP verified and deleted for ${maskEmail(email)}`)
         return true
       }
       //
 
       throw new BadRequestException('Mã OTP không hợp lệ hoặc đã hết hạn')
     } catch (error) {
-      this.logger.error(`Failed to verify OTP for ${email}: ${error.message}`)
+      this.logger.error(`Failed to verify OTP for ${maskEmail(email)}: ${error.message}`)
       throw error
     }
   }

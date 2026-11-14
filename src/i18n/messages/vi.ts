@@ -603,6 +603,9 @@ export const viMessages = {
     INVALID_ROLE: 'Vai trò phải là USER hoặc AI',
     INVALID_MESSAGE: 'Nội dung tin nhắn không được để trống'
   },
+  mail: {
+    UNAVAILABLE: 'Hiện không gửi được email, vui lòng thử lại sau'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Tạo danh mục bài học thành công',
     UPDATE_SUCCESS: 'Cập nhật danh mục bài học thành công',
