@@ -4,6 +4,7 @@ import {
   UpdateUserExerciseAttemptBodySchema,
   GetUserExerciseAttemptByIdParamsSchema,
   CreateUserExerciseAttemptParamsSchema,
+  UserExerciseAttemptLessonParamsSchema,
   GetUserExerciseAttemptListQuerySchema,
   UserExerciseAttemptResSchema,
   UserExerciseAttemptListResSchema,
@@ -22,6 +23,9 @@ export class GetUserExerciseAttemptByIdParamsDTO extends createZodDto(
 ) {}
 export class CreateUserExerciseAttemptParamsDTO extends createZodDto(
   CreateUserExerciseAttemptParamsSchema
+) {}
+export class UserExerciseAttemptLessonParamsDTO extends createZodDto(
+  UserExerciseAttemptLessonParamsSchema
 ) {}
 export class GetUserExerciseAttemptListQueryDTO extends createZodDto(
   GetUserExerciseAttemptListQuerySchema

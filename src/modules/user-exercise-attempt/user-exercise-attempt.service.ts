@@ -1,24 +1,18 @@
 import {
-  CreateUserExerciseAttemptBodyType,
-  GetUserExerciseAttemptByIdParamsType,
   GetUserExerciseAttemptListQueryType,
-  UpdateUserExerciseAttemptBodyType,
-  LatestExerciseAttemptsByLessonResType
+  LatestExerciseAttemptsByLessonResType,
+  UpdateUserExerciseAttemptBodyType
 } from '@/modules/user-exercise-attempt/entities/user-exercise-attempt.entity'
 import {
-  InvalidUserExerciseAttemptDataException,
-  UserExerciseAttemptNotFoundException,
-  ExerciseNotFoundException,
-  LessonBlockedException,
-  ForbiddenReviewAccessException,
-  LessonPrerequisiteNotMetException,
+  AttemptNotOwnedException,
   ExerciseAttemptNotInProgressException,
-  ReviewInsufficientScoreException
+  ExerciseHasNoTestSetException,
+  InvalidUserExerciseAttemptDataException,
+  LessonBlockedException,
+  LessonPrerequisiteNotMetException,
+  ReviewInsufficientScoreException,
+  UserExerciseAttemptNotFoundException
 } from '@/modules/user-exercise-attempt/dto/user-exercise-attempt.error'
-import {
-  EXERCISES_MESSAGE,
-  USER_EXERCISE_ATTEMPT_MESSAGE
-} from '@/common/constants/message'
 import { UserExerciseAttemptRepo } from '@/modules/user-exercise-attempt/user-exercise-attempt.repo'
 import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
 import { UserAnswerLogService } from '@/modules/user-answer-log/user-answer-log.service'
@@ -26,14 +20,15 @@ import { UserProgressService } from '@/modules/user-progress/user-progress.servi
 import { ExercisesService } from '@/modules/exercises/exercises.service'
 import { ExercisesRepo } from '@/modules/exercises/exercises.repo'
 import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
-import { isNotFoundPrismaError } from '@/shared/helpers'
-import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
 import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { TranslationHelperService } from '@/modules/translation/translation.helper.service'
 import { I18nService } from '@/i18n/i18n.service'
-import { UserExerciseAttemptMessage } from '@/i18n/message-keys'
+import { UserExerciseAttemptMessage as M } from '@/i18n/message-keys'
 import { pickLabelFromComposite } from '@/common/utils/prase.utils'
 import { calculateScore } from '@/common/utils/algorithm'
+import { toPaginationMeta } from '@/shared/utils/pagination'
+import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
 import { ProgressStatus, UserRewardSourceType } from '@prisma/client'
 import { RewardService } from '../reward/reward.service'
 
@@ -79,70 +74,57 @@ export class UserExerciseAttemptService {
     )
   }
 
-  async create(userId: number, exerciseId: number) {
+  async create(userId: number, exerciseId: number, lang: string = 'vi') {
     try {
-      // 1. Lấy thông tin Exercise để biết lessonId
+      // The exercise (404 from ExercisesService when missing) and its lesson
       const exercise = await this.exercisesService.findById(exerciseId)
-      if (!exercise) {
-        throw ExerciseNotFoundException
-      }
-      // 2. Lấy thông tin lesson
       const targetLessonId = exercise.lessonId
 
-      // 2. Kiểm tra levelJLPT: nếu user level cao hơn lesson level thì không chặn
+      // A user above the lesson's JLPT level is never blocked
+      // (N4 = 4 < N5 = 5: not blocked; N5 = N5: the checks below apply)
       const user = await this.sharedUserRepository.findUnique({ id: userId })
       const userLevelJLPT = user?.levelJLPT ?? null
       const lessonLevelJlpt =
         await this.exercisesRepository.getLessonLevelJlpt(targetLessonId)
-
-      // Nếu user levelJLPT < lesson levelJlpt (user level cao hơn) thì không chặn
-      // Ví dụ: user N4 (4) < lesson N5 (5) → không chặn
-      // Ví dụ: user N5 (5) = lesson N5 (5) → chặn (nếu không đáp ứng điều kiện khác)
       const shouldSkipBlocking =
         userLevelJLPT !== null &&
         lessonLevelJlpt !== null &&
         userLevelJLPT < lessonLevelJlpt
 
-      // 3. Kiểm tra xem user có đang có lesson IN_PROGRESS không
+      // Studying another lesson: only a COMPLETED lesson can be redone
       const currentInProgressLesson =
         await this.userProgressService.getCurrentInProgressLesson(userId)
-      if (currentInProgressLesson && !shouldSkipBlocking) {
-        // 4. Nếu có lesson IN_PROGRESS, kiểm tra xem có phải lesson target không
-        if (currentInProgressLesson.lessonId !== targetLessonId) {
-          // 5. Nếu không phải lesson target, kiểm tra xem lesson target có COMPLETED không
-          const targetLessonProgress =
-            await this.userProgressService.getUserProgressByLesson(userId, targetLessonId)
-          if (!targetLessonProgress || targetLessonProgress.status !== 'COMPLETED') {
-            throw LessonBlockedException
-          }
-          // Nếu lesson target đã COMPLETED, cho phép tạo attempt
+      if (
+        currentInProgressLesson &&
+        !shouldSkipBlocking &&
+        currentInProgressLesson.lessonId !== targetLessonId
+      ) {
+        const targetLessonProgress =
+          await this.userProgressService.getUserProgressByLesson(userId, targetLessonId)
+        if (!targetLessonProgress || targetLessonProgress.status !== 'COMPLETED') {
+          throw new LessonBlockedException()
         }
       }
 
       const userExerciseAttempt = await this.userExerciseAttemptRepository.create({
-        userId: userId,
-        exerciseId: exerciseId
+        userId,
+        exerciseId
       })
 
-      // Cập nhật UserProgress status thành IN_PROGRESS khi bắt đầu làm bài tập
+      // Starting an exercise puts the lesson IN_PROGRESS
       await this.updateUserProgressOnStart(userId, exerciseId)
 
       return {
         data: userExerciseAttempt,
-        message: USER_EXERCISE_ATTEMPT_MESSAGE.CREATE_SUCCESS
+        message: this.i18nService.translate(M.CREATE_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error('Error creating user exercise attempt:', error)
-      if (error instanceof HttpException) {
-        throw error
-      }
-      throw InvalidUserExerciseAttemptDataException
+      throw this.toAttemptError(error)
     }
   }
 
-  async findAll(query: GetUserExerciseAttemptListQueryType) {
+  async findAll(query: GetUserExerciseAttemptListQueryType, lang: string = 'vi') {
     const { currentPage, pageSize, userId, exerciseId, status } = query
-
     const result = await this.userExerciseAttemptRepository.findMany({
       currentPage,
       pageSize,
@@ -150,559 +132,295 @@ export class UserExerciseAttemptService {
       exerciseId,
       status
     })
-
     return {
       statusCode: 200,
-      message: USER_EXERCISE_ATTEMPT_MESSAGE.GET_LIST_SUCCESS,
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
       data: {
         results: result.items,
-        pagination: {
-          current: result.page,
-          pageSize: result.limit,
-          totalPage: Math.ceil(result.total / result.limit),
-          totalItem: result.total
-        }
+        pagination: toPaginationMeta(currentPage, pageSize, result.total)
       }
     }
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, lang: string = 'vi') {
     const userExerciseAttempt = await this.userExerciseAttemptRepository.findUnique({
-      id: id
+      id
     })
-
     if (!userExerciseAttempt) {
-      throw UserExerciseAttemptNotFoundException
+      throw new UserExerciseAttemptNotFoundException()
     }
-
     return {
       data: userExerciseAttempt,
-      message: USER_EXERCISE_ATTEMPT_MESSAGE.GET_SUCCESS
+      message: this.i18nService.translate(M.GET_SUCCESS, lang)
     }
   }
 
-  async update(id: number, body: UpdateUserExerciseAttemptBodyType) {
+  // The app continues or skips its own attempt
+  async update(
+    id: number,
+    body: UpdateUserExerciseAttemptBodyType,
+    userId: number,
+    lang: string = 'vi'
+  ) {
     try {
+      await this.ownAttempt(id, userId)
       const userExerciseAttempt = await this.userExerciseAttemptRepository.update(
         { id },
         body
       )
-
       return {
         data: userExerciseAttempt,
-        message: USER_EXERCISE_ATTEMPT_MESSAGE.UPDATE_SUCCESS
+        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error('Error updating user exercise attempt:', error)
-      if (
-        error instanceof HttpException ||
-        error.message?.includes('không tồn tại') ||
-        error.message?.includes('đã tồn tại')
-      ) {
-        throw error
-      }
-      throw InvalidUserExerciseAttemptDataException
+      throw this.toAttemptError(error)
     }
   }
 
-  async remove(id: number) {
+  async remove(id: number, lang: string = 'vi') {
     try {
       const userExerciseAttempt = await this.userExerciseAttemptRepository.delete({ id })
-
       return {
         data: userExerciseAttempt,
-        message: USER_EXERCISE_ATTEMPT_MESSAGE.DELETE_SUCCESS
+        message: this.i18nService.translate(M.DELETE_SUCCESS, lang)
       }
     } catch (error) {
-      this.logger.error('Error deleting user exercise attempt:', error)
-      if (error instanceof HttpException || error.message?.includes('không tồn tại')) {
-        throw error
-      }
-      throw InvalidUserExerciseAttemptDataException
+      throw this.toAttemptError(error)
     }
   }
 
-  async checkExerciseCompletion(userExerciseAttemptId: number, userId: number) {
-    try {
-      this.logger.log(
-        `Checking completion for user exercise attempt: ${userExerciseAttemptId}`
-      )
-
-      // 1. Lấy thông tin UserExerciseAttempt
-      const attempt =
-        await this.userExerciseAttemptRepository.findById(userExerciseAttemptId)
-      if (!attempt) {
-        throw UserExerciseAttemptNotFoundException
-      }
-
-      // 2. Lấy thông tin Exercise để biết testSetId
-      const exercise = await this.exercisesService.findById(attempt.exerciseId)
-      if (!exercise || !exercise.testSetId) {
-        throw new Error('Exercise không có test set')
-      }
-
-      // 3. Lấy tất cả Question của TestSet
-      const questionsResult = await this.questionBankService.findByTestSetId(
-        exercise.testSetId
-      )
-      const allQuestions = questionsResult.data.results
-      this.logger.log(
-        `Found ${allQuestions.length} questions for exercise ${attempt.exerciseId}`
-      )
-
-      // 4. Lấy tất cả UserAnswerLog của attempt này
-      const answerLogsResult =
-        await this.userAnswerLogService.findByUserExerciseAttemptId(userExerciseAttemptId)
-      const userAnswers = answerLogsResult.data.results
-      this.logger.log(
-        `Found ${userAnswers.length} user answers for attempt ${userExerciseAttemptId}`
-      )
-      const totalQuestions = allQuestions.length
-      const correctAnswers = userAnswers.filter((log: any) => log.isCorrect).length
-      const correctPercentage =
-        totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0
-
-      // 5. Kiểm tra xem đã trả lời hết chưa
-      const answeredQuestionIds = new Set(
-        userAnswers.map((log) => (log as any).questionBankId)
-      )
-      const unansweredQuestions = allQuestions.filter(
-        (q) => !answeredQuestionIds.has(q.id)
-      )
-      if (unansweredQuestions.length > 0) {
-        this.logger.log(`Still ${unansweredQuestions.length} unanswered questions`)
-        return {
-          statusCode: 200,
-          message: 'Bạn chưa trả lời đủ câu hỏi',
-          data: {
-            isCompleted: false,
-            totalQuestions: allQuestions.length,
-            answeredQuestions: userAnswers.length,
-            unansweredQuestions: unansweredQuestions.length,
-            unansweredQuestionIds: unansweredQuestions.map((q) => q.id),
-            allCorrect: false,
-            status: 'IN_PROGRESS'
-          }
-        }
-      }
-
-      // 6. Kiểm tra xem tất cả câu trả lời có đúng không
-      const allCorrect = userAnswers.every((log) => log.isCorrect)
-
-      // 7. Chỉ trả kết quả, KHÔNG cập nhật DB trong hàm check
-      const finalStatus = allCorrect ? 'COMPLETED' : 'FAILED'
-      const message = allCorrect
-        ? 'Chúc mừng! Bạn đã hoàn thành bài tập và trả lời đúng hết'
-        : 'Bạn đã hoàn thành bài tập nhưng có một số câu trả lời sai'
-
-      return {
-        statusCode: 200,
-        message: message,
-        data: {
-          isCompleted: true,
-          totalQuestions: allQuestions.length,
-          answeredQuestions: userAnswers.length,
-          unansweredQuestions: 0,
-          allCorrect: allCorrect,
-          status: finalStatus
-        }
-      }
-    } catch (error) {
-      this.logger.error('Error checking exercise completion:', error)
-      throw error
-    }
-  }
-
-  async supmitExerciseCompletion(
+  // Only reads the result, writes nothing
+  async checkExerciseCompletion(
     userExerciseAttemptId: number,
     userId: number,
-    timeSeconds?: number
+    lang: string = 'vi'
   ) {
-    // 3,14159 PILU
-    try {
-      this.logger.log(
-        `Checking completion for user exercise attempt: ${userExerciseAttemptId}`
-      )
+    const { allQuestions, userAnswers, unansweredQuestions } = await this.gradeAttempt(
+      userExerciseAttemptId,
+      userId
+    )
 
-      // 1. Lấy thông tin UserExerciseAttempt
-      const attempt =
-        await this.userExerciseAttemptRepository.findById(userExerciseAttemptId)
-      if (!attempt) {
-        throw UserExerciseAttemptNotFoundException
-      }
-
-      // 2. Lấy thông tin Exercise để biết testSetId
-      const exercise = await this.exercisesService.findById(attempt.exerciseId)
-      if (!exercise || !exercise.testSetId) {
-        throw new Error('Exercise không có test set')
-      }
-
-      // 3. Lấy tất cả Question của TestSet
-      const questionsResult = await this.questionBankService.findByTestSetId(
-        exercise.testSetId
-      )
-      const allQuestions = questionsResult.data.results
-      this.logger.log(
-        `Found ${allQuestions.length} questions for exercise ${attempt.exerciseId}`
-      )
-
-      // 4. Lấy tất cả UserAnswerLog của attempt này
-      const answerLogsResult =
-        await this.userAnswerLogService.findByUserExerciseAttemptId(userExerciseAttemptId)
-      const userAnswers = answerLogsResult.data.results
-      this.logger.log(
-        `Found ${userAnswers.length} user answers for attempt ${userExerciseAttemptId}`
-      )
-      const totalQuestions = allQuestions.length
-      const correctAnswers = userAnswers.filter((log: any) => log.isCorrect).length
-      const score =
-        totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0
-
-      // 5. Kiểm tra xem đã trả lời hết chưa
-      const answeredQuestionIds = new Set(
-        userAnswers.map((log) => (log as any).questionBankId)
-      )
-      const unansweredQuestions = allQuestions.filter(
-        (q) => !answeredQuestionIds.has(q.id)
-      )
-
-      // Nếu không có câu trả lời nào mà vẫn nộp bài, coi như FAILED
-      if (userAnswers.length === 0) {
-        const newStatus = 'FAILED'
-        const message = 'Bạn đã nộp bài nhưng chưa trả lời câu hỏi nào'
-
-        await this.userExerciseAttemptRepository.update(
-          { id: userExerciseAttemptId },
-          {
-            status: newStatus,
-            ...(timeSeconds !== undefined ? { time: timeSeconds } : {})
-          }
-        )
-        this.logger.log(
-          `Updated attempt ${userExerciseAttemptId} to ${newStatus} - no answers provided`
-        )
-
-        // Cập nhật UserProgress status thành FAILED
-        await this.updateUserProgressOnExerciseCompletion(
-          attempt.userId,
-          attempt.exerciseId,
-          ProgressStatus.FAILED
-        )
-
-        return {
-          statusCode: 200,
-          message: message,
-          data: {
-            isCompleted: true,
-            totalQuestions: allQuestions.length,
-            answeredQuestions: 0,
-            unansweredQuestions: allQuestions.length,
-            unansweredQuestionIds: allQuestions.map((q) => q.id),
-            allCorrect: false,
-            status: newStatus,
-            score,
-            rewards: null
-          }
-        }
-      }
-
-      // Nếu chưa trả lời hết, coi như FAILED
-      if (unansweredQuestions.length > 0) {
-        const newStatus = 'FAILED'
-        const message = 'Bạn đã nộp bài nhưng chưa trả lời đủ câu hỏi'
-
-        await this.userExerciseAttemptRepository.update(
-          { id: userExerciseAttemptId },
-          {
-            status: newStatus,
-            ...(timeSeconds !== undefined ? { time: timeSeconds } : {})
-          }
-        )
-        this.logger.log(
-          `Updated attempt ${userExerciseAttemptId} to ${newStatus} - incomplete answers`
-        )
-
-        // Cập nhật UserProgress status thành FAILED
-        await this.updateUserProgressOnExerciseCompletion(
-          attempt.userId,
-          attempt.exerciseId,
-          ProgressStatus.FAILED
-        )
-
-        return {
-          statusCode: 200,
-          message: message,
-          data: {
-            isCompleted: true,
-            totalQuestions: allQuestions.length,
-            answeredQuestions: userAnswers.length,
-            unansweredQuestions: unansweredQuestions.length,
-            unansweredQuestionIds: unansweredQuestions.map((q) => q.id),
-            allCorrect: false,
-            status: newStatus,
-            score,
-            rewards: null
-          }
-        }
-      }
-
-      // 6. Kiểm tra xem tất cả câu trả lời có đúng không
-      const allCorrect = userAnswers.every((log) => log.isCorrect)
-
-      // 7. Update status dựa trên kết quả
-      let newStatus: string
-      let message: string
-
-      if (allCorrect) {
-        newStatus = 'COMPLETED'
-        message = 'Chúc mừng! Bạn đã hoàn thành bài tập và trả lời đúng hết'
-      } else {
-        newStatus = 'FAILED'
-        message = 'Bạn đã hoàn thành bài tập nhưng có một số câu trả lời sai'
-      }
-
-      let hasCompletedBefore = false
-      if (newStatus === 'COMPLETED') {
-        hasCompletedBefore = await this.userExerciseAttemptRepository.hasCompletedAttempt(
-          attempt.userId,
-          attempt.exerciseId
-        )
-      }
-
-      // Update status trong database
-      await this.userExerciseAttemptRepository.update(
-        { id: userExerciseAttemptId },
-        { status: newStatus, ...(timeSeconds !== undefined ? { time: timeSeconds } : {}) }
-      )
-      this.logger.log(`Updated attempt ${userExerciseAttemptId} to ${newStatus}`)
-
-      let rewardResults: any = null
-
-      // Cập nhật UserProgress dựa trên kết quả
-      if (newStatus === 'COMPLETED') {
-        // Nếu hoàn thành (không fail), update status thành IN_PROGRESS
-        await this.updateUserProgressOnExerciseCompletion(
-          attempt.userId,
-          attempt.exerciseId,
-          ProgressStatus.IN_PROGRESS
-        )
-        rewardResults = await this.grantExerciseRewards(
-          exercise.rewardId,
-          attempt.userId,
-          {
-            reduceReward: hasCompletedBefore
-          },
-          attempt.exerciseId
-        )
-      } else if (newStatus === 'FAILED') {
-        // Nếu fail, update status thành FAILED
-        await this.updateUserProgressOnExerciseCompletion(
-          attempt.userId,
-          attempt.exerciseId,
-          ProgressStatus.FAILED
-        )
-      }
-
+    if (unansweredQuestions.length > 0) {
       return {
         statusCode: 200,
-        message: message,
+        message: this.i18nService.translate(M.NOT_ALL_ANSWERED, lang),
+        data: {
+          isCompleted: false,
+          totalQuestions: allQuestions.length,
+          answeredQuestions: userAnswers.length,
+          unansweredQuestions: unansweredQuestions.length,
+          unansweredQuestionIds: unansweredQuestions.map((q) => q.id),
+          allCorrect: false,
+          status: 'IN_PROGRESS'
+        }
+      }
+    }
+
+    const allCorrect = userAnswers.every((log) => log.isCorrect)
+    return {
+      statusCode: 200,
+      message: this.i18nService.translate(
+        allCorrect ? M.ALL_CORRECT : M.SOME_INCORRECT,
+        lang
+      ),
+      data: {
+        isCompleted: true,
+        totalQuestions: allQuestions.length,
+        answeredQuestions: userAnswers.length,
+        unansweredQuestions: 0,
+        allCorrect,
+        status: allCorrect ? 'COMPLETED' : 'FAILED'
+      }
+    }
+  }
+
+  // Grades the attempt and saves the result: every answer right is COMPLETED
+  // (rewards, reduced when done before), anything else FAILED
+  async submitExerciseCompletion(
+    userExerciseAttemptId: number,
+    userId: number,
+    timeSeconds?: number,
+    lang: string = 'vi'
+  ) {
+    const { attempt, exercise, allQuestions, userAnswers, unansweredQuestions, score } =
+      await this.gradeAttempt(userExerciseAttemptId, userId)
+    const time = timeSeconds !== undefined ? { time: timeSeconds } : {}
+
+    // Nothing answered, or not everything: FAILED
+    if (userAnswers.length === 0 || unansweredQuestions.length > 0) {
+      await this.userExerciseAttemptRepository.update(
+        { id: userExerciseAttemptId },
+        { status: 'FAILED', ...time }
+      )
+      await this.updateUserProgressOnExerciseCompletion(
+        attempt.userId,
+        attempt.exerciseId,
+        ProgressStatus.FAILED
+      )
+      const unanswered = userAnswers.length === 0 ? allQuestions : unansweredQuestions
+      return {
+        statusCode: 200,
+        message: this.i18nService.translate(
+          userAnswers.length === 0 ? M.SUBMITTED_NO_ANSWER : M.SUBMITTED_INCOMPLETE,
+          lang
+        ),
         data: {
           isCompleted: true,
           totalQuestions: allQuestions.length,
           answeredQuestions: userAnswers.length,
-          unansweredQuestions: 0,
-          allCorrect: allCorrect,
-          status: newStatus,
+          unansweredQuestions: unanswered.length,
+          unansweredQuestionIds: unanswered.map((q) => q.id),
+          allCorrect: false,
+          status: 'FAILED',
           score,
-          rewards: rewardResults
+          rewards: null
         }
       }
-    } catch (error) {
-      this.logger.error('Error checking exercise completion:', error)
-      throw error
     }
-  }
 
-  async abandon(userExerciseAttemptId: number, userId: number, timeSeconds?: number) {
-    try {
-      this.logger.log(
-        `Abandoning user exercise attempt: ${userExerciseAttemptId} for user: ${userId}`
-      )
-
-      // 1. Lấy thông tin UserExerciseAttempt
-      const attempt =
-        await this.userExerciseAttemptRepository.findById(userExerciseAttemptId)
-      if (!attempt) {
-        throw UserExerciseAttemptNotFoundException
-      }
-
-      // 2. Kiểm tra xem attempt có thuộc về user này không
-      if (attempt.userId !== userId) {
-        throw new Error('Unauthorized: This attempt does not belong to you')
-      }
-
-      // 3. Kiểm tra xem attempt có đang IN_PROGRESS không
-      if (attempt.status !== 'IN_PROGRESS') {
-        throw ExerciseAttemptNotInProgressException()
-      }
-
-      // 4. Update status thành ABANDONED
-      const updatedAttempt = await this.userExerciseAttemptRepository.update(
-        { id: userExerciseAttemptId },
-        {
-          status: 'ABANDONED',
-          ...(timeSeconds !== undefined ? { time: timeSeconds } : {})
-        }
-      )
-
-      this.logger.log(`Updated attempt ${userExerciseAttemptId} to ABANDONED`)
-
-      return {
-        statusCode: 200,
-        message: 'Đã đánh dấu bài tập là bỏ dở',
-        data: updatedAttempt
-      }
-    } catch (error) {
-      this.logger.error('Error abandoning exercise attempt:', error)
-      throw error
-    }
-  }
-
-  async getStatus(userExerciseAttemptId: number, userId: number) {
-    try {
-      this.logger.log(
-        `Getting status for user exercise attempt: ${userExerciseAttemptId} for user: ${userId}`
-      )
-
-      // 1. Lấy thông tin UserExerciseAttempt
-      const attempt =
-        await this.userExerciseAttemptRepository.findById(userExerciseAttemptId)
-      if (!attempt) {
-        throw UserExerciseAttemptNotFoundException
-      }
-
-      // 2. Kiểm tra xem attempt có thuộc về user này không
-      if (attempt.userId !== userId) {
-        throw new Error('Unauthorized: This attempt does not belong to you')
-      }
-
-      return {
-        statusCode: 200,
-        message: 'Lấy trạng thái bài tập thành công',
-        data: attempt
-      }
-    } catch (error) {
-      this.logger.error('Error getting exercise attempt status:', error)
-      throw error
-    }
-  }
-
-  async getStatusExcericeAttemptLatest(userExerciseAttemptId: number, userId: number) {
-    try {
-      this.logger.log(
-        `Get latest attempt status by base attempt ${userExerciseAttemptId} for user ${userId}`
-      )
-
-      // 1) Lấy attempt hiện tại để biết exerciseId
-      const baseAttempt =
-        await this.userExerciseAttemptRepository.findById(userExerciseAttemptId)
-      if (!baseAttempt) {
-        throw UserExerciseAttemptNotFoundException
-      }
-
-      // 2) Lấy attempt mới nhất của user cho exercise này
-      const latestAttempt =
-        await this.userExerciseAttemptRepository.findLatestByUserAndExercise(
-          userId,
-          baseAttempt.exerciseId
+    const allCorrect = userAnswers.every((log) => log.isCorrect)
+    const newStatus = allCorrect ? 'COMPLETED' : 'FAILED'
+    // Read before this attempt is saved as COMPLETED
+    const hasCompletedBefore = allCorrect
+      ? await this.userExerciseAttemptRepository.hasCompletedAttempt(
+          attempt.userId,
+          attempt.exerciseId
         )
+      : false
 
-      return {
-        statusCode: 200,
-        message: 'Lấy trạng thái bài tập thành công',
-        data: latestAttempt ?? baseAttempt
+    await this.userExerciseAttemptRepository.update(
+      { id: userExerciseAttemptId },
+      { status: newStatus, ...time }
+    )
+    this.logger.log(`Updated attempt ${userExerciseAttemptId} to ${newStatus}`)
+
+    let rewardResults: unknown = null
+    if (allCorrect) {
+      // A completed exercise keeps the lesson IN_PROGRESS
+      await this.updateUserProgressOnExerciseCompletion(
+        attempt.userId,
+        attempt.exerciseId,
+        ProgressStatus.IN_PROGRESS
+      )
+      rewardResults = await this.grantExerciseRewards(
+        exercise.rewardId,
+        attempt.userId,
+        { reduceReward: hasCompletedBefore },
+        attempt.exerciseId
+      )
+    } else {
+      await this.updateUserProgressOnExerciseCompletion(
+        attempt.userId,
+        attempt.exerciseId,
+        ProgressStatus.FAILED
+      )
+    }
+
+    return {
+      statusCode: 200,
+      message: this.i18nService.translate(
+        allCorrect ? M.ALL_CORRECT : M.SOME_INCORRECT,
+        lang
+      ),
+      data: {
+        isCompleted: true,
+        totalQuestions: allQuestions.length,
+        answeredQuestions: userAnswers.length,
+        unansweredQuestions: 0,
+        allCorrect,
+        status: newStatus,
+        score,
+        rewards: rewardResults
       }
-    } catch (error) {
-      this.logger.error('Error getting exercise attempt status:', error)
-      throw error
+    }
+  }
+
+  async abandon(
+    userExerciseAttemptId: number,
+    userId: number,
+    timeSeconds?: number,
+    lang: string = 'vi'
+  ) {
+    const attempt = await this.ownAttempt(userExerciseAttemptId, userId)
+    if (attempt.status !== 'IN_PROGRESS') {
+      throw new ExerciseAttemptNotInProgressException()
+    }
+    const updatedAttempt = await this.userExerciseAttemptRepository.update(
+      { id: userExerciseAttemptId },
+      {
+        status: 'ABANDONED',
+        ...(timeSeconds !== undefined ? { time: timeSeconds } : {})
+      }
+    )
+    return {
+      statusCode: 200,
+      message: this.i18nService.translate(M.ABANDON_SUCCESS, lang),
+      data: updatedAttempt
+    }
+  }
+
+  async getStatus(userExerciseAttemptId: number, userId: number, lang: string = 'vi') {
+    const attempt = await this.ownAttempt(userExerciseAttemptId, userId)
+    return {
+      statusCode: 200,
+      message: this.i18nService.translate(M.GET_STATUS_SUCCESS, lang),
+      data: attempt
+    }
+  }
+
+  // The user's newest attempt of the same exercise as this one
+  async getLatestStatus(
+    userExerciseAttemptId: number,
+    userId: number,
+    lang: string = 'vi'
+  ) {
+    const baseAttempt = await this.ownAttempt(userExerciseAttemptId, userId)
+    const latestAttempt =
+      await this.userExerciseAttemptRepository.findLatestByUserAndExercise(
+        userId,
+        baseAttempt.exerciseId
+      )
+    return {
+      statusCode: 200,
+      message: this.i18nService.translate(M.GET_STATUS_SUCCESS, lang),
+      data: latestAttempt ?? baseAttempt
     }
   }
 
   async getLatestExerciseAttemptsByLesson(
     userId: number,
-    lessonId: number
+    lessonId: number,
+    lang: string = 'vi'
   ): Promise<LatestExerciseAttemptsByLessonResType> {
-    try {
-      this.logger.log(
-        `Getting latest exercise attempts for user ${userId} in lesson ${lessonId}`
-      )
-
-      //check xem user progress có status NOT_STARTED không để chặn nhảy cóc
-      const checkUserProgress = await this.userProgressService.findByUserAndLesson(
-        userId,
-        lessonId
-      )
-      if (checkUserProgress.data.status === 'NOT_STARTED') {
-        const previousLessonId =
-          await this.userProgressService.getPreviousLessonId(lessonId)
-        this.logger.log(`Previous lesson id: ${previousLessonId} for user ${userId}`)
-        if (previousLessonId) {
-          const prevProgress = await this.userProgressService.getUserProgressByLesson(
-            userId,
-            previousLessonId
-          )
-          // Chặn nhảy cóc: nếu bài ngay trước đó vẫn NOT_STARTED thì không cho vào bài hiện tại
-          if (prevProgress && prevProgress.status === 'NOT_STARTED') {
-            this.logger.warn(
-              `Blocked: previous lesson ${previousLessonId} is NOT_STARTED. Cannot open lesson ${lessonId}.`
-            )
-            throw LessonPrerequisiteNotMetException(previousLessonId, lessonId)
-          }
+    // No skipping ahead: a lesson not started opens only when the one before
+    // it was started
+    const checkUserProgress = await this.userProgressService.findByUserAndLesson(
+      userId,
+      lessonId
+    )
+    if (checkUserProgress.data.status === 'NOT_STARTED') {
+      const previousLessonId =
+        await this.userProgressService.getPreviousLessonId(lessonId)
+      if (previousLessonId) {
+        const prevProgress = await this.userProgressService.getUserProgressByLesson(
+          userId,
+          previousLessonId
+        )
+        if (prevProgress && prevProgress.status === 'NOT_STARTED') {
+          throw new LessonPrerequisiteNotMetException(previousLessonId, lessonId)
         }
       }
+    }
 
-      const result = await this.userExerciseAttemptRepository.findLatestByLessonAndUser(
-        userId,
-        lessonId
-      )
-
-      this.logger.log(
-        `Found ${result.length} exercise attempts (including newly created ones)`
-      )
-
-      // Log chi tiết về status
-      const completedCount = result.filter(
-        (attempt) => attempt.status === 'COMPLETED'
-      ).length
-      const inProgressCount = result.filter(
-        (attempt) => attempt.status === 'IN_PROGRESS'
-      ).length
-      const otherCount = result.length - completedCount - inProgressCount
-
-      this.logger.log(
-        `Status breakdown: ${completedCount} COMPLETED, ${inProgressCount} IN_PROGRESS, ${otherCount} others`
-      )
-
-      return {
-        statusCode: 200,
-        data: result,
-        message: 'Lấy danh sách exercise gần nhất thành công'
-      }
-    } catch (error) {
-      this.logger.error('Error getting latest exercise attempts by lesson:', error)
-      // Giữ nguyên HttpException (ví dụ: LessonPrerequisiteNotMetException) để controller trả đúng status/message
-      if (error instanceof HttpException) {
-        throw error
-      }
-      // Fallback: gói về 500 nếu là lỗi không xác định
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: 'Không thể lấy danh sách exercise gần nhất',
-          error: 'INTERNAL_SERVER_ERROR'
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR
-      )
+    // One attempt per exercise of the lesson (made NOT_STARTED when missing)
+    const result = await this.userExerciseAttemptRepository.findLatestByLessonAndUser(
+      userId,
+      lessonId
+    )
+    return {
+      statusCode: 200,
+      data: result,
+      message: this.i18nService.translate(M.LATEST_BY_LESSON_SUCCESS, lang)
     }
   }
 
@@ -713,12 +431,12 @@ export class UserExerciseAttemptService {
   ): Promise<MessageResDTO | null> {
     try {
       // Lấy attempt base để biết exerciseId
-      const baseAttemptRes = await this.findOne(id)
+      const baseAttemptRes = await this.findOne(id, languageCode)
       const baseAttempt = baseAttemptRes.data as any
 
       // Kiểm tra attempt có thuộc về user này không
       if (baseAttempt?.userId !== userId) {
-        throw ForbiddenReviewAccessException
+        throw new AttemptNotOwnedException()
       }
 
       const exerciseId = baseAttempt.exerciseId
@@ -730,7 +448,7 @@ export class UserExerciseAttemptService {
       )
 
       if (!latestAttempt) {
-        throw UserExerciseAttemptNotFoundException
+        throw new UserExerciseAttemptNotFoundException()
       }
 
       // Nếu attempt gần nhất là SKIPPED, COMPLETED hoặc FAILED → tạo attempt mới hoàn toàn
@@ -758,7 +476,7 @@ export class UserExerciseAttemptService {
         this.logger.log(
           `Latest attempt is ${latestAttempt.status}, creating new attempt for user ${userId}, exercise ${exerciseId}`
         )
-        const createAttempt = await this.create(userId, exerciseId)
+        const createAttempt = await this.create(userId, exerciseId, languageCode)
         attempt = createAttempt.data as any
         userExerciseAttemptId = attempt.id
         // Khi tạo mới từ SKIPPED/COMPLETED/FAILED, không load answers cũ
@@ -894,13 +612,10 @@ export class UserExerciseAttemptService {
           answeredQuestions: answeredCount,
           time: Number(attempt?.time ?? 0)
         },
-        message: EXERCISES_MESSAGE.GET_SUCCESS
+        message: this.i18nService.translate(M.QUESTIONS_SUCCESS, languageCode)
       }
     } catch (error) {
-      this.logger.error('Error getting latest exercise attempts by lesson:', error)
-      if (error instanceof HttpException) {
-        throw error
-      }
+      this.logger.error('Error getting the exercise questions:', error)
       throw error
     }
   }
@@ -911,12 +626,12 @@ export class UserExerciseAttemptService {
     languageCode: string
   ): Promise<MessageResDTO> {
     try {
-      const attemptRes = await this.findOne(id)
+      const attemptRes = await this.findOne(id, languageCode)
       const attempt = attemptRes.data as any
 
       // Kiểm tra attempt có thuộc về user này không
       if ((attempt as any)?.userId !== userId) {
-        throw ForbiddenReviewAccessException
+        throw new AttemptNotOwnedException()
       }
 
       const normalizedLang = (languageCode || '').toLowerCase().split('-')[0] || 'vi'
@@ -926,10 +641,7 @@ export class UserExerciseAttemptService {
       if (attempt.status !== 'COMPLETED' && attempt.status !== 'FAILED') {
         return {
           statusCode: 200,
-          message: this.i18nService.translate(
-            UserExerciseAttemptMessage.REVIEW_NOT_COMPLETED,
-            normalizedLang
-          ),
+          message: this.i18nService.translate(M.REVIEW_NOT_COMPLETED, normalizedLang),
           data: { status: attempt.status }
         }
       }
@@ -968,7 +680,7 @@ export class UserExerciseAttemptService {
       // - Nếu exercise có ít nhất 1 lần làm COMPLETED → được quyền xem (không cần đúng 80%)
       // - Nếu chưa có lần nào COMPLETED → phải đúng >= 80% mới được xem
       if (!hasCompletedAttempt && roundedPercentage < 80) {
-        throw ReviewInsufficientScoreException()
+        throw new ReviewInsufficientScoreException()
       }
 
       const translateOrFallback = async (key?: string, jp?: string): Promise<string> => {
@@ -1041,7 +753,7 @@ export class UserExerciseAttemptService {
                 pickLabelFromComposite(a?.answerJp || '', normalizedLang)
               )
               const explanation = await translateOrFallback(a?.answerKey, a?.answerJp)
-              let entry: any = { id: a.id, answer: label }
+              const entry: any = { id: a.id, answer: label }
               // Đánh dấu đáp án đúng (chỉ hiển thị khi tỷ lệ đúng >= 80%)
               if (correct && a.id === correct.id) {
                 entry.type = 'correct_answer'
@@ -1094,29 +806,61 @@ export class UserExerciseAttemptService {
 
         return {
           statusCode: 200,
-          message: this.i18nService.translate(
-            UserExerciseAttemptMessage.REVIEW_SUCCESS,
-            normalizedLang
-          ),
+          message: this.i18nService.translate(M.REVIEW_SUCCESS, normalizedLang),
           data
         }
       }
 
       return {
         statusCode: 200,
-        message: this.i18nService.translate(
-          UserExerciseAttemptMessage.REVIEW_SUCCESS,
-          normalizedLang
-        ),
+        message: this.i18nService.translate(M.REVIEW_SUCCESS, normalizedLang),
         data: exerciseRes.data
       }
     } catch (error) {
       this.logger.error('Error building exercise attempt review:', error)
-      if (error instanceof HttpException) {
-        throw error
-      }
       throw error
     }
+  }
+
+  //#region helpers
+  // The attempt, when it is the user's
+  private async ownAttempt(id: number, userId: number) {
+    const attempt = await this.userExerciseAttemptRepository.findById(id)
+    if (!attempt) throw new UserExerciseAttemptNotFoundException()
+    if (attempt.userId !== userId) throw new AttemptNotOwnedException()
+    return attempt
+  }
+
+  // The questions of the attempt's exercise against the user's answers
+  private async gradeAttempt(userExerciseAttemptId: number, userId: number) {
+    const attempt = await this.ownAttempt(userExerciseAttemptId, userId)
+    const exercise = await this.exercisesService.findById(attempt.exerciseId)
+    if (!exercise.testSetId) throw new ExerciseHasNoTestSetException()
+    const questionsResult = await this.questionBankService.findByTestSetId(
+      exercise.testSetId
+    )
+    const allQuestions = questionsResult.data.results
+    const answerLogsResult =
+      await this.userAnswerLogService.findByUserExerciseAttemptId(userExerciseAttemptId)
+    const userAnswers = answerLogsResult.data.results
+    const answeredQuestionIds = new Set(userAnswers.map((log) => log.questionBankId))
+    const unansweredQuestions = allQuestions.filter((q) => !answeredQuestionIds.has(q.id))
+    const correctAnswers = userAnswers.filter((log) => log.isCorrect).length
+    const score =
+      allQuestions.length > 0
+        ? Math.round((correctAnswers / allQuestions.length) * 100)
+        : 0
+    return { attempt, exercise, allQuestions, userAnswers, unansweredQuestions, score }
+  }
+
+  private toAttemptError(error: unknown): HttpException {
+    if (error instanceof HttpException) return error
+    this.logger.error(
+      'Exercise attempt request failed',
+      error instanceof Error ? error.stack : error
+    )
+    if (isNotFoundPrismaError(error)) return new UserExerciseAttemptNotFoundException()
+    return new InvalidUserExerciseAttemptDataException()
   }
 
   // Update UserProgress khi hoàn thành exercise
@@ -1211,4 +955,5 @@ export class UserExerciseAttemptService {
       // Không throw error để không ảnh hưởng đến flow chính
     }
   }
+  //#endregion
 }

@@ -37,19 +37,31 @@ exports[`User progress batch 5c contract (e2e) a second attempt: continue, aband
   "history": {
     "en": {
       "body": {
-        "error": "NOT_FOUND",
-        "message": "Không tìm thấy lần thử bài tập",
-        "statusCode": 404,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid exercise attempt ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 404,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "NOT_FOUND",
-        "message": "Không tìm thấy lần thử bài tập",
-        "statusCode": 404,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID lần thử bài tập không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 404,
+      "httpStatus": 422,
     },
   },
   "second": {
@@ -125,7 +137,7 @@ exports[`User progress batch 5c contract (e2e) errors 1`] = `
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Không tìm thấy lần thử bài tập",
+        "message": "Exercise attempt not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -142,26 +154,38 @@ exports[`User progress batch 5c contract (e2e) errors 1`] = `
   "latestInvalidLesson": {
     "en": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "Không thể lấy danh sách exercise gần nhất",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid lesson ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "Không thể lấy danh sách exercise gần nhất",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID bài học không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
   },
   "questionsMissing": {
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Không tìm thấy lần thử bài tập",
+        "message": "Exercise attempt not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -178,19 +202,31 @@ exports[`User progress batch 5c contract (e2e) errors 1`] = `
   "startInvalidId": {
     "en": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu lần thử bài tập không hợp lệ",
-        "statusCode": 400,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid exercise ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 400,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Dữ liệu lần thử bài tập không hợp lệ",
-        "statusCode": 400,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID bài tập không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 400,
+      "httpStatus": 422,
     },
   },
   "startMissingExercise": {
@@ -218,7 +254,7 @@ exports[`User progress batch 5c contract (e2e) errors 1`] = `
         "errors": [
           {
             "field": "string",
-            "message": "Invalid format",
+            "message": "Time must be a non-negative number of seconds",
           },
         ],
         "message": "Invalid data provided",
@@ -232,7 +268,7 @@ exports[`User progress batch 5c contract (e2e) errors 1`] = `
         "errors": [
           {
             "field": "string",
-            "message": "Định dạng không hợp lệ",
+            "message": "Thời gian phải là số giây không âm",
           },
         ],
         "message": "Dữ liệu không hợp lệ",

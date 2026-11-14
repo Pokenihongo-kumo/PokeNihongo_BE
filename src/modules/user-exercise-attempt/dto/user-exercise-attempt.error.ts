@@ -1,111 +1,70 @@
-import { HttpException, HttpStatus } from '@nestjs/common'
-import { USER_EXERCISE_ATTEMPT_MESSAGE } from '@/common/constants/message'
-import { UserExerciseAttemptMessage } from '@/i18n/message-keys'
+import { UserExerciseAttemptMessage as M } from '@/i18n/message-keys'
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException
+} from '@nestjs/common'
 
-export const UserExerciseAttemptNotFoundException = new HttpException(
-  {
-    statusCode: HttpStatus.NOT_FOUND,
-    message: USER_EXERCISE_ATTEMPT_MESSAGE.NOT_FOUND,
-    error: 'USER_EXERCISE_ATTEMPT_NOT_FOUND'
-  },
-  HttpStatus.NOT_FOUND
-)
+// A new instance per throw; `message` is translated from errorKey by
+// ApiExceptionFilter (Accept-Language), the old Vietnamese text is the vi value
 
-export const UserExerciseAttemptAlreadyExistsException = new HttpException(
-  {
-    statusCode: HttpStatus.CONFLICT,
-    message: USER_EXERCISE_ATTEMPT_MESSAGE.ALREADY_EXISTS,
-    error: 'USER_EXERCISE_ATTEMPT_ALREADY_EXISTS'
-  },
-  HttpStatus.CONFLICT
-)
+export class UserExerciseAttemptNotFoundException extends NotFoundException {
+  constructor() {
+    super({ message: M.NOT_FOUND, errorKey: M.NOT_FOUND })
+  }
+}
 
-export const InvalidUserExerciseAttemptDataException = new HttpException(
-  {
-    statusCode: HttpStatus.BAD_REQUEST,
-    message: USER_EXERCISE_ATTEMPT_MESSAGE.INVALID_DATA,
-    error: 'INVALID_USER_EXERCISE_ATTEMPT_DATA'
-  },
-  HttpStatus.BAD_REQUEST
-)
+// The attempt belongs to another user (was a 500 from new Error('Unauthorized'))
+export class AttemptNotOwnedException extends ForbiddenException {
+  constructor() {
+    super({ message: M.NOT_OWNED, errorKey: M.NOT_OWNED })
+  }
+}
 
-export const ExerciseNotFoundException = new HttpException(
-  {
-    statusCode: HttpStatus.NOT_FOUND,
-    message: USER_EXERCISE_ATTEMPT_MESSAGE.EXERCISE_NOT_FOUND,
-    error: 'EXERCISE_NOT_FOUND'
-  },
-  HttpStatus.NOT_FOUND
-)
+// The user is on another lesson
+export class LessonBlockedException extends BadRequestException {
+  constructor() {
+    super({ message: M.LESSON_BLOCKED, errorKey: M.LESSON_BLOCKED })
+  }
+}
 
-export const LessonBlockedException = new HttpException(
-  {
-    statusCode: HttpStatus.BAD_REQUEST,
-    message: USER_EXERCISE_ATTEMPT_MESSAGE.LESSON_BLOCKED,
-    error: 'LESSON_BLOCKED'
-  },
-  HttpStatus.BAD_REQUEST
-)
+// The lesson before this one is not started yet
+export class LessonPrerequisiteNotMetException extends BadRequestException {
+  constructor(previousLessonId: number, lessonId: number) {
+    super({
+      message: M.LESSON_PREREQUISITE_NOT_MET,
+      errorKey: M.LESSON_PREREQUISITE_NOT_MET,
+      errorArgs: { previousLessonId, lessonId }
+    })
+  }
+}
 
-// Dynamic prerequisite error with lesson ids
-export const LessonPrerequisiteNotMetException = (
-  previousLessonId: number,
-  lessonId: number
-) =>
-  new HttpException(
-    {
-      statusCode: HttpStatus.BAD_REQUEST,
-      message: `Bạn cần bắt đầu bài ${previousLessonId} trước khi vào bài ${lessonId}.`,
-      error: 'LESSON_PREREQUISITE_NOT_MET'
-    },
-    HttpStatus.BAD_REQUEST
-  )
+// Only an attempt in progress can be abandoned
+export class ExerciseAttemptNotInProgressException extends BadRequestException {
+  constructor() {
+    super({ message: M.NOT_IN_PROGRESS, errorKey: M.NOT_IN_PROGRESS })
+  }
+}
 
-export const ExerciseAlreadyCompletedException = new HttpException(
-  {
-    statusCode: HttpStatus.CONFLICT,
-    message: USER_EXERCISE_ATTEMPT_MESSAGE.EXERCISE_COMPLETED,
-    error: 'EXERCISE_ALREADY_COMPLETED'
-  },
-  HttpStatus.CONFLICT
-)
+// The exercise has no questions to check (was a 500 from new Error)
+export class ExerciseHasNoTestSetException extends BadRequestException {
+  constructor() {
+    super({ message: M.EXERCISE_HAS_NO_TEST_SET, errorKey: M.EXERCISE_HAS_NO_TEST_SET })
+  }
+}
 
-export const ExerciseAbandonedException = new HttpException(
-  {
-    statusCode: HttpStatus.CONFLICT,
-    message: USER_EXERCISE_ATTEMPT_MESSAGE.EXERCISE_ABANDONED,
-    error: 'EXERCISE_ABANDONED'
-  },
-  HttpStatus.CONFLICT
-)
+// Nothing completed yet and less than 80% right: no answers to see
+export class ReviewInsufficientScoreException extends ForbiddenException {
+  constructor() {
+    super({
+      message: M.REVIEW_INSUFFICIENT_SCORE,
+      errorKey: M.REVIEW_INSUFFICIENT_SCORE
+    })
+  }
+}
 
-export const ForbiddenReviewAccessException = new HttpException(
-  {
-    statusCode: HttpStatus.FORBIDDEN,
-    message: USER_EXERCISE_ATTEMPT_MESSAGE.FORBIDDEN_REVIEW_ACCESS,
-    error: 'FORBIDDEN_REVIEW_ACCESS'
-  },
-  HttpStatus.FORBIDDEN
-)
-
-// Chỉ bỏ dở được attempt đang IN_PROGRESS
-export const ExerciseAttemptNotInProgressException = () =>
-  new HttpException(
-    {
-      statusCode: HttpStatus.BAD_REQUEST,
-      message: 'Chỉ có thể bỏ dở bài tập đang trong trạng thái IN_PROGRESS',
-      error: 'EXERCISE_ATTEMPT_NOT_IN_PROGRESS'
-    },
-    HttpStatus.BAD_REQUEST
-  )
-
-// Chưa có lần COMPLETED và đúng < 80% → chưa được xem đáp án (message dịch theo Accept-Language)
-export const ReviewInsufficientScoreException = () =>
-  new HttpException(
-    {
-      statusCode: HttpStatus.FORBIDDEN,
-      message: UserExerciseAttemptMessage.REVIEW_INSUFFICIENT_SCORE,
-      errorKey: UserExerciseAttemptMessage.REVIEW_INSUFFICIENT_SCORE
-    },
-    HttpStatus.FORBIDDEN
-  )
+export class InvalidUserExerciseAttemptDataException extends BadRequestException {
+  constructor() {
+    super({ message: M.INVALID_DATA, errorKey: M.INVALID_DATA })
+  }
+}
