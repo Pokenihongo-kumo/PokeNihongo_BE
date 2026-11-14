@@ -743,7 +743,8 @@ export const jaMessages = {
     PASSWORD_MIN: 'パスワードは最低6文字である必要があります',
     PHONE_INVALID: '無効な電話番号です',
     SET_MAIN_POKEMON_SUCCESS: 'メインポケモンの設定が完了しました',
-    HAS_NOT_JOINED_SEASON: '現在のシーズンに参加していません'
+    HAS_NOT_JOINED_SEASON: '現在のシーズンに参加していません',
+    INVALID_POKEMON_ID: 'ポケモンIDが無効です'
   },
   flashcard: {
     CREATE_DECK_SUCCESS: 'フラッシュカードデッキの作成に成功しました',

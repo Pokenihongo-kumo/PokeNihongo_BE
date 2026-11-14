@@ -1,5 +1,5 @@
 import { checkIdSchema } from '@/common/utils/id.validation'
-import { ValidationMessage } from '@/i18n/message-keys'
+import { UserMessage, ValidationMessage } from '@/i18n/message-keys'
 import { LeaderboardSeasonSchema } from '@/modules/leaderboard-season/entities/leaderboard-season.entity'
 import { LevelSchema } from '@/modules/level/entities/level.entity'
 import { RoleSchema } from '@/shared/models/shared-role.model'
@@ -125,7 +125,10 @@ export const GetUserDetailResSchema = z.object({
 
 export const SetMainPokemonBodySchema = z
   .object({
-    pokemonId: z.number().min(1, 'Pokemon ID không hợp lệ')
+    pokemonId: z
+      .number()
+      .int(UserMessage.INVALID_POKEMON_ID)
+      .min(1, UserMessage.INVALID_POKEMON_ID)
   })
   .strict()
 
