@@ -8,7 +8,7 @@ import {
   UserTestAttemptResSchema,
   UserTestAttemptListResSchema,
   CheckTestCompletionBodySchema
-} from '../entities/user-test-attempt.entities'
+} from '../entities/user-test-attempt.entity'
 
 export class CreateUserTestAttemptBodyDTO extends createZodDto(
   CreateUserTestAttemptBodySchema

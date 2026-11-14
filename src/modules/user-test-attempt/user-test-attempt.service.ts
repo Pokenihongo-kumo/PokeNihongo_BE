@@ -24,8 +24,8 @@ import {
 import {
   GetUserTestAttemptListQueryType,
   UpdateUserTestAttemptBodyType
-} from '@/modules/user-test-attempt/entities/user-test-attempt.entities'
-import { UserTestAttemptRepository } from '@/modules/user-test-attempt/user-test-attempt.repo'
+} from '@/modules/user-test-attempt/entities/user-test-attempt.entity'
+import { UserTestAttemptRepo } from '@/modules/user-test-attempt/user-test-attempt.repo'
 import { UserTestRepo } from '@/modules/user-test/user-test.repo'
 import { UserRepo } from '@/modules/user/user.repo'
 import { MessageResDTO } from '@/shared/dtos/response.dto'
@@ -41,7 +41,7 @@ export class UserTestAttemptService {
   private readonly logger = new Logger(UserTestAttemptService.name)
 
   constructor(
-    private readonly userTestAttemptRepository: UserTestAttemptRepository,
+    private readonly userTestAttemptRepository: UserTestAttemptRepo,
     private readonly userTestRepository: UserTestRepo,
     private readonly questionBankService: QuestionBankService,
     private readonly userTestAnswerLogService: UserTestAnswerLogService,

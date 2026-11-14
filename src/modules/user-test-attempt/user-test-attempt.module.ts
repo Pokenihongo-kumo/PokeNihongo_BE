@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 import { UserTestAttemptController } from './user-test-attempt.controller'
-import { UserTestAttemptRepository } from './user-test-attempt.repo'
+import { UserTestAttemptRepo } from './user-test-attempt.repo'
 import { UserTestAttemptService } from './user-test-attempt.service'
 import { QuestionBankModule } from '../question-bank/question-bank.module'
 import { UserTestAnswerLogModule } from '../user-test-answer-log/user-test-answer-log.module'
@@ -31,12 +31,7 @@ import { LessonModule } from '../lesson/lesson.module'
     LessonModule
   ],
   controllers: [UserTestAttemptController],
-  providers: [
-    UserTestAttemptService,
-    UserTestAttemptRepository,
-    UserTestRepo,
-    PrismaService
-  ],
-  exports: [UserTestAttemptService, UserTestAttemptRepository]
+  providers: [UserTestAttemptService, UserTestAttemptRepo, UserTestRepo, PrismaService],
+  exports: [UserTestAttemptService, UserTestAttemptRepo]
 })
 export class UserTestAttemptModule {}

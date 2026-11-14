@@ -1,9 +1,9 @@
-import { UserTestAttemptType } from '@/modules/user-test-attempt/entities/user-test-attempt.entities'
+import { UserTestAttemptType } from '@/modules/user-test-attempt/entities/user-test-attempt.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
 
 @Injectable()
-export class UserTestAttemptRepository {
+export class UserTestAttemptRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(params: {
