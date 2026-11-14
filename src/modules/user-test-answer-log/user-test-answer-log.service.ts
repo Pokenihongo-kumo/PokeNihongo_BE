@@ -3,13 +3,13 @@ import {
   GetUserTestAnswerLogByIdParamsType,
   GetUserTestAnswerLogListQueryType,
   UpdateUserTestAnswerLogBodyType
-} from '@/modules/user-test-answer-log/entities/user-test-answer-log.entities'
+} from '@/modules/user-test-answer-log/entities/user-test-answer-log.entity'
 import {
   InvalidUserTestAnswerLogDataException,
   UserTestAnswerLogNotFoundException
 } from '@/modules/user-test-answer-log/dto/user-test-answer-log.error'
 import { USER_TEST_ANSWER_LOG_MESSAGE } from '@/common/constants/message'
-import { UserTestAnswerLogRepository } from '@/modules/user-test-answer-log/user-test-answer-log.repo'
+import { UserTestAnswerLogRepo } from '@/modules/user-test-answer-log/user-test-answer-log.repo'
 import { isNotFoundPrismaError } from '@/shared/helpers'
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common'
 
@@ -17,9 +17,7 @@ import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common'
 export class UserTestAnswerLogService {
   private readonly logger = new Logger(UserTestAnswerLogService.name)
 
-  constructor(
-    private readonly userTestAnswerLogRepository: UserTestAnswerLogRepository
-  ) {}
+  constructor(private readonly userTestAnswerLogRepository: UserTestAnswerLogRepo) {}
 
   async create(body: CreateUserTestAnswerLogBodyType) {
     try {
