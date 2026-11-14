@@ -1,6 +1,8 @@
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
+import { FlashcardMessage as M } from '@/i18n/message-keys'
+import { checkIdSchema } from '@/common/utils/id.validation'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
@@ -87,22 +89,22 @@ export const CreateFlashcardDeckBodySchema = z.object({
 
 export const UpdateFlashcardDeckBodySchema =
   CreateFlashcardDeckBodySchema.partial().refine((data) => Object.keys(data).length > 0, {
-    message: 'Ít nhất phải cập nhật một trường'
+    message: M.UPDATE_ONE_FIELD
   })
 
 export const GetFlashcardDeckListQuerySchema = z.object({
-  currentPage: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(100).default(10),
+  currentPage: checkIdSchema(M.INVALID_PAGE).default(1),
+  pageSize: checkIdSchema(M.INVALID_PAGE_SIZE).max(100, M.INVALID_PAGE_SIZE).default(10),
   search: z.string().trim().optional(),
   status: FlashcardDeckStatusEnum.optional()
 })
 
 export const FlashcardDeckParamsSchema = z.object({
-  deckId: z.coerce.number().int().min(1)
+  deckId: checkIdSchema(M.INVALID_DECK_ID)
 })
 
 export const FlashcardDeckCardParamsSchema = FlashcardDeckParamsSchema.extend({
-  cardId: z.coerce.number().int().min(1)
+  cardId: checkIdSchema(M.INVALID_CARD_ID)
 })
 
 export const CreateFlashcardCardBodySchema = z
@@ -126,7 +128,7 @@ export const CreateFlashcardCardBodySchema = z
     if (contentType === 'CUSTOM') {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'CUSTOM không được hỗ trợ',
+        message: M.CUSTOM_NOT_SUPPORTED,
         path: ['contentType']
       })
       return
@@ -142,7 +144,7 @@ export const CreateFlashcardCardBodySchema = z
       ) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: 'Khi không có id, phải cung cấp metadata để tạo card tùy chỉnh',
+          message: M.METADATA_REQUIRED,
           path: ['metadata']
         })
       }
@@ -151,7 +153,7 @@ export const CreateFlashcardCardBodySchema = z
       if (!Number.isInteger(id) || id < 1) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: 'Cần cung cấp id hợp lệ (số nguyên dương) tương ứng với contentType',
+          message: M.INVALID_CARD_ID,
           path: ['id']
         })
       }
@@ -160,8 +162,8 @@ export const CreateFlashcardCardBodySchema = z
 
 export const UpdateFlashcardCardBodySchema = z
   .object({
-    deckId: z.coerce.number().int().min(1),
-    cardId: z.coerce.number().int().min(1),
+    deckId: checkIdSchema(M.INVALID_DECK_ID),
+    cardId: checkIdSchema(M.INVALID_CARD_ID),
     contentType: FlashcardContentTypeEnum.optional(),
     status: FlashcardCardStatusEnum.optional(),
     notes: z.string().trim().max(4000).nullable().optional(),
@@ -174,22 +176,21 @@ export const UpdateFlashcardCardBodySchema = z
       return updateFields.some((field) => value[field] !== undefined)
     },
     {
-      message:
-        'Ít nhất phải cập nhật một trường (contentType, status, notes, read, hoặc metadata)'
+      message: M.UPDATE_ONE_FIELD
     }
   )
 
 export const GetFlashcardCardListQuerySchema = z.object({
-  currentPage: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).default(10),
+  currentPage: checkIdSchema(M.INVALID_PAGE).default(1),
+  pageSize: checkIdSchema(M.INVALID_PAGE_SIZE).default(10),
   contentType: FlashcardContentTypeEnum.optional(),
   search: z.string().trim().optional()
 })
 
 export const FlashcardLibrarySearchQuerySchema = z.object({
   type: FlashcardImportContentTypeEnum.default('VOCABULARY'),
-  currentPage: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(100).default(10),
+  currentPage: checkIdSchema(M.INVALID_PAGE).default(1),
+  pageSize: checkIdSchema(M.INVALID_PAGE_SIZE).max(100, M.INVALID_PAGE_SIZE).default(10),
   search: z.string().trim().optional(),
   jlptLevel: z.coerce.number().int().min(1).max(5).optional(),
   level: z.string().trim().optional()
@@ -201,7 +202,7 @@ export const FlashcardImportItemSchema = z.object({
 })
 
 export const ImportFlashcardCardsBodySchema = z.object({
-  items: z.array(FlashcardImportItemSchema).min(1, 'Cần ít nhất một phần tử để import')
+  items: z.array(FlashcardImportItemSchema).min(1, M.IMPORT_ITEMS_REQUIRED)
 })
 
 export const FlashcardImportResultSchema = z.object({
@@ -231,14 +232,14 @@ export const FlashcardReviewQuerySchema = z.object({
 })
 
 export const FlashcardReadBodySchema = z.object({
-  deckId: z.coerce.number().int().min(1),
-  cardId: z.coerce.number().int().min(1),
+  deckId: checkIdSchema(M.INVALID_DECK_ID),
+  cardId: checkIdSchema(M.INVALID_CARD_ID),
   read: z.boolean()
 })
 
 export const FlashcardReviewActionBodySchema = z.object({
-  deckId: z.coerce.number().int().min(1),
-  cardId: z.coerce.number().int().min(1),
+  deckId: checkIdSchema(M.INVALID_DECK_ID),
+  cardId: checkIdSchema(M.INVALID_CARD_ID),
   result: z.enum(['correct', 'incorrect']),
   message: z.string().trim().max(1000).optional()
 })
@@ -258,8 +259,8 @@ export const FlashcardReviewItemSchema = FlashcardCardSchema.extend({
 })
 
 export const DeleteFlashcardCardsBodySchema = z.object({
-  deckId: z.coerce.number().int().min(1),
-  cardIds: z.array(z.coerce.number().int().min(1)).min(1)
+  deckId: checkIdSchema(M.INVALID_DECK_ID),
+  cardIds: z.array(checkIdSchema(M.INVALID_CARD_ID)).min(1, M.INVALID_CARD_ID)
 })
 
 export type FlashcardDeckStatus = z.infer<typeof FlashcardDeckStatusEnum>

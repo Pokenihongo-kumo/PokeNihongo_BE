@@ -37,15 +37,18 @@ export class InvalidFlashcardContentTypeException extends BadRequestException {
   }
 }
 
+// With a content type and id: that content does not exist (was a Vietnamese
+// message whatever the language)
 export class InvalidFlashcardImportException extends BadRequestException {
   constructor(contentType?: string, id?: number) {
-    const message =
-      contentType && id !== undefined
-        ? `${contentType} với id ${id} không tồn tại trong hệ thống`
-        : FlashcardMessage.INVALID_IMPORT_IDS
+    const known = contentType !== undefined && id !== undefined
+    const key = known
+      ? FlashcardMessage.CONTENT_NOT_FOUND
+      : FlashcardMessage.INVALID_IMPORT_IDS
     super({
-      message,
-      errorKey: FlashcardMessage.INVALID_IMPORT_IDS
+      message: key,
+      errorKey: key,
+      ...(known && { errorArgs: { contentType, id } })
     })
   }
 }

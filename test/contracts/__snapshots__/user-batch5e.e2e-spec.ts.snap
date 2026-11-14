@@ -5,29 +5,11 @@ exports[`User batch 5e contract (e2e) errors 1`] = `
   "cardsInvalidId": {
     "en": {
       "body": {
-        "error": "NOT_FOUND",
-        "message": "Flashcard deck not found",
-        "statusCode": 404,
-      },
-      "httpStatus": 404,
-    },
-    "vi": {
-      "body": {
-        "error": "NOT_FOUND",
-        "message": "Không tìm thấy bộ flashcard",
-        "statusCode": 404,
-      },
-      "httpStatus": 404,
-    },
-  },
-  "createCardCustom": {
-    "en": {
-      "body": {
         "error": "UNPROCESSABLE_ENTITY",
         "errors": [
           {
             "field": "string",
-            "message": "Invalid data provided",
+            "message": "Invalid flashcard deck ID",
           },
         ],
         "message": "Invalid data provided",
@@ -41,7 +23,37 @@ exports[`User batch 5e contract (e2e) errors 1`] = `
         "errors": [
           {
             "field": "string",
-            "message": "Dữ liệu không hợp lệ",
+            "message": "ID bộ flashcard không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "createCardCustom": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "CUSTOM is not supported",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "CUSTOM không được hỗ trợ",
           },
         ],
         "message": "Dữ liệu không hợp lệ",
@@ -131,19 +143,31 @@ exports[`User batch 5e contract (e2e) errors 1`] = `
   "deckInvalidId": {
     "en": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "An error occurred",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid flashcard deck ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "Đã xảy ra lỗi",
-        "statusCode": 500,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID bộ flashcard không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 500,
+      "httpStatus": 422,
     },
   },
   "deckMissing": {
@@ -168,7 +192,7 @@ exports[`User batch 5e contract (e2e) errors 1`] = `
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Cannot DELETE /flashcards/decks/N",
+        "message": "Flashcard deck not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -176,7 +200,7 @@ exports[`User batch 5e contract (e2e) errors 1`] = `
     "vi": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Cannot DELETE /flashcards/decks/N",
+        "message": "Không tìm thấy bộ flashcard",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -263,19 +287,31 @@ exports[`User batch 5e contract (e2e) errors 1`] = `
   "updateDeckInvalidId": {
     "en": {
       "body": {
-        "error": "NOT_FOUND",
-        "message": "Flashcard deck not found",
-        "statusCode": 404,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid flashcard deck ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 404,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "error": "NOT_FOUND",
-        "message": "Không tìm thấy bộ flashcard",
-        "statusCode": 404,
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID bộ flashcard không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 404,
+      "httpStatus": 422,
     },
   },
   "userInvalidId": {
@@ -701,11 +737,11 @@ exports[`User batch 5e contract (e2e) flashcards: delete the cards, then the dec
   },
   "deleteDeck": {
     "body": {
-      "error": "NOT_FOUND",
-      "message": "Cannot DELETE /flashcards/decks/N",
-      "statusCode": 404,
+      "data": "null",
+      "message": "Xóa bộ flashcard thành công",
+      "statusCode": 200,
     },
-    "httpStatus": 404,
+    "httpStatus": 200,
   },
 }
 `;

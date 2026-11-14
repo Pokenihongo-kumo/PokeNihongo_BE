@@ -763,7 +763,16 @@ export const jaMessages = {
     GET_LIBRARY_SUCCESS: 'フラッシュカードライブラリの取得に成功しました',
     GET_REVIEW_LIST_SUCCESS: '復習用フラッシュカードの取得に成功しました',
     REVIEW_CARD_SUCCESS: 'フラッシュカードの復習結果を記録しました',
-    EXPORT_DECK_SUCCESS: 'フラッシュカードデッキのエクスポートに成功しました'
+    EXPORT_DECK_SUCCESS: 'フラッシュカードデッキのエクスポートに成功しました',
+    CONTENT_NOT_FOUND: 'id {id} の{contentType}は存在しません',
+    UPDATE_ONE_FIELD: '少なくとも1つの項目を更新してください',
+    CUSTOM_NOT_SUPPORTED: 'CUSTOM には対応していません',
+    METADATA_REQUIRED: 'idがない場合、カスタムカード用のmetadataが必要です',
+    IMPORT_ITEMS_REQUIRED: '少なくとも1件をインポートしてください',
+    INVALID_DECK_ID: 'フラッシュカードのデッキIDが無効です',
+    INVALID_CARD_ID: 'フラッシュカードIDが無効です',
+    INVALID_PAGE: 'ページは正の整数でなければなりません',
+    INVALID_PAGE_SIZE: 'ページサイズは正の整数でなければなりません'
   },
   role: {
     CREATE_SUCCESS: 'ロールが正常に作成されました',
