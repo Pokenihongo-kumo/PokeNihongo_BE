@@ -26,7 +26,7 @@ import {
   UpdateUserTestAttemptBodyType
 } from '@/modules/user-test-attempt/entities/user-test-attempt.entities'
 import { UserTestAttemptRepository } from '@/modules/user-test-attempt/user-test-attempt.repo'
-import { UserTestRepository } from '@/modules/user-test/user-test.repo'
+import { UserTestRepo } from '@/modules/user-test/user-test.repo'
 import { UserRepo } from '@/modules/user/user.repo'
 import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { PrismaService } from '@/shared/services/prisma.service'
@@ -42,7 +42,7 @@ export class UserTestAttemptService {
 
   constructor(
     private readonly userTestAttemptRepository: UserTestAttemptRepository,
-    private readonly userTestRepository: UserTestRepository,
+    private readonly userTestRepository: UserTestRepo,
     private readonly questionBankService: QuestionBankService,
     private readonly userTestAnswerLogService: UserTestAnswerLogService,
     private readonly testService: TestService,

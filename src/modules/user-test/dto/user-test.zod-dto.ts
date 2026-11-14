@@ -7,7 +7,7 @@ import {
   UserTestResSchema,
   UserTestListResSchema,
   UserTestMyListResSchema
-} from '../entities/user-test.entities'
+} from '../entities/user-test.entity'
 
 export class CreateUserTestBodyDTO extends createZodDto(CreateUserTestBodySchema) {}
 export class UpdateUserTestBodyDTO extends createZodDto(UpdateUserTestBodySchema) {}

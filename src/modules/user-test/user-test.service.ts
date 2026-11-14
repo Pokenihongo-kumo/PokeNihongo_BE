@@ -1,12 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
-import { UserTestRepository } from './user-test.repo'
+import { UserTestRepo } from './user-test.repo'
 import {
   CreateUserTestBodyType,
   UpdateUserTestBodyType,
   GetUserTestListQueryType,
   UserTestType
-} from './entities/user-test.entities'
+} from './entities/user-test.entity'
 import { USER_TEST_MESSAGE } from '@/common/constants/message'
 import { UserTestStatus, TestStatus } from '@prisma/client'
 import { PrismaService } from '@/shared/services/prisma.service'
@@ -18,7 +18,7 @@ export class UserTestService {
   private readonly logger = new Logger(UserTestService.name)
 
   constructor(
-    private readonly userTestRepo: UserTestRepository,
+    private readonly userTestRepo: UserTestRepo,
     private readonly prisma: PrismaService,
     private readonly sharedUserSubscriptionService: SharedUserSubscriptionService
   ) {}
