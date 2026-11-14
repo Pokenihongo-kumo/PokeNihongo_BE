@@ -551,6 +551,28 @@ export const jaMessages = {
     INVALID_PAGE_SIZE: 'ページサイズは正の整数でなければなりません',
     INVALID_FLAG: '値は true か false です'
   },
+  user_test: {
+    CREATE_SUCCESS: 'ユーザーテストを作成しました',
+    UPDATE_SUCCESS: 'ユーザーテストを更新しました',
+    DELETE_SUCCESS: 'ユーザーテストを削除しました',
+    GET_SUCCESS: 'ユーザーテストを取得しました',
+    GET_LIST_SUCCESS: 'ユーザーテスト一覧を取得しました',
+    INIT_ALL_SUCCESS: '{users}人のユーザーに{tests}件のテストを追加しました',
+    INIT_ALL_NO_USERS: 'ユーザーがいません',
+    INIT_ALL_NO_TESTS: '有効なテストがありません',
+    NOT_FOUND: 'ユーザーテストが見つかりません',
+    ALREADY_EXISTS: 'このユーザーはすでにこのテストを持っています',
+    INVALID_DATA: 'ユーザーテストのデータが無効です',
+    INVALID_ID: 'ユーザーテストIDが無効です',
+    INVALID_USER_ID: 'ユーザーIDが無効です',
+    INVALID_TEST_ID: 'テストIDが無効です',
+    INVALID_STATUS: '状態が無効です',
+    INVALID_TEST_TYPE: 'テストの種類が無効です',
+    INVALID_ORDER: '並び順は asc か desc です',
+    INVALID_LIMIT: '回数は0以上の整数でなければなりません',
+    INVALID_PAGE: 'ページは正の整数でなければなりません',
+    INVALID_PAGE_SIZE: 'ページサイズは正の整数でなければなりません'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'レッスンカテゴリを作成しました',
     UPDATE_SUCCESS: 'レッスンカテゴリを更新しました',

@@ -529,6 +529,28 @@ export const enMessages = {
     INVALID_PAGE_SIZE: 'Page size must be a positive integer',
     INVALID_FLAG: 'The value must be true or false'
   },
+  user_test: {
+    CREATE_SUCCESS: 'User test created successfully',
+    UPDATE_SUCCESS: 'User test updated successfully',
+    DELETE_SUCCESS: 'User test deleted successfully',
+    GET_SUCCESS: 'User test retrieved successfully',
+    GET_LIST_SUCCESS: 'User tests retrieved successfully',
+    INIT_ALL_SUCCESS: 'Added {tests} tests for {users} users',
+    INIT_ALL_NO_USERS: 'There are no users',
+    INIT_ALL_NO_TESTS: 'There are no active tests',
+    NOT_FOUND: 'User test not found',
+    ALREADY_EXISTS: 'This user already has this test',
+    INVALID_DATA: 'Invalid user test data',
+    INVALID_ID: 'Invalid user test ID',
+    INVALID_USER_ID: 'Invalid user ID',
+    INVALID_TEST_ID: 'Invalid test ID',
+    INVALID_STATUS: 'Invalid status',
+    INVALID_TEST_TYPE: 'Invalid test type',
+    INVALID_ORDER: 'Order must be asc or desc',
+    INVALID_LIMIT: 'The limit must be a non-negative integer',
+    INVALID_PAGE: 'Page must be a positive integer',
+    INVALID_PAGE_SIZE: 'Page size must be a positive integer'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Lesson category created successfully',
     UPDATE_SUCCESS: 'Lesson category updated successfully',

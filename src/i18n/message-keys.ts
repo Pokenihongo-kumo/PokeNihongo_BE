@@ -519,6 +519,29 @@ export const UserTestAnswerLogMessage = {
   INVALID_FLAG: 'user_test_answer_log.INVALID_FLAG'
 } as const
 
+export const UserTestMessage = {
+  CREATE_SUCCESS: 'user_test.CREATE_SUCCESS',
+  UPDATE_SUCCESS: 'user_test.UPDATE_SUCCESS',
+  DELETE_SUCCESS: 'user_test.DELETE_SUCCESS',
+  GET_SUCCESS: 'user_test.GET_SUCCESS',
+  GET_LIST_SUCCESS: 'user_test.GET_LIST_SUCCESS',
+  INIT_ALL_SUCCESS: 'user_test.INIT_ALL_SUCCESS',
+  INIT_ALL_NO_USERS: 'user_test.INIT_ALL_NO_USERS',
+  INIT_ALL_NO_TESTS: 'user_test.INIT_ALL_NO_TESTS',
+  NOT_FOUND: 'user_test.NOT_FOUND',
+  ALREADY_EXISTS: 'user_test.ALREADY_EXISTS',
+  INVALID_DATA: 'user_test.INVALID_DATA',
+  INVALID_ID: 'user_test.INVALID_ID',
+  INVALID_USER_ID: 'user_test.INVALID_USER_ID',
+  INVALID_TEST_ID: 'user_test.INVALID_TEST_ID',
+  INVALID_STATUS: 'user_test.INVALID_STATUS',
+  INVALID_TEST_TYPE: 'user_test.INVALID_TEST_TYPE',
+  INVALID_ORDER: 'user_test.INVALID_ORDER',
+  INVALID_LIMIT: 'user_test.INVALID_LIMIT',
+  INVALID_PAGE: 'user_test.INVALID_PAGE',
+  INVALID_PAGE_SIZE: 'user_test.INVALID_PAGE_SIZE'
+} as const
+
 export const LessonCategoryMessage = {
   CREATE_SUCCESS: 'lesson_category.CREATE_SUCCESS',
   UPDATE_SUCCESS: 'lesson_category.UPDATE_SUCCESS',
