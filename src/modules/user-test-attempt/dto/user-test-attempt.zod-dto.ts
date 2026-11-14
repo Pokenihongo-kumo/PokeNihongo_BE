@@ -4,6 +4,7 @@ import {
   UpdateUserTestAttemptBodySchema,
   GetUserTestAttemptByIdParamsSchema,
   CreateUserTestAttemptParamsSchema,
+  UserTestAttemptTestParamsSchema,
   GetUserTestAttemptListQuerySchema,
   UserTestAttemptResSchema,
   UserTestAttemptListResSchema,
@@ -21,6 +22,9 @@ export class GetUserTestAttemptByIdParamsDTO extends createZodDto(
 ) {}
 export class CreateUserTestAttemptParamsDTO extends createZodDto(
   CreateUserTestAttemptParamsSchema
+) {}
+export class UserTestAttemptTestParamsDTO extends createZodDto(
+  UserTestAttemptTestParamsSchema
 ) {}
 export class GetUserTestAttemptListQueryDTO extends createZodDto(
   GetUserTestAttemptListQuerySchema

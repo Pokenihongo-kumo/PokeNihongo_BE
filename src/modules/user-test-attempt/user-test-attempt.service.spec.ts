@@ -1,4 +1,4 @@
-import { UserTestAttemptMessage } from '@/i18n/message-keys'
+import { UserTestAttemptMessage as M } from '@/i18n/message-keys'
 import { HttpException, HttpStatus } from '@nestjs/common'
 import { UserTestAttemptService } from './user-test-attempt.service'
 
@@ -65,9 +65,44 @@ describe('UserTestAttemptService', () => {
       const body = await expectHttpError(service.abandon(1, 7), HttpStatus.BAD_REQUEST)
 
       expect(body).toMatchObject({
-        message: 'Chỉ có thể bỏ dở bài test đang trong trạng thái IN_PROGRESS'
+        errorKey: M.NOT_IN_PROGRESS
       })
       expect(repo.update).not.toHaveBeenCalled()
+    })
+  })
+
+  describe("another user's attempt is a 403", () => {
+    it('check-completion (was not checked)', async () => {
+      const { service, repo } = createService()
+      repo.findById.mockResolvedValue({
+        id: 1,
+        userId: 8,
+        status: 'IN_PROGRESS',
+        testId: 3
+      })
+
+      const body = await expectHttpError(
+        service.checkTestCompletion(1, 7),
+        HttpStatus.FORBIDDEN
+      )
+
+      expect(body).toMatchObject({ errorKey: M.NOT_OWNED })
+    })
+
+    it('delete (was not checked), and nothing is deleted', async () => {
+      const { service, repo } = createService()
+      const del = jest.fn()
+      Object.assign(repo, { delete: del })
+      repo.findById.mockResolvedValue({
+        id: 1,
+        userId: 8,
+        status: 'ABANDONED',
+        testId: 3
+      })
+
+      await expectHttpError(service.remove(1, 7), HttpStatus.FORBIDDEN)
+
+      expect(del).not.toHaveBeenCalled()
     })
   })
 
@@ -88,7 +123,7 @@ describe('UserTestAttemptService', () => {
       )
 
       expect(body).toMatchObject({
-        errorKey: UserTestAttemptMessage.REVIEW_INSUFFICIENT_SCORE
+        errorKey: M.REVIEW_INSUFFICIENT_SCORE
       })
     })
   })
@@ -106,7 +141,7 @@ describe('UserTestAttemptService', () => {
       )
 
       expect(body).toMatchObject({
-        errorKey: UserTestAttemptMessage.REVIEW_INSUFFICIENT_SCORE
+        errorKey: M.REVIEW_INSUFFICIENT_SCORE
       })
     })
   })

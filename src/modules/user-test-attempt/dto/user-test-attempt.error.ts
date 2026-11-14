@@ -1,97 +1,78 @@
-import { HttpException, HttpStatus } from '@nestjs/common'
-import { USER_TEST_ATTEMPT_MESSAGE } from '@/common/constants/message'
-import { UserTestAttemptMessage } from '@/i18n/message-keys'
+import { UserTestAttemptMessage as M } from '@/i18n/message-keys'
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException
+} from '@nestjs/common'
 
-export const UserTestAttemptNotFoundException = new HttpException(
-  {
-    statusCode: HttpStatus.NOT_FOUND,
-    message: USER_TEST_ATTEMPT_MESSAGE.NOT_FOUND,
-    error: 'USER_TEST_ATTEMPT_NOT_FOUND'
-  },
-  HttpStatus.NOT_FOUND
-)
+// A new instance per throw; `message` is translated from errorKey by
+// ApiExceptionFilter (Accept-Language), the old Vietnamese text is the vi value
 
-export const UserTestAttemptAlreadyExistsException = new HttpException(
-  {
-    statusCode: HttpStatus.CONFLICT,
-    message: USER_TEST_ATTEMPT_MESSAGE.ALREADY_EXISTS,
-    error: 'USER_TEST_ATTEMPT_ALREADY_EXISTS'
-  },
-  HttpStatus.CONFLICT
-)
+export class UserTestAttemptNotFoundException extends NotFoundException {
+  constructor() {
+    super({ message: M.NOT_FOUND, errorKey: M.NOT_FOUND })
+  }
+}
 
-export const InvalidUserTestAttemptDataException = new HttpException(
-  {
-    statusCode: HttpStatus.BAD_REQUEST,
-    message: USER_TEST_ATTEMPT_MESSAGE.INVALID_DATA,
-    error: 'INVALID_USER_TEST_ATTEMPT_DATA'
-  },
-  HttpStatus.BAD_REQUEST
-)
+export class TestNotFoundException extends NotFoundException {
+  constructor() {
+    super({ message: M.TEST_NOT_FOUND, errorKey: M.TEST_NOT_FOUND })
+  }
+}
 
-export const TestNotFoundException = new HttpException(
-  {
-    statusCode: HttpStatus.NOT_FOUND,
-    message: USER_TEST_ATTEMPT_MESSAGE.TEST_NOT_FOUND,
-    error: 'TEST_NOT_FOUND'
-  },
-  HttpStatus.NOT_FOUND
-)
+// The user does not have this test (was a 400)
+export class UserTestNotFoundException extends NotFoundException {
+  constructor() {
+    super({ message: M.USER_TEST_NOT_FOUND, errorKey: M.USER_TEST_NOT_FOUND })
+  }
+}
 
-export const TestCompletedException = new HttpException(
-  {
-    statusCode: HttpStatus.CONFLICT,
-    message: USER_TEST_ATTEMPT_MESSAGE.TEST_COMPLETED,
-    error: 'TEST_COMPLETED'
-  },
-  HttpStatus.CONFLICT
-)
+export class TestOutOfLimitException extends BadRequestException {
+  constructor() {
+    super({ message: M.OUT_OF_LIMIT, errorKey: M.OUT_OF_LIMIT })
+  }
+}
 
-export const TestAbandonedException = new HttpException(
-  {
-    statusCode: HttpStatus.CONFLICT,
-    message: USER_TEST_ATTEMPT_MESSAGE.TEST_ABANDONED,
-    error: 'TEST_ABANDONED'
-  },
-  HttpStatus.CONFLICT
-)
+// The attempt belongs to another user
+export class AttemptNotOwnedException extends ForbiddenException {
+  constructor() {
+    super({ message: M.NOT_OWNED, errorKey: M.NOT_OWNED })
+  }
+}
 
-export const ForbiddenReviewAccessException = new HttpException(
-  {
-    statusCode: HttpStatus.FORBIDDEN,
-    message: USER_TEST_ATTEMPT_MESSAGE.FORBIDDEN_REVIEW_ACCESS,
-    error: 'FORBIDDEN_REVIEW_ACCESS'
-  },
-  HttpStatus.FORBIDDEN
-)
+// Only an attempt in progress can be abandoned
+export class TestAttemptNotInProgressException extends BadRequestException {
+  constructor() {
+    super({ message: M.NOT_IN_PROGRESS, errorKey: M.NOT_IN_PROGRESS })
+  }
+}
 
-// Chỉ bỏ dở được attempt đang IN_PROGRESS
-export const TestAttemptNotInProgressException = () =>
-  new HttpException(
-    {
-      statusCode: HttpStatus.BAD_REQUEST,
-      message: 'Chỉ có thể bỏ dở bài test đang trong trạng thái IN_PROGRESS',
-      error: 'TEST_ATTEMPT_NOT_IN_PROGRESS'
-    },
-    HttpStatus.BAD_REQUEST
-  )
+// The test has no questions (was a 500 from new Error)
+export class TestHasNoTestSetException extends BadRequestException {
+  constructor() {
+    super({ message: M.TEST_HAS_NO_TEST_SET, errorKey: M.TEST_HAS_NO_TEST_SET })
+  }
+}
 
-// Chưa có lần COMPLETED và đúng < 80% → chưa được xem đáp án (message dịch theo Accept-Language)
-export const ReviewInsufficientScoreException = () =>
-  new HttpException(
-    {
-      statusCode: HttpStatus.FORBIDDEN,
-      message: UserTestAttemptMessage.REVIEW_INSUFFICIENT_SCORE,
-      errorKey: UserTestAttemptMessage.REVIEW_INSUFFICIENT_SCORE
-    },
-    HttpStatus.FORBIDDEN
-  )
+// A lesson review of an attempt without answers (was a 500 from new Error)
+export class TestAttemptHasNoAnswersException extends BadRequestException {
+  constructor() {
+    super({ message: M.NO_ANSWERS, errorKey: M.NO_ANSWERS })
+  }
+}
 
-export const UnauthorizedUserTestAttemptAccessException = new HttpException(
-  {
-    statusCode: HttpStatus.FORBIDDEN,
-    message: USER_TEST_ATTEMPT_MESSAGE.UNAUTHORIZED_ACCESS,
-    error: 'UNAUTHORIZED_USER_TEST_ATTEMPT_ACCESS'
-  },
-  HttpStatus.FORBIDDEN
-)
+// Nothing completed yet and less than 80% right: no answers to see
+export class ReviewInsufficientScoreException extends ForbiddenException {
+  constructor() {
+    super({
+      message: M.REVIEW_INSUFFICIENT_SCORE,
+      errorKey: M.REVIEW_INSUFFICIENT_SCORE
+    })
+  }
+}
+
+export class InvalidUserTestAttemptDataException extends BadRequestException {
+  constructor() {
+    super({ message: M.INVALID_DATA, errorKey: M.INVALID_DATA })
+  }
+}

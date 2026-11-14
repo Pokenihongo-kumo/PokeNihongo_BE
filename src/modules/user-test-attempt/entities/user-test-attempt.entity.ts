@@ -2,12 +2,17 @@ import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
 import { TestAttemptStatus } from '@prisma/client'
+import { UserTestAttemptMessage as M } from '@/i18n/message-keys'
+import { checkIdSchema } from '@/common/utils/id.validation'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
 
 // TestAttemptStatus enum
 export const TestAttemptStatusSchema = z.nativeEnum(TestAttemptStatus)
+const statusOf = z.nativeEnum(TestAttemptStatus, {
+  errorMap: () => ({ message: M.INVALID_STATUS })
+})
 
 // UserTestAttempt schema
 export const UserTestAttemptSchema = z.object({
@@ -23,10 +28,8 @@ export const UserTestAttemptSchema = z.object({
 
 export const CreateUserTestAttemptBodySchema = z.object({}).strict()
 
-export const UpdateUserTestAttemptBodySchema = UserTestAttemptSchema.pick({
-  status: true
-})
-  .partial()
+export const UpdateUserTestAttemptBodySchema = z
+  .object({ status: statusOf.optional() })
   .strict()
 
 export const UserTestAttemptResSchema = z
@@ -54,47 +57,40 @@ export const UserTestAttemptListResSchema = z
   .strict()
 
 export const GetUserTestAttemptByIdParamsSchema = z
-  .object({
-    id: z.string().transform((val) => parseInt(val, 10))
-  })
+  .object({ id: checkIdSchema(M.INVALID_ID) })
   .strict()
 
 export const CreateUserTestAttemptParamsSchema = z
-  .object({
-    testId: z.string().transform((val) => parseInt(val, 10))
-  })
+  .object({ testId: checkIdSchema(M.INVALID_TEST_ID) })
+  .strict()
+
+// GET /test/:id takes a test id
+export const UserTestAttemptTestParamsSchema = z
+  .object({ id: checkIdSchema(M.INVALID_TEST_ID) })
   .strict()
 
 export const GetUserTestAttemptListQuerySchema = z
   .object({
-    currentPage: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('1'),
-    pageSize: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('10'),
-    userId: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional(),
-    testId: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional(),
-    status: TestAttemptStatusSchema.optional()
+    currentPage: checkIdSchema(M.INVALID_PAGE).default(1),
+    pageSize: checkIdSchema(M.INVALID_PAGE_SIZE).default(10),
+    userId: checkIdSchema(M.INVALID_USER_ID).optional(),
+    testId: checkIdSchema(M.INVALID_TEST_ID).optional(),
+    status: statusOf.optional()
   })
   .strict()
 
-// Check completion body (time in seconds, optional)
+// Submit / abandon body: time spent in seconds, optional. The app sends no
+// body to abandon, so a missing body is {}
 export const CheckTestCompletionBodySchema = z
   .object({
-    time: z.number().int().nonnegative().optional()
+    time: z
+      .number({ invalid_type_error: M.INVALID_TIME })
+      .int(M.INVALID_TIME)
+      .nonnegative(M.INVALID_TIME)
+      .optional()
   })
   .strict()
+  .default({})
 
 // Types
 export type TestAttemptStatusType = z.infer<typeof TestAttemptStatusSchema>
