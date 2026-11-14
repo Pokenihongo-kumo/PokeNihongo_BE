@@ -11,7 +11,7 @@ import {
   todayUTCWith0000
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
-import { HttpStatus, Injectable } from '@nestjs/common'
+import { HttpStatus, Injectable, Logger } from '@nestjs/common'
 import { DailyRequestRepo } from '../daily-request/daily-request.repo'
 import { LanguagesRepo } from '../languages/languages.repo'
 import { TranslationRepo } from '../translation/translation.repo'
@@ -24,6 +24,8 @@ import { UserDailyRequestRepo } from './user-daily-request.repo'
 
 @Injectable()
 export class UserDailyRequestService {
+  private readonly logger = new Logger(UserDailyRequestService.name)
+
   constructor(
     private userDailyRequestRepo: UserDailyRequestRepo,
     private readonly i18nService: I18nService,
@@ -267,7 +269,7 @@ export class UserDailyRequestService {
         )
       }
     } catch (error) {
-      console.error('Error in getUserDailyRequestsToday:', error)
+      this.logger.error('Error in getUserDailyRequestsToday:', error)
       throw error
     }
   }
@@ -308,7 +310,7 @@ export class UserDailyRequestService {
         }
       })
     } catch (error) {
-      console.error('Error updating normal progress:', error)
+      this.logger.error('Error updating normal progress:', error)
       throw error
     }
   }
@@ -349,7 +351,7 @@ export class UserDailyRequestService {
         }
       })
     } catch (error) {
-      console.error('Error updating streak progress:', error)
+      this.logger.error('Error updating streak progress:', error)
       throw error
     }
   }
@@ -381,7 +383,6 @@ export class UserDailyRequestService {
         today,
         dr.id
       )
-      console.log('daily: ', dr)
 
       const isStreak = (dr as any).isStreak
 
@@ -390,14 +391,12 @@ export class UserDailyRequestService {
         if (existing.isCompleted) {
           continue
         }
-        console.log(existing)
 
         // Update existing - calculate new progress
         let newProgress: number
         if (isStreak) {
           // For streak, always recalculate from streak history
           newProgress = (await this.checkStreakComplete(userId, dr.id)) + progressAdd
-          console.log('streak ne: ', newProgress)
         } else {
           // For non-streak, just increment progress
           newProgress = existing.progress + progressAdd

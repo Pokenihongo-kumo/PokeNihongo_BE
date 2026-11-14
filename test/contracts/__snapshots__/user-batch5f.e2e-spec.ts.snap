@@ -278,69 +278,61 @@ exports[`User batch 5f contract (e2e) errors 1`] = `
   "mineBadAchPageSize": {
     "en": {
       "body": {
-        "data": {
-          "pagination": {
-            "current": "number",
-            "pageSize": "number",
-            "totalItem": "number",
-            "totalPage": "number",
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Page size must be a positive integer",
           },
-          "results": [],
-        },
-        "message": "User achievement list retrieved successfully",
-        "statusCode": 200,
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 200,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "data": {
-          "pagination": {
-            "current": "number",
-            "pageSize": "number",
-            "totalItem": "number",
-            "totalPage": "number",
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Kích thước trang phải là số nguyên dương",
           },
-          "results": [],
-        },
-        "message": "Lấy danh sách thành tích người dùng thành công",
-        "statusCode": 200,
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 200,
+      "httpStatus": 422,
     },
   },
   "mineBadGroup": {
     "en": {
       "body": {
-        "data": {
-          "pagination": {
-            "current": "number",
-            "pageSize": "number",
-            "totalItem": "number",
-            "totalPage": "number",
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid achievement group ID",
           },
-          "results": [],
-        },
-        "message": "User achievement list retrieved successfully",
-        "statusCode": 200,
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
       },
-      "httpStatus": 200,
+      "httpStatus": 422,
     },
     "vi": {
       "body": {
-        "data": {
-          "pagination": {
-            "current": "number",
-            "pageSize": "number",
-            "totalItem": "number",
-            "totalPage": "number",
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID nhóm thành tích không hợp lệ",
           },
-          "results": [],
-        },
-        "message": "Lấy danh sách thành tích người dùng thành công",
-        "statusCode": 200,
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
       },
-      "httpStatus": 200,
+      "httpStatus": 422,
     },
   },
   "rewardInvalidId": {

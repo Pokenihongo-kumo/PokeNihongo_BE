@@ -1,5 +1,6 @@
 import { createZodDto } from 'nestjs-zod'
 import {
+  GetUserAchievementListForUserQuerySchema,
   CreateUserAchievementBodySchema,
   CreateUserAchievementResSchema,
   GetUserAchievementDetailResSchema,
@@ -32,4 +33,8 @@ export class UpdateUserAchievementResDTO extends createZodDto(
 export class UpdateWithListItemResDTO extends createZodDto(UpdateWithListItemResSchema) {}
 export class GetUserAchievementDetailResDTO extends createZodDto(
   GetUserAchievementDetailResSchema
+) {}
+
+export class GetUserAchievementListForUserQueryDTO extends createZodDto(
+  GetUserAchievementListForUserQuerySchema
 ) {}
