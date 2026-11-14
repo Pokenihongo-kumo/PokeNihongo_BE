@@ -25,7 +25,7 @@ import {
   FlashcardReviewQuery,
   UpdateFlashcardCardBody,
   UpdateFlashcardDeckBody
-} from './entities/flashcard.entities'
+} from './entities/flashcard.entity'
 import { FlashcardService } from './flashcard.service'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'

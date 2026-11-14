@@ -14,7 +14,7 @@ import {
   UpdateFlashcardDeckBodySchema,
   DeleteFlashcardCardsBodySchema,
   FlashcardReadBodySchema
-} from '../entities/flashcard.entities'
+} from '../entities/flashcard.entity'
 
 export class CreateFlashcardDeckBodyDTO extends createZodDto(
   CreateFlashcardDeckBodySchema
