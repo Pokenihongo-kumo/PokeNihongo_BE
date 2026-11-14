@@ -507,6 +507,28 @@ export const enMessages = {
     INVALID_PAGE_SIZE: 'Page size must be a positive integer',
     INVALID_FLAG: 'The value must be true or false'
   },
+  user_test_answer_log: {
+    GET_SUCCESS: 'Test answer retrieved successfully',
+    GET_LIST_SUCCESS: 'Test answers retrieved successfully',
+    CREATE_SUCCESS: 'Test answer saved successfully',
+    UPDATE_SUCCESS: 'Test answer updated successfully',
+    DELETE_SUCCESS: 'Test answer deleted successfully',
+    NOT_FOUND: 'Test answer log not found',
+    INVALID_DATA: 'Invalid test answer data',
+    ATTEMPT_NOT_FOUND: 'Test attempt not found',
+    ATTEMPT_NOT_OWNED: 'This attempt belongs to another user',
+    TEST_HAS_NO_TEST_SET: 'This test has no test set',
+    QUESTION_NOT_IN_TEST: 'This question is not in the test',
+    ANSWER_NOT_FOUND: 'Answer not found',
+    ANSWER_NOT_IN_QUESTION: 'This answer does not belong to the question',
+    INVALID_ID: 'Invalid test answer log ID',
+    INVALID_ATTEMPT_ID: 'Invalid test attempt ID',
+    INVALID_QUESTION_ID: 'Invalid question ID',
+    INVALID_ANSWER_ID: 'Invalid answer ID',
+    INVALID_PAGE: 'Page must be a positive integer',
+    INVALID_PAGE_SIZE: 'Page size must be a positive integer',
+    INVALID_FLAG: 'The value must be true or false'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Lesson category created successfully',
     UPDATE_SUCCESS: 'Lesson category updated successfully',

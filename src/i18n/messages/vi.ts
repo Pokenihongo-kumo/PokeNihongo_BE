@@ -520,6 +520,28 @@ export const viMessages = {
     INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương',
     INVALID_FLAG: 'Giá trị phải là true hoặc false'
   },
+  user_test_answer_log: {
+    GET_SUCCESS: 'Lấy thông tin log câu trả lời test thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách log câu trả lời test thành công',
+    CREATE_SUCCESS: 'Tạo log câu trả lời test thành công',
+    UPDATE_SUCCESS: 'Cập nhật log câu trả lời test thành công',
+    DELETE_SUCCESS: 'Xóa log câu trả lời test thành công',
+    NOT_FOUND: 'Không tìm thấy log câu trả lời test',
+    INVALID_DATA: 'Dữ liệu log câu trả lời test không hợp lệ',
+    ATTEMPT_NOT_FOUND: 'Lần thử bài test không tồn tại',
+    ATTEMPT_NOT_OWNED: 'Bạn không có quyền ghi log cho lần thử này',
+    TEST_HAS_NO_TEST_SET: 'Bài test không có bộ đề (test set)',
+    QUESTION_NOT_IN_TEST: 'Câu hỏi không thuộc về bài test hiện tại',
+    ANSWER_NOT_FOUND: 'Không tìm thấy đáp án',
+    ANSWER_NOT_IN_QUESTION: 'Đáp án không thuộc về câu hỏi đã chọn',
+    INVALID_ID: 'ID log câu trả lời test không hợp lệ',
+    INVALID_ATTEMPT_ID: 'ID lần thử bài test không hợp lệ',
+    INVALID_QUESTION_ID: 'ID câu hỏi không hợp lệ',
+    INVALID_ANSWER_ID: 'ID đáp án không hợp lệ',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương',
+    INVALID_FLAG: 'Giá trị phải là true hoặc false'
+  },
   lesson_category: {
     CREATE_SUCCESS: 'Tạo danh mục bài học thành công',
     UPDATE_SUCCESS: 'Cập nhật danh mục bài học thành công',
