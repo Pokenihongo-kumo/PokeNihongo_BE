@@ -734,7 +734,8 @@ export const viMessages = {
     PASSWORD_MIN: 'Mật khẩu phải có ít nhất 6 ký tự',
     PHONE_INVALID: 'Số điện thoại không hợp lệ',
     SET_MAIN_POKEMON_SUCCESS: 'Đặt Pokemon chính thành công',
-    HAS_NOT_JOINED_SEASON: 'Bạn chưa tham gia mùa giải hiện tại'
+    HAS_NOT_JOINED_SEASON: 'Bạn chưa tham gia mùa giải hiện tại',
+    INVALID_POKEMON_ID: 'Pokemon ID không hợp lệ'
   },
   flashcard: {
     CREATE_DECK_SUCCESS: 'Tạo bộ flashcard thành công',

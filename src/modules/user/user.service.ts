@@ -114,7 +114,6 @@ export class UserService {
       const template = 'account'
       const content = 'TÀI KHOẢN CỦA BẠN ĐÃ ĐƯỢC TẠO: '
       const bodyContent = 'Vui lòng nhập EMAIL và PASSWORD để có thể đăng nhập.'
-      console.log('password: ', randomPassword)
 
       await this.mailService.sendEmailPasswordAccount(
         emailLower,

@@ -722,7 +722,8 @@ export const enMessages = {
     PASSWORD_MIN: 'Password must be at least 6 characters',
     PHONE_INVALID: 'Invalid phone number',
     SET_MAIN_POKEMON_SUCCESS: 'Main Pokemon set successfully',
-    HAS_NOT_JOINED_SEASON: 'You have not joined the current season'
+    HAS_NOT_JOINED_SEASON: 'You have not joined the current season',
+    INVALID_POKEMON_ID: 'Invalid Pokemon ID'
   },
   flashcard: {
     CREATE_DECK_SUCCESS: 'Flashcard deck created successfully',

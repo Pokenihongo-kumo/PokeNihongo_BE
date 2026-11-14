@@ -217,6 +217,9 @@ describe('User batch 5e contract (e2e)', () => {
       levelInvalid: await both((l) =>
         http(l).put('/user/levelJLPT').send({ levelJLPT: 9 })
       ),
+      mainPokemonInvalid: await both((l) =>
+        http(l).post('/user/me/set-main-pokemon').send({ pokemonId: 0 })
+      ),
       mainPokemonMissing: await both((l) =>
         http(l).post('/user/me/set-main-pokemon').send({ pokemonId: 999999 })
       )
