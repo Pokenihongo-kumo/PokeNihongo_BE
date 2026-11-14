@@ -3,12 +3,12 @@ import {
   GetAIConversationRoomByIdParamsType,
   GetAIConversationRoomListQueryType,
   UpdateAIConversationRoomBodyType
-} from '@/modules/ai-conversation-room/entities/ai-conversation-room.entities'
+} from '@/modules/ai-conversation-room/entities/ai-conversation-room.entity'
 import {
   InvalidAIConversationRoomDataException,
   AIConversationRoomNotFoundException
 } from '@/modules/ai-conversation-room/dto/ai-conversation-room.error'
-import { AIConversationRoomRepository } from '@/modules/ai-conversation-room/ai-conversation-room.repo'
+import { AIConversationRoomRepo } from '@/modules/ai-conversation-room/ai-conversation-room.repo'
 import { isNotFoundPrismaError } from '@/shared/helpers'
 import { Injectable, Logger, HttpException } from '@nestjs/common'
 
@@ -16,9 +16,7 @@ import { Injectable, Logger, HttpException } from '@nestjs/common'
 export class AIConversationRoomService {
   private readonly logger = new Logger(AIConversationRoomService.name)
 
-  constructor(
-    private readonly aiConversationRoomRepository: AIConversationRoomRepository
-  ) {}
+  constructor(private readonly aiConversationRoomRepository: AIConversationRoomRepo) {}
 
   async create(body: CreateAIConversationRoomBodyType) {
     try {

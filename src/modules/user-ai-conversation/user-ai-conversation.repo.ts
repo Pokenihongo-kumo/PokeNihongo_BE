@@ -1,9 +1,9 @@
-import { UserAIConversationType } from '@/modules/user-ai-conversation/entities/user-ai-conversation.entities'
+import { UserAIConversationType } from '@/modules/user-ai-conversation/entities/user-ai-conversation.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
 
 @Injectable()
-export class UserAIConversationRepository {
+export class UserAIConversationRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(params: {

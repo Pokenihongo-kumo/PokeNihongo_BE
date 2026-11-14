@@ -3,12 +3,12 @@ import {
   GetUserAIConversationByIdParamsType,
   GetUserAIConversationListQueryType,
   UpdateUserAIConversationBodyType
-} from '@/modules/user-ai-conversation/entities/user-ai-conversation.entities'
+} from '@/modules/user-ai-conversation/entities/user-ai-conversation.entity'
 import {
   InvalidUserAIConversationDataException,
   UserAIConversationNotFoundException
 } from '@/modules/user-ai-conversation/dto/user-ai-conversation.error'
-import { UserAIConversationRepository } from '@/modules/user-ai-conversation/user-ai-conversation.repo'
+import { UserAIConversationRepo } from '@/modules/user-ai-conversation/user-ai-conversation.repo'
 import { isNotFoundPrismaError } from '@/shared/helpers'
 import { Injectable, Logger, HttpException } from '@nestjs/common'
 
@@ -16,9 +16,7 @@ import { Injectable, Logger, HttpException } from '@nestjs/common'
 export class UserAIConversationService {
   private readonly logger = new Logger(UserAIConversationService.name)
 
-  constructor(
-    private readonly userAIConversationRepository: UserAIConversationRepository
-  ) {}
+  constructor(private readonly userAIConversationRepository: UserAIConversationRepo) {}
 
   async create(body: CreateUserAIConversationBodyType) {
     try {

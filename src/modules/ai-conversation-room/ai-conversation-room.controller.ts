@@ -7,7 +7,7 @@ import {
   GetAIConversationRoomByIdParamsSchema,
   GetAIConversationRoomListQuerySchema,
   UpdateAIConversationRoomBodySchema
-} from './entities/ai-conversation-room.entities'
+} from './entities/ai-conversation-room.entity'
 
 @ApiTags('User AI Conversation Room')
 @ApiBearerAuth()

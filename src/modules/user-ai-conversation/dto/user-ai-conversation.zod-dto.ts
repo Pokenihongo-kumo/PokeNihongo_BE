@@ -5,7 +5,7 @@ import {
   GetUserAIConversationByIdParamsSchema,
   GetUserAIConversationListQuerySchema,
   UserAIConversationSchema
-} from '../entities/user-ai-conversation.entities'
+} from '../entities/user-ai-conversation.entity'
 
 export class CreateUserAIConversationBodyDTO extends createZodDto(
   CreateUserAIConversationBodySchema
