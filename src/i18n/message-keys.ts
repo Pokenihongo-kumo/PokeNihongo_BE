@@ -1006,7 +1006,37 @@ export const GachaRollHistoryMessage = {
 export const UserExerciseAttemptMessage = {
   REVIEW_NOT_COMPLETED: 'user_exercise_attempt.REVIEW_NOT_COMPLETED',
   REVIEW_INSUFFICIENT_SCORE: 'user_exercise_attempt.REVIEW_INSUFFICIENT_SCORE',
-  REVIEW_SUCCESS: 'user_exercise_attempt.REVIEW_SUCCESS'
+  REVIEW_SUCCESS: 'user_exercise_attempt.REVIEW_SUCCESS',
+  CREATE_SUCCESS: 'user_exercise_attempt.CREATE_SUCCESS',
+  UPDATE_SUCCESS: 'user_exercise_attempt.UPDATE_SUCCESS',
+  DELETE_SUCCESS: 'user_exercise_attempt.DELETE_SUCCESS',
+  GET_SUCCESS: 'user_exercise_attempt.GET_SUCCESS',
+  GET_LIST_SUCCESS: 'user_exercise_attempt.GET_LIST_SUCCESS',
+  GET_STATUS_SUCCESS: 'user_exercise_attempt.GET_STATUS_SUCCESS',
+  ABANDON_SUCCESS: 'user_exercise_attempt.ABANDON_SUCCESS',
+  LATEST_BY_LESSON_SUCCESS: 'user_exercise_attempt.LATEST_BY_LESSON_SUCCESS',
+  QUESTIONS_SUCCESS: 'user_exercise_attempt.QUESTIONS_SUCCESS',
+  NOT_ALL_ANSWERED: 'user_exercise_attempt.NOT_ALL_ANSWERED',
+  ALL_CORRECT: 'user_exercise_attempt.ALL_CORRECT',
+  SOME_INCORRECT: 'user_exercise_attempt.SOME_INCORRECT',
+  SUBMITTED_NO_ANSWER: 'user_exercise_attempt.SUBMITTED_NO_ANSWER',
+  SUBMITTED_INCOMPLETE: 'user_exercise_attempt.SUBMITTED_INCOMPLETE',
+  NOT_FOUND: 'user_exercise_attempt.NOT_FOUND',
+  EXERCISE_NOT_FOUND: 'user_exercise_attempt.EXERCISE_NOT_FOUND',
+  NOT_OWNED: 'user_exercise_attempt.NOT_OWNED',
+  LESSON_BLOCKED: 'user_exercise_attempt.LESSON_BLOCKED',
+  LESSON_PREREQUISITE_NOT_MET: 'user_exercise_attempt.LESSON_PREREQUISITE_NOT_MET',
+  NOT_IN_PROGRESS: 'user_exercise_attempt.NOT_IN_PROGRESS',
+  EXERCISE_HAS_NO_TEST_SET: 'user_exercise_attempt.EXERCISE_HAS_NO_TEST_SET',
+  INVALID_DATA: 'user_exercise_attempt.INVALID_DATA',
+  INVALID_ID: 'user_exercise_attempt.INVALID_ID',
+  INVALID_EXERCISE_ID: 'user_exercise_attempt.INVALID_EXERCISE_ID',
+  INVALID_LESSON_ID: 'user_exercise_attempt.INVALID_LESSON_ID',
+  INVALID_USER_ID: 'user_exercise_attempt.INVALID_USER_ID',
+  INVALID_STATUS: 'user_exercise_attempt.INVALID_STATUS',
+  INVALID_TIME: 'user_exercise_attempt.INVALID_TIME',
+  INVALID_PAGE: 'user_exercise_attempt.INVALID_PAGE',
+  INVALID_PAGE_SIZE: 'user_exercise_attempt.INVALID_PAGE_SIZE'
 } as const
 
 export const UserTestAttemptMessage = {

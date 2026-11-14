@@ -37,10 +37,10 @@ export class TimeSwaggerDTO {
 
 export class UpdateUserExerciseAttemptSwaggerDTO {
   @ApiProperty({
-    example: 'COMPLETED',
+    example: 'IN_PROGRESS',
     description:
-      'Trạng thái làm bài: IN_PROGRESS (đang làm), COMPLETED (hoàn thành), FAILED (hoàn thành nhưng sai), ABANDONED (bỏ dở)',
-    enum: ['IN_PROGRESS', 'COMPLETED', 'FAILED', 'ABANDONED'],
+      'Trạng thái: IN_PROGRESS (làm tiếp), SKIPPED (bỏ qua), ABANDONED (bỏ dở). COMPLETED/FAILED chỉ do submit-completion chấm',
+    enum: ['IN_PROGRESS', 'SKIPPED', 'ABANDONED'],
     required: false
   })
   status?: string

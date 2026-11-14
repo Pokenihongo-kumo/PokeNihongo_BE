@@ -4,12 +4,13 @@ import {
   UpdateUserExerciseAttemptBodySchema,
   GetUserExerciseAttemptByIdParamsSchema,
   CreateUserExerciseAttemptParamsSchema,
+  UserExerciseAttemptLessonParamsSchema,
   GetUserExerciseAttemptListQuerySchema,
   UserExerciseAttemptResSchema,
   UserExerciseAttemptListResSchema,
   LatestExerciseAttemptsByLessonResSchema,
   CheckExerciseCompletionBodySchema
-} from '../entities/user-exercise-attempt.entities'
+} from '../entities/user-exercise-attempt.entity'
 
 export class CreateUserExerciseAttemptBodyDTO extends createZodDto(
   CreateUserExerciseAttemptBodySchema
@@ -22,6 +23,9 @@ export class GetUserExerciseAttemptByIdParamsDTO extends createZodDto(
 ) {}
 export class CreateUserExerciseAttemptParamsDTO extends createZodDto(
   CreateUserExerciseAttemptParamsSchema
+) {}
+export class UserExerciseAttemptLessonParamsDTO extends createZodDto(
+  UserExerciseAttemptLessonParamsSchema
 ) {}
 export class GetUserExerciseAttemptListQueryDTO extends createZodDto(
   GetUserExerciseAttemptListQuerySchema

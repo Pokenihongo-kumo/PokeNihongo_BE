@@ -8,7 +8,8 @@ import {
   UserExerciseAttemptListResDTO,
   UserExerciseAttemptResDTO,
   LatestExerciseAttemptsByLessonResDTO,
-  CheckExerciseCompletionBodyDTO
+  CheckExerciseCompletionBodyDTO,
+  UserExerciseAttemptLessonParamsDTO
 } from '@/modules/user-exercise-attempt/dto/user-exercise-attempt.zod-dto'
 import {
   UserExerciseAttemptResponseSwaggerDTO,
@@ -58,8 +59,12 @@ export class UserExerciseAttemptController {
     type: UserExerciseAttemptResponseSwaggerDTO
   })
   @ZodSerializerDto(UserExerciseAttemptResDTO)
-  create(@Param('exerciseId') exerciseId: string, @ActiveUser('userId') userId: number) {
-    return this.userExerciseAttemptService.create(userId, parseInt(exerciseId, 10))
+  create(
+    @Param() { exerciseId }: CreateUserExerciseAttemptParamsDTO,
+    @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string
+  ) {
+    return this.userExerciseAttemptService.create(userId, exerciseId, lang)
   }
 
   @Get()
@@ -72,8 +77,8 @@ export class UserExerciseAttemptController {
   })
   @ApiQuery({ type: GetUserExerciseAttemptListQuerySwaggerDTO })
   @ZodSerializerDto(UserExerciseAttemptListResDTO)
-  findAll(@Query() query: GetUserExerciseAttemptListQueryDTO) {
-    return this.userExerciseAttemptService.findAll(query)
+  findAll(@Query() query: GetUserExerciseAttemptListQueryDTO, @I18nLang() lang: string) {
+    return this.userExerciseAttemptService.findAll(query, lang)
   }
 
   @Get(':id')
@@ -85,8 +90,11 @@ export class UserExerciseAttemptController {
     type: UserExerciseAttemptResponseSwaggerDTO
   })
   @ZodSerializerDto(UserExerciseAttemptResDTO)
-  findOne(@Param('id') id: string) {
-    return this.userExerciseAttemptService.findOne(Number(id))
+  findOne(
+    @Param() { id }: GetUserExerciseAttemptByIdParamsDTO,
+    @I18nLang() lang: string
+  ) {
+    return this.userExerciseAttemptService.findOne(id, lang)
   }
 
   @Put(':id')
@@ -100,11 +108,12 @@ export class UserExerciseAttemptController {
   })
   @ZodSerializerDto(UserExerciseAttemptResDTO)
   update(
-    @Param('id') id: string,
+    @Param() { id }: GetUserExerciseAttemptByIdParamsDTO,
     @Body() body: UpdateUserExerciseAttemptBodyDTO,
-    @ActiveUser('userId') userId: number
+    @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string
   ) {
-    return this.userExerciseAttemptService.update(Number(id), body)
+    return this.userExerciseAttemptService.update(id, body, userId, lang)
   }
 
   @Delete(':id')
@@ -117,8 +126,8 @@ export class UserExerciseAttemptController {
     type: UserExerciseAttemptResponseSwaggerDTO
   })
   @ZodSerializerDto(UserExerciseAttemptResDTO)
-  remove(@Param('id') id: string) {
-    return this.userExerciseAttemptService.remove(Number(id))
+  remove(@Param() { id }: GetUserExerciseAttemptByIdParamsDTO, @I18nLang() lang: string) {
+    return this.userExerciseAttemptService.remove(id, lang)
   }
 
   @Put(':id/submit-completion')
@@ -130,15 +139,17 @@ export class UserExerciseAttemptController {
     description: 'Kiểm tra trạng thái hoàn thành thành công',
     type: ExerciseCompletionResponseSwaggerDTO
   })
-  supmitCompletion(
-    @Param('id') id: string,
+  submitCompletion(
+    @Param() { id }: GetUserExerciseAttemptByIdParamsDTO,
     @ActiveUser('userId') userId: number,
-    @Body() body: CheckExerciseCompletionBodyDTO
+    @Body() body: CheckExerciseCompletionBodyDTO,
+    @I18nLang() lang: string
   ) {
-    return this.userExerciseAttemptService.supmitExerciseCompletion(
-      Number(id),
+    return this.userExerciseAttemptService.submitExerciseCompletion(
+      id,
       userId,
-      body?.time
+      body.time,
+      lang
     )
   }
 
@@ -150,8 +161,12 @@ export class UserExerciseAttemptController {
     description: 'Kiểm tra trạng thái hoàn thành thành công',
     type: ExerciseCompletionResponseSwaggerDTO
   })
-  checkCompletion(@Param('id') id: string, @ActiveUser('userId') userId: number) {
-    return this.userExerciseAttemptService.checkExerciseCompletion(Number(id), userId)
+  checkCompletion(
+    @Param() { id }: GetUserExerciseAttemptByIdParamsDTO,
+    @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string
+  ) {
+    return this.userExerciseAttemptService.checkExerciseCompletion(id, userId, lang)
   }
 
   @Get(':id/latest')
@@ -163,14 +178,12 @@ export class UserExerciseAttemptController {
     type: UserExerciseAttemptResponseSwaggerDTO
   })
   @ZodSerializerDto(UserExerciseAttemptResDTO)
-  getStatusExcericeAttemptLatest(
-    @Param('id') id: string,
-    @ActiveUser('userId') userId: number
+  getLatestStatus(
+    @Param() { id }: GetUserExerciseAttemptByIdParamsDTO,
+    @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string
   ) {
-    return this.userExerciseAttemptService.getStatusExcericeAttemptLatest(
-      Number(id),
-      userId
-    )
+    return this.userExerciseAttemptService.getLatestStatus(id, userId, lang)
   }
 
   @Put(':id/abandon')
@@ -184,11 +197,12 @@ export class UserExerciseAttemptController {
   })
   @ZodSerializerDto(UserExerciseAttemptResDTO)
   abandon(
-    @Param('id') id: string,
+    @Param() { id }: GetUserExerciseAttemptByIdParamsDTO,
     @ActiveUser('userId') userId: number,
-    @Body() body: TimeSwaggerDTO
+    @Body() body: CheckExerciseCompletionBodyDTO,
+    @I18nLang() lang: string
   ) {
-    return this.userExerciseAttemptService.abandon(Number(id), userId, body?.time)
+    return this.userExerciseAttemptService.abandon(id, userId, body.time, lang)
   }
 
   @Get(':id/status')
@@ -200,8 +214,12 @@ export class UserExerciseAttemptController {
     type: UserExerciseAttemptResponseSwaggerDTO
   })
   @ZodSerializerDto(UserExerciseAttemptResDTO)
-  getStatus(@Param('id') id: string, @ActiveUser('userId') userId: number) {
-    return this.userExerciseAttemptService.getStatus(Number(id), userId)
+  getStatus(
+    @Param() { id }: GetUserExerciseAttemptByIdParamsDTO,
+    @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string
+  ) {
+    return this.userExerciseAttemptService.getStatus(id, userId, lang)
   }
 
   @Get('latest/lesson/:lessonId')
@@ -218,12 +236,14 @@ export class UserExerciseAttemptController {
   })
   @ZodSerializerDto(LatestExerciseAttemptsByLessonResDTO)
   getLatestExerciseAttemptsByLesson(
-    @Param('lessonId') lessonId: string,
-    @ActiveUser('userId') userId: number
+    @Param() { lessonId }: UserExerciseAttemptLessonParamsDTO,
+    @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string
   ) {
     return this.userExerciseAttemptService.getLatestExerciseAttemptsByLesson(
       userId,
-      Number(lessonId)
+      lessonId,
+      lang
     )
   }
 
@@ -238,12 +258,12 @@ export class UserExerciseAttemptController {
     type: UserExerciseAttemptResponseSwaggerDTO
   })
   getExerciseAttemptByExerciseId(
-    @Param('id') id: string,
+    @Param() { id }: GetUserExerciseAttemptByIdParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() languageCode: string
   ) {
     return this.userExerciseAttemptService.getExerciseAttemptByExerciseId(
-      Number(id),
+      id,
       userId,
       languageCode
     )
@@ -260,12 +280,12 @@ export class UserExerciseAttemptController {
     type: UserExerciseAttemptResponseSwaggerDTO
   })
   getExerciseAttemptReview(
-    @Param('id') id: string,
+    @Param() { id }: GetUserExerciseAttemptByIdParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() languageCode: string
   ) {
     return this.userExerciseAttemptService.getExerciseAttemptReview(
-      Number(id),
+      id,
       userId,
       languageCode
     )

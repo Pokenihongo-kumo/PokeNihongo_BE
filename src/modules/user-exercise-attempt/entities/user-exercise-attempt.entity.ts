@@ -2,6 +2,8 @@ import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
 import { LessonContentsType } from '@prisma/client'
+import { UserExerciseAttemptMessage as M } from '@/i18n/message-keys'
+import { checkIdSchema } from '@/common/utils/id.validation'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
@@ -29,10 +31,16 @@ export const UserExerciseAttemptSchema = z.object({
 
 export const CreateUserExerciseAttemptBodySchema = z.object({}).strict()
 
-export const UpdateUserExerciseAttemptBodySchema = UserExerciseAttemptSchema.pick({
-  status: true
-})
-  .partial()
+// The app continues (IN_PROGRESS) or skips an attempt. COMPLETED/FAILED come
+// only from submit-completion, which grades the answers
+export const UpdateUserExerciseAttemptBodySchema = z
+  .object({
+    status: z
+      .enum(['IN_PROGRESS', 'SKIPPED', 'ABANDONED'], {
+        errorMap: () => ({ message: M.INVALID_STATUS })
+      })
+      .optional()
+  })
   .strict()
 
 export const UserExerciseAttemptResSchema = z
@@ -60,38 +68,28 @@ export const UserExerciseAttemptListResSchema = z
   .strict()
 
 export const GetUserExerciseAttemptByIdParamsSchema = z
-  .object({
-    id: z.string().transform((val) => parseInt(val, 10))
-  })
+  .object({ id: checkIdSchema(M.INVALID_ID) })
   .strict()
 
 export const CreateUserExerciseAttemptParamsSchema = z
-  .object({
-    exerciseId: z.string().transform((val) => parseInt(val, 10))
-  })
+  .object({ exerciseId: checkIdSchema(M.INVALID_EXERCISE_ID) })
+  .strict()
+
+export const UserExerciseAttemptLessonParamsSchema = z
+  .object({ lessonId: checkIdSchema(M.INVALID_LESSON_ID) })
   .strict()
 
 export const GetUserExerciseAttemptListQuerySchema = z
   .object({
-    currentPage: z
-      .string()
-      .transform((val) => parseInt(val, 10))
+    currentPage: checkIdSchema(M.INVALID_PAGE).default(1),
+    pageSize: checkIdSchema(M.INVALID_PAGE_SIZE).default(10),
+    userId: checkIdSchema(M.INVALID_USER_ID).optional(),
+    exerciseId: checkIdSchema(M.INVALID_EXERCISE_ID).optional(),
+    status: z
+      .enum(ExerciseAttemptStatusSchema.options, {
+        errorMap: () => ({ message: M.INVALID_STATUS })
+      })
       .optional()
-      .default('1'),
-    pageSize: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('10'),
-    userId: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional(),
-    exerciseId: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional(),
-    status: ExerciseAttemptStatusSchema.optional()
   })
   .strict()
 
@@ -113,10 +111,14 @@ export const LatestExerciseAttemptsByLessonResSchema = z
   })
   .strict()
 
-// Check completion body (time in seconds, optional)
+// Submit / abandon body: time spent in seconds, optional
 export const CheckExerciseCompletionBodySchema = z
   .object({
-    time: z.number().int().nonnegative().optional()
+    time: z
+      .number({ invalid_type_error: M.INVALID_TIME })
+      .int(M.INVALID_TIME)
+      .nonnegative(M.INVALID_TIME)
+      .optional()
   })
   .strict()
 
