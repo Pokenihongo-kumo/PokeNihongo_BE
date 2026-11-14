@@ -1,88 +1,141 @@
-<!DOCTYPE html>
 <html>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mã Xác Thực PokeNihongo</title>
-</head>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>Mã Xác Thực PokeNihongo</title>
+  </head>
 
-<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f7f7f7; color: #333333;">
-  <table width="100%" cellspacing="0" cellpadding="0" border="0"
-    style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+  <body
+    style='margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f7f7f7; color: #333333;'
+  >
+    <table
+      width='100%'
+      cellspacing='0'
+      cellpadding='0'
+      border='0'
+      style='max-width: 600px; margin: 0 auto; background-color: #ffffff;'
+    >
 
-    <!-- Main Content -->
-    <tr>
-      <td align="center" style="padding: 30px 20px;">
-        <h1 style="margin: 0 0 20px 0; font-size: 24px; color: #FF6B00;">{{content}}</h1>
-        <p style="margin: 0 0 25px 0; font-size: 16px; color: #666666;">{{body}}</p>
+      <!-- Main Content -->
+      <tr>
+        <td align='center' style='padding: 30px 20px;'>
+          <h1
+            style='margin: 0 0 20px 0; font-size: 24px; color: #FF6B00;'
+          >{{content}}</h1>
+          <p style='margin: 0 0 25px 0; font-size: 16px; color: #666666;'>{{body}}</p>
 
-        <!-- OTP Code Display -->
-        <div style="margin: 30px 0; text-align: center;">
-          <p style="margin: 0 0 20px 0; font-size: 16px; color: #666666; font-weight: 600;">Mã xác thực của bạn:</p>
-          
-          <!-- OTP Code Display Box -->
-          <table cellspacing="0" cellpadding="0" border="0" align="center" style="margin: 0 auto 25px auto;">
+          <!-- OTP Code Display -->
+          <div style='margin: 30px 0; text-align: center;'>
+            <p
+              style='margin: 0 0 20px 0; font-size: 16px; color: #666666; font-weight: 600;'
+            >Mã xác thực của bạn:</p>
+
+            <!-- OTP Code Display Box -->
+            <table
+              cellspacing='0'
+              cellpadding='0'
+              border='0'
+              align='center'
+              style='margin: 0 auto 25px auto;'
+            >
+              <tr>
+                <td
+                  style='padding: 25px 40px; background: linear-gradient(135deg, #FF6B00 0%, #FF8C42 100%); border-radius: 12px; box-shadow: 0 4px 15px rgba(255, 107, 0, 0.4);'
+                >
+                  <p
+                    style="margin: 0; font-size: 36px; font-weight: bold; color: #ffffff; font-family: 'Courier New', monospace; letter-spacing: 12px; text-align: center;"
+                  >{{otp}}</p>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <p style='margin: 0 0 25px 0; font-size: 14px; color: #888888;'>Nếu bạn không
+            yêu cầu mã này, bạn có thể bỏ qua email này.</p>
+
+          <!-- CTA Button -->
+          <table cellspacing='0' cellpadding='0' border='0' align='center'>
             <tr>
-              <td style="padding: 25px 40px; background: linear-gradient(135deg, #FF6B00 0%, #FF8C42 100%); border-radius: 12px; box-shadow: 0 4px 15px rgba(255, 107, 0, 0.4);">
-                <p style="margin: 0; font-size: 36px; font-weight: bold; color: #ffffff; font-family: 'Courier New', monospace; letter-spacing: 12px; text-align: center;">{{otp}}</p>
+              <td align='center' style='background-color: #FF6B00; border-radius: 4px;'>
+                <a
+                  href='{{link}}'
+                  target='_blank'
+                  style='display: inline-block; padding: 14px 30px; font-size: 16px; color: #ffffff; text-decoration: none; font-weight: bold;'
+                >Xác Thực Ngay</a>
               </td>
             </tr>
           </table>
-        </div>
-          
-        <p style="margin: 0 0 25px 0; font-size: 14px; color: #888888;">Nếu bạn không yêu cầu mã này, bạn có thể bỏ qua
-          email này.</p>
+        </td>
+      </tr>
 
-        <!-- CTA Button -->
-        <table cellspacing="0" cellpadding="0" border="0" align="center">
-          <tr>
-            <td align="center" style="background-color: #FF6B00; border-radius: 4px;">
-              <a href="{{link}}" target="_blank"
-                style="display: inline-block; padding: 14px 30px; font-size: 16px; color: #ffffff; text-decoration: none; font-weight: bold;">Xác
-                Thực Ngay</a>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
+      <!-- Footer -->
+      <tr>
+        <td
+          align='center'
+          style='padding: 30px 20px; background-color: #f7f7f7; border-top: 1px solid #eeeeee;'
+        >
+          <p style='margin: 0 0 15px 0; font-size: 14px; color: #888888;'>PokeNihongo -
+            Ứng dụng học tiếng Nhật hiệu quả với AI và phương pháp học thông minh.</p>
+          <p style='margin: 0; font-size: 12px; color: #999999;'>
+            &copy; 2025 PokeNihongo. Tất cả các quyền được bảo lưu.<br />
+            Nếu bạn có bất kỳ câu hỏi nào, hãy liên hệ với chúng tôi tại
+            <a
+              href='mailto:support@pokenihongo.com'
+              style='color: #FF6B00; text-decoration: none;'
+            >support@pokenihongo.com</a>
+          </p>
 
-    <!-- Footer -->
-    <tr>
-      <td align="center" style="padding: 30px 20px; background-color: #f7f7f7; border-top: 1px solid #eeeeee;">
-        <p style="margin: 0 0 15px 0; font-size: 14px; color: #888888;">PokeNihongo - Ứng dụng học tiếng Nhật hiệu quả với AI và phương pháp học thông minh.</p>
-        <p style="margin: 0; font-size: 12px; color: #999999;">
-          &copy; 2025 PokeNihongo. Tất cả các quyền được bảo lưu.<br>
-          Nếu bạn có bất kỳ câu hỏi nào, hãy liên hệ với chúng tôi tại <a href="mailto:support@pokenihongo.com"
-            style="color: #FF6B00; text-decoration: none;">support@pokenihongo.com</a>
-        </p>
-
-        <!-- Social Media Icons -->
-        <table cellspacing="0" cellpadding="0" border="0" align="center" style="margin-top: 20px;">
-          <tr>
-            <td style="padding: 0 5px;">
-              <a href="https://facebook.com/pokenihongo" style="text-decoration: none;">
-                <img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" width="24" height="24" alt="Facebook"
-                  style="border: none;">
-              </a>
-            </td>
-            <td style="padding: 0 5px;">
-              <a href="https://instagram.com/pokenihongo" style="text-decoration: none;">
-                <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" width="24" height="24"
-                  alt="Instagram" style="border: none;">
-              </a>
-            </td>
-            <td style="padding: 0 5px;">
-              <a href="https://twitter.com/pokenihongo" style="text-decoration: none;">
-                <img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" width="24" height="24" alt="Twitter"
-                  style="border: none;">
-              </a>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
+          <!-- Social Media Icons -->
+          <table
+            cellspacing='0'
+            cellpadding='0'
+            border='0'
+            align='center'
+            style='margin-top: 20px;'
+          >
+            <tr>
+              <td style='padding: 0 5px;'>
+                <a href='https://facebook.com/pokenihongo' style='text-decoration: none;'>
+                  <img
+                    src='https://cdn-icons-png.flaticon.com/512/733/733547.png'
+                    width='24'
+                    height='24'
+                    alt='Facebook'
+                    style='border: none;'
+                  />
+                </a>
+              </td>
+              <td style='padding: 0 5px;'>
+                <a
+                  href='https://instagram.com/pokenihongo'
+                  style='text-decoration: none;'
+                >
+                  <img
+                    src='https://cdn-icons-png.flaticon.com/512/2111/2111463.png'
+                    width='24'
+                    height='24'
+                    alt='Instagram'
+                    style='border: none;'
+                  />
+                </a>
+              </td>
+              <td style='padding: 0 5px;'>
+                <a href='https://twitter.com/pokenihongo' style='text-decoration: none;'>
+                  <img
+                    src='https://cdn-icons-png.flaticon.com/512/733/733579.png'
+                    width='24'
+                    height='24'
+                    alt='Twitter'
+                    style='border: none;'
+                  />
+                </a>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
 
 </html>

@@ -194,7 +194,7 @@ export class AuthService {
       }
     } catch (error) {
       if (isUniqueConstraintPrismaError(error)) {
-        throw EmailAlreadyExistsException
+        throw new EmailAlreadyExistsException()
       }
       throw error
     }
@@ -222,11 +222,14 @@ export class AuthService {
     return { accessToken, refreshToken }
   }
 
-  async refreshToken({
-    refreshToken,
-    userAgent,
-    ip
-  }: RefreshTokenBodyType & { userAgent: string; ip: string }) {
+  async refreshToken(
+    {
+      refreshToken,
+      userAgent,
+      ip
+    }: RefreshTokenBodyType & { userAgent: string; ip: string },
+    lang: string = 'vi'
+  ) {
     try {
       // 1. Kiểm tra refreshToken có hợp lệ không
       const { userId } = await this.tokenService.verifyRefreshToken(refreshToken)
@@ -238,7 +241,7 @@ export class AuthService {
       if (!refreshTokenInDb) {
         // Trường hợp đã refresh token rồi, hãy thông báo cho user biết
         // refresh token của họ đã bị đánh cắp
-        throw RefreshTokenAlreadyUsedException
+        throw new RefreshTokenAlreadyUsedException()
       }
       const {
         deviceId,
@@ -270,13 +273,13 @@ export class AuthService {
           ...userData,
           ...tokens
         },
-        message: this.i18nService.translate(AuthMessage.REFRESH_TOKEN_SUCCESS)
+        message: this.i18nService.translate(AuthMessage.REFRESH_TOKEN_SUCCESS, lang)
       }
     } catch (error) {
       if (error instanceof HttpException) {
         throw error
       }
-      throw UnauthorizedAccessException
+      throw new UnauthorizedAccessException()
     }
   }
 
@@ -527,7 +530,7 @@ export class AuthService {
       }
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
-        throw EmailNotFoundException
+        throw new EmailNotFoundException()
       }
       throw error
     }
@@ -621,7 +624,6 @@ export class AuthService {
     try {
       const { email, code, type } = body
       const storedOtp = await this.redisClient.get(email)
-      console.log(type)
 
       if (storedOtp === code) {
         // Xóa OTP sau khi xác thực thành công

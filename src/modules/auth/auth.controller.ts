@@ -8,6 +8,7 @@ import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import {
   AccountResDTO,
   ChangePasswordBodyDTO,
+  CheckEmailParamsDTO,
   ForgotPasswordBodyDTO,
   GetAccountProfileResDTO,
   GetAuthorizationUrlResDTO,
@@ -56,6 +57,14 @@ export class AuthController {
 
   @Post('verify-otp')
   @IsPublic()
+  // A forgot-password OTP gives an access token: at most 5 tries per email in
+  // the OTP's 5 minutes (there was no limit)
+  @UseGuards(RateLimitGuard)
+  @RateLimit({
+    windowMs: 5 * 60 * 1000,
+    max: 5,
+    keyGenerator: (req) => `verify_otp:${req.ip}:${req.body?.email}`
+  })
   @ZodSerializerDto(MessageResDTO)
   sendOTP(
     @Body() body: VerifyOTPBodyDTO,
@@ -109,13 +118,13 @@ export class AuthController {
   refreshToken(
     @Body() body: RefreshTokenBodyDTO,
     @UserAgent() userAgent: string,
-    @Ip() ip: string
+    @Ip() ip: string,
+    @I18nLang() lang: string
   ) {
-    return this.authService.refreshToken({
-      refreshToken: body.refreshToken,
-      userAgent,
-      ip
-    })
+    return this.authService.refreshToken(
+      { refreshToken: body.refreshToken, userAgent, ip },
+      lang
+    )
   }
 
   @Post('logout')
@@ -182,7 +191,7 @@ export class AuthController {
     keyGenerator: (req) => `check_email:${req.ip}:${req.params.email}` // rate limit theo IP + email
   })
   checkEmailExist(
-    @Param('email') email: string,
+    @Param() { email }: CheckEmailParamsDTO,
     @UserAgent() userAgent: string,
     @Ip() ip: string,
     @I18nLang() lang: string
