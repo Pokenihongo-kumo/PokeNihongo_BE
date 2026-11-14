@@ -1289,7 +1289,10 @@ export const viMessages = {
     NOT_FOUND: 'Không tìm thấy thành tích người dùng',
     ALREADY_EXISTS: 'Thành tích người dùng đã tồn tại',
     INVALID_DATA: 'Dữ liệu thành tích người dùng không hợp lệ',
-    INVALID_STATUS_CLAIM: 'Trạng thái nhận thành tích không hợp lệ'
+    INVALID_STATUS_CLAIM: 'Trạng thái nhận thành tích không hợp lệ',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương',
+    INVALID_GROUP_ID: 'ID nhóm thành tích không hợp lệ'
   },
   subscription: {
     CREATE_SUCCESS: 'Tạo gói đăng ký thành công',

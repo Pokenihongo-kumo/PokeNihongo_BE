@@ -1285,7 +1285,10 @@ export const enMessages = {
     NOT_FOUND: 'User achievement not found',
     ALREADY_EXISTS: 'User achievement already exists',
     INVALID_DATA: 'Invalid user achievement data',
-    INVALID_STATUS_CLAIM: 'Invalid status for claiming achievement'
+    INVALID_STATUS_CLAIM: 'Invalid status for claiming achievement',
+    INVALID_PAGE: 'Page must be a positive integer',
+    INVALID_PAGE_SIZE: 'Page size must be a positive integer',
+    INVALID_GROUP_ID: 'Invalid achievement group ID'
   },
   subscription: {
     CREATE_SUCCESS: 'Subscription created successfully',

@@ -1,6 +1,7 @@
 import { UserAchievementStatus } from '@/common/constants/achievement.constant'
 import { checkIdSchema } from '@/common/utils/id.validation'
-import { ENTITY_MESSAGE } from '@/i18n/message-keys'
+import { ENTITY_MESSAGE, UserAchievementMessage } from '@/i18n/message-keys'
+import { PaginationQuerySchema } from '@/shared/models/request.model'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -71,6 +72,17 @@ export type CreateUserAchievementBodyType = z.infer<
 >
 export type UpdateUserAchievementBodyType = z.infer<
   typeof UpdateUserAchievementBodySchema
+>
+// The app's achievements: groups paginated by currentPage/pageSize, the
+// achievements of each group by achCurrentPage/achPageSize (default 1/3)
+export const GetUserAchievementListForUserQuerySchema = PaginationQuerySchema.extend({
+  achCurrentPage: checkIdSchema(UserAchievementMessage.INVALID_PAGE).default(1),
+  achPageSize: checkIdSchema(UserAchievementMessage.INVALID_PAGE_SIZE).default(3),
+  achievementGroupId: checkIdSchema(UserAchievementMessage.INVALID_GROUP_ID).optional()
+})
+
+export type GetUserAchievementListForUserQueryType = z.infer<
+  typeof GetUserAchievementListForUserQuerySchema
 >
 export type GetUserAchievementParamsType = z.infer<typeof GetUserAchievementParamsSchema>
 

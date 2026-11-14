@@ -1291,7 +1291,10 @@ export const jaMessages = {
     NOT_FOUND: 'ユーザー実績が見つかりません',
     ALREADY_EXISTS: 'ユーザー実績は既に存在します',
     INVALID_DATA: '無効なユーザー実績データです',
-    INVALID_STATUS_CLAIM: 'この実績のステータスは報酬を受け取るのに適していません'
+    INVALID_STATUS_CLAIM: 'この実績のステータスは報酬を受け取るのに適していません',
+    INVALID_PAGE: 'ページは正の整数でなければなりません',
+    INVALID_PAGE_SIZE: 'ページサイズは正の整数でなければなりません',
+    INVALID_GROUP_ID: '実績グループIDが無効です'
   },
   subscription: {
     CREATE_SUCCESS: 'サブスクリプションの作成に成功しました',

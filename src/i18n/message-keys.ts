@@ -1306,7 +1306,10 @@ export const UserAchievementMessage = {
   NOT_FOUND: 'user_achievement.NOT_FOUND',
   ALREADY_EXISTS: 'user_achievement.ALREADY_EXISTS',
   INVALID_DATA: 'user_achievement.INVALID_DATA',
-  INVALID_STATUS_CLAIM: 'user_achievement.INVALID_STATUS_CLAIM'
+  INVALID_STATUS_CLAIM: 'user_achievement.INVALID_STATUS_CLAIM',
+  INVALID_PAGE: 'user_achievement.INVALID_PAGE',
+  INVALID_PAGE_SIZE: 'user_achievement.INVALID_PAGE_SIZE',
+  INVALID_GROUP_ID: 'user_achievement.INVALID_GROUP_ID'
 } as const
 
 export const SubscriptionMessage = {
