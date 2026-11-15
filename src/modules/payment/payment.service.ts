@@ -331,15 +331,24 @@ export class PaymentService {
     }
   }
 
-  // PAID + subscription exactly once, whichever callback (return, cancel, webhook) arrives first
+  // PAID + subscription exactly once, in one transaction, whichever callback
+  // (return, cancel, webhook) arrives first
   private async grantPaidPayment(payment: PaymentType) {
     const claimed = await this.paymentRepo.markInvoicePaidOnce(
       payment.id,
       payment.invoiceId
     )
     if (!claimed) return
-    // Delegate subscription creation + job cleanup to invoice service
-    await this.invoiceService.updateInvoiceWhenPaymentSuccess(payment.invoiceId)
+    // After commit, outside the database: both are best effort. A job left in
+    // the queue finds the invoice PAID and does nothing
+    this.invoiceService
+      .removeExpirationJob(payment.invoiceId)
+      .catch((error: unknown) =>
+        this.logger.warn(
+          `Expiration job of invoice ${payment.invoiceId} not removed`,
+          error instanceof Error ? error.name : 'error'
+        )
+      )
     // The confirmation mail is a courtesy: the plan is granted either way. Its
     // failure (mail provider down) is logged, never left as an unhandled rejection
     this.sendMailPayment(payment.invoiceId).catch((error: unknown) =>

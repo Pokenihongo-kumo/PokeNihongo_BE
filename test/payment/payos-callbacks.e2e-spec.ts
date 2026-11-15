@@ -1,9 +1,11 @@
 import { AppModule } from '@/app.module'
+import { PaymentRepo } from '@/modules/payment/payment.repo'
 import { PaymentService } from '@/modules/payment/payment.service'
 import { InvoiceService } from '@/modules/invoice/invoice.service'
 import { PayOSService } from '@/shared/services/payos.service'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { INestApplication, VersioningType } from '@nestjs/common'
+import { Prisma } from '@prisma/client'
 import { Test } from '@nestjs/testing'
 import request from 'supertest'
 import { App } from 'supertest/types'
@@ -100,7 +102,7 @@ describe('PayOS callbacks (e2e)', () => {
 
     lookup = jest.spyOn(PayOSService.prototype, 'getPaymentLinkInformation')
     verifyWebhook = jest.spyOn(PayOSService.prototype, 'verifyPaymentWebhookData')
-    grant = jest.spyOn(InvoiceService.prototype, 'updateInvoiceWhenPaymentSuccess')
+    grant = jest.spyOn(InvoiceService.prototype, 'removeExpirationJob')
     // No mail in tests
     jest
       .spyOn(PaymentService.prototype, 'sendMailPayment')
@@ -283,5 +285,52 @@ describe('PayOS callbacks (e2e)', () => {
       subscriptions: 1,
       subscription: 'PAYMENT_FAILED'
     })
+  })
+
+  it('granting the plan fails: nothing is marked paid, the next callback grants once', async () => {
+    const { payment, invoice, orderCode } = await pendingPayment('9')
+    payosSays('PAID')
+    // the database the payment module writes through (modules have their own)
+    const db = (app.get(PaymentRepo) as unknown as { prisma: PrismaService }).prisma
+    const transaction = db.$transaction.bind(db) as (fn: unknown) => Promise<unknown>
+    jest.spyOn(db, '$transaction').mockImplementationOnce(((fn: unknown) =>
+      transaction(async (tx: Prisma.TransactionClient) =>
+        (fn as (tx: Prisma.TransactionClient) => Promise<unknown>)(
+          new Proxy(tx, {
+            get: (target, key) =>
+              key === 'userSubscription'
+                ? new Proxy(target.userSubscription, {
+                    get: (sub, k) =>
+                      k === 'create'
+                        ? () => Promise.reject(new Error('DB unavailable (test double)'))
+                        : Reflect.get(sub, k)
+                  })
+                : Reflect.get(target, key)
+          })
+        )
+      )) as never)
+
+    const failed = await forgedReturn(orderCode)
+    expect(failed.headers.location).not.toContain('/payment/success')
+    expect(await stateOf(payment.id, invoice.id)).toEqual({
+      payment: 'PENDING',
+      invoice: 'PENDING',
+      subscriptions: 0
+    })
+
+    const retried = await forgedReturn(orderCode)
+    expect(retried.headers.location).toContain('/payment/success')
+    expect(await stateOf(payment.id, invoice.id)).toEqual({
+      payment: 'PAID',
+      invoice: 'PAID',
+      subscriptions: 1
+    })
+    expect(
+      (
+        await prisma.userSubscription.findUniqueOrThrow({
+          where: { invoiceId: invoice.id }
+        })
+      ).status
+    ).toBe('ACTIVE')
   })
 })

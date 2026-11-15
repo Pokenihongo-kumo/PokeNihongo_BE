@@ -10,7 +10,6 @@ import { I18nService } from '@/i18n/i18n.service'
 import { InvoiceMessage } from '@/i18n/message-keys'
 import { NotFoundRecordException } from '@/shared/error'
 import {
-  addTimeUTC,
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError
 } from '@/shared/helpers'
@@ -293,60 +292,9 @@ export class InvoiceService {
     }
   }
 
-  async updateInvoiceWhenPaymentSuccess(invoiceId: number) {
-    const invoice = await this.invoiceRepo.findById(invoiceId)
-    if (!invoice) {
-      throw new InvoiceNotFoundException()
-    }
-
-    // Remove scheduled expiration job if exists
-    const jobId = `invoice-expire-${invoiceId}`
-    const existingJob = await this.invoiceExpirationQueue.getJob(jobId)
-    if (existingJob) {
-      await existingJob.remove()
-    }
-
-    // If already paid, just ensure subscription exists/updated
-    const isAlreadyPaid = invoice.status === 'PAID'
-    if (!isAlreadyPaid) {
-      await this.invoiceRepo.update({ id: invoiceId, data: { status: 'PAID' } })
-    }
-
-    // Create or update user subscription linked by invoiceId
-    const existingUserSub = await this.userSubRepo.findByInvoiceId(invoiceId)
-    const plan = await this.subscriptionPlanRepo.getById(invoice.subscriptionPlanId)
-    if (!plan) {
-      // If plan missing, nothing more to do
-      return
-    }
-    const now = new Date()
-    const startDate = addTimeUTC(now, 0)
-    const expiresAt =
-      plan.type === 'RECURRING' && plan.durationInDays
-        ? addTimeUTC(startDate, plan.durationInDays * 24 * 60 * 60 * 1000)
-        : null
-
-    if (!existingUserSub) {
-      const created = await this.userSubRepo.create({
-        createdById: invoice.userId,
-        data: {
-          subscriptionPlanId: plan.id,
-          invoiceId: invoice.id,
-          userId: invoice.userId
-        }
-      })
-      await this.userSubRepo.update({
-        id: created.id,
-        data: { startDate, expiresAt, status: UserSubscriptionStatus.ACTIVE }
-      })
-    } else {
-      // Update if not already ACTIVE
-      if (existingUserSub.status !== UserSubscriptionStatus.ACTIVE) {
-        await this.userSubRepo.update({
-          id: existingUserSub.id,
-          data: { startDate, expiresAt, status: UserSubscriptionStatus.ACTIVE }
-        })
-      }
-    }
+  // The invoice was paid: its expiration job has nothing left to do
+  async removeExpirationJob(invoiceId: number) {
+    const job = await this.invoiceExpirationQueue.getJob(`invoice-expire-${invoiceId}`)
+    if (job) await job.remove()
   }
 }
