@@ -148,6 +148,32 @@ export const GetAuthorizationUrlResSchema = z.object({
   message: z.string()
 })
 
+// GET /auth/google-link (ADR D-auth §3): the PKCE challenge of the client that
+// starts sign-in (S256 of its code verifier, base64url) and where to send it back
+export const GoogleLinkQuerySchema = z
+  .object({
+    codeChallenge: z
+      .string()
+      .regex(/^[A-Za-z0-9_-]{43,128}$/, 'codeChallenge must be a base64url S256 value'),
+    redirectUri: z.string().url().optional()
+  })
+  .strict()
+
+// POST /auth/google/exchange: the one-time code from the callback redirect and
+// the code verifier only the client that started sign-in knows
+export const GoogleExchangeBodySchema = z
+  .object({
+    code: z.string().min(1).max(200),
+    codeVerifier: z.string().regex(/^[A-Za-z0-9._~-]{43,128}$/)
+  })
+  .strict()
+
+export const GoogleExchangeResSchema = z.object({
+  statusCode: z.number(),
+  data: z.object({ accessToken: z.string(), refreshToken: z.string() }),
+  message: z.string()
+})
+
 export const ForgotPasswordBodySchema = z
   .object({
     email: emailSchema
@@ -284,6 +310,8 @@ export type DeviceType = z.infer<typeof DeviceSchema>
 export type LogoutBodyType = RefreshTokenBodyType
 export type GoogleAuthStateType = z.infer<typeof GoogleAuthStateSchema>
 export type GetAuthorizationUrlResType = z.infer<typeof GetAuthorizationUrlResSchema>
+export type GoogleLinkQueryType = z.infer<typeof GoogleLinkQuerySchema>
+export type GoogleExchangeBodyType = z.infer<typeof GoogleExchangeBodySchema>
 export type ForgotPasswordBodyType = z.infer<typeof ForgotPasswordBodySchema>
 export type verifyForgotPasswordBodyType = z.infer<typeof verifyForgotPasswordBodySchema>
 export type verifyForgotPasswordResType = z.infer<typeof verifyForgotPasswordResSchema>

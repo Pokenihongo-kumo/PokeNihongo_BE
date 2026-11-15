@@ -34,6 +34,9 @@ const configSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   GOOGLE_REDIRECT_URI: z.string().optional(),
   GOOGLE_CLIENT_REDIRECT_URI: z.string().optional(),
+  // Comma-separated client redirect URIs allowed for Google sign-in, besides
+  // GOOGLE_CLIENT_REDIRECT_URI (ADR D-auth §3)
+  GOOGLE_CLIENT_REDIRECT_URIS: z.string().optional(),
   FE_URL: z.string().url().optional(),
   MO_URL: z.string().optional(),
 

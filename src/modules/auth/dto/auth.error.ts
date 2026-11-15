@@ -201,3 +201,24 @@ export class RegistrationTokenInvalidException extends UnauthorizedException {
     })
   }
 }
+
+// POST /auth/google/exchange: unknown, used or expired code, or a code
+// verifier that does not match the challenge sign-in started with
+export class ExchangeCodeInvalidException extends UnauthorizedException {
+  constructor() {
+    super({
+      message: AuthMessage.EXCHANGE_CODE_INVALID,
+      errorKey: AuthMessage.EXCHANGE_CODE_INVALID
+    })
+  }
+}
+
+// GET /auth/google-link with a redirectUri outside the allowlist
+export class GoogleRedirectNotAllowedException extends UnprocessableEntityException {
+  constructor() {
+    super({
+      message: AuthMessage.GOOGLE_REDIRECT_NOT_ALLOWED,
+      errorKey: AuthMessage.GOOGLE_REDIRECT_NOT_ALLOWED
+    })
+  }
+}

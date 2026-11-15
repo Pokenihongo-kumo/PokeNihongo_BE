@@ -36,6 +36,11 @@ export const jaMessages = {
     OTP_AUTHENTICATION_SUCCESS: 'OTP認証が完了しました',
     REGISTRATION_TOKEN_INVALID:
       '登録セッションが無効か期限切れです。もう一度メールアドレスを確認してください',
+    OAUTH_STATE_INVALID:
+      'Googleログインのセッションが無効か期限切れです。もう一度お試しください',
+    EXCHANGE_CODE_INVALID: 'Googleログインコードが無効、使用済み、または期限切れです',
+    GOOGLE_REDIRECT_NOT_ALLOWED: 'このリダイレクト先は許可されていません',
+    GOOGLE_EXCHANGE_SUCCESS: 'Googleでログインしました',
     FAIL_TO_LOGIN: 'メールアドレスまたはパスワードが間違っています',
     MISSING_ACCESS_TOKEN: '続行するにはログインしてください',
     FIRST_LOGIN:

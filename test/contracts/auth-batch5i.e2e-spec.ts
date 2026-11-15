@@ -1,5 +1,6 @@
 import { AppModule } from '@/app.module'
 import { MailService } from '@/3rdService/mail/mail.service'
+import envConfig from '@/config/env.config'
 import { CONSUME_IF_CODE, OtpPurpose, otpKey } from '@/3rdService/mail/otp-value'
 import { registrationTokenKey } from '@/modules/auth/registration-token'
 import { PrismaService } from '@/shared/services/prisma.service'
@@ -55,7 +56,10 @@ describe('Auth batch 5i contract (e2e)', () => {
     en: capture(await send('en'))
   })
 
+  const savedRedirect = envConfig.GOOGLE_CLIENT_REDIRECT_URI
+
   beforeAll(async () => {
+    envConfig.GOOGLE_CLIENT_REDIRECT_URI = 'https://app.example.test/auth/google'
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
       .overrideProvider(MailService)
       .useValue({
@@ -119,6 +123,7 @@ describe('Auth batch 5i contract (e2e)', () => {
       await prisma.languages.deleteMany({ where: { id: { in: languages } } })
     }
     await redis?.del(newEmail)
+    envConfig.GOOGLE_CLIENT_REDIRECT_URI = savedRedirect
     await app?.close()
   })
 
@@ -174,7 +179,12 @@ describe('Auth batch 5i contract (e2e)', () => {
       forgotPassword: capture(
         await http().post('/auth/forgot-password').send({ email: TEST_ADMIN.email })
       ),
-      googleLink: capture(await http().get('/auth/google-link'))
+      // ADR D-auth §3: a PKCE challenge, sent back to an allowlisted URI
+      googleLink: capture(
+        await http()
+          .get('/auth/google-link')
+          .query({ codeChallenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM' })
+      )
     }).toMatchSnapshot()
   })
 
