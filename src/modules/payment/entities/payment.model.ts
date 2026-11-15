@@ -10,7 +10,7 @@ const PaymentSchema = z.object({
   paymentMethod: z
     .enum([PAYMENT_METHOD.BANK_TRANSFER])
     .default(PAYMENT_METHOD.BANK_TRANSFER),
-  amount: z.number().min(0),
+  amount: z.number().int().min(0),
   status: z.enum([
     PAYMENT_STATUS.PENDING,
     PAYMENT_STATUS.PROCESSING,
