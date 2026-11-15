@@ -168,6 +168,28 @@ export class AuthRepository {
     })
   }
 
+  // Consumes `oldToken` and stores `next` in one transaction. Of concurrent
+  // calls with the same old token only one finds it (the others wait for its
+  // row lock, then delete nothing) and the rest return false with nothing
+  // written; any failure rolls back, so the old token stays usable
+  rotateRefreshToken({
+    oldToken,
+    next,
+    device
+  }: {
+    oldToken: string
+    next: { token: string; userId: number; expiresAt: Date; deviceId: number }
+    device: Pick<DeviceType, 'ip' | 'userAgent'>
+  }): Promise<boolean> {
+    return this.prismaService.$transaction(async (tx) => {
+      const { count } = await tx.refreshToken.deleteMany({ where: { token: oldToken } })
+      if (count === 0) return false
+      await tx.refreshToken.create({ data: next })
+      await tx.device.update({ where: { id: next.deviceId }, data: device })
+      return true
+    })
+  }
+
   deleteRefreshToken(where: { token: string }): Promise<RefreshTokenType> {
     return this.prismaService.refreshToken.delete({
       where
