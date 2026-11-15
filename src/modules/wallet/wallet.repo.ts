@@ -216,6 +216,10 @@ export class WalletRepo {
     })
   }
 
+  // Debits only when the balance covers `amount`, in one conditional update:
+  // concurrent debits wait for each other's row lock and re-check the balance.
+  // null when there is no wallet or not enough balance (nothing changed); the
+  // callers throw, which rolls their transaction back
   async minusBalanceToWalletWithTypeUserId(
     {
       userId,
@@ -239,15 +243,11 @@ export class WalletRepo {
 
     if (!wallet) return null
 
-    return client.wallet.update({
-      where: {
-        id: wallet.id
-      },
-      data: {
-        balance: {
-          decrement: amount
-        }
-      }
+    const { count } = await client.wallet.updateMany({
+      where: { id: wallet.id, balance: { gte: amount } },
+      data: { balance: { decrement: amount } }
     })
+    if (count === 0) return null
+    return client.wallet.findUnique({ where: { id: wallet.id } })
   }
 }
