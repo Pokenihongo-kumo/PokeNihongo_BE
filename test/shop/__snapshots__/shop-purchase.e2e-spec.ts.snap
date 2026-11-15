@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Shop purchase (e2e) buys a Pokemon once; buying it again is refused 1`] = `
+{
+  "again": {
+    "httpStatus": 409,
+    "message": "Người dùng đã có Pokemon này",
+  },
+  "first": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "createdById": "number",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "id": "number",
+        "quantity": "number",
+        "shopItemId": "number",
+        "totalPrice": "number",
+        "updatedAt": "string",
+        "updatedById": "number",
+        "userId": "number",
+        "walletTransId": "number",
+      },
+      "message": "Tạo giao dịch mua hàng thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+}
+`;

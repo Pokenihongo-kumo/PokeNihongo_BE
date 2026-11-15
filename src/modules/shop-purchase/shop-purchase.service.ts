@@ -76,9 +76,6 @@ export class ShopPurchaseService {
     lang: string = 'vi'
   ) {
     try {
-      // co item hong
-      console.log('tim item')
-
       const shopItem = await this.shopItemRepo.findById(data.shopItemId)
       if (!shopItem) throw new NotFoundRecordException()
 
@@ -198,8 +195,6 @@ export class ShopPurchaseService {
         message: this.i18nService.translate(ShopPurchaseMessage.CREATE_SUCCESS, lang)
       }
     } catch (error) {
-      console.log('vo catch')
-
       if (isNotFoundPrismaError(error)) throw new NotFoundRecordException()
       if (isForeignKeyConstraintPrismaError(error)) throw new NotFoundRecordException()
       throw error
