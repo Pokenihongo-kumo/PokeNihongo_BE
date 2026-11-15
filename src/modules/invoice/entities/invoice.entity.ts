@@ -1,6 +1,6 @@
 import { InvoiceStatus } from '@/common/constants/invoice.constant'
 import { checkIdSchema } from '@/common/utils/id.validation'
-import { ENTITY_MESSAGE } from '@/i18n/message-keys'
+import { ENTITY_MESSAGE, InvoiceMessage } from '@/i18n/message-keys'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -27,10 +27,16 @@ export const InvoiceSchema = z.object({
 
 // Create Schema
 export const CreateInvoiceBodySchema = InvoiceSchema.pick({
-  subscriptionPlanId: true,
-  discountAmount: true
+  subscriptionPlanId: true
 })
-
+  .extend({
+    // whole PokeCoins (10.5 used to be taken); the half-price cap is checked
+    // against the plan in the service
+    discountAmount: z
+      .number()
+      .int({ message: InvoiceMessage.INVALID_DATA })
+      .min(0, { message: InvoiceMessage.INVALID_DATA })
+  })
   .strict()
 
 export const CreateInvoiceResSchema = z.object({

@@ -1,3 +1,4 @@
+import { maxPokeCoinDiscount } from '@/common/constants/subscription.constant'
 import { RoleName } from '@/common/constants/role.constant'
 import { walletType } from '@/common/constants/wallet.constant'
 import { I18nService } from '@/i18n/i18n.service'
@@ -274,7 +275,7 @@ export class SubscriptionPlanService {
     }
 
     // Tính giá trị tối đa có thể giảm giá (50% giá gói)
-    const maxDiscountAllowed = Math.floor(subscriptionPlan.price * 0.5)
+    const maxDiscountAllowed = maxPokeCoinDiscount(subscriptionPlan.price)
 
     // Số PokeCoin user có thể sử dụng = min(số coin hiện có, 50% giá gói)
     const maxPokeCoinsCanUse = Math.min(walletPokeCoin.balance, maxDiscountAllowed)

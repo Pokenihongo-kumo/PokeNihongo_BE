@@ -1434,7 +1434,9 @@ export const InvoiceMessage = {
   GET_LIST_SUCCESS: 'invoice.GET_LIST_SUCCESS',
   NOT_FOUND: 'invoice.NOT_FOUND',
   ALREADY_EXISTS: 'invoice.ALREADY_EXISTS',
-  INVALID_DATA: 'invoice.INVALID_DATA'
+  INVALID_DATA: 'invoice.INVALID_DATA',
+  DISCOUNT_TOO_HIGH: 'invoice.DISCOUNT_TOO_HIGH',
+  NOT_ENOUGH_POKE_COINS: 'invoice.NOT_ENOUGH_POKE_COINS'
 } as const
 
 export const PaymentMessage = {
