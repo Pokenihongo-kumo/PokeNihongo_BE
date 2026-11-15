@@ -1,6 +1,6 @@
 import { InvoiceStatus } from '@/common/constants/invoice.constant'
 import { UserSubscriptionStatus } from '@/common/constants/subscription.constant'
-import { addTimeUTC } from '@/shared/helpers'
+import { addTimeUTC, isUniqueConstraintPrismaError } from '@/shared/helpers'
 import { cancelPendingInvoice } from '@/modules/invoice/cancel-pending-invoice'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
@@ -30,6 +30,40 @@ export class PaymentRepo {
     return this.prisma.payment.update({
       where: { id },
       data
+    })
+  }
+
+  /**
+   * One open link per invoice (ADR D1 §2): expires the invoice's PENDING
+   * payments that are past their expiry, then inserts the new PENDING payment.
+   * Returns null when the invoice still has an open one (the partial unique
+   * index "Payment_invoiceId_pending_key" refuses a second): the caller hands
+   * that one out instead of creating another PayOS link.
+   */
+  async reservePendingPayment(data: CreatePaymentType): Promise<PaymentType | null> {
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        await tx.payment.updateMany({
+          where: {
+            invoiceId: data.invoiceId,
+            status: 'PENDING',
+            OR: [{ expiredAt: null }, { expiredAt: { lte: new Date() } }]
+          },
+          data: { status: 'EXPIRED', failureReason: 'Payment link expired' }
+        })
+        return tx.payment.create({ data })
+      })
+    } catch (error) {
+      if (isUniqueConstraintPrismaError(error)) return null
+      throw error
+    }
+  }
+
+  // The PayOS link of a reserved payment could not be created: free the slot
+  async failReservedPayment(id: number, failureReason: string): Promise<void> {
+    await this.prisma.payment.updateMany({
+      where: { id, status: 'PENDING' },
+      data: { status: 'FAILED', failureReason }
     })
   }
 

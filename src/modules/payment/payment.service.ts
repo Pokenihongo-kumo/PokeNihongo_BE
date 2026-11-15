@@ -32,7 +32,8 @@ import { UserSubscriptionService } from '../user-subscription/user-subscription.
 import {
   ErrorPaymentToPayException,
   InvalidStatusPendingInvoiceToPayException,
-  InvoiceNotFoundException
+  InvoiceNotFoundException,
+  PaymentLinkInProgressException
 } from './dto/payment.error'
 import { CreatePayOSPaymentDto, PaymentType } from './entities/payment.model'
 import { PaymentRepo } from './payment.repo'
@@ -75,41 +76,6 @@ export class PaymentService {
 
       if (invoice.status !== InvoiceStatus.PENDING) {
         throw new InvalidStatusPendingInvoiceToPayException()
-      }
-
-      // 1.1. Nếu đã có payment PENDING còn hạn cho invoice này thì trả về luôn
-      const existingPending = await this.paymentRepo.findLatestPendingByInvoice(
-        invoice.id
-      )
-      if (existingPending) {
-        const now = Date.now()
-        const expiredAtMs = existingPending.expiredAt
-          ? new Date(existingPending.expiredAt).getTime()
-          : undefined
-        if (expiredAtMs && expiredAtMs > now) {
-          return {
-            success: true,
-            message: this.i18nService.translate(PaymentMessage.CREATE_SUCCESS, lang),
-            data: {
-              payment: existingPending,
-              payosData: {
-                orderCode: existingPending.payosOrderId
-                  ? Number(existingPending.payosOrderId)
-                  : undefined,
-                checkoutUrl: existingPending.payosCheckoutUrl,
-                qrCode: existingPending.payosQrCode,
-                paymentLinkId: existingPending.payosPaymentLinkId,
-                expiredAt: expiredAtMs ? Math.floor(expiredAtMs / 1000) : undefined,
-                amount: existingPending.amount
-              }
-            }
-          }
-        } else if (expiredAtMs && expiredAtMs <= now) {
-          await this.paymentRepo.updatePayment(existingPending.id, {
-            status: PAYMENT_STATUS.EXPIRED,
-            failureReason: 'Payment link expired'
-          })
-        }
       }
 
       // 2. Lấy subscription plan
@@ -156,22 +122,44 @@ export class PaymentService {
         expiredAt: Math.floor(Date.now() / 1000) + 15 * 60 // 15 phút
       }
 
-      // 9. Gọi PayOS tạo link
-      const payosResponse = await this.payosService.createPaymentLink(payosRequest)
-
-      // 10. Lưu Payment (PENDING)
-      const payment = await this.paymentRepo.createPayment({
+      // 9. Hold the invoice's one open slot before calling PayOS (ADR D1 §2):
+      // a concurrent or repeated request gets the same link, not a second one
+      const reserved = await this.paymentRepo.reservePendingPayment({
         userId,
         invoiceId: invoice.id,
         paymentMethod: PAYMENT_METHOD.BANK_TRANSFER,
         amount,
         status: PAYMENT_STATUS.PENDING,
         payosOrderId: orderCode.toString(),
+        payosPaymentLinkId: null,
+        payosCheckoutUrl: null,
+        payosQrCode: null,
+        expiredAt: new Date(payosRequest.expiredAt * 1000),
+        processedById: userId
+      })
+      if (!reserved) {
+        const open = await this.paymentRepo.findLatestPendingByInvoice(invoice.id)
+        // still being created by the other request: the client retries
+        if (!open?.payosCheckoutUrl) throw new PaymentLinkInProgressException()
+        return this.paymentLinkResult(open, lang)
+      }
+
+      // 10. Create the PayOS link; if it fails, free the slot for a retry
+      let payosResponse: Awaited<ReturnType<PayOSService['createPaymentLink']>>
+      try {
+        payosResponse = await this.payosService.createPaymentLink(payosRequest)
+      } catch (error) {
+        await this.paymentRepo.failReservedPayment(
+          reserved.id,
+          'PayOS payment link could not be created'
+        )
+        throw error
+      }
+      const payment = await this.paymentRepo.updatePayment(reserved.id, {
         payosPaymentLinkId: payosResponse.paymentLinkId,
         payosCheckoutUrl: payosResponse.checkoutUrl,
         payosQrCode: payosResponse.qrCode,
-        expiredAt: new Date(payosResponse.expiredAt * 1000),
-        processedById: userId
+        expiredAt: new Date(payosResponse.expiredAt * 1000)
       })
 
       // 11. Kiểm tra và gia hạn Bull job nếu còn < 15 phút
@@ -220,6 +208,28 @@ export class PaymentService {
         throw error
       }
       throw new ErrorPaymentToPayException()
+    }
+  }
+
+  // The open link of an invoice, as POST /payments/payos answers it
+  private paymentLinkResult(payment: PaymentType, lang: string) {
+    const expiredAtMs = payment.expiredAt
+      ? new Date(payment.expiredAt).getTime()
+      : undefined
+    return {
+      success: true,
+      message: this.i18nService.translate(PaymentMessage.CREATE_SUCCESS, lang),
+      data: {
+        payment,
+        payosData: {
+          orderCode: payment.payosOrderId ? Number(payment.payosOrderId) : undefined,
+          checkoutUrl: payment.payosCheckoutUrl,
+          qrCode: payment.payosQrCode,
+          paymentLinkId: payment.payosPaymentLinkId,
+          expiredAt: expiredAtMs ? Math.floor(expiredAtMs / 1000) : undefined,
+          amount: payment.amount
+        }
+      }
     }
   }
 

@@ -1417,7 +1417,8 @@ export const enMessages = {
     ALREADY_PAID: 'Invoice has already been paid',
     PAY_SUCCESS: 'Payment processed successfully',
     PAY_FAILED: 'Payment processing failed',
-    PAY_CANCELLED: 'Payment was cancelled'
+    PAY_CANCELLED: 'Payment was cancelled',
+    LINK_IN_PROGRESS: 'The payment link is being created, please try again in a moment'
   },
   notification: {
     CREATE_SUCCESS: 'Notification created successfully',

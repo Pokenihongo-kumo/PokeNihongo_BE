@@ -1422,7 +1422,8 @@ export const viMessages = {
     ALREADY_PAID: 'Giao dịch thanh toán đã được thanh toán',
     PAY_SUCCESS: 'Thanh toán thành công',
     PAY_FAILED: 'Thanh toán thất bại',
-    PAY_CANCELLED: 'Thanh toán bị hủy bỏ'
+    PAY_CANCELLED: 'Thanh toán bị hủy bỏ',
+    LINK_IN_PROGRESS: 'Link thanh toán đang được tạo, vui lòng thử lại sau giây lát'
   },
   notification: {
     CREATE_SUCCESS: 'Tạo thông báo thành công',

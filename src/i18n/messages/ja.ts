@@ -1422,7 +1422,8 @@ export const jaMessages = {
     ALREADY_PAID: 'この請求書は既に支払われています',
     PAY_SUCCESS: '支払いが正常に完了しました',
     PAY_FAILED: '支払いに失敗しました',
-    PAY_CANCELLED: '支払いがキャンセルされました'
+    PAY_CANCELLED: '支払いがキャンセルされました',
+    LINK_IN_PROGRESS: '支払いリンクを作成中です。しばらくしてからもう一度お試しください'
   },
   notification: {
     CREATE_SUCCESS: '通知の作成に成功しました',
