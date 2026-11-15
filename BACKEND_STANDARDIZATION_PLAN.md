@@ -581,6 +581,14 @@ Convention + checklist giai đoạn 3: [docs/standardization/backend-convention.
       - [ ] Web gọi `POST /shop-banner/random-pokemon` nhưng BE không có route (404). Cần quyết định: thêm route hay bỏ ở web.
       - [ ] Contract baseline cho route admin shop (banner CRUD, item list/random/update/delete, rarity price) và các lỗi vi/en.
       - [ ] `shop-item.entity.ts` dùng `require()` (lint error có sẵn) để tránh vòng import với shop-banner; shop-banner/shop-item repo còn nhiều `any`.
+  - [~] Batch 6c — Kinh tế: gacha-banner, gacha-item, gacha-item-rate, gacha-purchase, gacha-roll-history, user-gacha-pity. Mobile gọi `GET /gacha-banner/today/user`, `/gacha-item/gacha-banner/:id`, `/gacha-roll-history/user`, `/user-gacha-pity/user/present`, `POST /gacha-purchase`; web admin banner/item. Một phần: tập trung luồng quay của mobile, chưa có contract baseline cho route admin.
+    - [x] → merge `dev` @ `b7c1aee` (tái hiện trước trong `test/gacha/gacha-purchase.e2e-spec.ts`): 10 lần quay ra cùng một pokemon mới → 10 bản (đọc sở hữu một lần, thêm song song) → 1 bản + 9 trùng đổi sparkles; hai lượt quay cùng lúc → 2 dòng pity PENDING mỗi dòng 1 (đọc/tạo pity ngoài transaction) → đọc/tạo trong transaction sau khi trừ ví (khóa dòng ví, T7), một dòng đếm 2; `rollCount` 1.5 / 11 được nhận → số nguyên 1–10 (422). Bỏ console.log ở gacha-banner/gacha-purchase. Đóng việc mở "gacha đọc pity ngoài transaction" của T7.
+    - Gate batch 6c trên `dev` @ `b7c1aee`: typecheck 0, unit 136/136, e2e 177/177 (107 snapshot).
+    - Việc mở ra từ batch 6c:
+      - [ ] `rollGacha`: đạt hard pity khi banner không có item 5★ → `selected` undefined → lỗi 500. Kiểm khi tạo/sửa banner hoặc khi quay.
+      - [ ] Phase 4 (quyền): CRUD `gacha-roll-history` và `user-gacha-pity` (POST/PUT/DELETE) sửa được pity/lịch sử của bất kỳ user nào nếu role có permission.
+      - [ ] Lịch sử quay ghi `pityNow` là pity sau cả lượt cho mọi lần quay trong lượt (không phải theo từng lần).
+      - [ ] Contract baseline cho route admin gacha và các lỗi vi/en.
 - [x] Bugfix kiến trúc F02 (P1, [product-architecture-plan](docs/standardization/product-architecture-plan.md)): `payos/return`/`cancel` tin query trình duyệt để ghi PAID/CANCELLED → ai cũng tự kích hoạt gói. Nay chỉ PayOS (tra cứu server-to-server hoặc webhook có chữ ký, route mới `POST /payments/payos/webhook`) đổi trạng thái; PAID một lần (`markInvoicePaidOnce`, updateMany có điều kiện). BE `d392c17` → merge `dev` @ `1676d05`; e2e `test/payment/payos-callbacks.e2e-spec.ts` (4/5 fail trên code cũ). Web: trang failed có case `payment_pending` (FE `dev`). Deploy: đăng ký URL webhook + `PAYOS_CHECKSUM_KEY`.
     - [x] `modules/attendance` (điểm danh của mobile) còn `getLand` giống attendence-config → sửa ở batch 5a (`48f4837`).
     - [ ] DB mới cần seed `Languages` (vi/en/ja): `POST /languages/create-default` nay chạy được.
