@@ -9,13 +9,14 @@ import {
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
-import { HttpStatus, Injectable } from '@nestjs/common'
+import { HttpStatus, Injectable, Logger } from '@nestjs/common'
 import { WalletAlreadyExistsException } from './dto/wallet.error'
 import { CreateWalletBodyType, UpdateWalletBodyType } from './entities/wallet.entity'
 import { WalletRepo } from './wallet.repo'
 
 @Injectable()
 export class WalletService {
+  private readonly logger = new Logger(WalletService.name)
   constructor(
     private walletRepo: WalletRepo,
     private readonly i18nService: I18nService,
@@ -174,15 +175,11 @@ export class WalletService {
 
   async generateWalletByUserId(userId: number) {
     const types = [walletType.POKE_COINS, walletType.SPARKLES]
-    console.log(';log ne')
 
     for (const type of types) {
       try {
-        console.log('vo ne')
-
         // Use dedicated repo method to check existence
         const existing = await this.walletRepo.findByUserIdAndType(userId, type as any)
-        console.log('exist', existing)
 
         if (existing) continue
 
@@ -199,12 +196,9 @@ export class WalletService {
         if (isUniqueConstraintPrismaError(error)) {
           continue
         }
-        console.error(
-          'Error in generateWalletByUserId for user',
-          userId,
-          'type',
-          type,
-          error
+        this.logger.error(
+          `Wallet ${type} of user ${userId} not created`,
+          error instanceof Error ? error.name : 'error'
         )
         throw error
       }

@@ -1,6 +1,7 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { UserRewardHistoryMessage } from '@/i18n/message-keys'
 import {
   InvalidUserRewardHistoryDataException,
-  USER_REWARD_HISTORY_MESSAGE,
   UserRewardHistoryNotFoundException
 } from '@/modules/user-reward-history/dto/user-reward-history.error'
 import {
@@ -24,7 +25,8 @@ export class UserRewardHistoryService {
     private readonly userRewardHistoryRepository: UserRewardHistoryRepository,
     private readonly rewardRepo: RewardRepo,
     private readonly translationService: TranslationService,
-    private readonly languagesService: LanguagesService
+    private readonly languagesService: LanguagesService,
+    private readonly i18nService: I18nService
   ) {}
 
   // Reusable builder for history payload
@@ -76,7 +78,7 @@ export class UserRewardHistoryService {
     }
   }
 
-  async create(body: CreateUserRewardHistoryBodyType) {
+  async create(body: CreateUserRewardHistoryBodyType, lang: string = 'vi') {
     try {
       // Nếu có rewardId, lấy thông tin reward và lưu vào meta
       let meta = body.meta
@@ -105,24 +107,27 @@ export class UserRewardHistoryService {
       return {
         statusCode: 201,
         data: history,
-        message: USER_REWARD_HISTORY_MESSAGE.CREATE_SUCCESS
+        message: this.i18nService.translate(UserRewardHistoryMessage.CREATE_SUCCESS, lang)
       }
     } catch (error) {
       this.logger.error('Error creating user reward history:', error)
       if (error instanceof HttpException) {
         throw error
       }
-      throw InvalidUserRewardHistoryDataException
+      throw new InvalidUserRewardHistoryDataException()
     }
   }
 
-  async findAll(query: GetUserRewardHistoryListQueryType) {
+  async findAll(query: GetUserRewardHistoryListQueryType, lang: string = 'vi') {
     const { currentPage, pageSize } = query
     const result = await this.userRewardHistoryRepository.findMany(query)
 
     return {
       statusCode: 200,
-      message: USER_REWARD_HISTORY_MESSAGE.GET_LIST_SUCCESS,
+      message: this.i18nService.translate(
+        UserRewardHistoryMessage.GET_LIST_SUCCESS,
+        lang
+      ),
       data: {
         results: result.items,
         pagination: {
@@ -141,7 +146,7 @@ export class UserRewardHistoryService {
     languageCode: string = 'vi'
   ) {
     if (!userId) {
-      throw InvalidUserRewardHistoryDataException
+      throw new InvalidUserRewardHistoryDataException()
     }
     const result = await this.userRewardHistoryRepository.findMany({
       ...query,
@@ -237,7 +242,10 @@ export class UserRewardHistoryService {
 
     return {
       statusCode: 200,
-      message: USER_REWARD_HISTORY_MESSAGE.GET_LIST_SUCCESS,
+      message: this.i18nService.translate(
+        UserRewardHistoryMessage.GET_LIST_SUCCESS,
+        languageCode
+      ),
       data: {
         results: resultsWithTranslation,
         pagination: {
@@ -250,56 +258,56 @@ export class UserRewardHistoryService {
     }
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, lang: string = 'vi') {
     const history = await this.userRewardHistoryRepository.findUnique(id)
     if (!history) {
-      throw UserRewardHistoryNotFoundException
+      throw new UserRewardHistoryNotFoundException()
     }
     return {
       data: history,
-      message: USER_REWARD_HISTORY_MESSAGE.GET_SUCCESS
+      message: this.i18nService.translate(UserRewardHistoryMessage.GET_SUCCESS, lang)
     }
   }
 
-  async update(id: number, body: UpdateUserRewardHistoryBodyType) {
+  async update(id: number, body: UpdateUserRewardHistoryBodyType, lang: string = 'vi') {
     try {
       const existing = await this.userRewardHistoryRepository.findUnique(id)
       if (!existing) {
-        throw UserRewardHistoryNotFoundException
+        throw new UserRewardHistoryNotFoundException()
       }
 
       const history = await this.userRewardHistoryRepository.update(id, body)
       return {
         data: history,
-        message: USER_REWARD_HISTORY_MESSAGE.UPDATE_SUCCESS
+        message: this.i18nService.translate(UserRewardHistoryMessage.UPDATE_SUCCESS, lang)
       }
     } catch (error) {
       this.logger.error(`Error updating user reward history ${id}:`, error)
       if (error instanceof HttpException) {
         throw error
       }
-      throw InvalidUserRewardHistoryDataException
+      throw new InvalidUserRewardHistoryDataException()
     }
   }
 
-  async remove(id: number) {
+  async remove(id: number, lang: string = 'vi') {
     try {
       const existing = await this.userRewardHistoryRepository.findUnique(id)
       if (!existing) {
-        throw UserRewardHistoryNotFoundException
+        throw new UserRewardHistoryNotFoundException()
       }
 
       const history = await this.userRewardHistoryRepository.delete(id)
       return {
         data: history,
-        message: USER_REWARD_HISTORY_MESSAGE.DELETE_SUCCESS
+        message: this.i18nService.translate(UserRewardHistoryMessage.DELETE_SUCCESS, lang)
       }
     } catch (error) {
       this.logger.error(`Error deleting user reward history ${id}:`, error)
       if (error instanceof HttpException) {
         throw error
       }
-      throw InvalidUserRewardHistoryDataException
+      throw new InvalidUserRewardHistoryDataException()
     }
   }
 }

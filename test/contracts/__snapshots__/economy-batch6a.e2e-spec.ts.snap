@@ -5,29 +5,11 @@ exports[`Economy batch 6a contract (e2e) errors 1`] = `
   "historyBadId": {
     "en": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "An error occurred",
-        "statusCode": 500,
-      },
-      "httpStatus": 500,
-    },
-    "vi": {
-      "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "Đã xảy ra lỗi",
-        "statusCode": 500,
-      },
-      "httpStatus": 500,
-    },
-  },
-  "historyBadSource": {
-    "en": {
-      "body": {
         "error": "UNPROCESSABLE_ENTITY",
         "errors": [
           {
             "field": "string",
-            "message": "Invalid enum value. Expected 'REWARD_SERVICE' | 'LESSON' | 'DAILY_REQUEST' | 'ATTENDANCE' | 'SEASON_REWARD' | 'ADMIN_ADJUST' | 'OTHER' | 'ACHIEVEMENT_REWARD' | 'EXERCISE', received 'NOPE'",
+            "message": "Invalid user reward history data",
           },
         ],
         "message": "Invalid data provided",
@@ -41,7 +23,37 @@ exports[`Economy batch 6a contract (e2e) errors 1`] = `
         "errors": [
           {
             "field": "string",
-            "message": "Invalid enum value. Expected 'REWARD_SERVICE' | 'LESSON' | 'DAILY_REQUEST' | 'ATTENDANCE' | 'SEASON_REWARD' | 'ADMIN_ADJUST' | 'OTHER' | 'ACHIEVEMENT_REWARD' | 'EXERCISE', received 'NOPE'",
+            "message": "Dữ liệu lịch sử phần thưởng người dùng không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "historyBadSource": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid user reward history data",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Dữ liệu lịch sử phần thưởng người dùng không hợp lệ",
           },
         ],
         "message": "Dữ liệu không hợp lệ",
@@ -54,7 +66,7 @@ exports[`Economy batch 6a contract (e2e) errors 1`] = `
     "en": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Không tìm thấy lịch sử nhận thưởng",
+        "message": "User reward history not found",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -62,7 +74,7 @@ exports[`Economy batch 6a contract (e2e) errors 1`] = `
     "vi": {
       "body": {
         "error": "NOT_FOUND",
-        "message": "Không tìm thấy lịch sử nhận thưởng",
+        "message": "Không tìm thấy lịch sử phần thưởng người dùng",
         "statusCode": 404,
       },
       "httpStatus": 404,
@@ -147,10 +159,10 @@ exports[`Economy batch 6a contract (e2e) errors 1`] = `
     },
   },
   "transactionWithoutLogin": {
-    "httpStatus": 404,
+    "httpStatus": 401,
   },
   "transactionsWithoutLogin": {
-    "httpStatus": 200,
+    "httpStatus": 401,
   },
   "walletBadId": {
     "en": {
@@ -229,7 +241,7 @@ exports[`Economy batch 6a contract (e2e) mobile: my wallets and my reward histor
           },
         ],
       },
-      "message": "Lấy danh sách lịch sử nhận thưởng thành công",
+      "message": "Lấy danh sách lịch sử phần thưởng người dùng thành công",
       "statusCode": 200,
     },
     "httpStatus": 200,
@@ -258,7 +270,7 @@ exports[`Economy batch 6a contract (e2e) mobile: my wallets and my reward histor
           },
         ],
       },
-      "message": "Lấy danh sách lịch sử nhận thưởng thành công",
+      "message": "Lấy danh sách lịch sử phần thưởng người dùng thành công",
       "statusCode": 200,
     },
     "httpStatus": 200,

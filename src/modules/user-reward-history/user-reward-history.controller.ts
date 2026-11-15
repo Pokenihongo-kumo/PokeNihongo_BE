@@ -44,8 +44,8 @@ export class UserRewardHistoryController {
     type: UserRewardHistoryResponseSwaggerDTO
   })
   @ZodSerializerDto(UserRewardHistoryResDTO)
-  create(@Body() body: CreateUserRewardHistoryBodyDTO) {
-    return this.userRewardHistoryService.create(body)
+  create(@Body() body: CreateUserRewardHistoryBodyDTO, @I18nLang() lang: string) {
+    return this.userRewardHistoryService.create(body, lang)
   }
 
   @Get()
@@ -58,8 +58,8 @@ export class UserRewardHistoryController {
     type: UserRewardHistoryListResponseSwaggerDTO
   })
   @ZodSerializerDto(UserRewardHistoryListResDTO)
-  findAll(@Query() query: GetUserRewardHistoryListQueryDTO) {
-    return this.userRewardHistoryService.findAll(query)
+  findAll(@Query() query: GetUserRewardHistoryListQueryDTO, @I18nLang() lang: string) {
+    return this.userRewardHistoryService.findAll(query, lang)
   }
 
   @Get('my')
@@ -89,8 +89,8 @@ export class UserRewardHistoryController {
     type: UserRewardHistoryResponseSwaggerDTO
   })
   @ZodSerializerDto(UserRewardHistoryResDTO)
-  findOne(@Param() params: GetUserRewardHistoryByIdParamsDTO) {
-    return this.userRewardHistoryService.findOne(params.id)
+  findOne(@Param() params: GetUserRewardHistoryByIdParamsDTO, @I18nLang() lang: string) {
+    return this.userRewardHistoryService.findOne(params.id, lang)
   }
 
   @Put(':id')
@@ -105,9 +105,10 @@ export class UserRewardHistoryController {
   @ZodSerializerDto(UserRewardHistoryResDTO)
   update(
     @Param() params: GetUserRewardHistoryByIdParamsDTO,
-    @Body() body: UpdateUserRewardHistoryBodyDTO
+    @Body() body: UpdateUserRewardHistoryBodyDTO,
+    @I18nLang() lang: string
   ) {
-    return this.userRewardHistoryService.update(params.id, body)
+    return this.userRewardHistoryService.update(params.id, body, lang)
   }
 
   @Delete(':id')
@@ -119,7 +120,7 @@ export class UserRewardHistoryController {
     type: UserRewardHistoryResponseSwaggerDTO
   })
   @ZodSerializerDto(UserRewardHistoryResDTO)
-  remove(@Param() params: GetUserRewardHistoryByIdParamsDTO) {
-    return this.userRewardHistoryService.remove(params.id)
+  remove(@Param() params: GetUserRewardHistoryByIdParamsDTO, @I18nLang() lang: string) {
+    return this.userRewardHistoryService.remove(params.id, lang)
   }
 }
