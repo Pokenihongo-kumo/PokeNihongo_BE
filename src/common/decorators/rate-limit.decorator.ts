@@ -8,5 +8,6 @@ export interface RateLimitOptions {
   keyGenerator?: (req: any) => string // function để tạo key unique cho rate limit
 }
 
-export const RateLimit = (options: RateLimitOptions) =>
-  SetMetadata(RATE_LIMIT_KEY, options)
+// One rule, or several checked together (for example per email and per IP)
+export const RateLimit = (options: RateLimitOptions | RateLimitOptions[]) =>
+  SetMetadata(RATE_LIMIT_KEY, Array.isArray(options) ? options : [options])

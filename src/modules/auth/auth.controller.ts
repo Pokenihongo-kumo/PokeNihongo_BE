@@ -1,6 +1,7 @@
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { IsPublic } from '@/common/decorators/auth.decorator'
 import { RateLimit } from '@/common/decorators/rate-limit.decorator'
+import { otpSendLimits, otpVerifyLimits } from '@/common/constants/otp-rate-limit'
 import { UserAgent } from '@/common/decorators/user-agent.decorator'
 import { RateLimitGuard } from '@/common/guards/rate-limit.guard'
 import envConfig from '@/config/env.config'
@@ -57,14 +58,10 @@ export class AuthController {
 
   @Post('verify-otp')
   @IsPublic()
-  // A forgot-password OTP gives an access token: at most 5 tries per email in
-  // the OTP's 5 minutes (there was no limit)
+  // A forgot-password OTP gives an access token: guesses are counted per email
+  // (and per IP) with /mail/verify-otp
   @UseGuards(RateLimitGuard)
-  @RateLimit({
-    windowMs: 5 * 60 * 1000,
-    max: 5,
-    keyGenerator: (req) => `verify_otp:${req.ip}:${req.body?.email}`
-  })
+  @RateLimit(otpVerifyLimits((req) => req.body?.email))
   @ZodSerializerDto(MessageResDTO)
   sendOTP(
     @Body() body: VerifyOTPBodyDTO,
@@ -142,11 +139,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @IsPublic()
   @UseGuards(RateLimitGuard)
-  @RateLimit({
-    windowMs: 60 * 1000, // 1 phút
-    max: 3, // tối đa 3 lần
-    keyGenerator: (req) => `forgot_password:${req.ip}:${req.body.email}` // rate limit theo IP + email
-  })
+  @RateLimit(otpSendLimits((req) => req.body?.email))
   @ZodSerializerDto(MessageResDTO)
   forgotPassword(@Body() body: ForgotPasswordBodyDTO, @I18nLang() lang: string) {
     return this.authService.forgotPassword(body, lang)
@@ -185,11 +178,7 @@ export class AuthController {
   @Get('check-email/:email')
   @IsPublic()
   @UseGuards(RateLimitGuard)
-  @RateLimit({
-    windowMs: 60 * 1000, // 1 phút
-    max: 3, // tối đa 3 lần
-    keyGenerator: (req) => `check_email:${req.ip}:${req.params.email}` // rate limit theo IP + email
-  })
+  @RateLimit(otpSendLimits((req) => req.params?.email))
   checkEmailExist(
     @Param() { email }: CheckEmailParamsDTO,
     @UserAgent() userAgent: string,

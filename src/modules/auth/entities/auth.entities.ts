@@ -7,6 +7,10 @@ import { RoleSchema } from 'src/shared/models/shared-role.model'
 import { UserSchema } from 'src/shared/models/shared-user.model'
 import { z } from 'zod'
 extendZodWithOpenApi(z)
+
+// Emails are stored lowercase: every auth input is trimmed and lowercased the
+// same way (login already did; forgot-password, OTP and check-email did not)
+const emailSchema = z.string().trim().toLowerCase().email()
 patchNestJsSwagger()
 
 export const DeviceSchema = z.object({
@@ -21,7 +25,7 @@ export const DeviceSchema = z.object({
 
 export const VerificationCodeSchema = z.object({
   id: z.number(),
-  email: z.string().email(),
+  email: emailSchema,
   code: z.string().length(6),
   type: z.enum([
     TypeOfVerificationCode.REGISTER,
@@ -39,7 +43,7 @@ export const SendOTPBodySchema = VerificationCodeSchema.pick({
 
 // GET /auth/check-email/:email (any string used to be taken as a new email)
 export const CheckEmailParamsSchema = z
-  .object({ email: z.string().trim().email(AuthMessage.INVALID_EMAIL) })
+  .object({ email: z.string().trim().toLowerCase().email(AuthMessage.INVALID_EMAIL) })
   .strict()
 
 export const VerifyOTPBodySchema = VerificationCodeSchema.pick({
@@ -58,10 +62,9 @@ export const VerifyOTPResSchema = z
   })
   .strict()
 
-export const LoginBodySchema = UserSchema.pick({
-  email: true,
-  password: true
-}).strict()
+export const LoginBodySchema = z
+  .object({ email: emailSchema, password: UserSchema.shape.password })
+  .strict()
 
 export const LoginResSchema = z
   .object({
@@ -96,6 +99,7 @@ export const RegisterBodySchema = UserSchema.pick({
   password: true
 })
   .extend({
+    email: emailSchema,
     confirmPassword: z.string().min(6).max(100)
   })
   .strict()
@@ -144,13 +148,13 @@ export const GetAuthorizationUrlResSchema = z.object({
 
 export const ForgotPasswordBodySchema = z
   .object({
-    email: z.string().email()
+    email: emailSchema
   })
   .strict()
 
 export const verifyForgotPasswordBodySchema = z
   .object({
-    email: z.string().email(),
+    email: emailSchema,
     code: z.string().length(6)
   })
   .strict()
@@ -168,7 +172,7 @@ export const verifyForgotPasswordResSchema = z
 export const ResetPasswordBodySchema = z
   .object({
     // code: z.string().length(6),
-    email: z.string().email(),
+    email: emailSchema,
     newPassword: z.string().min(6).max(100),
     confirmNewPassword: z.string().min(6).max(100)
   })
