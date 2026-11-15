@@ -1,5 +1,4 @@
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
-import { IsPublic } from '@/common/decorators/auth.decorator'
 import { AuthenticationGuard } from '@/common/guards/authentication.guard'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
@@ -25,6 +24,8 @@ import {
 } from './dto/wallet-transaction.zod-dto'
 import { WalletTransactionService } from './wallet-transaction.service'
 
+// Every user's wallet movements: login and the route permission are needed
+// (GET list and GET :id used to be public)
 @Controller('wallet-transaction')
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
@@ -32,14 +33,12 @@ export class WalletTransactionController {
   constructor(private readonly walletTransactionService: WalletTransactionService) {}
 
   @Get()
-  @IsPublic()
   @ZodSerializerDto(PaginationResponseSchema)
   list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
     return this.walletTransactionService.list(query, lang)
   }
 
   @Get(':walletTransactionId')
-  @IsPublic()
   @ZodSerializerDto(GetWalletTransactionDetailResDTO)
   findById(@Param() params: GetWalletTransactionParamsDTO, @I18nLang() lang: string) {
     return this.walletTransactionService.findById(params.walletTransactionId, lang)

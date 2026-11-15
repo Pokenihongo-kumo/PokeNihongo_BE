@@ -1,18 +1,30 @@
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { UserRewardHistoryMessage } from '@/i18n/message-keys'
 import { z } from 'zod'
 
-export const RewardTargetSchema = z.enum(['EXP', 'POKEMON', 'POKE_COINS', 'SPARKLES'])
+const invalid = { message: UserRewardHistoryMessage.INVALID_DATA }
+// Page numbers and ids from the query string: whole numbers above 0 (abc and
+// 0 used to become NaN)
+const queryInt = () => z.coerce.number(invalid).int(invalid).positive(invalid)
 
-export const UserRewardSourceTypeSchema = z.enum([
-  'REWARD_SERVICE',
-  'LESSON',
-  'DAILY_REQUEST',
-  'ATTENDANCE',
-  'SEASON_REWARD',
-  'ADMIN_ADJUST',
-  'OTHER',
-  'ACHIEVEMENT_REWARD',
-  'EXERCISE'
-])
+export const RewardTargetSchema = z.enum(['EXP', 'POKEMON', 'POKE_COINS', 'SPARKLES'], {
+  errorMap: () => ({ message: UserRewardHistoryMessage.INVALID_DATA })
+})
+
+export const UserRewardSourceTypeSchema = z.enum(
+  [
+    'REWARD_SERVICE',
+    'LESSON',
+    'DAILY_REQUEST',
+    'ATTENDANCE',
+    'SEASON_REWARD',
+    'ADMIN_ADJUST',
+    'OTHER',
+    'ACHIEVEMENT_REWARD',
+    'EXERCISE'
+  ],
+  { errorMap: () => invalid }
+)
 
 export const RewardInfoSchema = z.object({
   id: z.number(),
@@ -53,7 +65,8 @@ export const CreateUserRewardHistoryBodySchema =
   CreateUserRewardHistoryBodySchemaBase.refine(
     (data) => data.rewardId !== undefined || data.rewardTargetSnapshot !== undefined,
     {
-      message: 'Phải cung cấp rewardId hoặc rewardTargetSnapshot',
+      // rewardId or rewardTargetSnapshot is needed
+      message: UserRewardHistoryMessage.INVALID_DATA,
       path: ['rewardId']
     }
   )
@@ -72,30 +85,16 @@ export const UpdateUserRewardHistoryBodySchema = z
 
 export const GetUserRewardHistoryByIdParamsSchema = z
   .object({
-    id: z.string().transform((val) => parseInt(val, 10))
+    id: checkIdSchema(UserRewardHistoryMessage.INVALID_DATA)
   })
   .strict()
 
 export const GetUserRewardHistoryListQuerySchema = z
   .object({
-    currentPage: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('1'),
-    pageSize: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('10'),
-    userId: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional(),
-    rewardId: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional(),
+    currentPage: queryInt().default(1),
+    pageSize: queryInt().default(10),
+    userId: queryInt().optional(),
+    rewardId: queryInt().optional(),
     sourceType: UserRewardSourceTypeSchema.optional(),
     rewardTargetSnapshot: RewardTargetSchema.optional(),
     dateFrom: z.string().optional(),
@@ -105,16 +104,8 @@ export const GetUserRewardHistoryListQuerySchema = z
 
 export const GetMyRewardHistoryQuerySchema = z
   .object({
-    currentPage: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('1'),
-    pageSize: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('10'),
+    currentPage: queryInt().default(1),
+    pageSize: queryInt().default(10),
     sourceType: UserRewardSourceTypeSchema.optional(),
     rewardTargetSnapshot: RewardTargetSchema.optional(),
     dateFrom: z.string().optional(),

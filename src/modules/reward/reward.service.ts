@@ -359,7 +359,7 @@ export class RewardService {
 
     try {
       return await this.rewardRepo.withTransaction(async (prismaTx) => {
-        let translationRecords: CreateTranslationBodyType[] = []
+        const translationRecords: CreateTranslationBodyType[] = []
         // Get current record
         existingReward = await this.rewardRepo.findById(id)
         if (!existingReward) throw new NotFoundRecordException()
