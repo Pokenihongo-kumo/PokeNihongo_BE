@@ -45,7 +45,7 @@ import { HashingService } from '@/shared/services/hashing.service'
 import { TokenService } from '@/shared/services/token.service'
 import { AccessTokenPayloadCreate } from '@/shared/types/jwt.type'
 import { InjectQueue } from '@nestjs/bull'
-import { HttpException, HttpStatus, Inject, Injectable, Logger } from '@nestjs/common'
+import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common'
 import { Queue } from 'bull'
 import Redis from 'ioredis'
 import { LevelService } from '../level/level.service'
@@ -202,7 +202,13 @@ export class AuthService {
     }
   }
 
-  async generateTokens({ userId, deviceId, roleId, roleName }: AccessTokenPayloadCreate) {
+  // Signs an access/refresh token pair; nothing is stored
+  private async signTokens({
+    userId,
+    deviceId,
+    roleId,
+    roleName
+  }: AccessTokenPayloadCreate) {
     const [accessToken, refreshToken] = await Promise.all([
       this.tokenService.signAccessToken({
         userId,
@@ -215,11 +221,20 @@ export class AuthService {
       })
     ])
     const decodedRefreshToken = await this.tokenService.verifyRefreshToken(refreshToken)
+    return {
+      accessToken,
+      refreshToken,
+      expiresAt: new Date(decodedRefreshToken.exp * 1000)
+    }
+  }
+
+  async generateTokens(payload: AccessTokenPayloadCreate) {
+    const { accessToken, refreshToken, expiresAt } = await this.signTokens(payload)
     await this.authRepository.createRefreshToken({
       token: refreshToken,
-      userId,
-      expiresAt: new Date(decodedRefreshToken.exp * 1000),
-      deviceId
+      userId: payload.userId,
+      expiresAt,
+      deviceId: payload.deviceId
     })
     return { accessToken, refreshToken }
   }
@@ -232,56 +247,49 @@ export class AuthService {
     }: RefreshTokenBodyType & { userAgent: string; ip: string },
     lang: string = 'vi'
   ) {
+    // 1. A token that is not ours, malformed or expired: the session is over.
+    // Other failures (database...) are not answered with 401: the client
+    // would end a session that is still valid
+    let userId: number
     try {
-      // 1. Kiểm tra refreshToken có hợp lệ không
-      const { userId } = await this.tokenService.verifyRefreshToken(refreshToken)
-      // 2. Kiểm tra refreshToken có tồn tại trong database không
-      const refreshTokenInDb =
-        await this.authRepository.findUniqueRefreshTokenIncludeUserRole({
-          token: refreshToken
-        })
-      if (!refreshTokenInDb) {
-        // Trường hợp đã refresh token rồi, hãy thông báo cho user biết
-        // refresh token của họ đã bị đánh cắp
-        throw new RefreshTokenAlreadyUsedException()
-      }
-      const {
-        deviceId,
-        user: {
-          roleId,
-          role: { name: roleName }
-        }
-      } = refreshTokenInDb
-      // 3. Cập nhật device
-      const $updateDevice = this.authRepository.updateDevice(deviceId, {
-        ip,
-        userAgent
-      })
-      // 4. Xóa refreshToken cũ
-      const $deleteRefreshToken = this.authRepository.deleteRefreshToken({
+      ;({ userId } = await this.tokenService.verifyRefreshToken(refreshToken))
+    } catch {
+      throw new UnauthorizedAccessException()
+    }
+    // 2. Not stored: already used (or revoked)
+    const refreshTokenInDb =
+      await this.authRepository.findUniqueRefreshTokenIncludeUserRole({
         token: refreshToken
       })
-      const userInfo = this.authRepository.findUniqueUserIncludeRole({ id: userId })
-      // 5. Tạo mới accessToken và refreshToken
-      const $tokens = this.generateTokens({ userId, roleId, roleName, deviceId })
-      const [, , tokens, userData] = await Promise.all([
-        $updateDevice,
-        $deleteRefreshToken,
-        $tokens,
-        userInfo
-      ])
-      return {
-        data: {
-          ...userData,
-          ...tokens
-        },
-        message: this.i18nService.translate(AuthMessage.REFRESH_TOKEN_SUCCESS, lang)
+    if (!refreshTokenInDb) {
+      throw new RefreshTokenAlreadyUsedException()
+    }
+    const {
+      deviceId,
+      user: {
+        roleId,
+        role: { name: roleName }
       }
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error
-      }
-      throw new UnauthorizedAccessException()
+    } = refreshTokenInDb
+    // 3. Consume the old token and store the new one in one transaction; a
+    // concurrent refresh with the same token loses here
+    const tokens = await this.signTokens({ userId, roleId, roleName, deviceId })
+    const rotated = await this.authRepository.rotateRefreshToken({
+      oldToken: refreshToken,
+      next: { token: tokens.refreshToken, userId, expiresAt: tokens.expiresAt, deviceId },
+      device: { ip, userAgent }
+    })
+    if (!rotated) {
+      throw new RefreshTokenAlreadyUsedException()
+    }
+    const userData = await this.authRepository.findUniqueUserIncludeRole({ id: userId })
+    return {
+      data: {
+        ...userData,
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken
+      },
+      message: this.i18nService.translate(AuthMessage.REFRESH_TOKEN_SUCCESS, lang)
     }
   }
 
