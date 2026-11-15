@@ -89,8 +89,6 @@ export class ShopItemController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    console.log('updatelist ne')
-
     return this.shopItemService.updateByList(
       {
         userId,

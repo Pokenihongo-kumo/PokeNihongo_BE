@@ -81,7 +81,6 @@ export class ShopBannerService {
     const allTranslations = (data.results || []).flatMap(
       (item: any) => item.nameTranslations || []
     )
-    console.log('all ne: ', allTranslations)
 
     if (allTranslations.length === 0) {
       return {
@@ -111,7 +110,6 @@ export class ShopBannerService {
         nameTranslations: translationsAll
       }
     })
-    console.log('results', results)
 
     return {
       data: {
@@ -225,7 +223,6 @@ export class ShopBannerService {
     }
 
     const isAllLang = roleName === RoleName.Admin ? true : false
-    console.log('admin ne: ', isAllLang)
 
     const shopBanner = await this.shopBannerRepo.findByIdWithDetail(id, langId, isAllLang)
 
@@ -237,7 +234,6 @@ export class ShopBannerService {
     const nameTranslations = await this.convertTranslationsToLangCodes(
       (shopBanner as any).nameTranslations || []
     )
-    console.log('sau convert: ', nameTranslations)
 
     // Find current translation by langId
     const currentTranslation = ((shopBanner as any).nameTranslations || []).find(
@@ -252,7 +248,6 @@ export class ShopBannerService {
       nameTranslation: currentTranslation?.value ?? null,
       ...(isAllLang ? { nameTranslations } : {})
     }
-    console.log(`${isAllLang ? nameTranslations : 'ehe'}`)
 
     return {
       statusCode: HttpStatus.OK,
@@ -296,8 +291,6 @@ export class ShopBannerService {
         const endDateNormalized = data.endDate
           ? todayUTCWith0000ByDate(data.endDate)
           : addDaysUTC0000(startDateNormalized, 7)
-
-        console.log('sDate: ' + startDateNormalized + ' eDate: ' + endDateNormalized)
 
         if (
           startDateNormalized &&
@@ -477,7 +470,6 @@ export class ShopBannerService {
 
         // Validate min/max against current shop items count
         const currentItemsCount = await this.shopItemRepo.countByShopBannerId(id)
-        console.log('current amount: ', currentItemsCount)
 
         if (data.min !== undefined && data.min !== null) {
           if (currentItemsCount < data.min) {
@@ -612,8 +604,6 @@ export class ShopBannerService {
 
   async getByToday(lang: string = 'vi', userId?: number) {
     try {
-      console.log(userId)
-
       const date = todayUTCWith0000()
       const langId = await this.languageRepo.getIdByCode(lang)
 
@@ -624,7 +614,6 @@ export class ShopBannerService {
           message: this.i18nService.translate(ShopBannerMessage.GET_LIST_SUCCESS, lang)
         }
       }
-      console.log('date: ', date)
 
       const banner = await this.shopBannerRepo.findValidByDateWithLangId(date, langId)
 

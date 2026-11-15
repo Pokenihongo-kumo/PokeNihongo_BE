@@ -368,7 +368,6 @@ export class ShopItemService {
       const existingPokemonIds = new Set(
         existingItems.results.map((item: any) => item.pokemonId)
       )
-      console.log('list pokeId: ', existingPokemonIds)
 
       // 2. Xác định số lượng pokemon cần random
       const amount = body.amount ?? banner.max
@@ -400,10 +399,6 @@ export class ShopItemService {
       // 7. Tạo shop items từ pokemon đã random
       const items = selectedPokemons.map((pokemon) => {
         const isHas = existingPokemonIds.has(pokemon.id)
-        console.log(
-          `Pokemon ID: ${pokemon.id}, isHas: ${isHas}, existingIds has:`,
-          existingPokemonIds.has(pokemon.id)
-        )
         return {
           shopBannerId: body.shopBannerId,
           pokemonId: pokemon.id,
