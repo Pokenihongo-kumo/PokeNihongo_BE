@@ -1,5 +1,5 @@
 import { checkIdSchema } from '@/common/utils/id.validation'
-import { ENTITY_MESSAGE } from '@/i18n/message-keys'
+import { ENTITY_MESSAGE, GachaPurchaseMessage } from '@/i18n/message-keys'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -24,10 +24,19 @@ export const GachaPurchaseSchema = z.object({
 })
 
 // Create Schema
+// The app rolls 1 or 10 at a time; 1.5 or 1000000 used to be taken
+const rollCountInvalid = { message: GachaPurchaseMessage.INVALID_DATA }
 export const CreateGachaPurchaseBodySchema = GachaPurchaseSchema.pick({
-  bannerId: true,
-  rollCount: true
-}).strict()
+  bannerId: true
+})
+  .extend({
+    rollCount: z
+      .number(rollCountInvalid)
+      .int(rollCountInvalid)
+      .min(1, rollCountInvalid)
+      .max(10, rollCountInvalid)
+  })
+  .strict()
 
 export const CreateGachaPurchaseResSchema = z.object({
   statusCode: z.number(),

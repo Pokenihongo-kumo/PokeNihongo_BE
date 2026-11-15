@@ -78,14 +78,11 @@ export class GachaBannerService {
 
     const isAdmin = roleName === RoleName.Admin ? true : false
 
-    console.log('admin ne: ', isAdmin)
-
     const data = await this.gachaBannerRepo.list(pagination, langId ?? undefined, isAdmin)
     // Convert translations to lang codes for all cases
     const allTranslations = (data.results || []).flatMap(
       (item: any) => item.nameTranslations || []
     )
-    console.log('all ne: ', allTranslations)
 
     if (allTranslations.length === 0) {
       return {
@@ -115,7 +112,6 @@ export class GachaBannerService {
         nameTranslations: translationsAll
       }
     })
-    console.log('results', results)
 
     return {
       data: {
@@ -219,7 +215,6 @@ export class GachaBannerService {
       amount2StarCurrent,
       amount1StarCurrent
     }
-    console.log(`${isAdmin ? nameTranslations : 'ehe'}`)
 
     return {
       statusCode: HttpStatus.OK,
@@ -257,8 +252,6 @@ export class GachaBannerService {
         const endDateNormalized = data.endDate
           ? todayUTCWith0000ByDate(data.endDate)
           : addDaysUTC0000(startDateNormalized, 7)
-
-        console.log('sDate: ' + startDateNormalized + ' eDate: ' + endDateNormalized)
 
         if (
           startDateNormalized &&

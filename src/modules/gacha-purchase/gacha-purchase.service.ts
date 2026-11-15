@@ -81,10 +81,9 @@ export class GachaPurchaseService {
     try {
       //tìm ra gachabanner và pity user
 
-      const [gachaBanner, userPityExist] = await Promise.all([
-        this.gachaBannerRepo.findByIdWithItemWithitemRate(data.bannerId),
-        this.userGachaPityRepo.findStatusByUserId(userId, GachaPityType.PENDING)
-      ])
+      const gachaBanner = await this.gachaBannerRepo.findByIdWithItemWithitemRate(
+        data.bannerId
+      )
       if (
         !gachaBanner ||
         gachaBanner.status !== GachaBannerStatus.ACTIVE ||
@@ -93,18 +92,6 @@ export class GachaPurchaseService {
         throw new InvalidGachaBannerException()
       }
 
-      let userPity =
-        userPityExist === null
-          ? await this.userGachaPityRepo.create({
-              createdById: userId,
-              data: {
-                userId,
-                status: GachaPityType.PENDING,
-                pityCount: 0
-              }
-            })
-          : userPityExist
-      console.log('userPity: ', userPity)
       // Tách 2 mảng
       // 1 cái là list để random, 1 cái là tỉ lệ
       const items: GachaItemType[] = gachaBanner.items.map(
@@ -124,9 +111,6 @@ export class GachaPurchaseService {
         }
       })
 
-      // Gacha roll logic
-      let pityCount = userPity.pityCount
-      const results: typeof gachaPool = []
       const totalCost = gachaBanner.costRoll * rollCount
       const userWallet = await this.walletRepo.checkEnoughBalance({
         userId,
@@ -134,8 +118,6 @@ export class GachaPurchaseService {
         amount: totalCost
       })
       if (!userWallet) throw new NotEnoughBalanceException()
-
-      console.log('cost: ', totalCost)
 
       // 4) transaction
       // 1. Create purchase and minus balance
@@ -196,7 +178,25 @@ export class GachaPurchaseService {
           )
         ])
 
-        // 4. Roll logic (collect all results first)
+        // 4. The pity is read (or started) here, inside the transaction: the
+        // wallet debit above holds this user's wallet row, so purchases of one
+        // user count pity one after another (it used to be read before the
+        // transaction, and a concurrent purchase overwrote the count)
+        const userPity =
+          (await this.userGachaPityRepo.findStatusByUserId(
+            userId,
+            GachaPityType.PENDING,
+            prismaTx
+          )) ??
+          (await this.userGachaPityRepo.create(
+            {
+              createdById: userId,
+              data: { userId, status: GachaPityType.PENDING, pityCount: 0 }
+            },
+            prismaTx
+          ))
+
+        // Roll logic (collect all results first)
         let pityCount = userPity.pityCount
         let currentPityId = userPity.id
         let currentPityStatus = userPity.status
@@ -274,9 +274,7 @@ export class GachaPurchaseService {
 
         const pokemonIds = rollResults.map((r) => r.id)
         // Use findMany to get all userPokemons with userId and pokemonId in list
-        const userPokemons = await this.userPokemonRepo[
-          'prismaService'
-        ].userPokemon.findMany({
+        const userPokemons = await prismaTx.userPokemon.findMany({
           where: {
             userId,
             pokemonId: { in: pokemonIds },
@@ -300,7 +298,7 @@ export class GachaPurchaseService {
           // Lấy thông tin pokemon từ items[].pokemon (gachaBanner.items)
           const itemInfo = gachaBanner.items.find((it) => it.pokemonId === roll.id)
 
-          let parseItem: any = {
+          const parseItem: any = {
             ...roll,
             isDuplicate: isOwned,
             pokemon:
@@ -318,6 +316,9 @@ export class GachaPurchaseService {
 
           if (!isOwned) {
             addPokemonList.push({ userId, data: { pokemonId: roll.id } })
+            // owned from here on: the same Pokemon later in this purchase is a
+            // duplicate (it used to be added once per roll)
+            ownedPokemonIds.add(roll.id)
             parseItem.parseItem = null
           } else {
             const reward =
@@ -331,11 +332,10 @@ export class GachaPurchaseService {
         // 7. Bulk create userPokemon
 
         if (addPokemonList.length > 0) {
-          await Promise.all(
-            addPokemonList.map((item) =>
-              this.userPokemonService.addPokemonByGacha(item, prismaTx)
-            )
-          )
+          // one after another: adding reads the user's Pokemon (first one is main)
+          for (const item of addPokemonList) {
+            await this.userPokemonService.addPokemonByGacha(item, prismaTx)
+          }
         }
         // 8. Bulk add SPARKLES
         if (addSparklesList.length > 0) {
@@ -404,8 +404,6 @@ export class GachaPurchaseService {
         message: this.i18nService.translate(GachaPurchaseMessage.CREATE_SUCCESS, lang)
       }
     } catch (error) {
-      console.log('vo catch')
-
       if (isNotFoundPrismaError(error)) throw new NotFoundRecordException()
       if (isForeignKeyConstraintPrismaError(error)) throw new NotFoundRecordException()
       throw error
