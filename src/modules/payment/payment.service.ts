@@ -67,7 +67,9 @@ export class PaymentService {
 
       // 1. Lấy invoice
       const invoice = await this.invoiceRepo.findById(invoiceId)
-      if (!invoice) {
+      // Only the caller's own invoice: another user's answers like a missing one
+      // (no PayOS call, their open link is not handed out)
+      if (!invoice || invoice.userId !== userId) {
         throw new InvoiceNotFoundException()
       }
 
