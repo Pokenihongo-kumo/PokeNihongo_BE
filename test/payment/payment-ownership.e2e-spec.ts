@@ -7,9 +7,10 @@ import request from 'supertest'
 import { App } from 'supertest/types'
 import { loginAsTestAdmin, TEST_ADMIN, TEST_USER_AGENT } from '../support/test-admin'
 
-// POST /payments/payos (A1 T9a): a payment link is made only for the caller's
+// POST /payments/payos. A1 T9a: a payment link is made only for the caller's
 // own invoice. Another user's invoice answers 404 (its existence is not
 // revealed), PayOS is not called and an open link of theirs is not returned.
+// ADR D1 §2: at most one open (PENDING) link per invoice.
 describe('Payment link ownership (e2e)', () => {
   let app: INestApplication<App>
   let prisma: PrismaService
@@ -140,5 +141,97 @@ describe('Payment link ownership (e2e)', () => {
     const res = await pay(mine.id)
     expect(res.status).toBe(201)
     expect(createLink).toHaveBeenCalledTimes(1)
+  })
+
+  // ADR D1 §2: one open link per invoice
+  const linkFor = (orderCode: number) => ({
+    orderCode,
+    checkoutUrl: `https://pay.example.test/${orderCode}`,
+    qrCode: 'qr',
+    paymentLinkId: `link-${orderCode}`,
+    expiredAt: Math.floor(Date.now() / 1000) + 900,
+    amount: PRICE
+  })
+  const myInvoice = async () => {
+    const admin = await prisma.user.findUniqueOrThrow({
+      where: { email: TEST_ADMIN.email }
+    })
+    return invoiceOf(admin.id)
+  }
+  const paymentsOf = (invoiceId: number) =>
+    prisma.payment.findMany({ where: { invoiceId }, orderBy: { id: 'asc' } })
+
+  it('five requests at once for one invoice: one PayOS link, one pending payment, the same link for all', async () => {
+    const mine = await myInvoice()
+    createLink.mockImplementation(async (req: { orderCode: number }) => {
+      await new Promise((resolve) => setTimeout(resolve, 100))
+      return linkFor(req.orderCode)
+    })
+    const responses = await Promise.all(Array.from({ length: 5 }, () => pay(mine.id)))
+    expect(createLink).toHaveBeenCalledTimes(1)
+    const pending = (await paymentsOf(mine.id)).filter((p) => p.status === 'PENDING')
+    expect(pending).toHaveLength(1)
+    // the others got the link, or 409 while it was still being created
+    for (const res of responses) {
+      expect([201, 409]).toContain(res.status)
+      if (res.status === 201) {
+        expect(res.body.data.payosData.checkoutUrl).toBe(pending[0].payosCheckoutUrl)
+      }
+    }
+    // once created, asking again hands out the same link
+    const again = await pay(mine.id)
+    expect(again.body.data.payosData.checkoutUrl).toBe(pending[0].payosCheckoutUrl)
+    expect(createLink).toHaveBeenCalledTimes(1)
+  })
+
+  it('PayOS fails: the slot is freed and the next request creates the link', async () => {
+    const mine = await myInvoice()
+    createLink.mockRejectedValueOnce(new Error('PayOS down (test double)'))
+    expect((await pay(mine.id)).status).toBe(409)
+    expect((await paymentsOf(mine.id)).map((p) => p.status)).toEqual(['FAILED'])
+
+    createLink.mockImplementation(async (req: { orderCode: number }) =>
+      linkFor(req.orderCode)
+    )
+    expect((await pay(mine.id)).status).toBe(201)
+    expect((await paymentsOf(mine.id)).map((p) => p.status)).toEqual([
+      'FAILED',
+      'PENDING'
+    ])
+  })
+
+  it('an expired link is kept as history and a new one is created', async () => {
+    const mine = await myInvoice()
+    await prisma.payment.create({
+      data: {
+        userId: (
+          await prisma.user.findUniqueOrThrow({ where: { email: TEST_ADMIN.email } })
+        ).id,
+        invoiceId: mine.id,
+        amount: PRICE,
+        payosOrderId: `${stamp}8`,
+        payosCheckoutUrl: 'https://pay.example.test/old',
+        expiredAt: new Date(Date.now() - 1000)
+      }
+    })
+    createLink.mockImplementation(async (req: { orderCode: number }) =>
+      linkFor(req.orderCode)
+    )
+    const res = await pay(mine.id)
+    expect(res.status).toBe(201)
+    expect(res.body.data.payosData.checkoutUrl).not.toBe('https://pay.example.test/old')
+    expect((await paymentsOf(mine.id)).map((p) => p.status)).toEqual([
+      'EXPIRED',
+      'PENDING'
+    ])
+  })
+
+  it('the database refuses a second pending payment for one invoice', async () => {
+    const mine = await myInvoice()
+    const data = { userId: created.users[0], invoiceId: mine.id, amount: PRICE }
+    await prisma.payment.create({ data: { ...data, payosOrderId: `${stamp}6` } })
+    await expect(
+      prisma.payment.create({ data: { ...data, payosOrderId: `${stamp}7` } })
+    ).rejects.toMatchObject({ code: 'P2002' })
   })
 })

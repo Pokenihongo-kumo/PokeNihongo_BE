@@ -224,9 +224,11 @@ describe('PayOS callbacks (e2e)', () => {
   })
 
   it('cancelling a second payment link does not undo an invoice another link paid', async () => {
-    // Two links for one invoice (e.g. the user reopened checkout): one is paid,
-    // then the other is cancelled
+    // Two links for one invoice: the first expired here (only one may be
+    // pending), the user reopened checkout, then paid the first one late at
+    // PayOS; the second is cancelled afterwards
     const { payment: paid, invoice, orderCode } = await pendingPayment('6')
+    await prisma.payment.update({ where: { id: paid.id }, data: { status: 'EXPIRED' } })
     const other = await prisma.payment.create({
       data: { userId, invoiceId: invoice.id, amount: PRICE, payosOrderId: `${stamp}7` }
     })

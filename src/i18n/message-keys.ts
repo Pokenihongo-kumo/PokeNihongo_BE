@@ -1446,7 +1446,8 @@ export const PaymentMessage = {
   ALREADY_PAID: 'payment.ALREADY_PAID',
   PAY_SUCCESS: 'payment.PAY_SUCCESS',
   PAY_FAILED: 'payment.PAY_FAILED',
-  PAY_CANCELLED: 'payment.PAY_CANCELLED'
+  PAY_CANCELLED: 'payment.PAY_CANCELLED',
+  LINK_IN_PROGRESS: 'payment.LINK_IN_PROGRESS'
 } as const
 
 export const NotificationMessage = {

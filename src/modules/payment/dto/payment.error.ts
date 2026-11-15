@@ -27,3 +27,13 @@ export class ErrorPaymentToPayException extends ConflictException {
     })
   }
 }
+
+// Another request for the same invoice is creating its payment link right now
+export class PaymentLinkInProgressException extends ConflictException {
+  constructor() {
+    super({
+      message: PaymentMessage.LINK_IN_PROGRESS,
+      errorKey: PaymentMessage.LINK_IN_PROGRESS
+    })
+  }
+}

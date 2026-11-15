@@ -2252,6 +2252,10 @@ model Payment {
   @@index([paymentMethod])
   @@index([payosOrderId])
   @@index([deletedAt])
+  // Also a partial unique index "Payment_invoiceId_pending_key" on (invoiceId)
+  // WHERE status = 'PENDING': one open link per invoice (ADR D1 §2). Created in
+  // migration 20261115120000_one_pending_payment_per_invoice; Prisma cannot
+  // declare partial indexes
 }
 
 model Notification {
