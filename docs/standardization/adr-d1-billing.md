@@ -1,6 +1,12 @@
 # ADR D1 — Cấp gói sau thanh toán, link thanh toán, chống cấp trùng
 
-- Trạng thái: **proposed** (chờ duyệt thiết kế; chưa triển khai)
+- Trạng thái: **merged-dev** cho §1–§4 (người dùng đồng ý triển khai 2026-11-15); §5 hoãn tới khi clean nhóm 4
+- Triển khai:
+  - §1 cấp gói cùng transaction PAID: merge `a33a971`
+  - §3 hủy invoice có điều kiện, hoàn coin một lần, xóa processor trùng: merge `ba9a9e0`
+  - §2 một link PENDING mỗi invoice (migration `20261115120000_one_pending_payment_per_invoice`): merge `7871ab8`. Khác bản đề xuất: chưa thêm cột `needsRefund` — tiền về cho link không còn PENDING khi invoice đã PAID vẫn chỉ được ghi PAID, không cấp gói lần hai; hoàn tiền thủ công vẫn cần quy trình riêng
+  - §4 `Payment.amount` Int (migration `20261115130000_payment_amount_int`): merge `a83ee95`
+- Deploy: chạy `prisma migrate deploy`; trước đó kiểm dữ liệu theo ghi chú trong hai migration
 - Task: A1 T9 trong `BACKEND_STANDARDIZATION_PLAN.md`
 - Đối chiếu code `dev` @ `354f449` (sau T7, T8, T9a)
 

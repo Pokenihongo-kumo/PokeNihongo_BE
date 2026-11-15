@@ -1,6 +1,10 @@
 # ADR D-auth — Bằng chứng OTP khi đăng ký, mã trao đổi Google
 
-- Trạng thái: **proposed** (chờ duyệt thiết kế; chưa triển khai)
+- Trạng thái: **merged-dev** (người dùng đồng ý triển khai 2026-11-15); live Google chưa kiểm (live-provider pending)
+- Triển khai:
+  - §1–§2 OTP theo mục đích + `registrationToken`: BE merge `39b5ea2`, MO merge `5f761a4` (deploy BE và MO cùng đợt: register cũ không gửi token sẽ bị 422)
+  - §3 Google mã trao đổi + PKCE: BE merge `4140c79`; cấu hình mới `GOOGLE_CLIENT_REDIRECT_URIS`
+- Còn lại: bỏ fallback đọc OTP theo key email cũ (TODO trong `MailService.consumeOtp`) sau khi deploy được 5 phút
 - Task: A1 T10 trong `BACKEND_STANDARDIZATION_PLAN.md`
 - Đối chiếu code `dev` @ `481ab94` (sau T2–T4, T6, T11)
 - Google đang `live-provider pending` (dịch vụ ngưng): kiểm chứng bằng test
