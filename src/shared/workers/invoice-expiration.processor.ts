@@ -1,90 +1,30 @@
 import { BullAction, BullQueue } from '@/common/constants/bull-action.constant'
-import { InvoiceStatus } from '@/common/constants/invoice.constant'
-import { UserSubscriptionStatus } from '@/common/constants/subscription.constant'
-import {
-  walletPurposeType,
-  WalletTransactionSourceType,
-  WalletTransactionType
-} from '@/common/constants/wallet-transaction.constant'
-import { walletType } from '@/common/constants/wallet.constant'
-import { InvoiceRepo } from '@/modules/invoice/invoice.repo'
-import { UserSubscriptionRepo } from '@/modules/user-subscription/user-subscription.repo'
-import { WalletTransactionRepo } from '@/modules/wallet-transaction/wallet-transaction.repo'
-import { WalletRepo } from '@/modules/wallet/wallet.repo'
+import { cancelPendingInvoice } from '@/modules/invoice/cancel-pending-invoice'
+import { PrismaService } from '@/shared/services/prisma.service'
 import { Process, Processor } from '@nestjs/bull'
 import { Injectable, Logger } from '@nestjs/common'
 import { Job } from 'bull'
 
+// An unpaid invoice expires: cancelled and its PokeCoin discount given back,
+// in one transaction and only while it is still PENDING (a payment that lands
+// meanwhile wins; see cancelPendingInvoice)
 @Processor(BullQueue.INVOICE_EXPIRATION)
 @Injectable()
 export class InvoiceExpirationProcessor {
   private readonly logger = new Logger(InvoiceExpirationProcessor.name)
-  constructor(
-    private readonly invoiceRepo: InvoiceRepo,
-    private readonly userSubscriptionRepo: UserSubscriptionRepo,
-    private readonly walletRepo: WalletRepo,
-    private readonly walletTransactionRepo: WalletTransactionRepo
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Process(BullAction.EXPIRE_INVOICE)
   async handleExpireInvoice(job: Job<{ invoiceId: number }>) {
     const { invoiceId } = job.data
     try {
-      const invoice = await this.invoiceRepo.findById(invoiceId)
-      if (!invoice) {
-        this.logger.warn(`Invoice ${invoiceId} not found for expiration job.`)
-        return
+      const { cancelled, refunded } = await this.prisma.$transaction((tx) =>
+        cancelPendingInvoice(tx, invoiceId)
+      )
+      if (!cancelled) return // paid, already cancelled or gone
+      if (refunded > 0) {
+        this.logger.log(`Refunded ${refunded} PokeCoin for invoice ${invoiceId}`)
       }
-      if (invoice.status !== InvoiceStatus.PENDING) {
-        // Already processed
-        return
-      }
-      // Update invoice to CANCELLED
-      await this.invoiceRepo.update({
-        id: invoice.id,
-        data: { status: InvoiceStatus.CANCELLED }
-      })
-      // Update related user subscription (if exists) to PAYMENT_FAILED
-      const userSub = await this.userSubscriptionRepo.findByInvoiceId(invoice.id)
-      if (userSub && userSub.status === UserSubscriptionStatus.PENDING_PAYMENT) {
-        await this.userSubscriptionRepo.update({
-          id: userSub.id,
-          data: { status: UserSubscriptionStatus.PAYMENT_FAILED }
-        })
-      }
-
-      // Refund PokeCoin nếu có discount
-      if (invoice.discountAmount > 0) {
-        const wallet = await this.walletRepo.findByUserIdAndType(
-          invoice.userId,
-          walletType.POKE_COINS
-        )
-        if (wallet) {
-          await this.walletRepo.addBalanceToWalletWithType({
-            userId: invoice.userId,
-            type: walletType.POKE_COINS,
-            amount: invoice.discountAmount
-          })
-
-          await this.walletTransactionRepo.create({
-            createdById: invoice.userId,
-            data: {
-              walletId: wallet.id,
-              userId: invoice.userId,
-              purpose: walletPurposeType.REFUND,
-              referenceId: invoice.id,
-              amount: invoice.discountAmount,
-              type: WalletTransactionType.INCREASE,
-              source: WalletTransactionSourceType.ADMIN_ADJUST,
-              description: null
-            }
-          })
-          this.logger.log(
-            `Refunded ${invoice.discountAmount} PokeCoin for invoice ${invoiceId}`
-          )
-        }
-      }
-
       this.logger.log(`Expired invoice ${invoiceId} after timeout.`)
     } catch (err) {
       this.logger.error(`Failed to expire invoice ${invoiceId}: ${err?.message}`)

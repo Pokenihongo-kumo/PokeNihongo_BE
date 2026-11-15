@@ -1,6 +1,7 @@
 import { InvoiceStatus } from '@/common/constants/invoice.constant'
 import { UserSubscriptionStatus } from '@/common/constants/subscription.constant'
 import { addTimeUTC } from '@/shared/helpers'
+import { cancelPendingInvoice } from '@/modules/invoice/cancel-pending-invoice'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
@@ -90,9 +91,9 @@ export class PaymentRepo {
   /**
    * PayOS closed a payment link. In one transaction: the payment moves
    * PENDING -> CANCELLED/FAILED/EXPIRED (never from PAID); its invoice is
-   * cancelled only while still PENDING, and its subscription marked
-   * PAYMENT_FAILED only while PENDING_PAYMENT. An invoice another link paid
-   * (or is paying: markInvoicePaidOnce holds its row) is left alone.
+   * cancelled (subscription PAYMENT_FAILED, PokeCoin discount given back) only
+   * while still PENDING. An invoice another link paid (or is paying:
+   * markInvoicePaidOnce holds its row) is left alone.
    * Returns false when the payment was not pending (nothing changed).
    */
   async closePendingPayment(
@@ -106,16 +107,7 @@ export class PaymentRepo {
         data
       })
       if (payment.count === 0) return false
-      const invoice = await tx.invoice.updateMany({
-        where: { id: invoiceId, status: InvoiceStatus.PENDING },
-        data: { status: InvoiceStatus.CANCELLED }
-      })
-      if (invoice.count === 1) {
-        await tx.userSubscription.updateMany({
-          where: { invoiceId, status: 'PENDING_PAYMENT' },
-          data: { status: 'PAYMENT_FAILED' }
-        })
-      }
+      await cancelPendingInvoice(tx, invoiceId)
       return true
     })
   }
