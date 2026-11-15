@@ -167,13 +167,6 @@ export class AuthController {
     return this.authService.changePassword(body, userId, lang)
   }
 
-  // @Get('verified-email/:email')
-  // @IsPublic()
-  // async verifiedEmail(@Param('email') email: string, @Res() res: Response) {
-  //   const data = await this.authService.verifiedEmail(email)
-  //   return res.redirect(`${envConfig.FE_URL}/auth/login?message=${data.message}`)
-  // }
-
   // neu mail ton tai la login, khong thi la register
   @Get('check-email/:email')
   @IsPublic()
@@ -187,19 +180,6 @@ export class AuthController {
   ) {
     return this.authService.checkMailToAction(email, userAgent, ip, lang)
   }
-
-  // @Post('resend-verified-email/:email')
-  // @IsPublic()
-  // @UseGuards(RateLimitGuard)
-  // @RateLimit({
-  //   windowMs: 60 * 1000, // 1 phút
-  //   max: 3, // tối đa 3 lần
-  //   keyGenerator: (req) => `resend_email:${req.ip}:${req.params.email}` // rate limit theo IP + email
-  // })
-  // @ZodSerializerDto(MessageResDTO)
-  // resendVerifiedEmail(@Param('email') email: string, @I18nLang() lang: string) {
-  //   return this.authService.resendVerifiedEmail(email)
-  // }
 
   @Get('me')
   @ApiBearerAuth()

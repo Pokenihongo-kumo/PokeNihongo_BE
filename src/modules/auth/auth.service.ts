@@ -96,12 +96,6 @@ export class AuthService {
       throw new FailToLoginException()
     }
 
-    // // user verify chua ?
-    // if (user.status === UserStatus.INACTIVE) {
-    //   this.resendVerifiedEmail(user.email)
-    //   throw new UnverifiedAccountException()
-    // }
-
     // Kiểm tra xem device đã tồn tại chưa
     const existingDevice = await this.authRepository.findDeviceByUserAndAgent(
       user.id,
@@ -528,33 +522,6 @@ export class AuthService {
     return {
       data: updatedUser,
       message: this.i18nService.translate(AuthMessage.UPDATE_PROFILE_SUCCESS, lang)
-    }
-  }
-
-  async verifiedEmail(email: string) {
-    try {
-      const data = await this.authRepository.verifyEmail(email)
-      return {
-        data,
-        message: 'Xác thực email thành công'
-      }
-    } catch (error) {
-      if (isNotFoundPrismaError(error)) {
-        throw new EmailNotFoundException()
-      }
-      throw error
-    }
-  }
-
-  async resendVerifiedEmail(email: string) {
-    const template = 'otp'
-    const content = 'XÁC THỰC MAIL CỦA BẠN: '
-    const bodyContent = 'Vui lòng nhập nhấn nút XÁC THỰC để xác thực tài khoản của bạn.'
-    await this.mailService.generateAndSendOtp(email, template, content, bodyContent)
-
-    return {
-      data: null,
-      message: 'Gửi lại email xác thực thành công'
     }
   }
 
