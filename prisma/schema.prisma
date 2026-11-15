@@ -2217,7 +2217,7 @@ model Payment {
   invoiceId     Int
   invoice       Invoice       @relation(fields: [invoiceId], references: [id])
   paymentMethod PaymentMethod @default(BANK_TRANSFER)
-  amount        Float         @default(0.0) // Số tiền thanh toán
+  amount        Int           @default(0) // Số tiền thanh toán (VND)
   status        PaymentStatus @default(PENDING)
 
   // PayOS specific fields
