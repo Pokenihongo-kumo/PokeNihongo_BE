@@ -36,7 +36,7 @@ describe('PaymentService: paid webhook when the mail provider is down', () => {
         .fn()
         .mockRejectedValue(new Error('SMTP unavailable'))
     }
-    const invoiceService = { updateInvoiceWhenPaymentSuccess: jest.fn() }
+    const invoiceService = { removeExpirationJob: jest.fn().mockResolvedValue(undefined) }
     const service = new PaymentService(
       paymentRepo as never,
       {} as never,
@@ -53,7 +53,7 @@ describe('PaymentService: paid webhook when the mail provider is down', () => {
   }
 
   it('grants the plan, logs the mail failure and leaves no unhandled rejection', async () => {
-    const { service, invoiceService, mailService } = createService()
+    const { service, paymentRepo, invoiceService, mailService } = createService()
     const logError = jest
       .spyOn((service as unknown as { logger: { error: () => void } }).logger, 'error')
       .mockImplementation(() => undefined)
@@ -68,7 +68,8 @@ describe('PaymentService: paid webhook when the mail provider is down', () => {
     } finally {
       process.off('unhandledRejection', onUnhandled)
     }
-    expect(invoiceService.updateInvoiceWhenPaymentSuccess).toHaveBeenCalledWith(9)
+    expect(paymentRepo.markInvoicePaidOnce).toHaveBeenCalledWith(5, 9)
+    expect(invoiceService.removeExpirationJob).toHaveBeenCalledWith(9)
     expect(mailService.sendSubscriptionSuccessVendorEmail).toHaveBeenCalled()
     expect(logError).toHaveBeenCalledWith(
       'Payment mail for invoice 9 failed',

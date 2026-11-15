@@ -1,4 +1,6 @@
 import { InvoiceStatus } from '@/common/constants/invoice.constant'
+import { UserSubscriptionStatus } from '@/common/constants/subscription.constant'
+import { addTimeUTC } from '@/shared/helpers'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
@@ -42,9 +44,11 @@ export class PaymentRepo {
   }
 
   /**
-   * PAID once: the payment moves to PAID only from a state that is not already
-   * PAID/REFUNDED, in the same transaction as its invoice. Returns false when
-   * another request got there first, so the caller grants nothing twice.
+   * PAID once, plan granted in the same transaction (ADR D1 §1): the payment
+   * moves to PAID only from a state that is not already PAID/REFUNDED, its
+   * invoice to PAID, and the invoice's subscription is created or activated.
+   * Any failure rolls all of it back, so a later callback can grant again.
+   * Returns false when another request got there first (nothing granted twice).
    */
   async markInvoicePaidOnce(paymentId: number, invoiceId: number): Promise<boolean> {
     return this.prisma.$transaction(async (tx) => {
@@ -53,10 +57,32 @@ export class PaymentRepo {
         data: { status: 'PAID', paidAt: new Date() }
       })
       if (count === 0) return false
-      await tx.invoice.update({
+      const invoice = await tx.invoice.update({
         where: { id: invoiceId },
-        data: { status: InvoiceStatus.PAID }
+        data: { status: InvoiceStatus.PAID },
+        include: { subscriptionPlan: true }
       })
+      const plan = invoice.subscriptionPlan
+      const startDate = addTimeUTC(new Date(), 0)
+      const expiresAt =
+        plan.type === 'RECURRING' && plan.durationInDays
+          ? addTimeUTC(startDate, plan.durationInDays * 24 * 60 * 60 * 1000)
+          : null
+      const active = { startDate, expiresAt, status: UserSubscriptionStatus.ACTIVE }
+      const existing = await tx.userSubscription.findUnique({ where: { invoiceId } })
+      if (!existing) {
+        await tx.userSubscription.create({
+          data: {
+            userId: invoice.userId,
+            subscriptionPlanId: plan.id,
+            invoiceId,
+            createdById: invoice.userId,
+            ...active
+          }
+        })
+      } else if (existing.status !== UserSubscriptionStatus.ACTIVE) {
+        await tx.userSubscription.update({ where: { id: existing.id }, data: active })
+      }
       return true
     })
   }
