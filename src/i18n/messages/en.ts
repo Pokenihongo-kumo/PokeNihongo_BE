@@ -36,6 +36,11 @@ export const enMessages = {
     OTP_AUTHENTICATION_SUCCESS: 'OTP authentication successful',
     REGISTRATION_TOKEN_INVALID:
       'The sign-up session is invalid or has expired, please verify your email again',
+    OAUTH_STATE_INVALID:
+      'The Google sign-in session is invalid or has expired, please try again',
+    EXCHANGE_CODE_INVALID: 'The Google sign-in code is invalid, used or expired',
+    GOOGLE_REDIRECT_NOT_ALLOWED: 'This redirect address is not allowed',
+    GOOGLE_EXCHANGE_SUCCESS: 'Signed in with Google',
     FAIL_TO_LOGIN: 'Incorrect email or password',
     MISSING_ACCESS_TOKEN: 'Please log in to continue',
     FIRST_LOGIN:

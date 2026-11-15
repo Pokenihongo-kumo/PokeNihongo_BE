@@ -36,6 +36,11 @@ export const viMessages = {
     OTP_AUTHENTICATION_SUCCESS: 'Xác thực OTP thành công',
     REGISTRATION_TOKEN_INVALID:
       'Phiên đăng ký không hợp lệ hoặc đã hết hạn, vui lòng xác thực email lại',
+    OAUTH_STATE_INVALID:
+      'Phiên đăng nhập Google không hợp lệ hoặc đã hết hạn, vui lòng thử lại',
+    EXCHANGE_CODE_INVALID: 'Mã đăng nhập Google không hợp lệ, đã dùng hoặc đã hết hạn',
+    GOOGLE_REDIRECT_NOT_ALLOWED: 'Địa chỉ chuyển hướng không được phép',
+    GOOGLE_EXCHANGE_SUCCESS: 'Đăng nhập bằng Google thành công',
     FAIL_TO_LOGIN: 'Sai email hoặc mật khẩu',
     MISSING_ACCESS_TOKEN: 'Vui lòng đăng nhập để tiếp tục',
     FIRST_LOGIN:

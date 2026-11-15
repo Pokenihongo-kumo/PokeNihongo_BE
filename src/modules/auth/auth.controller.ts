@@ -4,7 +4,6 @@ import { RateLimit } from '@/common/decorators/rate-limit.decorator'
 import { otpSendLimits, otpVerifyLimits } from '@/common/constants/otp-rate-limit'
 import { UserAgent } from '@/common/decorators/user-agent.decorator'
 import { RateLimitGuard } from '@/common/guards/rate-limit.guard'
-import envConfig from '@/config/env.config'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import {
   AccountResDTO,
@@ -13,6 +12,9 @@ import {
   ForgotPasswordBodyDTO,
   GetAccountProfileResDTO,
   GetAuthorizationUrlResDTO,
+  GoogleExchangeBodyDTO,
+  GoogleExchangeResDTO,
+  GoogleLinkQueryDTO,
   LoginBodyDTO,
   LoginResDTO,
   LogoutBodyDTO,
@@ -224,12 +226,13 @@ export class AuthController {
     )
   }
 
-  //oauth
+  // Google sign-in (ADR D-auth §3): PKCE challenge in, one-time code out,
+  // tokens only from POST google/exchange (never in a URL)
   @Get('google-link')
   @IsPublic()
   @ZodSerializerDto(GetAuthorizationUrlResDTO)
-  getAuthorizationUrl(@UserAgent() userAgent: string, @Ip() ip: string) {
-    return this.googleService.getAuthorizationUrl({ userAgent, ip })
+  getAuthorizationUrl(@Query() query: GoogleLinkQueryDTO) {
+    return this.googleService.getAuthorizationUrl(query)
   }
 
   @Get('google/callback')
@@ -239,19 +242,19 @@ export class AuthController {
     @Query('state') state: string,
     @Res() res: Response
   ) {
-    try {
-      const data = await this.googleService.googleCallback({ code, state })
-      return res.redirect(
-        `${envConfig.GOOGLE_CLIENT_REDIRECT_URI}?accessToken=${data.accessToken}&refreshToken=${data.refreshToken}`
-      )
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : 'Đã xảy ra lỗi khi đăng nhập bằng Google, vui lòng thử lại bằng cách khác'
-      return res.redirect(
-        `${envConfig.GOOGLE_CLIENT_REDIRECT_URI}?errorMessage=${message}`
-      )
-    }
+    return res.redirect(await this.googleService.callbackRedirect({ code, state }))
+  }
+
+  @Post('google/exchange')
+  @IsPublic()
+  @HttpCode(HttpStatus.OK)
+  @ZodSerializerDto(GoogleExchangeResDTO)
+  googleExchange(
+    @Body() body: GoogleExchangeBodyDTO,
+    @UserAgent() userAgent: string,
+    @Ip() ip: string,
+    @I18nLang() lang: string
+  ) {
+    return this.googleService.exchange(body, userAgent, ip, lang)
   }
 }

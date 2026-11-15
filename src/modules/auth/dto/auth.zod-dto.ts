@@ -5,6 +5,9 @@ import {
   ForgotPasswordBodySchema,
   GetAccountProfileResSchema,
   GetAuthorizationUrlResSchema,
+  GoogleExchangeBodySchema,
+  GoogleExchangeResSchema,
+  GoogleLinkQuerySchema,
   LoginBodySchema,
   LoginResSchema,
   LogoutBodySchema,
@@ -75,3 +78,7 @@ export class UpdateFcmTokenDeviceBodyDTO extends createZodDto(
 ) {}
 
 export class CheckEmailParamsDTO extends createZodDto(CheckEmailParamsSchema) {}
+
+export class GoogleLinkQueryDTO extends createZodDto(GoogleLinkQuerySchema) {}
+export class GoogleExchangeBodyDTO extends createZodDto(GoogleExchangeBodySchema) {}
+export class GoogleExchangeResDTO extends createZodDto(GoogleExchangeResSchema) {}
