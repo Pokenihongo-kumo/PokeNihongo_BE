@@ -212,13 +212,6 @@ export class AuthRepository {
   //   })
   // }
 
-  verifyEmail(email: string): Promise<UserType> {
-    return this.prismaService.user.update({
-      where: { email },
-      data: { status: UserStatus.ACTIVE }
-    })
-  }
-
   deleteManyRefreshTokenByUserId(where: { userId: number }): Promise<{ count: number }> {
     return this.prismaService.refreshToken.deleteMany({
       where
