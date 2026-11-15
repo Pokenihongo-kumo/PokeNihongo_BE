@@ -90,8 +90,6 @@ export class GachaBannerController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    console.log('vao ne')
-
     return this.gachaBannerService.update(
       {
         data: body,

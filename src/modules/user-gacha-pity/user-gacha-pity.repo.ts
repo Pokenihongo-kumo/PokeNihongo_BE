@@ -127,9 +127,10 @@ export class UserGachaPityRepo {
 
   findStatusByUserId(
     userId: number,
-    status: GachaPityTypeType
+    status: GachaPityTypeType,
+    prismaTx?: PrismaClient
   ): Promise<UserGachaPityType | null> {
-    return this.prismaService.userGachaPity.findFirst({
+    return (prismaTx || this.prismaService).userGachaPity.findFirst({
       where: {
         userId,
         status,
