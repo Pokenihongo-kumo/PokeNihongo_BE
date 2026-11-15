@@ -34,6 +34,8 @@ export const viMessages = {
     TOTP_NOT_ENABLED: 'TOTP chưa được kích hoạt',
     INVALID_TOTP_AND_CODE: 'Mã TOTP và mã xác thực không hợp lệ',
     OTP_AUTHENTICATION_SUCCESS: 'Xác thực OTP thành công',
+    REGISTRATION_TOKEN_INVALID:
+      'Phiên đăng ký không hợp lệ hoặc đã hết hạn, vui lòng xác thực email lại',
     FAIL_TO_LOGIN: 'Sai email hoặc mật khẩu',
     MISSING_ACCESS_TOKEN: 'Vui lòng đăng nhập để tiếp tục',
     FIRST_LOGIN:

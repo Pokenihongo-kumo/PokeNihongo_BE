@@ -34,6 +34,8 @@ export const jaMessages = {
     TOTP_NOT_ENABLED: 'TOTPが有効になっていません',
     INVALID_TOTP_AND_CODE: '無効なTOTPと認証コードです',
     OTP_AUTHENTICATION_SUCCESS: 'OTP認証が完了しました',
+    REGISTRATION_TOKEN_INVALID:
+      '登録セッションが無効か期限切れです。もう一度メールアドレスを確認してください',
     FAIL_TO_LOGIN: 'メールアドレスまたはパスワードが間違っています',
     MISSING_ACCESS_TOKEN: '続行するにはログインしてください',
     FIRST_LOGIN:

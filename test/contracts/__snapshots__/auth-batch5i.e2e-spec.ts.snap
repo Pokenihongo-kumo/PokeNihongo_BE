@@ -49,7 +49,9 @@ exports[`Auth batch 5i contract (e2e) a new email: check, verify OTP, register 1
   },
   "verify": {
     "body": {
-      "data": "null",
+      "data": {
+        "registrationToken": "string",
+      },
       "message": "Xác thực OTP thành công",
       "statusCode": 201,
     },

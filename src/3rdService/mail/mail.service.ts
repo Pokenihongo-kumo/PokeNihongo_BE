@@ -5,7 +5,13 @@ import { Redis } from 'ioredis' // Dùng Redis từ ioredis thay vì RedisClient
 import { maskEmail } from '@/common/utils/mask'
 import { randomUUID } from 'crypto'
 import { MailUnavailableException } from './mail.error'
-import { codeOfStoredOtp, DELETE_IF_UNCHANGED, toStoredOtp } from './otp-value'
+import {
+  CONSUME_IF_CODE,
+  DELETE_IF_UNCHANGED,
+  OtpPurpose,
+  otpKey,
+  toStoredOtp
+} from './otp-value'
 
 @Injectable()
 export class MailService {
@@ -55,6 +61,7 @@ export class MailService {
 
   async generateAndSendOtp(
     email: string,
+    purpose: OtpPurpose,
     template: string,
     content: string,
     body: string
@@ -62,34 +69,44 @@ export class MailService {
     const otp = Math.floor(100000 + Math.random() * 900000).toString() // Tạo OTP 6 chữ số
     // Replaces the previous code, valid 5 minutes
     const stored = toStoredOtp(otp, randomUUID())
-    await this.redisClient.set(email, stored, 'EX', 300)
+    const key = otpKey(purpose, email)
+    await this.redisClient.set(key, stored, 'EX', 300)
     try {
       await this.sendOtpMail(email, otp, template, content, body)
     } catch {
       // Nobody received this code: drop it, unless a newer send has replaced it
-      await this.redisClient.eval(DELETE_IF_UNCHANGED, 1, email, stored)
+      await this.redisClient.eval(DELETE_IF_UNCHANGED, 1, key, stored)
       throw new MailUnavailableException()
     }
     // Never log the code itself
     this.logger.log(`OTP sent to ${maskEmail(email)}`)
   }
 
-  async verifyOtpStrict(email: string, otp: string): Promise<boolean> {
-    try {
-      const storedOtp = codeOfStoredOtp(await this.redisClient.get(email))
-      if (storedOtp === otp) {
-        // Xóa OTP sau khi xác thực thành công
-        await this.redisClient.del(email)
-        this.logger.log(`OTP verified and deleted for ${maskEmail(email)}`)
-        return true
-      }
-      //
-
-      throw new BadRequestException('Mã OTP không hợp lệ hoặc đã hết hạn')
-    } catch (error) {
-      this.logger.error(`Failed to verify OTP for ${maskEmail(email)}: ${error.message}`)
-      throw error
+  /**
+   * True once for the right code: the code is deleted in the same atomic step,
+   * so it cannot be used twice. A code stored under the email alone (sent
+   * before OTPs were kept per purpose) is still accepted until it expires
+   * (5 minutes after the deploy that introduced purposes).
+   */
+  async consumeOtp(email: string, purpose: OtpPurpose, code: string): Promise<boolean> {
+    if (await this.redisClient.eval(CONSUME_IF_CODE, 1, otpKey(purpose, email), code)) {
+      return true
     }
+    // TODO(ADR D-auth): drop this legacy fallback once deployed for 5 minutes
+    return (await this.redisClient.eval(CONSUME_IF_CODE, 1, email, code)) === 1
+  }
+
+  async verifyOtpStrict(
+    email: string,
+    otp: string,
+    purpose: OtpPurpose
+  ): Promise<boolean> {
+    if (await this.consumeOtp(email, purpose, otp)) {
+      this.logger.log(`OTP verified and deleted for ${maskEmail(email)}`)
+      return true
+    }
+    this.logger.error(`Failed to verify OTP for ${maskEmail(email)}`)
+    throw new BadRequestException('Mã OTP không hợp lệ hoặc đã hết hạn')
   }
 
   async sendBookingCancellationEmail(
