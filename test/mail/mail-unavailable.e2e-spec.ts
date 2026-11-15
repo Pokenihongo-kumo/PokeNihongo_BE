@@ -52,7 +52,8 @@ describe('Mail provider unavailable (e2e)', () => {
     redis = app.get<Redis>('REDIS_CLIENT')
     for (const key of [
       ...(await redis.keys(`*${TEST_ADMIN.email}*`)),
-      ...(await redis.keys('*mail-down-*'))
+      ...(await redis.keys('*mail-down-*')),
+      ...(await redis.keys('otp_*_ip:*'))
     ]) {
       await redis.del(key)
     }

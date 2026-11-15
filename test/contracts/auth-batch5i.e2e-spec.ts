@@ -74,7 +74,8 @@ describe('Auth batch 5i contract (e2e)', () => {
     for (const key of [
       ...(await redis.keys(`*${TEST_ADMIN.email}*`)),
       ...(await redis.keys('*contract-5i-*')),
-      ...(await redis.keys('*not-an-email*'))
+      ...(await redis.keys('*not-an-email*')),
+      ...(await redis.keys('otp_*_ip:*'))
     ]) {
       await redis.del(key)
     }
