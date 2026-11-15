@@ -32,3 +32,8 @@ export const UserSubscriptionStatus = {
 } as const
 
 export type UserSubscriptionStatusType = keyof typeof UserSubscriptionStatus
+
+// PokeCoin may pay at most half of a plan's price (whole coins)
+export const MAX_POKE_COIN_DISCOUNT_RATIO = 0.5
+export const maxPokeCoinDiscount = (price: number) =>
+  Math.floor(price * MAX_POKE_COIN_DISCOUNT_RATIO)

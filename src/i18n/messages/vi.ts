@@ -1412,7 +1412,10 @@ export const viMessages = {
     GET_LIST_SUCCESS: 'Lấy danh sách hóa đơn thành công',
     NOT_FOUND: 'Không tìm thấy hóa đơn',
     ALREADY_EXISTS: 'Hóa đơn đã tồn tại',
-    INVALID_DATA: 'Dữ liệu hóa đơn không hợp lệ'
+    INVALID_DATA: 'Dữ liệu hóa đơn không hợp lệ',
+    DISCOUNT_TOO_HIGH:
+      'Số PokeCoin dùng để giảm giá vượt quá mức cho phép (tối đa 50% giá gói)',
+    NOT_ENOUGH_POKE_COINS: 'Không đủ PokeCoin để giảm giá'
   },
   payment: {
     CREATE_SUCCESS: 'Tạo giao dịch thanh toán thành công',

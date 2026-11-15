@@ -1408,7 +1408,10 @@ export const enMessages = {
     GET_LIST_SUCCESS: 'Invoice list retrieved successfully',
     NOT_FOUND: 'Invoice not found',
     ALREADY_EXISTS: 'Invoice already exists',
-    INVALID_DATA: 'Invalid invoice data'
+    INVALID_DATA: 'Invalid invoice data',
+    DISCOUNT_TOO_HIGH:
+      'The PokeCoin discount is above the limit (at most 50% of the plan price)',
+    NOT_ENOUGH_POKE_COINS: 'Not enough PokeCoin for this discount'
   },
   payment: {
     CREATE_SUCCESS: 'Payment created successfully',

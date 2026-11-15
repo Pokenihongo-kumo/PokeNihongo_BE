@@ -1,5 +1,8 @@
 import { BullAction, BullQueue } from '@/common/constants/bull-action.constant'
-import { UserSubscriptionStatus } from '@/common/constants/subscription.constant'
+import {
+  maxPokeCoinDiscount,
+  UserSubscriptionStatus
+} from '@/common/constants/subscription.constant'
 import {
   walletPurposeType,
   WalletTransactionSourceType,
@@ -15,7 +18,7 @@ import {
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { InjectQueue } from '@nestjs/bull'
-import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common'
+import { forwardRef, Inject, Injectable } from '@nestjs/common'
 import { Queue } from 'bull'
 import { PaymentService } from '../payment/payment.service'
 import { SubscriptionPlanNotFoundException } from '../subscription-plan/dto/subscription-plan.error'
@@ -27,7 +30,11 @@ import {
 import { UserSubscriptionRepo } from '../user-subscription/user-subscription.repo'
 import { WalletTransactionRepo } from '../wallet-transaction/wallet-transaction.repo'
 import { WalletRepo } from '../wallet/wallet.repo'
-import { InvoiceNotFoundException } from './dto/invoice.error'
+import {
+  InvoiceDiscountTooHighException,
+  InvoiceNotEnoughPokeCoinsException,
+  InvoiceNotFoundException
+} from './dto/invoice.error'
 import { CreateInvoiceBodyType, UpdateInvoiceBodyType } from './entities/invoice.entity'
 import { InvoiceRepo } from './invoice.repo'
 
@@ -81,7 +88,11 @@ export class InvoiceService {
       if (isPlanExist.isActive === false) {
         throw new SubscriptionPlanNotFoundException()
       }
-      console.log('isPlanExist')
+      // PokeCoin pays at most half the price (any amount, even more than the
+      // price, used to be taken: a free or negative-total plan)
+      if ((data.discountAmount || 0) > maxPokeCoinDiscount(isPlanExist.price)) {
+        throw new InvoiceDiscountTooHighException()
+      }
       // xem user mua goi nay co dang active khong, neu co goi nay va dang active thi khong duoc mua nua
       const isUserActivePlanExist =
         await this.userSubRepo.findActiveByUserIdPlanIdAndStatus(
@@ -92,7 +103,6 @@ export class InvoiceService {
       if (isUserActivePlanExist) {
         throw new UserHasSubscriptionWithStatusActiveException()
       }
-      console.log('isUserActivePlanExist')
       // xem user co dang thanh toan goi nay khong
       const isUserPayPlanExist = await this.userSubRepo.findActiveByUserIdPlanIdAndStatus(
         userId,
@@ -105,7 +115,6 @@ export class InvoiceService {
           { invoiceId: isUserPayPlanExist.invoiceId }
         )
       }
-      console.log('isUserPayPlanExist')
       const discountAmountInput = data.discountAmount || 0
 
       // Nếu có discount > 0, kiểm tra ví có đủ PokeCoin không
@@ -116,7 +125,7 @@ export class InvoiceService {
           amount: discountAmountInput
         })
         if (!enough) {
-          throw new BadRequestException()
+          throw new InvoiceNotEnoughPokeCoinsException()
         }
       }
 
@@ -161,7 +170,7 @@ export class InvoiceService {
             tx
           )
           if (!updatedWallet) {
-            throw new BadRequestException()
+            throw new InvoiceNotEnoughPokeCoinsException()
           }
 
           const wtx = await this.walletTransactionRepo.create(
@@ -186,7 +195,6 @@ export class InvoiceService {
 
         return createdInvoice
       })
-      console.log('xong create')
       // Schedule auto cancellation after 60 minutes if still PENDING
       await this.invoiceExpirationQueue.add(
         BullAction.EXPIRE_INVOICE,
@@ -198,8 +206,6 @@ export class InvoiceService {
           removeOnFail: true
         }
       )
-      console.log('bull')
-      console.log('vao create payment')
 
       // Sau khi invoice đã commit vào DB, gọi createPayOSPayment
       const paymentResult = await this.paymentService.createPayOSPayment(
@@ -209,7 +215,6 @@ export class InvoiceService {
         userId,
         lang
       )
-      console.log('xong create - payment')
       return {
         statusCode: 201,
         data: {

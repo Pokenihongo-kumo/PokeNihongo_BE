@@ -1413,7 +1413,9 @@ export const jaMessages = {
     GET_LIST_SUCCESS: '請求書リストの取得に成功しました',
     NOT_FOUND: '請求書が見つかりません',
     ALREADY_EXISTS: '請求書は既に存在します',
-    INVALID_DATA: '無効な請求書データです'
+    INVALID_DATA: '無効な請求書データです',
+    DISCOUNT_TOO_HIGH: 'PokeCoinの割引が上限を超えています（プラン価格の最大50%）',
+    NOT_ENOUGH_POKE_COINS: '割引に使うPokeCoinが足りません'
   },
   payment: {
     CREATE_SUCCESS: '支払いの作成に成功しました',
