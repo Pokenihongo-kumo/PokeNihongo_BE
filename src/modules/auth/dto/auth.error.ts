@@ -190,3 +190,14 @@ export class NeedDeviceVerificationException extends UnauthorizedException {
     })
   }
 }
+
+// POST /auth/register without a valid one-time token from a verified REGISTER
+// OTP for that email (missing, wrong, expired, already used or another email)
+export class RegistrationTokenInvalidException extends UnauthorizedException {
+  constructor() {
+    super({
+      message: AuthMessage.REGISTRATION_TOKEN_INVALID,
+      errorKey: AuthMessage.REGISTRATION_TOKEN_INVALID
+    })
+  }
+}

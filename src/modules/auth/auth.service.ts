@@ -1,5 +1,5 @@
 import { BullQueueService } from '@/3rdService/bull/bull-queue.service'
-import { codeOfStoredOtp } from '@/3rdService/mail/otp-value'
+import { OtpPurpose } from '@/3rdService/mail/otp-value'
 import { maskEmail } from '@/common/utils/mask'
 import { MailService } from '@/3rdService/mail/mail.service'
 import { UploadService } from '@/3rdService/upload/upload.service'
@@ -16,6 +16,7 @@ import {
   InvalidOTPExceptionForEmail,
   NeedDeviceVerificationException,
   RefreshTokenAlreadyUsedException,
+  RegistrationTokenInvalidException,
   UnauthorizedAccessException
 } from '@/modules/auth/dto/auth.error'
 import {
@@ -53,6 +54,12 @@ import { UserProgressService } from '../user-progress/user-progress.service'
 import { UserSubscriptionRepo } from '../user-subscription/user-subscription.repo'
 import { UserTestService } from '../user-test/user-test.service'
 import { WalletService } from '../wallet/wallet.service'
+import {
+  newRegistrationToken,
+  REGISTRATION_TOKEN_TTL_SECONDS,
+  registrationTokenKey,
+  TAKE
+} from './registration-token'
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name)
@@ -141,6 +148,15 @@ export class AuthService {
     try {
       if (body.password !== body.confirmPassword) {
         throw new InValidNewPasswordAndConfirmPasswordRegisterException()
+      }
+      // Only who verified the REGISTER OTP of this email (ADR D-auth §2)
+      const verifiedEmail = await this.redisClient.eval(
+        TAKE,
+        1,
+        registrationTokenKey(body.registrationToken)
+      )
+      if (verifiedEmail !== body.email) {
+        throw new RegistrationTokenInvalidException()
       }
 
       const hashedPassword = await this.hashingService.hash(body.password)
@@ -334,6 +350,7 @@ export class AuthService {
     const bodyContent = 'Vui lòng nhập mã OTP để làm bước tiếp theo.'
     await this.mailService.generateAndSendOtp(
       registerEmailLowerCase,
+      TypeOfVerificationCode.FORGOT_PASSWORD,
       template,
       content,
       bodyContent
@@ -362,7 +379,11 @@ export class AuthService {
     }
 
     // Verify OTP
-    await this.mailService.verifyOtpStrict(email, code)
+    await this.mailService.verifyOtpStrict(
+      email,
+      code,
+      TypeOfVerificationCode.FORGOT_PASSWORD
+    )
 
     // 2. Xóa tất cả refreshToken và device cũ của user
     await Promise.all([
@@ -542,6 +563,7 @@ export class AuthService {
       const bodyContent = 'Vui lòng nhập mã OTP để tiếp tục bước tiếp theo.'
       await this.mailService.generateAndSendOtp(
         emailLower,
+        TypeOfVerificationCode.REGISTER,
         template,
         content,
         bodyContent
@@ -573,7 +595,13 @@ export class AuthService {
       const bodyContent = `Chúng tôi phát hiện lần đăng nhập đầu tiên từ thiết bị mới
       Vui lòng nhập mã OTP để xác thực thiết bị này.`
 
-      await this.mailService.generateAndSendOtp(email, template, content, bodyContent)
+      await this.mailService.generateAndSendOtp(
+        email,
+        TypeOfVerificationCode.LOGIN,
+        template,
+        content,
+        bodyContent
+      )
 
       // Bước tiếp theo nằm ở `requiresOtp`, statusCode luôn là HTTP status (200)
       return {
@@ -605,12 +633,27 @@ export class AuthService {
   ) {
     try {
       const { email, code, type } = body
-      const storedOtp = codeOfStoredOtp(await this.redisClient.get(email))
-
-      if (storedOtp === code) {
-        // Xóa OTP sau khi xác thực thành công
-        await this.redisClient.del(email)
+      // The code of this purpose only, deleted in the same step (works once)
+      if (await this.mailService.consumeOtp(email, type as OtpPurpose, code)) {
         this.logger.log(`OTP verified and deleted for ${maskEmail(email)}`)
+
+        // ADR D-auth §2: the proof POST /auth/register asks for
+        if (type === TypeOfVerificationCode.REGISTER) {
+          const registrationToken = newRegistrationToken()
+          await this.redisClient.set(
+            registrationTokenKey(registrationToken),
+            email,
+            'EX',
+            REGISTRATION_TOKEN_TTL_SECONDS
+          )
+          return {
+            data: { registrationToken },
+            message: this.i18nService.translate(
+              AuthMessage.OTP_AUTHENTICATION_SUCCESS,
+              lang
+            )
+          }
+        }
 
         // neu type === 'login' thi tao device
         if (type === TypeOfVerificationCode.LOGIN) {

@@ -1,5 +1,7 @@
 import { AppModule } from '@/app.module'
 import { MailService } from '@/3rdService/mail/mail.service'
+import { CONSUME_IF_CODE, OtpPurpose, otpKey } from '@/3rdService/mail/otp-value'
+import { registrationTokenKey } from '@/modules/auth/registration-token'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { INestApplication, VersioningType } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
@@ -57,9 +59,11 @@ describe('Auth batch 5i contract (e2e)', () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
       .overrideProvider(MailService)
       .useValue({
-        generateAndSendOtp: async (email: string) => {
-          await redis.set(email, OTP, 'EX', 300)
+        generateAndSendOtp: async (email: string, purpose: OtpPurpose) => {
+          await redis.set(otpKey(purpose, email), OTP, 'EX', 300)
         },
+        consumeOtp: async (email: string, purpose: OtpPurpose, code: string) =>
+          (await redis.eval(CONSUME_IF_CODE, 1, otpKey(purpose, email), code)) === 1,
         verifyOtpStrict: async () => true,
         sendMail: async () => undefined,
         sendOtpMail: async () => undefined,
@@ -119,21 +123,22 @@ describe('Auth batch 5i contract (e2e)', () => {
   })
 
   it('a new email: check, verify OTP, register', async () => {
+    const check = await http().get(`/auth/check-email/${newEmail}`)
+    const verify = await http()
+      .post('/auth/verify-otp')
+      .send({ email: newEmail, code: OTP, type: 'REGISTER' })
+    // ADR D-auth §2: register carries the token the verified OTP gave
+    const register = await http().post('/auth/register').send({
+      email: newEmail,
+      name: 'Contract 5i',
+      password: 'secret123',
+      confirmPassword: 'secret123',
+      registrationToken: verify.body.data?.registrationToken
+    })
     expect({
-      check: capture(await http().get(`/auth/check-email/${newEmail}`)),
-      verify: capture(
-        await http()
-          .post('/auth/verify-otp')
-          .send({ email: newEmail, code: OTP, type: 'REGISTER' })
-      ),
-      register: capture(
-        await http().post('/auth/register').send({
-          email: newEmail,
-          name: 'Contract 5i',
-          password: 'secret123',
-          confirmPassword: 'secret123'
-        })
-      )
+      check: capture(check),
+      verify: capture(verify),
+      register: capture(register)
     }).toMatchSnapshot()
   })
 
@@ -183,6 +188,14 @@ describe('Auth batch 5i contract (e2e)', () => {
   })
 
   it('errors', async () => {
+    // valid sign-up tokens for an email that is taken: the 409 is what is checked
+    const takenTokens: Record<string, string> = {
+      vi: `taken-vi-${stamp}`,
+      en: `taken-en-${stamp}`
+    }
+    for (const token of Object.values(takenTokens)) {
+      await redis.set(registrationTokenKey(token), TEST_ADMIN.email, 'EX', 60)
+    }
     expect({
       loginWrongPassword: await both((l) =>
         http(l)
@@ -202,7 +215,8 @@ describe('Auth batch 5i contract (e2e)', () => {
           email: TEST_ADMIN.email,
           name: 'Dup',
           password: 'secret123',
-          confirmPassword: 'secret123'
+          confirmPassword: 'secret123',
+          registrationToken: takenTokens[l]
         })
       ),
       registerMismatch: await both((l) =>
@@ -212,7 +226,8 @@ describe('Auth batch 5i contract (e2e)', () => {
             email: `contract-5i-mismatch-${stamp}@example.test`,
             name: 'Mismatch',
             password: 'secret123',
-            confirmPassword: 'secret999'
+            confirmPassword: 'secret999',
+            registrationToken: 'checked-after-the-passwords'
           })
       ),
       verifyWrongOtp: await both((l) =>

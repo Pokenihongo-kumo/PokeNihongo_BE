@@ -1,5 +1,6 @@
 import { AppModule } from '@/app.module'
 import { PrismaService } from '@/shared/services/prisma.service'
+import { otpKey } from '@/3rdService/mail/otp-value'
 import { MailerService } from '@nestjs-modules/mailer'
 import { INestApplication, VersioningType } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
@@ -94,7 +95,7 @@ describe('Mail provider unavailable (e2e)', () => {
         message: 'Email cannot be sent right now, please try again later'
       }
     })
-    expect(await redis.get(newEmail)).toBeNull()
+    expect(await redis.get(otpKey('REGISTER', newEmail))).toBeNull()
   })
 
   it('forgot-password: 503', async () => {
@@ -120,12 +121,12 @@ describe('Mail provider unavailable (e2e)', () => {
       .get(`/auth/check-email/${email}`)
       .then((res) => res)
     // wait for the 1st code to be stored (its send is now pending)
-    for (let i = 0; i < 100 && !(await redis.get(email)); i++) {
+    for (let i = 0; i < 100 && !(await redis.get(otpKey('REGISTER', email))); i++) {
       await new Promise((resolve) => setTimeout(resolve, 20))
     }
-    const firstStored = await redis.get(email)
+    const firstStored = await redis.get(otpKey('REGISTER', email))
     const second = await http().get(`/auth/check-email/${email}`)
-    const secondStored = await redis.get(email)
+    const secondStored = await redis.get(otpKey('REGISTER', email))
     failFirst(new Error('late SMTP failure (test double)'))
     const firstRes = await first
 
@@ -134,8 +135,8 @@ describe('Mail provider unavailable (e2e)', () => {
       second: second.status,
       replaced: firstStored !== null && secondStored !== firstStored
     }).toEqual({ first: 503, second: 200, replaced: true })
-    expect(await redis.get(email)).toBe(secondStored)
-    await redis.del(email)
+    expect(await redis.get(otpKey('REGISTER', email))).toBe(secondStored)
+    await redis.del(otpKey('REGISTER', email))
   })
 
   it('the app keeps serving, and no rejection was left unhandled', async () => {

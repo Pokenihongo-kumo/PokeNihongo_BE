@@ -34,6 +34,8 @@ export const enMessages = {
     TOTP_NOT_ENABLED: 'TOTP is not enabled',
     INVALID_TOTP_AND_CODE: 'Invalid TOTP and verification code',
     OTP_AUTHENTICATION_SUCCESS: 'OTP authentication successful',
+    REGISTRATION_TOKEN_INVALID:
+      'The sign-up session is invalid or has expired, please verify your email again',
     FAIL_TO_LOGIN: 'Incorrect email or password',
     MISSING_ACCESS_TOKEN: 'Please log in to continue',
     FIRST_LOGIN:

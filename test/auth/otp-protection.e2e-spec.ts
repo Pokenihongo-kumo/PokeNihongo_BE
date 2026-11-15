@@ -1,5 +1,5 @@
 import { AppModule } from '@/app.module'
-import { codeOfStoredOtp } from '@/3rdService/mail/otp-value'
+import { codeOfStoredOtp, otpKey } from '@/3rdService/mail/otp-value'
 import { RateLimitGuard } from '@/common/guards/rate-limit.guard'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { MailerService } from '@nestjs-modules/mailer'
@@ -111,7 +111,7 @@ describe('OTP protection (e2e)', () => {
     const email = emailOf('resend')
     for (let i = 0; i < 5; i++) expect((await guess(email)).status).toBe(401)
     expect((await http().get(`/auth/check-email/${email}`)).status).toBe(200)
-    const code = codeOfStoredOtp(await redis.get(email))
+    const code = codeOfStoredOtp(await redis.get(otpKey('REGISTER', email)))
     expect(code).toMatch(/^[0-9]{6}$/)
     expect((await guess(email, code as string)).status).toBe(429)
   })
@@ -159,7 +159,7 @@ describe('OTP protection (e2e)', () => {
     const email = emailOf('case')
     const mixed = email.replace('otp-guard', 'OTP-Guard')
     expect((await http().get(`/auth/check-email/${mixed}`)).status).toBe(200)
-    const code = codeOfStoredOtp(await redis.get(email))
+    const code = codeOfStoredOtp(await redis.get(otpKey('REGISTER', email)))
     const verify = await guess(email.toUpperCase(), code as string)
     expect(verify.status).toBe(201)
   })

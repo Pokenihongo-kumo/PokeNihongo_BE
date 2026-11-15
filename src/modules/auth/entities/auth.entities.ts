@@ -100,7 +100,9 @@ export const RegisterBodySchema = UserSchema.pick({
 })
   .extend({
     email: emailSchema,
-    confirmPassword: z.string().min(6).max(100)
+    confirmPassword: z.string().min(6).max(100),
+    // from POST /auth/verify-otp (type REGISTER) for this email; one use
+    registrationToken: z.string().min(1).max(200)
   })
   .strict()
 // .superRefine(({ confirmPassword, password }, ctx) => {
