@@ -573,6 +573,14 @@ Convention + checklist giai đoạn 3: [docs/standardization/backend-convention.
       - [ ] `GET /reward/admin`, `/reward/admin/:id` là `@IsPublic` (đọc danh mục, không nhạy cảm) — gộp khi làm ma trận auth.
       - [ ] user-reward-history: CRUD admin (`GET /`, `/:id`, `PUT`, `DELETE`) không kiểm tra chủ sở hữu (phụ thuộc permission); repo ép kiểu `(prismaService as any).userRewardHistory`.
       - [ ] reward.repo/service còn nhiều `any` (lọc theo tên dịch) — chỉ sửa có chủ đích.
+  - [~] Batch 6b — Kinh tế: shop-banner, shop-item, shop-purchase, shop-rarity-price. Mobile gọi `GET /shop-banner/today/user`, `POST /shop-purchase`; web admin banner/item/rarity price. Một phần: chưa có contract baseline cho route admin (DB test chưa có Pokemon; test tự tạo Pokemon/banner/item).
+    - [x] → merge `dev` @ `5219545`: bỏ 17 console.log debug; `test/shop/shop-purchase.e2e-spec.ts` (mua pokemon đã có bị từ chối; 5 lần mua cùng lúc → 1 bản, trừ tiền 1 lần).
+    - Kết luận race mua trùng (mở từ T7): không tái hiện được (5 × 5 lần song song). Bước trừ ví có điều kiện (T7) khóa dòng ví nên các lần mua của một user chạy lần lượt; lần sau thấy đã có pokemon và rollback. Không thêm unique `UserPokemon(userId, pokemonId)`; cân nhắc lại nếu có đường cấp pokemon không qua ví (ví dụ `reward.service` cấp POKEMON).
+    - Gate batch 6b trên `dev` @ `5219545`: typecheck 0, unit 136/136, e2e 174/174 (107 snapshot).
+    - Việc mở ra từ batch 6b:
+      - [ ] Web gọi `POST /shop-banner/random-pokemon` nhưng BE không có route (404). Cần quyết định: thêm route hay bỏ ở web.
+      - [ ] Contract baseline cho route admin shop (banner CRUD, item list/random/update/delete, rarity price) và các lỗi vi/en.
+      - [ ] `shop-item.entity.ts` dùng `require()` (lint error có sẵn) để tránh vòng import với shop-banner; shop-banner/shop-item repo còn nhiều `any`.
 - [x] Bugfix kiến trúc F02 (P1, [product-architecture-plan](docs/standardization/product-architecture-plan.md)): `payos/return`/`cancel` tin query trình duyệt để ghi PAID/CANCELLED → ai cũng tự kích hoạt gói. Nay chỉ PayOS (tra cứu server-to-server hoặc webhook có chữ ký, route mới `POST /payments/payos/webhook`) đổi trạng thái; PAID một lần (`markInvoicePaidOnce`, updateMany có điều kiện). BE `d392c17` → merge `dev` @ `1676d05`; e2e `test/payment/payos-callbacks.e2e-spec.ts` (4/5 fail trên code cũ). Web: trang failed có case `payment_pending` (FE `dev`). Deploy: đăng ký URL webhook + `PAYOS_CHECKSUM_KEY`.
     - [x] `modules/attendance` (điểm danh của mobile) còn `getLand` giống attendence-config → sửa ở batch 5a (`48f4837`).
     - [ ] DB mới cần seed `Languages` (vi/en/ja): `POST /languages/create-default` nay chạy được.
