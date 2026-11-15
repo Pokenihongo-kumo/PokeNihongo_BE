@@ -220,4 +220,68 @@ describe('PayOS callbacks (e2e)', () => {
       subscriptions: 1
     })
   })
+
+  it('cancelling a second payment link does not undo an invoice another link paid', async () => {
+    // Two links for one invoice (e.g. the user reopened checkout): one is paid,
+    // then the other is cancelled
+    const { payment: paid, invoice, orderCode } = await pendingPayment('6')
+    const other = await prisma.payment.create({
+      data: { userId, invoiceId: invoice.id, amount: PRICE, payosOrderId: `${stamp}7` }
+    })
+    created.payments.push(other.id)
+
+    payosSays('PAID')
+    await forgedReturn(orderCode)
+    payosSays('CANCELLED')
+    await request(app.getHttpServer())
+      .get('/payments/payos/cancel')
+      .query({
+        code: '00',
+        id: 'link',
+        cancel: 'true',
+        status: 'CANCELLED',
+        orderCode: `${stamp}7`
+      })
+
+    expect({
+      ...(await stateOf(paid.id, invoice.id)),
+      other: (await prisma.payment.findUniqueOrThrow({ where: { id: other.id } })).status,
+      subscription: (
+        await prisma.userSubscription.findUniqueOrThrow({
+          where: { invoiceId: invoice.id }
+        })
+      ).status
+    }).toEqual({
+      payment: 'PAID',
+      invoice: 'PAID',
+      subscriptions: 1,
+      other: 'CANCELLED',
+      subscription: 'ACTIVE'
+    })
+  })
+
+  it('cancelling the only link of an unpaid invoice closes it', async () => {
+    const { payment, invoice, orderCode } = await pendingPayment('8')
+    await prisma.userSubscription.create({
+      data: { userId, invoiceId: invoice.id, subscriptionPlanId: created.plan }
+    })
+    payosSays('CANCELLED')
+    await request(app.getHttpServer())
+      .get('/payments/payos/cancel')
+      .query({ code: '00', id: 'link', cancel: 'true', status: 'CANCELLED', orderCode })
+
+    expect({
+      ...(await stateOf(payment.id, invoice.id)),
+      subscription: (
+        await prisma.userSubscription.findUniqueOrThrow({
+          where: { invoiceId: invoice.id }
+        })
+      ).status
+    }).toEqual({
+      payment: 'CANCELLED',
+      invoice: 'CANCELLED',
+      subscriptions: 1,
+      subscription: 'PAYMENT_FAILED'
+    })
+  })
 })

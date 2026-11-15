@@ -61,15 +61,36 @@ export class PaymentRepo {
     })
   }
 
-  // PENDING -> CANCELLED/FAILED only; never overrides a payment already PAID
+  /**
+   * PayOS closed a payment link. In one transaction: the payment moves
+   * PENDING -> CANCELLED/FAILED/EXPIRED (never from PAID); its invoice is
+   * cancelled only while still PENDING, and its subscription marked
+   * PAYMENT_FAILED only while PENDING_PAYMENT. An invoice another link paid
+   * (or is paying: markInvoicePaidOnce holds its row) is left alone.
+   * Returns false when the payment was not pending (nothing changed).
+   */
   async closePendingPayment(
     id: number,
+    invoiceId: number,
     data: { status: 'CANCELLED' | 'FAILED' | 'EXPIRED'; failureReason: string }
   ): Promise<boolean> {
-    const { count } = await this.prisma.payment.updateMany({
-      where: { id, status: 'PENDING' },
-      data
+    return this.prisma.$transaction(async (tx) => {
+      const payment = await tx.payment.updateMany({
+        where: { id, status: 'PENDING' },
+        data
+      })
+      if (payment.count === 0) return false
+      const invoice = await tx.invoice.updateMany({
+        where: { id: invoiceId, status: InvoiceStatus.PENDING },
+        data: { status: InvoiceStatus.CANCELLED }
+      })
+      if (invoice.count === 1) {
+        await tx.userSubscription.updateMany({
+          where: { invoiceId, status: 'PENDING_PAYMENT' },
+          data: { status: 'PAYMENT_FAILED' }
+        })
+      }
+      return true
     })
-    return count === 1
   }
 }

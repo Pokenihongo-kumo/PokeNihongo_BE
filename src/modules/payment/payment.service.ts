@@ -349,13 +349,14 @@ export class PaymentService {
     )
   }
 
-  // PayOS says the order was cancelled/expired/failed: close it if it is still pending
+  // PayOS says the order was cancelled/expired/failed: close it if it is still
+  // pending; the invoice only if no other link paid it (see the repo)
   private async closeCancelledPayment(
     payment: PaymentType,
     payosStatus: 'CANCELLED' | 'EXPIRED' | 'FAILED',
     lang: string
   ) {
-    const closed = await this.paymentRepo.closePendingPayment(payment.id, {
+    await this.paymentRepo.closePendingPayment(payment.id, payment.invoiceId, {
       status: payosStatus,
       failureReason: this.i18nService.translate(
         payosStatus === 'FAILED'
@@ -364,24 +365,6 @@ export class PaymentService {
         lang
       )
     })
-    if (!closed) return
-
-    const invoice = await this.invoiceRepo.findById(payment.invoiceId)
-    if (!invoice) return
-    await this.invoiceRepo.update({
-      id: payment.invoiceId,
-      data: { status: InvoiceStatus.CANCELLED }
-    })
-    const userSubscription = await this.userSubscriptionSer.findByUserAndInvoice(
-      payment.userId,
-      invoice.id
-    )
-    if (userSubscription) {
-      await this.userSubscriptionSer.update({
-        id: userSubscription.id,
-        data: { status: 'PAYMENT_FAILED' }
-      })
-    }
   }
 
   //todo mail
