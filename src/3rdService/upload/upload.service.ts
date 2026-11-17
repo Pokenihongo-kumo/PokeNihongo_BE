@@ -1,5 +1,9 @@
-import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common'
-import { UploadApiResponse } from 'cloudinary'
+import {
+  FileStorage,
+  StoredFile,
+  StoredResourceType
+} from '@/infrastructure/integrations/storage/file-storage.port'
+import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import sharp from 'sharp'
 import { GenerateUploadUrlBodyType } from './dto/upload-presigned.dto'
 
@@ -9,11 +13,13 @@ export interface UploadResult {
   publicId?: string
 }
 
+// Upload rules (which files, which folder, resize, timeouts, messages); the
+// file itself goes to the FileStorage port (integration-ports plan I3)
 @Injectable()
 export class UploadService {
   private readonly logger = new Logger(UploadService.name)
 
-  constructor(@Inject('Cloudinary') private cloudinary) {}
+  constructor(private readonly fileStorage: FileStorage) {}
 
   private isImageFile(mimetype: string): boolean {
     return mimetype.startsWith('image/')
@@ -94,64 +100,68 @@ export class UploadService {
     }
   }
 
+  // One storing path for every upload variant below: resize images when asked,
+  // then hand the buffer to the storage port
+  private async store(
+    file: Express.Multer.File,
+    options: {
+      folder: string
+      resourceType: StoredResourceType
+      timeoutMs: number
+      resize: boolean
+      tags?: string[]
+      buffer?: Buffer
+    }
+  ): Promise<StoredFile> {
+    let buffer = options.buffer ?? file.buffer
+    if (options.resize) {
+      try {
+        buffer = await this.resizeImage(file)
+      } catch (error) {
+        this.logger.warn(`Failed to resize image, using original: ${error.message}`)
+        buffer = file.buffer
+      }
+    }
+    return this.fileStorage.put({
+      buffer,
+      folder: options.folder,
+      resourceType: options.resourceType,
+      timeoutMs: options.timeoutMs,
+      tags: options.tags,
+      originalName: file.originalname
+    })
+  }
+
   async uploadFile(
     file: Express.Multer.File,
     folder: string = 'uploads'
   ): Promise<UploadResult> {
     const startTime = Date.now()
     this.logger.log(`Starting upload for file: ${file.originalname} to folder: ${folder}`)
-
+    let image: boolean
+    let resourceType: StoredResourceType
     try {
-      let uploadBuffer = file.buffer
-      let resourceType: 'image' | 'video' | 'raw' = 'raw'
-
-      // Xử lý hình ảnh
-      if (this.isImageFile(file.mimetype)) {
-        try {
-          uploadBuffer = await this.resizeImage(file)
-        } catch (error) {
-          this.logger.warn(`Failed to resize image, using original: ${error.message}`)
-          uploadBuffer = file.buffer // Fallback to original buffer
-        }
-        resourceType = 'image'
-      }
-      // Xử lý audio
-      else if (this.isAudioFile(file.mimetype)) {
-        resourceType = 'video' // Cloudinary treats audio as video resource type
-      }
-
-      return new Promise((resolve, reject) => {
-        const uploadStream = this.cloudinary.uploader.upload_stream(
-          {
-            folder,
-            resource_type: resourceType,
-            timeout: 60000,
-            use_filename: true,
-            unique_filename: true
-          },
-          (error, result: UploadApiResponse) => {
-            if (error) {
-              this.logger.error(
-                `Upload failed for ${file.originalname}: ${error.message}`
-              )
-              return reject(new Error('Upload failed!'))
-            }
-            this.logger.log(
-              `Upload completed for ${file.originalname} in ${Date.now() - startTime}ms`
-            )
-            resolve({
-              message: 'Upload thành công!',
-              url: result.secure_url,
-              publicId: result.public_id
-            })
-          }
-        )
-
-        uploadStream.end(uploadBuffer)
-      })
+      image = this.isImageFile(file.mimetype)
+      // Cloudinary treats audio as video resource type
+      resourceType = image ? 'image' : this.isAudioFile(file.mimetype) ? 'video' : 'raw'
     } catch (error) {
       this.logger.error(`Error processing file ${file.originalname}: ${error.message}`)
       throw new Error('File processing failed!')
+    }
+    try {
+      const stored = await this.store(file, {
+        folder,
+        resourceType,
+        timeoutMs: 60000,
+        resize: image
+      })
+      this.logger.log(
+        `Upload completed for ${file.originalname} in ${Date.now() - startTime}ms`
+      )
+      return { message: 'Upload thành công!', url: stored.url, publicId: stored.publicId }
+    } catch (error) {
+      this.logger.error(`Upload failed for ${file.originalname}: ${error.message}`)
+      throw new Error('Upload failed!')
     }
   }
 
@@ -168,83 +178,47 @@ export class UploadService {
     customFolder?: string
   ): Promise<UploadResult> {
     const startTime = Date.now()
-
-    // Xác định loại file và thư mục
     const fileType = customFolder || this.getFileTypeFromMimetype(file.mimetype)
     const folder = `${baseFolder}/${fileType}`
-
     this.logger.log(
       `Starting auto-categorized upload for file: ${file.originalname} (${file.mimetype}) to folder: ${folder}`
     )
-
+    const image = this.isImageFile(file.mimetype)
+    const audio = this.isAudioFile(file.mimetype)
+    const video = this.isVideoFile(file.mimetype)
     try {
-      let uploadBuffer = file.buffer
-      let resourceType: 'image' | 'video' | 'raw' = 'raw'
-
-      // Xử lý theo loại file
-      if (this.isImageFile(file.mimetype)) {
-        try {
-          uploadBuffer = await this.resizeImage(file)
-          this.logger.log(`Image resized successfully for ${file.originalname}`)
-        } catch (error) {
-          this.logger.warn(`Failed to resize image, using original: ${error.message}`)
-          uploadBuffer = file.buffer
-        }
-        resourceType = 'image'
-      } else if (this.isAudioFile(file.mimetype) || this.isVideoFile(file.mimetype)) {
-        resourceType = 'video' // Cloudinary treats both audio and video as 'video'
-      } else {
-        // Documents và other files sử dụng 'raw'
-        resourceType = 'raw'
-      }
-
-      // Thiết lập timeout dựa trên loại file
-      let timeout = 60000 // Default 60s
-      if (this.isVideoFile(file.mimetype)) {
-        timeout = 180000 // 3 minutes for videos
-      } else if (this.isAudioFile(file.mimetype)) {
-        timeout = 120000 // 2 minutes for audio
-      }
-
-      return new Promise((resolve, reject) => {
-        const uploadStream = this.cloudinary.uploader.upload_stream(
-          {
-            folder,
-            resource_type: resourceType,
-            timeout,
-            use_filename: true,
-            unique_filename: true,
-            // Thêm tags để dễ quản lý
-            tags: [fileType, baseFolder]
-          },
-          (error, result: UploadApiResponse) => {
-            if (error) {
-              this.logger.error(
-                `Auto-categorized upload failed for ${file.originalname}: ${error.message}`
-              )
-              return reject(new Error(`Upload failed for ${fileType} file!`))
-            }
-
-            const uploadTime = Date.now() - startTime
-            this.logger.log(
-              `Auto-categorized upload completed for ${file.originalname} (${fileType}) in ${uploadTime}ms`
-            )
-
-            resolve({
-              message: `Upload ${fileType} file thành công!`,
-              url: result.secure_url,
-              publicId: result.public_id
-            })
-          }
-        )
-
-        uploadStream.end(uploadBuffer)
+      const stored = await this.store(file, {
+        folder,
+        // Cloudinary treats both audio and video as 'video'; documents are 'raw'
+        resourceType: image ? 'image' : audio || video ? 'video' : 'raw',
+        timeoutMs: video ? 180000 : audio ? 120000 : 60000,
+        resize: image,
+        tags: [fileType, baseFolder]
       })
+      this.logger.log(
+        `Auto-categorized upload completed for ${file.originalname} (${fileType}) in ${Date.now() - startTime}ms`
+      )
+      return {
+        message: `Upload ${fileType} file thành công!`,
+        url: stored.url,
+        publicId: stored.publicId
+      }
     } catch (error) {
       this.logger.error(
-        `Error processing ${fileType} file ${file.originalname}: ${error.message}`
+        `Auto-categorized upload failed for ${file.originalname}: ${error.message}`
       )
-      throw new Error(`File processing failed for ${fileType} file!`)
+      throw new Error(`Upload failed for ${fileType} file!`)
+    }
+  }
+
+  // The old file is deleted first; a failed delete does not stop the upload
+  private async replaceOld(oldUrl: string | undefined, folder: string, what: string) {
+    if (!oldUrl) return
+    try {
+      await this.deleteFile(oldUrl, folder)
+      this.logger.log(`Deleted old ${what}`)
+    } catch (error) {
+      this.logger.warn(`Failed to delete old ${what}: ${error.message}`)
     }
   }
 
@@ -258,68 +232,32 @@ export class UploadService {
     if (!this.isImageFile(file.mimetype)) {
       throw new Error('File must be an image')
     }
-
     // Check if original file buffer is valid first
     if (!file.buffer || file.buffer.length === 0) {
       throw new Error(`Original file buffer is empty for ${file.originalname}`)
     }
-
-    let resizedBuffer: Buffer
-    try {
-      resizedBuffer = await this.resizeImage(file)
-    } catch (error) {
-      this.logger.warn(
-        `Failed to resize image ${file.originalname}, using original: ${error.message}`
-      )
-      resizedBuffer = file.buffer // Use original buffer as fallback
-    }
-
-    // Check if buffer is valid
+    const resizedBuffer = await this.resizeImage(file)
     if (!resizedBuffer || resizedBuffer.length === 0) {
       throw new Error('Empty file')
     }
 
-    return new Promise((resolve, reject) => {
-      const uploadNewImage = () => {
-        this.cloudinary.uploader
-          .upload_stream(
-            {
-              folder: 'vocabulary/images',
-              resource_type: 'image',
-              timeout: 60000,
-              use_filename: true,
-              unique_filename: true
-            },
-            (error, result: UploadApiResponse) => {
-              if (error) {
-                this.logger.error(
-                  `Image upload failed for ${file.originalname}: ${error.message}`
-                )
-                return reject(error)
-              }
-              this.logger.log(
-                `Image upload completed for ${file.originalname} in ${Date.now() - startTime}ms`
-              )
-              resolve(result.secure_url)
-            }
-          )
-          .end(resizedBuffer)
-      }
-
-      if (oldImageUrl) {
-        this.deleteFile(oldImageUrl, 'vocabulary/images')
-          .then(() => {
-            this.logger.log(`Deleted old image`)
-            uploadNewImage()
-          })
-          .catch((error) => {
-            this.logger.warn(`Failed to delete old image: ${error.message}`)
-            uploadNewImage() // Continue with upload even if delete fails
-          })
-      } else {
-        uploadNewImage()
-      }
-    })
+    await this.replaceOld(oldImageUrl, 'vocabulary/images', 'image')
+    try {
+      const stored = await this.store(file, {
+        folder: 'vocabulary/images',
+        resourceType: 'image',
+        timeoutMs: 60000,
+        resize: false,
+        buffer: resizedBuffer
+      })
+      this.logger.log(
+        `Image upload completed for ${file.originalname} in ${Date.now() - startTime}ms`
+      )
+      return stored.url
+    } catch (error) {
+      this.logger.error(`Image upload failed for ${file.originalname}: ${error.message}`)
+      throw error
+    }
   }
 
   async uploadVocabularyAudio(
@@ -333,86 +271,33 @@ export class UploadService {
       throw new Error('File must be an audio file')
     }
 
-    return new Promise((resolve, reject) => {
-      const uploadNewAudio = () => {
-        this.cloudinary.uploader
-          .upload_stream(
-            {
-              folder: 'vocabulary/audio',
-              resource_type: 'video', // Cloudinary treats audio as video
-              timeout: 120000, // Longer timeout for audio files
-              use_filename: true,
-              unique_filename: true
-            },
-            (error, result: UploadApiResponse) => {
-              if (error) {
-                this.logger.error(
-                  `Audio upload failed for ${file.originalname}: ${error.message}`
-                )
-                return reject(error)
-              }
-              this.logger.log(
-                `Audio upload completed for ${file.originalname} in ${Date.now() - startTime}ms`
-              )
-              resolve(result.secure_url)
-            }
-          )
-          .end(file.buffer)
-      }
-
-      if (oldAudioUrl) {
-        this.deleteFile(oldAudioUrl, 'vocabulary/audio')
-          .then(() => {
-            this.logger.log(`Deleted old audio`)
-            uploadNewAudio()
-          })
-          .catch((error) => {
-            this.logger.warn(`Failed to delete old audio: ${error.message}`)
-            uploadNewAudio() // Continue with upload even if delete fails
-          })
-      } else {
-        uploadNewAudio()
-      }
-    })
-  }
-
-  async deleteFile(url: string, folder: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      // Extract public_id from URL
-      const publicId = this.extractPublicIdFromUrl(url)
-      if (!publicId) {
-        return reject(new Error('Invalid URL format'))
-      }
-
-      this.cloudinary.uploader.destroy(publicId, (error, result) => {
-        if (error) {
-          this.logger.error(`Failed to delete file ${publicId}: ${error.message}`)
-          return reject(error)
-        }
-        this.logger.log(`Deleted file ${publicId}`)
-        resolve()
-      })
-    })
-  }
-
-  private extractPublicIdFromUrl(url: string): string | null {
+    await this.replaceOld(oldAudioUrl, 'vocabulary/audio', 'audio')
     try {
-      // Extract public_id from Cloudinary URL
-      // Example: https://res.cloudinary.com/cloud_name/video/upload/v1234567890/vocabulary/audio/filename.mp3
-      const urlParts = url.split('/')
-      const uploadIndex = urlParts.findIndex((part) => part === 'upload')
-      if (uploadIndex === -1) return null
-
-      // Get everything after 'upload/' and before the last part (filename)
-      const pathParts = urlParts.slice(uploadIndex + 2, -1)
-      const filename = urlParts[urlParts.length - 1]
-      const nameWithoutExt = filename.split('.')[0]
-
-      return [...pathParts, nameWithoutExt].join('/')
+      const stored = await this.store(file, {
+        folder: 'vocabulary/audio',
+        resourceType: 'video', // Cloudinary treats audio as video
+        timeoutMs: 120000, // Longer timeout for audio files
+        resize: false
+      })
+      this.logger.log(
+        `Audio upload completed for ${file.originalname} in ${Date.now() - startTime}ms`
+      )
+      return stored.url
     } catch (error) {
-      this.logger.error(`Error extracting public_id from URL: ${url}`)
-      return null
+      this.logger.error(`Audio upload failed for ${file.originalname}: ${error.message}`)
+      throw error
     }
+  }
+
+  // folder: kept for callers; the URL says where the file is
+  async deleteFile(url: string, folder: string): Promise<void> {
+    void folder
+    return this.fileStorage.delete(url)
+  }
+
+  // The storage id inside a stored file's URL (null when it is not one of ours)
+  publicIdFromUrl(url: string): string | null {
+    return this.fileStorage.publicIdFromUrl(url)
   }
 
   async uploadVocabularyFiles(
@@ -495,38 +380,22 @@ export class UploadService {
     // Generate unique public ID
     const timestamp = Date.now()
     const randomString = Math.random().toString(36).substring(2, 8)
-    const fileExtension = fileName.split('.').pop()
     const fileNameWithoutExt = fileName.replace(/\.[^/.]+$/, '')
     const publicId = `${folderName}/${fileNameWithoutExt}_${timestamp}_${randomString}`
 
     // Determine resource type for Cloudinary
-    let resourceType: 'image' | 'video' | 'raw' = 'raw'
+    let resourceType: StoredResourceType = 'raw'
     if (fileType === 'image') resourceType = 'image'
     else if (fileType === 'video' || fileType === 'audio') resourceType = 'video'
 
-    // Generate Cloudinary signature
-    const uploadParams = {
-      timestamp,
-      public_id: publicId,
+    // The signature is computed but, as before, not returned (recorded in the
+    // tracker: a direct upload cannot use this answer yet)
+    const { uploadUrl, fileUrl } = this.fileStorage.presign({
+      publicId,
       folder: folderName,
-      resource_type: resourceType,
-      // Add format transformation for images
-      ...(fileType === 'image' && { format: 'auto', quality: 'auto:good' })
-    }
-
-    const signature = this.cloudinary.utils.api_sign_request(
-      uploadParams,
-      this.cloudinary.config().api_secret
-    )
-
-    // Construct upload URL
-    const uploadUrl = `https://api.cloudinary.com/v1_1/${this.cloudinary.config().cloud_name}/${resourceType}/upload`
-
-    // Construct final file URL (what will be the URL after upload)
-    const fileUrl = this.cloudinary.url(publicId, {
-      resource_type: resourceType,
-      secure: true,
-      ...(fileType === 'image' && { format: 'auto', quality: 'auto:good' })
+      resourceType,
+      image: fileType === 'image',
+      timestamp
     })
 
     // Set expiration time (15 minutes from now)

@@ -21,4 +21,13 @@ describe('productionDriverErrors', () => {
       []
     )
   })
+
+  it('refuses STORAGE_DRIVER=local in production', () => {
+    expect(
+      productionDriverErrors({ NODE_ENV: 'production', STORAGE_DRIVER: 'local' })
+    ).toEqual(['STORAGE_DRIVER=local is not allowed in production'])
+    expect(
+      productionDriverErrors({ NODE_ENV: 'production', STORAGE_DRIVER: 'cloudinary' })
+    ).toEqual([])
+  })
 })
