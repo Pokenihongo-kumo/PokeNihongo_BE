@@ -1,0 +1,457 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Economy batches 6c/6d admin contract (e2e) errors 1`] = `
+{
+  "bannerBadId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid gacha banner data",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Dữ liệu banner gacha không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "bannerCreateEmpty": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid data provided",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Dữ liệu không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "bannerMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Record not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bản ghi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "itemMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Gacha item not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy vật phẩm gacha",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "itemsMissingBanner": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Gacha banner is invalid or expired",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Banner gacha không hợp lệ hoặc đã hết hạn",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+  "mineBadPage": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid format",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Định dạng không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "prepareBadId": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Validation failed (numeric string is expected)",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Validation failed (numeric string is expected)",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+}
+`;
+
+exports[`Economy batches 6c/6d admin contract (e2e) mobile: subscription marketplace, my subscriptions, my features 1`] = `
+{
+  "marketplace": {
+    "body": {
+      "data": [],
+      "message": "Lấy danh sách gói đăng ký thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "mine": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [],
+      },
+      "message": "Lấy danh sách đăng ký người dùng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "myFeatures": {
+    "body": {
+      "data": {
+        "result": [],
+      },
+      "message": "Lấy danh sách đăng ký người dùng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Economy batches 6c/6d admin contract (e2e) web: gacha banner create, list, detail, update, Pokemon to choose, items 1`] = `
+{
+  "createdBanner": {
+    "body": {
+      "data": {
+        "amount1Star": "number",
+        "amount2Star": "number",
+        "amount3Star": "number",
+        "amount4Star": "number",
+        "amount5Star": "number",
+        "costRoll": "number",
+        "createdAt": "string",
+        "createdById": "number",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "enablePrecreate": "boolean",
+        "endDate": "string",
+        "hardPity5Star": "number",
+        "id": "number",
+        "isRandomItemAgain": "boolean",
+        "nameKey": "string",
+        "precreateBeforeEndDays": "number",
+        "startDate": "string",
+        "status": "string",
+        "updatedAt": "string",
+        "updatedById": "null",
+      },
+      "message": "Tạo banner gacha thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "detail": {
+    "body": {
+      "data": {
+        "amount1Star": "number",
+        "amount1StarCurrent": "number",
+        "amount2Star": "number",
+        "amount2StarCurrent": "number",
+        "amount3Star": "number",
+        "amount3StarCurrent": "number",
+        "amount4Star": "number",
+        "amount4StarCurrent": "number",
+        "amount5Star": "number",
+        "amount5StarCurrent": "number",
+        "costRoll": "number",
+        "createdAt": "string",
+        "createdById": "number",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "enablePrecreate": "boolean",
+        "endDate": "string",
+        "hardPity5Star": "number",
+        "id": "number",
+        "isRandomItemAgain": "boolean",
+        "items": [
+          {
+            "bannerId": "number",
+            "createdAt": "string",
+            "createdById": "number",
+            "deletedAt": "null",
+            "deletedById": "null",
+            "gachaItemRate": {
+              "rate": "number",
+              "starType": "string",
+            },
+            "gachaItemRateId": "number",
+            "id": "number",
+            "pokemon": {
+              "id": "number",
+              "imageUrl": "null",
+              "nameJp": "string",
+              "nameTranslations": {
+                "en": "string",
+                "ja": "string",
+                "vi": "string",
+              },
+              "pokedex_number": "number",
+              "rarity": "string",
+            },
+            "pokemonId": "number",
+            "updatedAt": "string",
+            "updatedById": "number",
+          },
+        ],
+        "nameKey": "string",
+        "nameTranslation": "string",
+        "nameTranslations": [
+          {
+            "key": "string",
+            "value": "string",
+          },
+        ],
+        "precreateBeforeEndDays": "number",
+        "startDate": "string",
+        "status": "string",
+        "updatedAt": "string",
+        "updatedById": "null",
+      },
+      "message": "Lấy thông tin banner gacha thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "itemDeleted": {
+    "body": {
+      "data": "null",
+      "message": "Xóa vật phẩm gacha thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "items": {
+    "body": {
+      "data": [
+        {
+          "bannerId": "number",
+          "createdAt": "string",
+          "createdById": "number",
+          "deletedAt": "null",
+          "deletedById": "null",
+          "gachaItemRateId": "number",
+          "id": "number",
+          "pokemonId": "number",
+          "updatedAt": "string",
+          "updatedById": "null",
+        },
+      ],
+      "message": "Tạo vật phẩm gacha thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "itemsUpdated": {
+    "body": {
+      "data": [
+        {
+          "bannerId": "number",
+          "createdAt": "string",
+          "createdById": "number",
+          "deletedAt": "null",
+          "deletedById": "null",
+          "gachaItemRateId": "number",
+          "id": "number",
+          "pokemonId": "number",
+          "updatedAt": "string",
+          "updatedById": "number",
+        },
+      ],
+      "message": "Cập nhật vật phẩm gacha thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "list": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "amount1Star": "number",
+            "amount2Star": "number",
+            "amount3Star": "number",
+            "amount4Star": "number",
+            "amount5Star": "number",
+            "costRoll": "number",
+            "createdAt": "string",
+            "createdById": "number",
+            "deletedAt": "null",
+            "deletedById": "null",
+            "enablePrecreate": "boolean",
+            "endDate": "string",
+            "hardPity5Star": "number",
+            "id": "number",
+            "isRandomItemAgain": "boolean",
+            "nameKey": "string",
+            "nameTranslation": "string",
+            "nameTranslations": [
+              {
+                "key": "string",
+                "value": "string",
+              },
+            ],
+            "precreateBeforeEndDays": "number",
+            "startDate": "string",
+            "status": "string",
+            "updatedAt": "string",
+            "updatedById": "null",
+          },
+        ],
+      },
+      "message": "Lấy danh sách banner gacha thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "preparePokemons": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [],
+      },
+      "message": "Lấy danh sách vật phẩm gacha thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "updated": {
+    "body": {
+      "data": {
+        "amount1Star": "number",
+        "amount2Star": "number",
+        "amount3Star": "number",
+        "amount4Star": "number",
+        "amount5Star": "number",
+        "costRoll": "number",
+        "createdAt": "string",
+        "createdById": "number",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "enablePrecreate": "boolean",
+        "endDate": "string",
+        "hardPity5Star": "number",
+        "id": "number",
+        "isRandomItemAgain": "boolean",
+        "nameKey": "string",
+        "precreateBeforeEndDays": "number",
+        "startDate": "string",
+        "status": "string",
+        "updatedAt": "string",
+        "updatedById": "number",
+      },
+      "message": "Cập nhật banner gacha thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;

@@ -1,0 +1,523 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Economy batch 6b admin contract (e2e) errors 1`] = `
+{
+  "bannerBadId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid shop banner data",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Dữ liệu banner cửa hàng không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "bannerCreateEmpty": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid data provided",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Dữ liệu không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "bannerCreateMinOverMax": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Số lượng không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Số lượng không hợp lệ",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+  "bannerMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Record not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bản ghi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "itemBadId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "itemMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Shop item not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy mặt hàng cửa hàng",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "randomNoParams": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid format",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Định dạng không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "rarityPriceMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Shop rarity price not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy giá theo độ hiếm",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+}
+`;
+
+exports[`Economy batch 6b admin contract (e2e) web: banner create, list, detail, update, its Pokemon; items; rarity prices 1`] = `
+{
+  "bannerPokemon": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "id": "number",
+            "imageUrl": "null",
+            "isExist": "boolean",
+            "nameJp": "string",
+            "nameTranslations": {
+              "en": "string",
+              "ja": "string",
+              "vi": "string",
+            },
+            "pokedex_number": "number",
+            "rarity": "string",
+          },
+        ],
+      },
+      "message": "Lấy danh sách banner cửa hàng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "createdBanner": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "createdById": "number",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "enablePrecreate": "boolean",
+        "endDate": "string",
+        "id": "number",
+        "isRandomItemAgain": "boolean",
+        "max": "number",
+        "min": "number",
+        "nameKey": "string",
+        "precreateBeforeEndDays": "number",
+        "startDate": "string",
+        "status": "string",
+        "updatedAt": "string",
+        "updatedById": "null",
+      },
+      "message": "Tạo banner cửa hàng thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "detail": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "createdById": "number",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "enablePrecreate": "boolean",
+        "endDate": "string",
+        "id": "number",
+        "isRandomItemAgain": "boolean",
+        "max": "number",
+        "min": "number",
+        "nameKey": "string",
+        "nameTranslation": "string",
+        "nameTranslations": [
+          {
+            "key": "string",
+            "value": "string",
+          },
+        ],
+        "precreateBeforeEndDays": "number",
+        "shopItems": [
+          {
+            "createdAt": "string",
+            "createdById": "number",
+            "deletedAt": "null",
+            "deletedById": "null",
+            "id": "number",
+            "isActive": "boolean",
+            "pokemon": {
+              "imageUrl": "null",
+              "nameJp": "string",
+              "nameTranslations": {
+                "en": "string",
+                "ja": "string",
+                "vi": "string",
+              },
+              "pokedex_number": "number",
+              "rarity": "string",
+            },
+            "pokemonId": "number",
+            "price": "number",
+            "purchaseLimit": "number",
+            "purchasedCount": "number",
+            "shopBannerId": "number",
+            "updatedAt": "string",
+            "updatedById": "null",
+          },
+        ],
+        "startDate": "string",
+        "status": "string",
+        "updatedAt": "string",
+        "updatedById": "null",
+      },
+      "message": "Lấy thông tin banner cửa hàng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "itemDeleted": {
+    "body": {
+      "error": "BAD_REQUEST",
+      "message": "Số lượng mặt hàng vượt quá giới hạn cho phép của banner",
+      "statusCode": 400,
+    },
+    "httpStatus": 400,
+  },
+  "itemUpdated": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "createdById": "number",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "id": "number",
+        "isActive": "boolean",
+        "pokemonId": "number",
+        "price": "number",
+        "purchaseLimit": "number",
+        "purchasedCount": "number",
+        "shopBannerId": "number",
+        "updatedAt": "string",
+        "updatedById": "number",
+      },
+      "message": "Cập nhật mặt hàng cửa hàng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "items": {
+    "body": {
+      "data": [
+        {
+          "createdAt": "string",
+          "createdById": "number",
+          "deletedAt": "null",
+          "deletedById": "null",
+          "id": "number",
+          "isActive": "boolean",
+          "pokemonId": "number",
+          "price": "number",
+          "purchaseLimit": "number",
+          "purchasedCount": "number",
+          "shopBannerId": "number",
+          "updatedAt": "string",
+          "updatedById": "null",
+        },
+      ],
+      "message": "Tạo mặt hàng cửa hàng thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "list": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "createdAt": "string",
+            "createdById": "number",
+            "deletedAt": "null",
+            "deletedById": "null",
+            "enablePrecreate": "boolean",
+            "endDate": "string",
+            "id": "number",
+            "isRandomItemAgain": "boolean",
+            "max": "number",
+            "min": "number",
+            "nameKey": "string",
+            "nameTranslation": "string",
+            "nameTranslations": [
+              {
+                "key": "string",
+                "value": "string",
+              },
+            ],
+            "precreateBeforeEndDays": "number",
+            "startDate": "string",
+            "status": "string",
+            "updatedAt": "string",
+            "updatedById": "null",
+          },
+        ],
+      },
+      "message": "Lấy danh sách banner cửa hàng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "random": {
+    "body": {
+      "data": [
+        {
+          "isActive": "boolean",
+          "isHas": "boolean",
+          "pokemon": {
+            "conditionLevel": "null",
+            "createdAt": "string",
+            "createdById": "null",
+            "deletedAt": "null",
+            "deletedById": "null",
+            "description": "null",
+            "id": "number",
+            "imageUrl": "null",
+            "isStarted": "boolean",
+            "nameJp": "string",
+            "nameTranslations": {
+              "en": "string",
+              "ja": "string",
+              "vi": "string",
+            },
+            "pokedex_number": "number",
+            "rarity": "string",
+            "updatedAt": "string",
+            "updatedById": "null",
+          },
+          "pokemonId": "number",
+          "price": "number",
+          "purchaseLimit": "number",
+          "shopBannerId": "number",
+        },
+      ],
+      "message": "Lấy thông tin mặt hàng cửa hàng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "rarityPriceUpdated": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "createdById": "null",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "id": "number",
+        "price": "number",
+        "rarity": "string",
+        "updatedAt": "string",
+        "updatedById": "number",
+      },
+      "message": "Cập nhật giá theo độ hiếm thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "rarityPrices": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "createdAt": "string",
+            "createdById": "null",
+            "deletedAt": "null",
+            "deletedById": "null",
+            "id": "number",
+            "price": "number",
+            "rarity": "string",
+            "updatedAt": "string",
+            "updatedById": "number",
+          },
+        ],
+      },
+      "message": "Lấy danh sách giá theo độ hiếm thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "updated": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "createdById": "number",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "enablePrecreate": "boolean",
+        "endDate": "string",
+        "id": "number",
+        "isRandomItemAgain": "boolean",
+        "max": "number",
+        "min": "number",
+        "nameKey": "string",
+        "precreateBeforeEndDays": "number",
+        "startDate": "string",
+        "status": "string",
+        "updatedAt": "string",
+        "updatedById": "number",
+      },
+      "message": "Cập nhật banner cửa hàng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
