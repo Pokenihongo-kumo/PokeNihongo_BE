@@ -12,11 +12,7 @@ import {
 } from '@nestjs/websockets'
 import { Queue } from 'bull'
 import { Server, Socket } from 'socket.io'
-import {
-  GoogleGenerativeAI,
-  HarmCategory,
-  HarmBlockThreshold
-} from '@google/generative-ai'
+import { LlmClient } from '@/infrastructure/integrations/ai/llm-client.port'
 import { SpeechToTextService } from '@/3rdService/speech/speech-to-text.service'
 import { TextToSpeechService } from '@/3rdService/speech/text-to-speech.service'
 import { KAIWA_EVENTS, SOCKET_ROOM } from '@/common/constants/socket.constant'
@@ -78,6 +74,9 @@ const execAsync = promisify(exec)
  * Lưu ý: Admin nên tạo GeminiServiceConfig mappings trong DB để có thể tùy chỉnh
  * prompts và parameters mà không cần thay đổi code.
  */
+// Model used to tell whether the LLM is configured before a room's own model is known
+const DEFAULT_KAIWA_MODEL = 'gemini-2.5-flash'
+
 @WebSocketGateway({
   namespace: '/kaiwa'
 })
@@ -87,7 +86,6 @@ export class KaiwaGateway implements OnGatewayDisconnect {
   server: Server
 
   private readonly logger = new Logger(KaiwaGateway.name)
-  private genAI: GoogleGenerativeAI | null = null
 
   constructor(
     @InjectQueue(BullQueue.KAIWA_PROCESSOR) private readonly kaiwaQueue: Queue,
@@ -100,25 +98,9 @@ export class KaiwaGateway implements OnGatewayDisconnect {
     private readonly geminiConfigRepo: GeminiConfigRepo,
     private readonly configService: ConfigService,
     private readonly userCoreService: UserCoreService,
-    private readonly sharedUserSubscriptionService: SharedUserSubscriptionService
-  ) {
-    // Initialize Gemini API với API Key
-    const geminiConfig = this.configService.get('gemini')
-    const apiKey = geminiConfig?.apiKey || process.env.GEMINI_API_KEY
-
-    if (!apiKey || apiKey.trim() === '') {
-      this.logger.warn('[Kaiwa] GEMINI_API_KEY not found. Gemini API will not work.')
-      this.logger.warn('[Kaiwa] Please set GEMINI_API_KEY in .env')
-      return
-    }
-
-    try {
-      this.genAI = new GoogleGenerativeAI(apiKey)
-      this.logger.log('[Kaiwa] Gemini API initialized with API Key')
-    } catch (error) {
-      this.logger.error(`[Kaiwa] Failed to initialize Gemini API: ${error.message}`)
-    }
-  }
+    private readonly sharedUserSubscriptionService: SharedUserSubscriptionService,
+    private readonly llm: LlmClient
+  ) {}
 
   /**
    * Lấy Gemini config từ DB cho service type
@@ -304,38 +286,22 @@ export class KaiwaGateway implements OnGatewayDisconnect {
     // Default: BLOCK_NONE cho tất cả (để tránh block responses)
     return [
       {
-        category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-        threshold: HarmBlockThreshold.BLOCK_NONE
+        category: 'HARM_CATEGORY_HARASSMENT',
+        threshold: 'BLOCK_NONE'
       },
       {
-        category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-        threshold: HarmBlockThreshold.BLOCK_NONE
+        category: 'HARM_CATEGORY_HATE_SPEECH',
+        threshold: 'BLOCK_NONE'
       },
       {
-        category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-        threshold: HarmBlockThreshold.BLOCK_NONE
+        category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+        threshold: 'BLOCK_NONE'
       },
       {
-        category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-        threshold: HarmBlockThreshold.BLOCK_NONE
+        category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+        threshold: 'BLOCK_NONE'
       }
     ]
-  }
-
-  /**
-   * Get GenAI instance cho model (hỗ trợ Flash và Pro models)
-   */
-  private getGenAIForModel(modelName: string): GoogleGenerativeAI {
-    if (!this.genAI) {
-      throw new Error('Gemini API not initialized')
-    }
-
-    const normalizedModelName = modelName.toLowerCase()
-    const isFlashModel = normalizedModelName.includes('flash')
-
-    // Hiện tại chỉ có một instance, nhưng có thể mở rộng sau
-    // Nếu cần phân biệt Flash và Pro, có thể tạo separate instances
-    return this.genAI
   }
 
   /**
@@ -1143,9 +1109,13 @@ export class KaiwaGateway implements OnGatewayDisconnect {
     language: string = 'vi',
     useLatestMessages: boolean = false
   ): Promise<string | null> {
-    if (!this.genAI || !messages || messages.length === 0) {
+    if (
+      !this.llm.isAvailable(DEFAULT_KAIWA_MODEL) ||
+      !messages ||
+      messages.length === 0
+    ) {
       this.logger.warn(
-        `[Kaiwa] generateRoomTitle: genAI=${!!this.genAI}, messages.length=${messages?.length || 0}`
+        `[Kaiwa] generateRoomTitle: llm=${this.llm.isAvailable(DEFAULT_KAIWA_MODEL)}, messages.length=${messages?.length || 0}`
       )
       return null
     }
@@ -1231,132 +1201,26 @@ export class KaiwaGateway implements OnGatewayDisconnect {
       // Build safetySettings từ DB config
       const safetySettings = this.buildSafetySettingsOrDefault(dbConfigModel)
 
-      const genAIInstance = this.getGenAIForModel(modelName)
-      const modelConfig: any = {
-        model: modelName,
-        generationConfig,
-        safetySettings
-      }
-      // Thêm systemInstruction nếu có (cho room title, thường không cần)
-      if (titleSystemInstruction) {
-        modelConfig.systemInstruction = titleSystemInstruction
-      }
-      const model = genAIInstance.getGenerativeModel(modelConfig)
-
       this.logger.log(`[Kaiwa] generateRoomTitle: Calling Gemini API...`)
-      const result = await model.generateContent(finalPrompt)
-      const response = await result.response
-
-      // Kiểm tra xem có bị block bởi safety filter không
-      if (response.candidates && response.candidates.length > 0) {
-        const candidate = response.candidates[0]
-        if (candidate.finishReason) {
-          this.logger.log(
-            `[Kaiwa] generateRoomTitle: Finish reason: ${candidate.finishReason}`
-          )
-          if (candidate.finishReason === 'MAX_TOKENS') {
-            this.logger.warn(
-              `[Kaiwa] generateRoomTitle: Hit MAX_TOKENS limit, response may be truncated`
-            )
-          } else if (candidate.finishReason !== 'STOP') {
-            this.logger.warn(
-              `[Kaiwa] generateRoomTitle: Finish reason is ${candidate.finishReason}, may be blocked`
-            )
-          }
-        }
-        if (candidate.safetyRatings && candidate.safetyRatings.length > 0) {
-          this.logger.log(
-            `[Kaiwa] generateRoomTitle: Safety ratings: ${JSON.stringify(candidate.safetyRatings)}`
-          )
-        }
-      }
-
-      // Kiểm tra response có hợp lệ không
-      if (!response) {
-        this.logger.warn(`[Kaiwa] generateRoomTitle: Response is null or undefined`)
-        return null
-      }
-
-      let title: string = ''
-      try {
-        title = response.text().trim()
-      } catch (textError) {
-        this.logger.error(
-          `[Kaiwa] generateRoomTitle: Error calling response.text(): ${textError.message}`
+      // One call through the LLM port; the text comes from every part of the
+      // first candidate, also when it stopped at MAX_TOKENS
+      const result = await this.llm.generate({
+        model: modelName,
+        contents: finalPrompt,
+        generationConfig,
+        safetySettings,
+        systemInstruction: titleSystemInstruction
+      })
+      if (result.finishReason === 'MAX_TOKENS') {
+        this.logger.warn(
+          `[Kaiwa] generateRoomTitle: Hit MAX_TOKENS limit, response may be truncated`
         )
-        // Thử lấy text từ candidates trực tiếp
-        try {
-          const candidates = response.candidates
-          if (candidates && candidates.length > 0) {
-            const candidate = candidates[0]
-            // Kiểm tra content.parts
-            if (
-              candidate.content &&
-              candidate.content.parts &&
-              candidate.content.parts.length > 0
-            ) {
-              const textPart = candidate.content.parts.find((part: any) => part.text)
-              if (textPart && textPart.text) {
-                title = textPart.text.trim()
-                this.logger.log(
-                  `[Kaiwa] generateRoomTitle: Got title from candidates.parts: "${title}"`
-                )
-              } else {
-                this.logger.warn(
-                  `[Kaiwa] generateRoomTitle:  No text in candidates[0].content.parts`
-                )
-              }
-            } else {
-              this.logger.warn(
-                `[Kaiwa] generateRoomTitle: No content.parts in candidates[0]`
-              )
-            }
-          } else {
-            this.logger.warn(`[Kaiwa] generateRoomTitle: No candidates in response`)
-          }
-        } catch (candidateError) {
-          this.logger.error(
-            `[Kaiwa] generateRoomTitle: Error getting text from candidates: ${candidateError.message}`
-          )
-        }
+      } else if (result.finishReason && result.finishReason !== 'STOP') {
+        this.logger.warn(
+          `[Kaiwa] generateRoomTitle: Finish reason is ${result.finishReason}, may be blocked`
+        )
       }
-
-      // Nếu title vẫn rỗng nhưng có MAX_TOKENS, có thể response bị truncated nhưng vẫn có text
-      // Thử lấy lại từ candidates một lần nữa
-      if (
-        (!title || title.length === 0) &&
-        response.candidates &&
-        response.candidates.length > 0
-      ) {
-        const candidate = response.candidates[0]
-        if (candidate.finishReason === 'MAX_TOKENS') {
-          this.logger.warn(
-            `[Kaiwa] generateRoomTitle: MAX_TOKENS but title is empty, checking candidates again...`
-          )
-          // Log toàn bộ candidate để debug
-          this.logger.debug(
-            `[Kaiwa] generateRoomTitle: Candidate structure: ${JSON.stringify({
-              finishReason: candidate.finishReason,
-              hasContent: !!candidate.content,
-              hasParts: !!(candidate.content && candidate.content.parts),
-              partsLength: candidate.content?.parts?.length || 0
-            })}`
-          )
-
-          // Thử lấy text từ parts một lần nữa
-          if (candidate.content && candidate.content.parts) {
-            for (const part of candidate.content.parts) {
-              if (part.text && part.text.trim().length > 0) {
-                title = part.text.trim()
-                this.logger.log(
-                  `[Kaiwa] generateRoomTitle: Found text in part after MAX_TOKENS check: "${title}"`
-                )
-                break
-              }
-            }
-          }
-        }
-      }
+      let title: string = result.text.trim()
 
       this.logger.log(
         `[Kaiwa] generateRoomTitle: Raw response from Gemini: "${title}" (length: ${title?.length || 0})`
@@ -1555,7 +1419,7 @@ export class KaiwaGateway implements OnGatewayDisconnect {
       client.data.processingAudio = true
 
       // Kiểm tra Gemini API không khởi tạo
-      if (!this.genAI) {
+      if (!this.llm.isAvailable(DEFAULT_KAIWA_MODEL)) {
         client.emit(KAIWA_EVENTS.ERROR, {
           message: ErrorMessage.GEMINI_API_NOT_INITIALIZED,
           suggestion: ErrorMessage.GEMINI_API_KEY_NOT_SET
@@ -1637,7 +1501,7 @@ export class KaiwaGateway implements OnGatewayDisconnect {
       }
 
       // Lấy conversation history trước
-      let conversationHistory = client.data.conversationHistory || []
+      const conversationHistory = client.data.conversationHistory || []
 
       // Lưu USER message vào database NGAY LẬP TỨC (không đợi upload audio)
       // Upload audio sẽ chạy trong background và update audioUrl sau
@@ -1759,7 +1623,7 @@ export class KaiwaGateway implements OnGatewayDisconnect {
 
       // Tạo tất cả promises để chạy song song
       const geminiPromise = (async () => {
-        if (!this.genAI) {
+        if (!this.llm.isAvailable(kaiwaModelName)) {
           throw new Error('Gemini API not initialized')
         }
 
@@ -1773,132 +1637,54 @@ export class KaiwaGateway implements OnGatewayDisconnect {
         // Build safetySettings từ DB config
         const safetySettings = this.buildSafetySettingsOrDefault(kaiwaDbConfigModel)
 
-        const genAIInstance = this.getGenAIForModel(kaiwaModelName)
-
-        // Tạo model với config cơ bản (KHÔNG set systemInstruction ở đây)
-        const model = genAIInstance.getGenerativeModel({
-          model: kaiwaModelName,
-          generationConfig,
-          safetySettings
-          // KHÔNG set systemInstruction ở đây để tránh conflict với startChat
+        // One call through the LLM port: the system instruction and the
+        // history go together (the old startChat-then-generateContent fallback
+        // was only needed by @google/generative-ai)
+        const instruction = kaiwaSystemInstruction || systemPrompt
+        let fullPrompt = systemPrompt + '\n\n'
+        conversationHistory.forEach((msg: any) => {
+          if (msg.role === 'user') {
+            fullPrompt += `Người học: ${msg.text}\n`
+          } else if (msg.role === 'model') {
+            fullPrompt += `Bạn: ${msg.text}\n`
+          }
         })
-
-        // Dùng startChat với systemInstruction và history
-        // Lưu ý: Một số model (như gemini-2.5-flash) có thể không hỗ trợ systemInstruction trong startChat
-        // Nếu lỗi, sẽ fallback về generateContent
-        let result: any
-        try {
-          if (kaiwaSystemInstruction || systemPrompt) {
-            // Thử dùng startChat với systemInstruction (tốt hơn cho conversation)
-            const chat = model.startChat({
-              history: history as any,
-              systemInstruction: kaiwaSystemInstruction || systemPrompt
+        fullPrompt += `Người học: ${transcription}\nBạn:`
+        const result = instruction
+          ? await this.llm.generate({
+              model: kaiwaModelName,
+              contents: [
+                ...(history as Array<{
+                  role: 'user' | 'model'
+                  parts: { text: string }[]
+                }>),
+                { role: 'user', parts: [{ text: currentUserMessage }] }
+              ],
+              systemInstruction: instruction,
+              generationConfig,
+              safetySettings
             })
-            result = await chat.sendMessage(currentUserMessage as any)
-          } else {
-            // Không có systemInstruction, dùng generateContent với fullPrompt
-            let fullPrompt = systemPrompt + '\n\n'
-            conversationHistory.forEach((msg: any) => {
-              if (msg.role === 'user') {
-                fullPrompt += `Người học: ${msg.text}\n`
-              } else if (msg.role === 'model') {
-                fullPrompt += `Bạn: ${msg.text}\n`
-              }
+          : await this.llm.generate({
+              model: kaiwaModelName,
+              contents: fullPrompt,
+              generationConfig,
+              safetySettings
             })
-            fullPrompt += `Người học: ${transcription}\nBạn:`
-            result = await model.generateContent(fullPrompt)
-          }
-        } catch (startChatError: any) {
-          // Fallback: Nếu startChat lỗi (ví dụ: model không hỗ trợ systemInstruction trong startChat)
-          // Thì dùng generateContent với systemInstruction trong getGenerativeModel
+
+        if (result.finishReason === 'SAFETY') {
           this.logger.warn(
-            `[Kaiwa] [${requestId}] startChat failed, falling back to generateContent: ${startChatError.message}`
+            `[Kaiwa] Gemini response blocked by safety filter. Finish reason: ${result.finishReason}`
           )
-
-          // Tạo model mới với systemInstruction trong getGenerativeModel
-          const fallbackModel = genAIInstance.getGenerativeModel({
-            model: kaiwaModelName,
-            generationConfig,
-            safetySettings,
-            systemInstruction: kaiwaSystemInstruction || systemPrompt
-          })
-
-          // Dùng generateContent với fullPrompt
-          let fullPrompt = (kaiwaSystemInstruction || systemPrompt) + '\n\n'
-          conversationHistory.forEach((msg: any) => {
-            if (msg.role === 'user') {
-              fullPrompt += `Người học: ${msg.text}\n`
-            } else if (msg.role === 'model') {
-              fullPrompt += `Bạn: ${msg.text}\n`
-            }
-          })
-          fullPrompt += `Người học: ${transcription}\nBạn:`
-          result = await fallbackModel.generateContent(fullPrompt)
+          throw new Error('Response blocked by safety filter')
         }
-        const response = await result.response
-
-        // Kiểm tra xem có bị block bởi safety filter không
-        let candidate: any = null
-        if (response.candidates && response.candidates.length > 0) {
-          candidate = response.candidates[0]
-          if (candidate.finishReason === 'SAFETY') {
-            this.logger.warn(
-              `[Kaiwa] Gemini response blocked by safety filter. Finish reason: ${candidate.finishReason}`
-            )
-            throw new Error('Response blocked by safety filter')
-          }
-          if (candidate.finishReason === 'MAX_TOKENS') {
-            this.logger.warn(
-              `[Kaiwa] Gemini response truncated due to MAX_TOKENS - will try to extract text from candidates`
-            )
-          }
-        } else {
-          this.logger.warn(`[Kaiwa] Gemini response has no candidates`)
+        if (result.finishReason === 'MAX_TOKENS') {
+          this.logger.warn(`[Kaiwa] Gemini response truncated due to MAX_TOKENS`)
         }
+        const text: string = result.text
 
-        let text: string = ''
-        try {
-          text = response.text()
-        } catch (textError) {
-          this.logger.warn(
-            `[Kaiwa] Error calling response.text(): ${textError.message} - will try to extract from candidates`
-          )
-        }
-
-        // Nếu text vẫn empty hoặc khi MAX_TOKENS, thử lấy text từ candidates trực tiếp
-        if ((!text || text.trim() === '') && candidate) {
-          if (candidate.content && candidate.content.parts) {
-            text = candidate.content.parts
-              .map((part: any) => {
-                // Kiểm tra xem part có text không
-                if (part.text) {
-                  return part.text
-                }
-                // Hoặc có thể là object với text property
-                if (typeof part === 'object' && part.text) {
-                  return part.text
-                }
-                return ''
-              })
-              .filter((t: string) => t && t.trim().length > 0)
-              .join('')
-
-            if (text && text.trim().length > 0) {
-              this.logger.log(
-                `[Kaiwa] Successfully extracted text from candidates (${text.length} chars)`
-              )
-            }
-          }
-        }
-
-        // Log full response để debug
         this.logger.debug(`[Kaiwa] Gemini raw response: "${text}"`)
         this.logger.debug(`[Kaiwa] Gemini response length: ${text?.length || 0}`)
-        if (response.candidates && response.candidates.length > 0) {
-          this.logger.debug(
-            `[Kaiwa] Gemini finish reason: ${response.candidates[0].finishReason}`
-          )
-        }
+        this.logger.debug(`[Kaiwa] Gemini finish reason: ${result.finishReason}`)
 
         // Fallback nếu Gemini trả về rỗng/không hợp lệ
         const fallbackReply = 'すみません、もう一度お願いします。'
@@ -2120,8 +1906,7 @@ export class KaiwaGateway implements OnGatewayDisconnect {
 
       // Step 3 & 4: Translation và TTS chạy song song HOÀN TOÀN và emit ngay khi có (streaming)
       // Không đợi Promise.all() - mỗi task tự emit khi xong
-      const genAIInstance = this.genAI // Capture để tránh null check
-      if (genAIInstance) {
+      if (this.llm.isAvailable(DEFAULT_KAIWA_MODEL)) {
         // Translation - emit ngay khi có
         ;(async () => {
           try {
@@ -2162,20 +1947,15 @@ export class KaiwaGateway implements OnGatewayDisconnect {
               translationDbConfigModel
             )
 
-            const translateGenAI = this.getGenAIForModel(translationModelName)
-            const translateModelConfig: any = {
-              model: translationModelName,
-              generationConfig,
-              safetySettings
-            }
-            // Thêm systemInstruction nếu có (cho translation, thường không cần)
-            if (translationSystemInstruction) {
-              translateModelConfig.systemInstruction = translationSystemInstruction
-            }
-            const translateModel = translateGenAI.getGenerativeModel(translateModelConfig)
-            const translateResult = await translateModel.generateContent(translatePrompt)
-            const translateResponse = await translateResult.response
-            const translation = translateResponse.text().trim()
+            const translation = (
+              await this.llm.generate({
+                model: translationModelName,
+                contents: translatePrompt,
+                generationConfig,
+                safetySettings,
+                systemInstruction: translationSystemInstruction
+              })
+            ).text.trim()
 
             this.logger.log(
               `[Kaiwa] [${requestId}] Vietnamese translation: "${translation.substring(0, 100)}..." (model: ${translationModelName})`

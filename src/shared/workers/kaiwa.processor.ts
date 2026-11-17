@@ -1,7 +1,7 @@
 import { Process, Processor } from '@nestjs/bull'
 import { Logger } from '@nestjs/common'
 import { Job } from 'bull'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { LlmClient } from '@/infrastructure/integrations/ai/llm-client.port'
 import { SpeechToTextService } from '@/3rdService/speech/speech-to-text.service'
 import { TextToSpeechService } from '@/3rdService/speech/text-to-speech.service'
 import { BullAction, BullQueue } from '@/common/constants/bull-action.constant'
@@ -22,25 +22,17 @@ export interface KaiwaJobResult {
   error?: string
 }
 
+const KAIWA_MODEL = 'gemini-2.5-flash'
+
 @Processor(BullQueue.KAIWA_PROCESSOR)
 export class KaiwaProcessor {
   private readonly logger = new Logger(KaiwaProcessor.name)
-  private genAI: GoogleGenerativeAI | null = null
 
   constructor(
     private readonly speechToTextService: SpeechToTextService,
-    private readonly textToSpeechService: TextToSpeechService
-  ) {
-    this.initializeGeminiAPI()
-  }
-
-  private initializeGeminiAPI() {
-    const apiKey = process.env.GEMINI_API_KEY
-    if (apiKey && apiKey.trim() !== '') {
-      this.genAI = new GoogleGenerativeAI(apiKey)
-      this.logger.log('[KaiwaProcessor] Gemini API initialized')
-    }
-  }
+    private readonly textToSpeechService: TextToSpeechService,
+    private readonly llm: LlmClient
+  ) {}
 
   @Process(BullQueue.PROCESS_AUDIO)
   async processAudio(job: Job<KaiwaJobData>): Promise<KaiwaJobResult> {
@@ -106,7 +98,7 @@ export class KaiwaProcessor {
     transcription: string,
     conversationHistory: any[]
   ): Promise<string> {
-    if (!this.genAI) {
+    if (!this.llm.isAvailable(KAIWA_MODEL)) {
       throw new Error('Gemini API not initialized')
     }
 
@@ -122,38 +114,25 @@ export class KaiwaProcessor {
     })
     fullPrompt += `Người học: ${transcription}\nBạn:`
 
-    const model = this.genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      generationConfig: {
-        temperature: 0.7,
-        topP: 0.95,
-        topK: 40,
-        maxOutputTokens: 1024
-      }
+    const { text } = await this.llm.generate({
+      model: KAIWA_MODEL,
+      contents: fullPrompt,
+      generationConfig: { temperature: 0.7, topP: 0.95, topK: 40, maxOutputTokens: 1024 }
     })
-
-    const result = await model.generateContent(fullPrompt)
-    const response = await result.response
-    return response.text()
+    return text
   }
 
   private async translateToVietnamese(japaneseText: string): Promise<string> {
-    if (!this.genAI || !japaneseText) return ''
+    if (!this.llm.isAvailable(KAIWA_MODEL) || !japaneseText) return ''
 
     try {
       const translatePrompt = `Hãy dịch câu tiếng Nhật sau sang tiếng Việt một cách tự nhiên và chính xác:\n\n${japaneseText}\n\nChỉ trả lời bằng bản dịch tiếng Việt, không thêm gì khác.`
-      const translateModel = this.genAI.getGenerativeModel({
-        model: 'gemini-2.5-flash',
-        generationConfig: {
-          temperature: 0.3,
-          topP: 0.95,
-          topK: 40,
-          maxOutputTokens: 512
-        }
+      const { text } = await this.llm.generate({
+        model: KAIWA_MODEL,
+        contents: translatePrompt,
+        generationConfig: { temperature: 0.3, topP: 0.95, topK: 40, maxOutputTokens: 512 }
       })
-      const translateResult = await translateModel.generateContent(translatePrompt)
-      const translateResponse = await translateResult.response
-      return translateResponse.text().trim()
+      return text.trim()
     } catch (error) {
       this.logger.warn(`[KaiwaProcessor] Translation error: ${error.message}`)
       return ''

@@ -6,7 +6,7 @@ import {
   Inject
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { LlmClient } from '@/infrastructure/integrations/ai/llm-client.port'
 import { PrismaService } from '@/shared/services/prisma.service'
 // import { GeminiConfigType } from '@prisma/client' // Will be available after migration
 import { GeminiConfigRepo } from '@/modules/gemini-config/gemini-config.repo'
@@ -28,8 +28,6 @@ import { Redis } from 'ioredis'
 @Injectable()
 export class GeminiService {
   private readonly logger = new Logger(GeminiService.name)
-  private genAI: GoogleGenerativeAI | null = null // Cho Pro models
-  private genAIFlash: GoogleGenerativeAI | null = null // Cho Flash models
   private readonly geminiConfig: any
   private readonly CACHE_PREFIX = 'rec:' // Prefix cho Redis keys
 
@@ -42,10 +40,10 @@ export class GeminiService {
     private readonly uploadService: UploadService,
     private readonly speakingService: SpeakingService,
     private readonly dataAccessService: DataAccessService,
+    private readonly llm: LlmClient,
     @Inject('REDIS_CLIENT') private readonly redisClient: Redis
   ) {
     this.geminiConfig = this.configService.get('gemini')
-    this.logger.log('Gemini AI will use API keys (lazy initialization per model)')
   }
 
   //#region Helper methods
@@ -123,65 +121,6 @@ export class GeminiService {
     )
   }
 
-  //#endregion
-
-  /**
-   * Lấy GoogleGenerativeAI instance dựa trên model name
-   * Chỉ sử dụng API Key (không dùng Service Account)
-   * @param modelName - Tên model Gemini
-   */
-  private getGenAIForModel(modelName: string): GoogleGenerativeAI {
-    const normalizedModelName = modelName.toLowerCase()
-    const isFlashModel = normalizedModelName.includes('flash')
-
-    // Nếu là Flash model
-    if (isFlashModel) {
-      // Kiểm tra cache
-      if (this.genAIFlash) {
-        return this.genAIFlash
-      }
-
-      // Ưu tiên dùng Flash API key nếu có
-      const flashApiKey = this.geminiConfig?.flashApiKey || ''
-      if (flashApiKey && flashApiKey.trim() !== '') {
-        this.genAIFlash = this.initializeWithApiKey(flashApiKey, 'Flash')
-        return this.genAIFlash
-      }
-
-      // Fallback về regular API key nếu có
-      const apiKey = this.geminiConfig?.apiKey || ''
-      if (apiKey && apiKey.trim() !== '') {
-        this.logger.warn(
-          'GEMINI_FLASH_API_KEY not found, using GEMINI_API_KEY for Flash model'
-        )
-        this.genAIFlash = this.initializeWithApiKey(apiKey, 'Flash (fallback)')
-        return this.genAIFlash
-      }
-
-      throw new Error(
-        'No API key configured for Flash models. Please set GEMINI_FLASH_API_KEY or GEMINI_API_KEY in .env'
-      )
-    }
-
-    // Nếu là Pro model hoặc model khác
-    // Kiểm tra cache
-    if (this.genAI) {
-      return this.genAI
-    }
-
-    // Dùng regular API key
-    const apiKey = this.geminiConfig?.apiKey || ''
-    if (!apiKey || apiKey.trim() === '') {
-      throw new Error(
-        'GEMINI_API_KEY is required but not configured. Please set GEMINI_API_KEY in your .env file'
-      )
-    }
-
-    const modelType = normalizedModelName.includes('embedding') ? 'Embedding' : 'Pro'
-    this.genAI = this.initializeWithApiKey(apiKey, modelType)
-    return this.genAI
-  }
-
   /**
    * Seed/update default Gemini configs into database
    */
@@ -245,30 +184,6 @@ export class GeminiService {
     })
 
     return { updated, created, restored, summary: all }
-  }
-
-  /**
-   * Khởi tạo GoogleGenerativeAI với API key
-   */
-  private initializeWithApiKey(
-    apiKey: string,
-    modelType: string = ''
-  ): GoogleGenerativeAI {
-    if (!apiKey || apiKey.trim() === '') {
-      throw new Error('API key is required but not provided')
-    }
-
-    // Log một phần API key để debug (chỉ log 8 ký tự đầu và cuối)
-    const maskedKey =
-      apiKey.length > 16
-        ? `${apiKey.substring(0, 8)}...${apiKey.substring(apiKey.length - 8)}`
-        : '***'
-    const typeLabel = modelType ? ` (${modelType})` : ''
-    this.logger.log(`Gemini AI${typeLabel} initializing with API key: ${maskedKey}`)
-
-    const genAI = new GoogleGenerativeAI(apiKey)
-    this.logger.log(`Gemini AI${typeLabel} initialized successfully`)
-    return genAI
   }
 
   /**
@@ -346,25 +261,19 @@ export class GeminiService {
       const modelName =
         (config?.geminiConfigModel?.geminiModel?.key as string) || 'gemini-2.5-flash'
 
-      // Gọi Gemini API - chọn API key dựa trên model
-      const genAI = this.getGenAIForModel(modelName)
-      const model = genAI.getGenerativeModel({ model: modelName })
-      const result = await model.generateContent(prompt)
-
-      const response = await result.response
-      this.logger.warn(`[RECOMMEND] Response: ${response}`)
-      if (!response) {
-        throw new Error('Empty response from Gemini API')
-      }
-
-      const text = response.text()
+      // The LLM port picks the API key for the model (integration-ports I5)
+      const { text } = await this.llm.generate({ model: modelName, contents: prompt })
 
       if (!text || text.trim() === '') {
         throw new Error('Empty text in Gemini API response')
       }
 
       // Parse và validate recommendations từ Gemini response
-      let recommendations = this.parseAndValidateRecommendations(text, analysis, options)
+      const recommendations = this.parseAndValidateRecommendations(
+        text,
+        analysis,
+        options
+      )
 
       const payload: PersonalizedRecommendationsResponse = {
         recommendations: recommendations.slice(0, limit),
@@ -757,15 +666,12 @@ export class GeminiService {
     let lastError: unknown
     for (const modelName of PRONUNCIATION_MODELS) {
       try {
-        const model = this.getGenAIForModel(modelName).getGenerativeModel({
+        const { text: raw } = await this.llm.generate({
           model: modelName,
           systemInstruction: PRONUNCIATION_SYSTEM_INSTRUCTION,
-          generationConfig: { responseMimeType: 'application/json', temperature: 0.3 }
-        })
-        const result = await model.generateContent({
+          generationConfig: { responseMimeType: 'application/json', temperature: 0.3 },
           contents: [{ role: 'user', parts }]
         })
-        const raw = result.response.text()
         try {
           const parsed: unknown = raw ? JSON.parse(raw) : {}
           return parsed && typeof parsed === 'object' && !Array.isArray(parsed)

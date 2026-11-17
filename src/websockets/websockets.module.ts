@@ -1,3 +1,4 @@
+import { LlmModule } from '@/infrastructure/integrations/ai/llm.module'
 import { UserCoreModule } from '@/modules/user/user-core.module'
 import { BullQueueModule } from '@/3rdService/bull/bull-queue.module'
 import { SpeechModule } from '@/3rdService/speech/speech.module'
@@ -19,6 +20,7 @@ import { KaiwaGateway } from './kaiwa.gateway'
 // @Global()
 @Module({
   imports: [
+    LlmModule, // kaiwa gateway and processor call the model through LlmClient
     UserCoreModule,
     BullQueueModule.registerQueue('kaiwa-processor', {
       // Tối ưu queue settings cho performance

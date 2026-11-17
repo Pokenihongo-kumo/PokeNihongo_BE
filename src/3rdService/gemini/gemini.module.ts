@@ -1,3 +1,4 @@
+import { LlmModule } from '@/infrastructure/integrations/ai/llm.module'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { GeminiService } from './gemini.service'
@@ -13,6 +14,7 @@ import { RedisModule } from '../redis/redis.module'
 
 @Module({
   imports: [
+    LlmModule,
     ConfigModule.forFeature(geminiConfig),
     GeminiConfigModule,
     SpeechModule,
