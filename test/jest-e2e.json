@@ -1,17 +1,29 @@
 {
-  "moduleFileExtensions": ["js", "json", "ts"],
+  "moduleFileExtensions": [
+    "js",
+    "json",
+    "ts"
+  ],
   "rootDir": "..",
   "testEnvironment": "node",
-  "testMatch": ["<rootDir>/test/**/*.e2e-spec.ts"],
+  "testMatch": [
+    "<rootDir>/test/**/*.e2e-spec.ts"
+  ],
   "transform": {
-    "^.+\\.(t|j)s$": ["ts-jest", { "isolatedModules": true }]
+    "^.+\\.(t|j)s$": [
+      "ts-jest",
+      {
+        "isolatedModules": true
+      }
+    ]
   },
   "moduleNameMapper": {
     "^@/(.*)$": "<rootDir>/src/$1",
-    "^src/(.*)$": "<rootDir>/src/$1",
-    "^@css-inline/css-inline$": "<rootDir>/test/support/stubs/css-inline.ts"
+    "^src/(.*)$": "<rootDir>/src/$1"
   },
-  "setupFiles": ["<rootDir>/test/setup-e2e.ts"],
+  "setupFiles": [
+    "<rootDir>/test/setup-e2e.ts"
+  ],
   "testTimeout": 60000,
   "forceExit": true,
   "maxWorkers": 1

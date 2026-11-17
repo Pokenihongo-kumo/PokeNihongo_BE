@@ -55,7 +55,36 @@ $ pnpm run test:e2e
 
 # test coverage
 $ pnpm run test:cov
+
+# module boundary metrics (fails when a metric grows)
+$ pnpm run arch:deps
 ```
+
+e2e tests need the test database and Redis (`docker start poke-postgres poke-redis`)
+and a `.env.test` copied from `.env.test.example`.
+
+## External services and drivers
+
+Every paid external service sits behind a port in
+`src/infrastructure/integrations/` with a real adapter and a fake one. A
+`*_DRIVER` variable picks the adapter, so the app runs (tests, local demo)
+without any provider key.
+
+| Variable         | Real (default) | Fake    | What the fake does                                                                                                     |
+| ---------------- | -------------- | ------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `MAIL_DRIVER`    | `smtp`         | `log`   | Logs the template and a masked address; nothing is sent (OTP codes stay in Redis as usual)                             |
+| `STORAGE_DRIVER` | `cloudinary`   | `local` | Stores files under `LOCAL_STORAGE_DIR` (default: the temp folder), served at `/local-files/`                           |
+| `SPEECH_DRIVER`  | `google`       | `fake`  | Recognition answers `こんにちは`; synthesis returns a short silent WAV                                                 |
+| `LLM_DRIVER`     | `gemini`       | `fake`  | Answers `{}` when JSON is asked for, a fixed sentence otherwise                                                        |
+| `PAYMENT_DRIVER` | `payos`        | `fake`  | The checkout link is the return URL: opening it pays. Webhooks are signed with `FAKE_PAYMENT_SECRET`                   |
+
+The app refuses to start with a fake driver when `NODE_ENV=production`
+(a fake payment grants plans without paying).
+
+To run a local demo with no keys, set all five fake values in `.env` (as
+`.env.test.example` does) and start the app as usual. Results obtained with a
+fake driver say nothing about the real provider: the real integrations stay
+"live-provider pending" until they are tried with real credentials.
 
 ## Deployment
 
