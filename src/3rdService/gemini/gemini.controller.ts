@@ -8,7 +8,6 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
-  Patch,
   Put,
   ForbiddenException,
   HttpCode,
@@ -21,30 +20,16 @@ import {
   ApiBody,
   ApiBearerAuth,
   ApiResponse,
-  ApiParam,
   ApiQuery,
   ApiConsumes
 } from '@nestjs/swagger'
 import { FileInterceptor, AnyFilesInterceptor } from '@nestjs/platform-express'
 import { GeminiService } from './gemini.service'
 import {
-  EvaluateSpeakingDto,
-  GetPersonalizedRecommendationsDto,
-  AIKaiwaDto,
-  ChatWithGeminiDto,
-  ChatWithGeminiMultipartDto,
   RecommendationsMultipartDto,
   ListSavedRecommendationsQueryDto,
-  UpdateRecommendationStatusDto,
-  TestNativeAudioDialogDto
+  UpdateRecommendationStatusDto
 } from './dto/gemini.dto'
-import {
-  SpeakingEvaluationResponse,
-  PersonalizedRecommendationsResponse,
-  AIKaiwaResponse,
-  ChatWithGeminiResponse,
-  TestNativeAudioDialogResponse
-} from './dto/gemini.response.dto'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { SharedUserSubscriptionService } from '@/shared/services/user-subscription.service'
@@ -64,36 +49,6 @@ export class GeminiController {
     private readonly geminiService: GeminiService,
     private readonly userSubscriptionService: SharedUserSubscriptionService
   ) {}
-
-  @Post('speaking/evaluate/:questionBankId')
-  @ApiOperation({ summary: 'Đánh giá phát âm SPEAKING cho user' })
-  @ApiParam({
-    name: 'questionBankId',
-    description: 'ID của QuestionBank (loại SPEAKING)'
-  })
-  @ApiBody({ type: EvaluateSpeakingDto })
-  @ApiResponse({
-    status: 200,
-    description: 'Đánh giá phát âm thành công',
-    type: Object
-  })
-  async evaluateSpeaking(
-    @Param('questionBankId') questionBankId: string,
-    @ActiveUser('userId') userId: number,
-    @Body() body: EvaluateSpeakingDto
-  ): Promise<{ statusCode: number; data: SpeakingEvaluationResponse; message: string }> {
-    const result = await this.geminiService.evaluateSpeaking(
-      userId,
-      Number(questionBankId),
-      body
-    )
-
-    return {
-      statusCode: 200,
-      data: result,
-      message: 'Đánh giá phát âm thành công'
-    }
-  }
 
   @Post('recommendations')
   @UseInterceptors(AnyFilesInterceptor())
@@ -241,82 +196,6 @@ export class GeminiController {
     return { statusCode: 200, data: ui, message: 'GET_SUCCESS' }
   }
 
-  @Post('kaiwa')
-  @UseInterceptors(FileInterceptor('audio'))
-  @ApiOperation({
-    summary:
-      'AI Kaiwa - Hội thoại với AI bằng tiếng Nhật với Speech-to-Text và Pronunciation Assessment',
-    description:
-      'Hỗ trợ cả text message và audio file. Nếu có audio, sẽ tự động convert sang text. Có thể đánh giá phát âm nếu có reference text.'
-  })
-  @ApiBody({ type: AIKaiwaDto })
-  @ApiResponse({
-    status: 200,
-    description: 'Hội thoại AI thành công',
-    type: Object
-  })
-  async aiKaiwa(
-    @ActiveUser('userId') userId: number,
-    @Body() body: AIKaiwaDto,
-    @UploadedFile() audioFile?: Express.Multer.File
-  ): Promise<{ statusCode: number; data: AIKaiwaResponse; message: string }> {
-    // Nếu có upload audio file, cần upload lên cloud trước và lấy URL
-    // Tạm thời giữ nguyên logic hiện tại, user sẽ upload audio lên trước và gửi URL
-    // Hoặc có thể thêm logic upload file ở đây nếu cần
-
-    const result = await this.geminiService.aiKaiwa(userId, body)
-
-    return {
-      statusCode: 200,
-      data: result,
-      message: 'Hội thoại AI thành công'
-    }
-  }
-
-  //chat with gemini
-  @Post('chat')
-  @UseInterceptors(AnyFilesInterceptor()) // Cần interceptor để parse multipart/form-data
-  @ApiConsumes('multipart/form-data')
-  @ApiOperation({
-    summary: 'Chat với Gemini',
-    description:
-      'API chat đơn giản với Gemini AI. Hỗ trợ conversation history và chọn model tùy chỉnh.'
-  })
-  @ApiBody({ type: ChatWithGeminiMultipartDto })
-  @ApiResponse({
-    status: 200,
-    description: 'Chat với Gemini thành công',
-    type: Object
-  })
-  async chatWithGemini(
-    @ActiveUser('userId') userId: number,
-    @Body() body: ChatWithGeminiMultipartDto
-  ): Promise<{ statusCode: number; data: ChatWithGeminiResponse; message: string }> {
-    // Validate và convert multipart form data to DTO format
-    if (!body || !body.message) {
-      throw new BadRequestException('Message là bắt buộc')
-    }
-
-    const chatDto: ChatWithGeminiDto = {
-      message: body.message,
-      conversationId: body.conversationId,
-      modelName: body.modelName as any,
-      saveHistory:
-        body.saveHistory === 'true' ||
-        body.saveHistory === undefined ||
-        body.saveHistory === '',
-      useServiceAccount: body.useServiceAccount === 'true'
-    }
-
-    const result = await this.geminiService.chatWithGemini(userId, chatDto)
-
-    return {
-      statusCode: 200,
-      data: result,
-      message: 'Chat với Gemini thành công'
-    }
-  }
-
   @Post('pronunciation-assessment')
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(
@@ -387,41 +266,5 @@ export class GeminiController {
       body.status
     )
     return { statusCode: 200, data, message: 'UPDATE_SUCCESS' }
-  }
-
-  @Post('test-native-audio-dialog')
-  @UseInterceptors(AnyFilesInterceptor())
-  @ApiConsumes('multipart/form-data')
-  @ApiOperation({
-    summary: 'Test model gemini-2.5-flash-native-audio-dialog',
-    description:
-      'Hàm cơ bản để test model native audio dialog. Có thể nhận audio URL hoặc text message.'
-  })
-  @ApiBody({ type: TestNativeAudioDialogDto })
-  @ApiResponse({
-    status: 200,
-    description: 'Test native audio dialog thành công',
-    type: Object
-  })
-  async testNativeAudioDialog(
-    @ActiveUser('userId') userId: number,
-    @Body() body: TestNativeAudioDialogDto
-  ): Promise<{
-    statusCode: number
-    data: TestNativeAudioDialogResponse
-    message: string
-  }> {
-    // Validate input
-    if (!body || (!body.message && !body.audioUrl)) {
-      throw new BadRequestException('Phải có message hoặc audioUrl')
-    }
-
-    const result = await this.geminiService.testNativeAudioDialog(userId, body)
-
-    return {
-      statusCode: 200,
-      data: result,
-      message: 'Test native audio dialog thành công'
-    }
   }
 }
