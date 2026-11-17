@@ -1,112 +1,19 @@
 import { I18nService } from '@/i18n/i18n.service'
-import { MailerService } from '@nestjs-modules/mailer'
-import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common'
-import { Redis } from 'ioredis' // Dùng Redis từ ioredis thay vì RedisClientType
-import { maskEmail } from '@/common/utils/mask'
-import { randomUUID } from 'crypto'
-import { MailUnavailableException } from './mail.error'
-import {
-  CONSUME_IF_CODE,
-  DELETE_IF_UNCHANGED,
-  OtpPurpose,
-  otpKey,
-  toStoredOtp
-} from './otp-value'
+import { MailSender } from '@/infrastructure/integrations/mail/mail-sender.port'
+import { Injectable } from '@nestjs/common'
 
+// What each non-OTP email says (subject, template, context); sending goes
+// through the MailSender port (integration-ports plan I1). OTP mails moved to
+// auth's OtpService.
 @Injectable()
 export class MailService {
-  private readonly logger = new Logger(MailService.name)
-
   constructor(
-    private readonly mailerService: MailerService,
-    private readonly i18n: I18nService,
-    @Inject('REDIS_CLIENT') private readonly redisClient: Redis
+    private readonly mailSender: MailSender,
+    private readonly i18n: I18nService
   ) {}
 
-  async sendMail(
-    to: string,
-    subject: string,
-    template: string,
-    context: any
-  ): Promise<void> {
-    try {
-      await this.mailerService.sendMail({
-        to,
-        subject,
-        template,
-        context
-      })
-      this.logger.log(`Email sent to ${maskEmail(to)}`)
-    } catch (error) {
-      // The provider error may repeat the address or the subject (an OTP is in it)
-      this.logger.error(
-        `Failed to send email to ${maskEmail(to)}: ${error instanceof Error ? error.name : 'error'}`
-      )
-      throw error
-    }
-  }
-
-  async sendOtpMail(
-    to: string,
-    otp: string,
-    template: string,
-    content: string,
-    body: string
-  ): Promise<void> {
-    const subject = 'Hãy xác thực ' + otp
-    const link = 'http://127.0.0.1:4000/auth/verified-email/' + to
-    const context = { otp, content, body, link }
-    await this.sendMail(to, subject, template, context)
-  }
-
-  async generateAndSendOtp(
-    email: string,
-    purpose: OtpPurpose,
-    template: string,
-    content: string,
-    body: string
-  ): Promise<void> {
-    const otp = Math.floor(100000 + Math.random() * 900000).toString() // Tạo OTP 6 chữ số
-    // Replaces the previous code, valid 5 minutes
-    const stored = toStoredOtp(otp, randomUUID())
-    const key = otpKey(purpose, email)
-    await this.redisClient.set(key, stored, 'EX', 300)
-    try {
-      await this.sendOtpMail(email, otp, template, content, body)
-    } catch {
-      // Nobody received this code: drop it, unless a newer send has replaced it
-      await this.redisClient.eval(DELETE_IF_UNCHANGED, 1, key, stored)
-      throw new MailUnavailableException()
-    }
-    // Never log the code itself
-    this.logger.log(`OTP sent to ${maskEmail(email)}`)
-  }
-
-  /**
-   * True once for the right code: the code is deleted in the same atomic step,
-   * so it cannot be used twice. A code stored under the email alone (sent
-   * before OTPs were kept per purpose) is still accepted until it expires
-   * (5 minutes after the deploy that introduced purposes).
-   */
-  async consumeOtp(email: string, purpose: OtpPurpose, code: string): Promise<boolean> {
-    if (await this.redisClient.eval(CONSUME_IF_CODE, 1, otpKey(purpose, email), code)) {
-      return true
-    }
-    // TODO(ADR D-auth): drop this legacy fallback once deployed for 5 minutes
-    return (await this.redisClient.eval(CONSUME_IF_CODE, 1, email, code)) === 1
-  }
-
-  async verifyOtpStrict(
-    email: string,
-    otp: string,
-    purpose: OtpPurpose
-  ): Promise<boolean> {
-    if (await this.consumeOtp(email, purpose, otp)) {
-      this.logger.log(`OTP verified and deleted for ${maskEmail(email)}`)
-      return true
-    }
-    this.logger.error(`Failed to verify OTP for ${maskEmail(email)}`)
-    throw new BadRequestException('Mã OTP không hợp lệ hoặc đã hết hạn')
+  sendMail(to: string, subject: string, template: string, context: any): Promise<void> {
+    return this.mailSender.send({ to, subject, template, context })
   }
 
   private formatDate(date: Date): string {

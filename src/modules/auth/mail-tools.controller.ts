@@ -14,7 +14,7 @@ import {
   ApiResponse,
   ApiTags
 } from '@nestjs/swagger'
-import { MailService } from './mail.service'
+import { OtpService } from './otp.service'
 import { OtpPurpose } from './otp-value'
 
 const PURPOSES: OtpPurpose[] = ['REGISTER', 'FORGOT_PASSWORD', 'LOGIN', 'CHANGE_PASSWORD']
@@ -39,8 +39,8 @@ const typeQuery = {
 @Controller('mail')
 @ApiTags('Mail')
 @ApiBearerAuth('access-token')
-export class MailController {
-  constructor(private readonly mailService: MailService) {}
+export class MailToolsController {
+  constructor(private readonly otpService: OtpService) {}
 
   @Post('send-otp')
   @UseGuards(RateLimitGuard)
@@ -59,7 +59,7 @@ export class MailController {
     const template = 'otp'
     const content = 'Mã OTP của bạn là: '
     const body = 'Vui lòng nhập mã OTP để xác thực tài khoản của bạn.'
-    return await this.mailService.generateAndSendOtp(
+    return await this.otpService.generateAndSendOtp(
       normalizeEmail(email),
       purposeOf(type),
       template,
@@ -92,7 +92,7 @@ export class MailController {
     @Query('otp') otp: string,
     @Query('type') type?: string
   ) {
-    return await this.mailService.verifyOtpStrict(
+    return await this.otpService.verifyOtpStrict(
       normalizeEmail(email),
       otp,
       purposeOf(type)

@@ -1,8 +1,8 @@
 import { AppModule } from '@/app.module'
-import { codeOfStoredOtp, otpKey } from '@/3rdService/mail/otp-value'
+import { codeOfStoredOtp, otpKey } from '@/modules/auth/otp-value'
 import { RateLimitGuard } from '@/common/guards/rate-limit.guard'
 import { PrismaService } from '@/shared/services/prisma.service'
-import { MailerService } from '@nestjs-modules/mailer'
+import { MailSender } from '@/infrastructure/integrations/mail/mail-sender.port'
 import {
   ExecutionContext,
   HttpException,
@@ -20,7 +20,7 @@ import { loginAsTestAdmin, TEST_ADMIN, TEST_USER_AGENT } from '../support/test-a
 // in one atomic Redis step, shared by /auth/verify-otp and /mail/verify-otp;
 // sends are counted apart, shared by check-email, forgot-password and
 // /mail/send-otp; an email is the same however it is typed. The real
-// MailService runs; only the transport is replaced (no mail leaves).
+// OtpService runs; only the MailSender port is replaced (no mail leaves).
 describe('OTP protection (e2e)', () => {
   let app: INestApplication<App>
   let redis: Redis
@@ -36,8 +36,8 @@ describe('OTP protection (e2e)', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
-      .overrideProvider(MailerService)
-      .useValue({ sendMail: async () => undefined })
+      .overrideProvider(MailSender)
+      .useValue({ send: async () => undefined })
       .compile()
     app = moduleRef.createNestApplication()
     app.enableVersioning({ type: VersioningType.URI })
