@@ -41,6 +41,9 @@ const configSchema = z.object({
   MO_URL: z.string().optional(),
 
   //Google Cloud Text-to-Speech (Optional)
+  // LLM_DRIVER=fake: deterministic answers without Gemini (tests, local demo);
+  // refused in production (integration-ports plan I5, D-IP2)
+  LLM_DRIVER: z.enum(['gemini', 'fake']).default('gemini'),
   // SPEECH_DRIVER=fake: deterministic speech without Google (tests, local
   // demo); refused in production (integration-ports plan I4, D-IP2)
   SPEECH_DRIVER: z.enum(['google', 'fake']).default('google'),
@@ -84,9 +87,12 @@ export const productionDriverErrors = (env: {
   MAIL_DRIVER?: string
   STORAGE_DRIVER?: string
   SPEECH_DRIVER?: string
+  LLM_DRIVER?: string
 }): string[] => {
   const production = (env.NODE_ENV ?? '').toLowerCase() === 'production'
   const errors: string[] = []
+  if (production && env.LLM_DRIVER === 'fake')
+    errors.push('LLM_DRIVER=fake is not allowed in production')
   if (production && env.SPEECH_DRIVER === 'fake')
     errors.push('SPEECH_DRIVER=fake is not allowed in production')
   if (production && env.STORAGE_DRIVER === 'local')

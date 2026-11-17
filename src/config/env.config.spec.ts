@@ -39,4 +39,13 @@ describe('productionDriverErrors', () => {
       productionDriverErrors({ NODE_ENV: 'production', SPEECH_DRIVER: 'google' })
     ).toEqual([])
   })
+
+  it('refuses LLM_DRIVER=fake in production', () => {
+    expect(
+      productionDriverErrors({ NODE_ENV: 'production', LLM_DRIVER: 'fake' })
+    ).toEqual(['LLM_DRIVER=fake is not allowed in production'])
+    expect(
+      productionDriverErrors({ NODE_ENV: 'production', LLM_DRIVER: 'gemini' })
+    ).toEqual([])
+  })
 })

@@ -1,4 +1,4 @@
-import { GeminiService } from '@/3rdService/gemini/gemini.service'
+import { LlmClient } from '@/infrastructure/integrations/ai/llm-client.port'
 import { PRONUNCIATION_SYSTEM_INSTRUCTION } from '@/3rdService/gemini/dto/pronunciation-assessment.dto'
 import { AppModule } from '@/app.module'
 import { INestApplication, VersioningType } from '@nestjs/common'
@@ -9,7 +9,7 @@ import { loginAsTestAdmin, TEST_USER_AGENT } from '../support/test-admin'
 
 // POST /gemini/pronunciation-assessment: the mobile conversation screen sends
 // its recording here instead of calling Gemini with a key from its bundle.
-// Gemini itself is faked; the test env has no Gemini key.
+// The model is faked through the LlmClient port (LLM_DRIVER=fake, no key).
 describe('Pronunciation assessment proxy (e2e)', () => {
   let app: INestApplication<App>
   let token: string
@@ -36,15 +36,14 @@ describe('Pronunciation assessment proxy (e2e)', () => {
       .auth(token, { type: 'bearer' })
       .post('/gemini/pronunciation-assessment')
 
-  // Replaces the SDK client the service picks per model
-  const fakeGemini = (generateContent: jest.Mock) => {
-    const getGenerativeModel = jest.fn().mockReturnValue({ generateContent })
+  // Replaces what the model answers, at the LlmClient port
+  const fakeGemini = (generate: jest.Mock) => {
     jest
-      .spyOn(GeminiService.prototype as never, 'getGenAIForModel')
-      .mockReturnValue({ getGenerativeModel } as never)
-    return getGenerativeModel
+      .spyOn(app.get(LlmClient, { strict: false }), 'generate')
+      .mockImplementation(generate)
+    return generate
   }
-  const answer = (text: string) => ({ response: { text: () => text } })
+  const answer = (text: string) => ({ text, finishReason: 'STOP' })
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile()
@@ -65,10 +64,9 @@ describe('Pronunciation assessment proxy (e2e)', () => {
   })
 
   it('sends the recording and reference text to Gemini and returns its JSON', async () => {
-    const generateContent = jest
-      .fn()
-      .mockResolvedValue(answer(JSON.stringify(assessment)))
-    const getGenerativeModel = fakeGemini(generateContent)
+    const generate = fakeGemini(
+      jest.fn().mockResolvedValue(answer(JSON.stringify(assessment)))
+    )
 
     const res = await post()
       .field('referenceText', 'こんにちは')
@@ -76,14 +74,14 @@ describe('Pronunciation assessment proxy (e2e)', () => {
 
     expect(res.status).toBe(200)
     expect(res.body).toMatchObject({ statusCode: 200, data: assessment })
-    expect(getGenerativeModel).toHaveBeenCalledWith(
+    expect(generate).toHaveBeenCalledWith(
       expect.objectContaining({
         model: 'gemini-2.5-flash',
         systemInstruction: PRONUNCIATION_SYSTEM_INSTRUCTION,
         generationConfig: { responseMimeType: 'application/json', temperature: 0.3 }
       })
     )
-    const [{ contents }] = generateContent.mock.calls[0]
+    const [{ contents }] = generate.mock.calls[0]
     expect(contents[0].parts).toEqual([
       { text: 'Reference Text (Japanese): こんにちは' },
       { inlineData: { mimeType: 'audio/mp4', data: audio.toString('base64') } }
@@ -91,18 +89,21 @@ describe('Pronunciation assessment proxy (e2e)', () => {
   })
 
   it('skips a model that is not available (404) and uses the next one', async () => {
-    const generateContent = jest
-      .fn()
-      .mockRejectedValueOnce(Object.assign(new Error('model not found'), { status: 404 }))
-      .mockResolvedValueOnce(answer(JSON.stringify(assessment)))
-    const getGenerativeModel = fakeGemini(generateContent)
+    const generate = fakeGemini(
+      jest
+        .fn()
+        .mockRejectedValueOnce(
+          Object.assign(new Error('model not found'), { status: 404 })
+        )
+        .mockResolvedValueOnce(answer(JSON.stringify(assessment)))
+    )
 
     const res = await post()
       .field('referenceText', 'こんにちは')
       .attach('audio', audio, { filename: 'rec.3gp', contentType: 'audio/3gpp' })
 
     expect(res.status).toBe(200)
-    expect(getGenerativeModel.mock.calls.map(([options]) => options.model)).toEqual([
+    expect(generate.mock.calls.map(([options]) => options.model)).toEqual([
       'gemini-2.5-flash',
       'gemini-2.0-flash'
     ])
@@ -119,8 +120,14 @@ describe('Pronunciation assessment proxy (e2e)', () => {
     expect(res.body.data).toEqual({})
   })
 
-  it('answers 502 when Gemini fails or no key is configured', async () => {
-    // No fake: the test env has no GEMINI_API_KEY
+  it('answers 502 when the model call fails (no key, quota, outage)', async () => {
+    fakeGemini(
+      jest
+        .fn()
+        .mockRejectedValue(
+          Object.assign(new Error('API key not valid (test double)'), { status: 403 })
+        )
+    )
     const res = await post()
       .field('referenceText', 'こんにちは')
       .attach('audio', audio, { filename: 'rec.m4a', contentType: 'audio/mp4' })

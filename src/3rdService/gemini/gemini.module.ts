@@ -1,9 +1,8 @@
+import { LlmModule } from '@/infrastructure/integrations/ai/llm.module'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { GeminiService } from './gemini.service'
 import { GeminiController } from './gemini.controller'
-import { VertexAIService } from './vertex-ai.service'
-import { VertexAIController } from './vertex-ai.controller'
 import geminiConfig from './config/gemini.config'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { GeminiConfigModule } from '@/modules/gemini-config/gemini-config.module'
@@ -15,6 +14,7 @@ import { RedisModule } from '../redis/redis.module'
 
 @Module({
   imports: [
+    LlmModule,
     ConfigModule.forFeature(geminiConfig),
     GeminiConfigModule,
     SpeechModule,
@@ -22,8 +22,8 @@ import { RedisModule } from '../redis/redis.module'
     UploadModule,
     RedisModule
   ],
-  controllers: [GeminiController, VertexAIController],
-  providers: [GeminiService, VertexAIService, PrismaService, DataAccessService],
-  exports: [GeminiService, VertexAIService]
+  controllers: [GeminiController],
+  providers: [GeminiService, PrismaService, DataAccessService],
+  exports: [GeminiService]
 })
 export class GeminiModule {}
