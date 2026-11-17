@@ -1,3 +1,4 @@
+import { UserCoreModule } from '@/modules/user/user-core.module'
 import { BullQueueModule } from '@/3rdService/bull/bull-queue.module'
 import { SpeechModule } from '@/3rdService/speech/speech.module'
 import { UploadModule } from '@/3rdService/upload/upload.module'
@@ -18,6 +19,7 @@ import { KaiwaGateway } from './kaiwa.gateway'
 // @Global()
 @Module({
   imports: [
+    UserCoreModule,
     BullQueueModule.registerQueue('kaiwa-processor', {
       // Tối ưu queue settings cho performance
       defaultJobOptions: {

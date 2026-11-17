@@ -3,7 +3,7 @@ import { DeviceType, RefreshTokenType } from '@/modules/auth/entities/auth.entit
 import { Injectable } from '@nestjs/common'
 import { RoleType } from 'src/shared/models/shared-role.model'
 import { UserType } from 'src/shared/models/shared-user.model'
-import { WhereUniqueUserType } from 'src/shared/repositories/shared-user.repo'
+import { WhereUniqueUserType } from '@/shared/models/shared-user.model'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
 @Injectable()

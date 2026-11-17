@@ -2,7 +2,7 @@ import { LevelType } from '@/modules/level/entities/level.entity'
 import { Injectable } from '@nestjs/common'
 import { PermissionType } from 'src/shared/models/shared-permission.model'
 import { RoleType } from 'src/shared/models/shared-role.model'
-import { UserType } from 'src/shared/models/shared-user.model'
+import { UserType, WhereUniqueUserType } from 'src/shared/models/shared-user.model'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
 type UserIncludeRolePermissionsType = UserType & {
@@ -20,10 +20,10 @@ type UserProfileWithStatsType = UserType & {
   }
 }
 
-export type WhereUniqueUserType = { id: number } | { email: string }
-
 @Injectable()
-export class SharedUserRepository {
+// Reads and updates the User table for other modules, through UserCoreService
+// (module-boundary plan B2; was shared/repositories/shared-user.repo.ts)
+export class UserCoreRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   findUnique(where: WhereUniqueUserType): Promise<UserType | null> {

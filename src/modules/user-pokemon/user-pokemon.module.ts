@@ -1,3 +1,4 @@
+import { UserCoreModule } from '@/modules/user/user-core.module'
 import { Module } from '@nestjs/common'
 import { SharedModule } from 'src/shared/shared.module'
 import { LevelModule } from '../level/level.module'
@@ -8,7 +9,7 @@ import { UserPokemonRepo } from './user-pokemon.repo'
 import { UserPokemonService } from './user-pokemon.service'
 
 @Module({
-  imports: [SharedModule, LevelModule, PokemonModule, MatchModule],
+  imports: [UserCoreModule, SharedModule, LevelModule, PokemonModule, MatchModule],
   controllers: [UserPokemonController],
   providers: [UserPokemonService, UserPokemonRepo],
   exports: [UserPokemonService, UserPokemonRepo]

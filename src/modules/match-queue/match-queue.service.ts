@@ -7,7 +7,7 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
+import { UserCoreService } from '@/modules/user/user-core.service'
 import { InjectQueue } from '@nestjs/bull'
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { QueueStatus } from '@prisma/client'
@@ -41,7 +41,7 @@ export class MatchQueueService implements OnModuleInit {
   constructor(
     private matchQueueRepo: MatchQueueRepo,
     private readonly i18nService: I18nService,
-    private readonly sharedUserRepo: SharedUserRepository,
+    private readonly userCoreService: UserCoreService,
     private readonly userPokeRepo: UserPokemonRepo,
     private readonly matchRepo: MatchRepo,
     private readonly matchParticipantRepo: MatchParticipantRepo,
@@ -280,7 +280,7 @@ export class MatchQueueService implements OnModuleInit {
         throw new NotFoundRecordException()
       }
       const [user, existingMatching, hasJoinedSeason, userPokemons] = await Promise.all([
-        this.sharedUserRepo.findUniqueWithLevel({
+        this.userCoreService.findUniqueWithLevel({
           id: createdById
         }),
         this.matchRepo.findActiveMatchByUserId(createdById),

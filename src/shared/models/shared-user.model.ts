@@ -63,5 +63,8 @@ export const UpdateProfileResSchema = z.object({
 })
 
 export type UserType = z.infer<typeof UserSchema>
+
+// A user found by id or by email
+export type WhereUniqueUserType = { id: number } | { email: string }
 export type GetUserProfileResType = z.infer<typeof GetAccountProfileResSchema>
 export type UpdateProfileResType = z.infer<typeof UpdateProfileResSchema>

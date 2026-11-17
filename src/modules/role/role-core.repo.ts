@@ -4,7 +4,9 @@ import { RoleType } from 'src/shared/models/shared-role.model'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
 @Injectable()
-export class SharedRoleRepository {
+// Role ids used by sign-up and admin checks, through RoleService (module-
+// boundary plan B2; was shared/repositories/shared-role.repo.ts)
+export class RoleCoreRepo {
   private clientRoleId: number | null = null
   private adminRoleId: number | null = null
 

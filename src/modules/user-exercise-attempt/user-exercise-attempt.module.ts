@@ -1,3 +1,4 @@
+import { UserCoreModule } from '@/modules/user/user-core.module'
 import { Module } from '@nestjs/common'
 import { UserExerciseAttemptController } from './user-exercise-attempt.controller'
 import { UserExerciseAttemptRepo } from './user-exercise-attempt.repo'
@@ -11,6 +12,7 @@ import { RewardModule } from '../reward/reward.module'
 
 @Module({
   imports: [
+    UserCoreModule,
     QuestionBankModule,
     UserAnswerLogModule,
     UserProgressModule,

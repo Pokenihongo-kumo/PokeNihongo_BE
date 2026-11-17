@@ -11,7 +11,7 @@ import {
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
-import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
+import { UserCoreService } from '@/modules/user/user-core.service'
 import { HttpStatus, Injectable, Logger } from '@nestjs/common'
 import { UserStatus } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
@@ -42,7 +42,7 @@ export class UserService {
     private i18nService: I18nService,
     private levelRepo: LevelRepo,
     private walletSer: WalletService,
-    private readonly sharedUserRepository: SharedUserRepository,
+    private readonly userCoreService: UserCoreService,
     private readonly leaderboardSeasonRepo: LeaderboardSeasonRepo,
     private readonly matchRepo: MatchRepo,
     private readonly userSeaHistoryRepo: UserSeasonHistoryRepo,
@@ -712,13 +712,13 @@ export class UserService {
     { userId, data }: { userId: number; data: { levelJLPT: number } },
     lang: string = 'vi'
   ) {
-    const user = await this.sharedUserRepository.findUnique({
+    const user = await this.userCoreService.findUnique({
       id: userId
     })
     if (!user) {
       throw new NotFoundRecordException()
     }
-    const updatedUser = await this.sharedUserRepository.update(
+    const updatedUser = await this.userCoreService.update(
       { id: userId },
       {
         levelJLPT: data.levelJLPT,

@@ -7,7 +7,7 @@ import {
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
-import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
+import { UserCoreService } from '@/modules/user/user-core.service'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
@@ -35,7 +35,7 @@ export class UserPokemonService {
     private pokemonRepo: PokemonRepo,
     private readonly matchRepo: MatchRepo,
     private levelRepo: LevelRepo,
-    private readonly sharedUserRepository: SharedUserRepository,
+    private readonly userCoreService: UserCoreService,
     private readonly i18nService: I18nService,
     private prismaService: PrismaService
   ) {}
@@ -95,7 +95,7 @@ export class UserPokemonService {
       }
 
       // Get user check is first pokemon
-      const user = await this.sharedUserRepository.findUnique({ id: userId })
+      const user = await this.userCoreService.findUnique({ id: userId })
 
       // Check if user already has this Pokemon
       const existingUserPokemon = await this.userPokemonRepo.findByUserAndPokemon(
@@ -455,7 +455,7 @@ export class UserPokemonService {
       }
 
       // Get user check is first pokemon
-      const user = await this.sharedUserRepository.findUnique({ id: userId })
+      const user = await this.userCoreService.findUnique({ id: userId })
       let isFirstPokemon = false
 
       if (user?.levelId === null) {
@@ -463,7 +463,7 @@ export class UserPokemonService {
         if (!firstLevelUser) {
           throw new ErrorInitLevelPokemonException()
         }
-        await this.sharedUserRepository.addLevelForUser(userId, firstLevelUser.id)
+        await this.userCoreService.addLevelForUser(userId, firstLevelUser.id)
         isFirstPokemon = true
       }
 

@@ -1,8 +1,9 @@
+import { UserCoreModule } from '@/modules/user/user-core.module'
 import { BullQueueModule } from '@/3rdService/bull/bull-queue.module'
 import { MailModule } from '@/3rdService/mail/mail.module'
 import { BullQueue } from '@/common/constants/bull-action.constant'
-import { LevelRepo } from '@/modules/level/level.repo'
-import { UserPokemonRepo } from '@/modules/user-pokemon/user-pokemon.repo'
+import { LevelModule } from '@/modules/level/level.module'
+import { UserPokemonModule } from '@/modules/user-pokemon/user-pokemon.module'
 import { SharedModule } from '@/shared/shared.module'
 import { SharedUserDeletionProcessor } from '@/shared/workers/user-deletion.processor'
 import { forwardRef, Module } from '@nestjs/common'
@@ -18,6 +19,9 @@ import { UserService } from './user.service'
 
 @Module({
   imports: [
+    UserCoreModule,
+    LevelModule,
+    UserPokemonModule,
     SharedModule,
     BullQueueModule.registerQueue(BullQueue.USER_DELETION),
     MailModule,
@@ -29,13 +33,7 @@ import { UserService } from './user.service'
     UserProgressModule
   ],
   controllers: [UserController],
-  providers: [
-    UserService,
-    UserRepo,
-    UserPokemonRepo,
-    LevelRepo,
-    SharedUserDeletionProcessor
-  ],
+  providers: [UserService, UserRepo, SharedUserDeletionProcessor],
   exports: [UserService, UserRepo]
 })
 export class UserModule {}

@@ -1,3 +1,4 @@
+import { UserCoreModule } from '@/modules/user/user-core.module'
 import { Module } from '@nestjs/common'
 import { AttendenceConfigModule } from '../attendence-config/attendence-config.module'
 import { LanguagesModule } from '../languages/languages.module'
@@ -11,6 +12,7 @@ import { AttendanceRepo } from './attendence.repo'
 
 @Module({
   imports: [
+    UserCoreModule,
     AttendenceConfigModule,
     LanguagesModule,
     TranslationModule,

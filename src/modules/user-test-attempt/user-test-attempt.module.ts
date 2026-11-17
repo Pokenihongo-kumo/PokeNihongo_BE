@@ -9,7 +9,7 @@ import { TestSetModule } from '../testset/testset.module'
 import { TestSetQuestionBankModule } from '../testset-questionbank/testset-questionbank.module'
 import { TranslationModule } from '../translation/translation.module'
 import { PrismaService } from '@/shared/services/prisma.service'
-import { UserTestRepo } from '../user-test/user-test.repo'
+import { UserTestModule } from '../user-test/user-test.module'
 import { UserModule } from '../user/user.module'
 import { LevelModule } from '../level/level.module'
 import { UserProgressModule } from '../user-progress/user-progress.module'
@@ -19,6 +19,7 @@ import { LessonModule } from '../lesson/lesson.module'
 @Module({
   imports: [
     QuestionBankModule,
+    UserTestModule,
     UserTestAnswerLogModule,
     TestModule,
     TestSetModule,
@@ -31,7 +32,7 @@ import { LessonModule } from '../lesson/lesson.module'
     LessonModule
   ],
   controllers: [UserTestAttemptController],
-  providers: [UserTestAttemptService, UserTestAttemptRepo, UserTestRepo, PrismaService],
+  providers: [UserTestAttemptService, UserTestAttemptRepo, PrismaService],
   exports: [UserTestAttemptService, UserTestAttemptRepo]
 })
 export class UserTestAttemptModule {}

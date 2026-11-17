@@ -1,0 +1,40 @@
+import { Injectable } from '@nestjs/common'
+import { UserType, WhereUniqueUserType } from 'src/shared/models/shared-user.model'
+import { UserCoreRepo } from './user-core.repo'
+
+// The User table for other modules (module-boundary plan B2, tier 0): reads
+// and plain updates with the repo's signatures, nothing else. It depends on
+// nothing above it, so wallet, auth, gateways and the like can use it without
+// importing UserModule (which depends on wallet and more).
+@Injectable()
+export class UserCoreService {
+  constructor(private readonly userCoreRepo: UserCoreRepo) {}
+
+  findUnique(where: WhereUniqueUserType) {
+    return this.userCoreRepo.findUnique(where)
+  }
+
+  findUniqueIncludeRole(where: WhereUniqueUserType) {
+    return this.userCoreRepo.findUniqueIncludeRole(where)
+  }
+
+  findUniqueIncludeRolePermissions(where: WhereUniqueUserType) {
+    return this.userCoreRepo.findUniqueIncludeRolePermissions(where)
+  }
+
+  findUniqueProfileWithStats(where: WhereUniqueUserType) {
+    return this.userCoreRepo.findUniqueProfileWithStats(where)
+  }
+
+  update(where: { id: number }, data: Partial<UserType>) {
+    return this.userCoreRepo.update(where, data)
+  }
+
+  addLevelForUser(userId: number, levelId: number) {
+    return this.userCoreRepo.addLevelForUser(userId, levelId)
+  }
+
+  findUniqueWithLevel(where: WhereUniqueUserType) {
+    return this.userCoreRepo.findUniqueWithLevel(where)
+  }
+}

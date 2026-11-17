@@ -35,7 +35,7 @@ import {
   buildSystemPromptWithLevel,
   DEFAULT_KAIWA_SYSTEM_PROMPT
 } from '@/common/constants/promt.constant'
-import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
+import { UserCoreService } from '@/modules/user/user-core.service'
 import { SharedUserSubscriptionService } from '@/shared/services/user-subscription.service'
 import { exec } from 'child_process'
 import { promisify } from 'util'
@@ -99,7 +99,7 @@ export class KaiwaGateway implements OnGatewayDisconnect {
     private readonly uploadService: UploadService,
     private readonly geminiConfigRepo: GeminiConfigRepo,
     private readonly configService: ConfigService,
-    private readonly sharedUserRepo: SharedUserRepository,
+    private readonly userCoreService: UserCoreService,
     private readonly sharedUserSubscriptionService: SharedUserSubscriptionService
   ) {
     // Initialize Gemini API với API Key
@@ -396,7 +396,7 @@ export class KaiwaGateway implements OnGatewayDisconnect {
 
     try {
       // Query user từ DB
-      const user = await this.sharedUserRepo.findUnique({ id: userId })
+      const user = await this.userCoreService.findUnique({ id: userId })
       const levelJLPT = user?.levelJLPT || null
 
       // Cache vào client.data để không phải query lại
