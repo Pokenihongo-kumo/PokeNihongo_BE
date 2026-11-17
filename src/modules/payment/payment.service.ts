@@ -24,7 +24,6 @@ import {
   forwardRef
 } from '@nestjs/common'
 import { Queue } from 'bull'
-import { InvoiceRepo } from '../invoice/invoice.repo'
 import { InvoiceService } from '../invoice/invoice.service'
 import { SubscriptionPlanNotFoundException } from '../subscription-plan/dto/subscription-plan.error'
 import { SubscriptionPlanRepo } from '../subscription-plan/subscription-plan.repo'
@@ -44,7 +43,6 @@ export class PaymentService {
 
   constructor(
     private readonly paymentRepo: PaymentRepo,
-    private readonly invoiceRepo: InvoiceRepo,
     private readonly subscriptionPlanRepo: SubscriptionPlanRepo,
     private readonly userSubscriptionSer: UserSubscriptionService,
     private readonly payosService: PayOSService,
@@ -67,7 +65,7 @@ export class PaymentService {
       console.log('create -payment')
 
       // 1. Lấy invoice
-      const invoice = await this.invoiceRepo.findById(invoiceId)
+      const invoice = await this.invoiceService.getById(invoiceId)
       // Only the caller's own invoice: another user's answers like a missing one
       // (no PayOS call, their open link is not handed out)
       if (!invoice || invoice.userId !== userId) {
@@ -323,7 +321,7 @@ export class PaymentService {
         }
       }
 
-      const invoice = await this.invoiceRepo.findById(payment.invoiceId)
+      const invoice = await this.invoiceService.getById(payment.invoiceId)
       const plan = invoice
         ? await this.subscriptionPlanRepo.getById(invoice.subscriptionPlanId)
         : null

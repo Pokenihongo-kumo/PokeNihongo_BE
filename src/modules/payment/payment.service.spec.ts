@@ -40,7 +40,6 @@ describe('PaymentService: paid webhook when the mail provider is down', () => {
     const service = new PaymentService(
       paymentRepo as never,
       {} as never,
-      {} as never,
       userSubscriptionSer as never,
       payosService as never,
       {} as never,

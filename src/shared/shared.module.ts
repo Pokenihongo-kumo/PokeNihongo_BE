@@ -1,15 +1,12 @@
+import { UserSubscriptionModule } from '@/modules/user-subscription/user-subscription.module'
 import { UserCoreModule } from '@/modules/user/user-core.module'
 import { BullQueueModule } from '@/3rdService/bull/bull-queue.module'
 import { AccessTokenGuard } from '@/common/guards/access-token.guard'
 import { APIKeyGuard } from '@/common/guards/api-key.guard'
 import { AuthenticationGuard } from '@/common/guards/authentication.guard'
-import { InvoiceRepo } from '@/modules/invoice/invoice.repo'
 import { LanguagesModule } from '@/modules/languages/languages.module'
 import { PokemonRepo } from '@/modules/pokemon/pokemon.repo'
 import { QuestionBankRepo } from '@/modules/question-bank/question-bank.repo'
-import { UserSubscriptionRepo } from '@/modules/user-subscription/user-subscription.repo'
-import { WalletTransactionRepo } from '@/modules/wallet-transaction/wallet-transaction.repo'
-import { WalletRepo } from '@/modules/wallet/wallet.repo'
 
 import { HashingService } from '@/shared/services/hashing.service'
 import { PrismaService } from '@/shared/services/prisma.service'
@@ -36,15 +33,12 @@ const sharedServices = [
   QuestionBankRepo,
   PokemonRepo,
   PayOSService,
-  InvoiceRepo,
-  UserSubscriptionRepo,
-  WalletRepo,
-  WalletTransactionRepo,
   UserGateway
 ]
 @Global()
 @Module({
   imports: [
+    UserSubscriptionModule,
     UserCoreModule,
     JwtModule,
     BullQueueModule.forRoot(), // Only keep forRoot() here - queues registered in domain modules

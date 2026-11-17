@@ -776,4 +776,30 @@ export class UserPokemonService {
       message: this.i18nService.translate(UserPokemonMessage.GET_LIST_SUCCESS, lang)
     }
   }
+
+  // ---- For other modules (module-boundary plan B4) ----
+  // Same arguments (a caller's transaction client included) and results as the
+  // repo methods, so callers keep their transactions and write order.
+
+  // The repo's create (the service's create answers the HTTP route)
+  insert(...args: Parameters<UserPokemonRepo['create']>) {
+    return this.userPokemonRepo.create(...args)
+  }
+
+  findByUserAndPokemon(...args: Parameters<UserPokemonRepo['findByUserAndPokemon']>) {
+    return this.userPokemonRepo.findByUserAndPokemon(...args)
+  }
+
+  getByUserId(...args: Parameters<UserPokemonRepo['getByUserId']>) {
+    return this.userPokemonRepo.getByUserId(...args)
+  }
+
+  unsetMainPokemon(...args: Parameters<UserPokemonRepo['unsetMainPokemon']>) {
+    return this.userPokemonRepo.unsetMainPokemon(...args)
+  }
+
+  // The repo's update (the service's update answers the HTTP route)
+  updateUserPokemon(...args: Parameters<UserPokemonRepo['update']>) {
+    return this.userPokemonRepo.update(...args)
+  }
 }

@@ -1,7 +1,7 @@
 import { walletType } from '@/common/constants/wallet.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { WalletMessage } from '@/i18n/message-keys'
-import { UserRepo } from '@/modules/user/user.repo'
+import { UserCoreService } from '@/modules/user/user-core.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
@@ -20,7 +20,8 @@ export class WalletService {
   constructor(
     private walletRepo: WalletRepo,
     private readonly i18nService: I18nService,
-    private readonly userRepo: UserRepo
+    // user ids only, from the tier-0 user core (no cycle with UserModule)
+    private readonly userCoreService: UserCoreService
   ) {}
 
   // Generate wallets for all users (create missing wallet types per user)
@@ -33,24 +34,20 @@ export class WalletService {
     let currentPage = 1
 
     while (true) {
-      const usersPage = await this.userRepo.list({
-        currentPage,
-        pageSize,
-        qs: ''
-      })
+      const usersPage = await this.userCoreService.listIdsPage(currentPage, pageSize)
 
-      for (const user of usersPage.results) {
+      for (const userId of usersPage.ids) {
         // Reuse existing helper to ensure both wallets
         // generateWalletByUserId is idempotent
         try {
-          await this.generateWalletByUserId(user.id)
+          await this.generateWalletByUserId(userId)
         } catch (err) {
           // ignore per-user errors so the batch continues; collect/logging could be added
           continue
         }
       }
 
-      if (currentPage >= usersPage.pagination.totalPage) break
+      if (currentPage >= usersPage.totalPage) break
       currentPage++
     }
 
@@ -213,5 +210,30 @@ export class WalletService {
       data: wallets,
       message: this.i18nService.translate(WalletMessage.GET_LIST_SUCCESS, lang)
     }
+  }
+
+  // ---- For other modules (module-boundary plan B4) ----
+  // Same arguments (a caller's transaction client included) and results as the
+  // repo methods, so callers keep their transactions and write order.
+
+  addBalanceToWalletWithType(
+    ...args: Parameters<WalletRepo['addBalanceToWalletWithType']>
+  ) {
+    return this.walletRepo.addBalanceToWalletWithType(...args)
+  }
+
+  checkEnoughBalance(...args: Parameters<WalletRepo['checkEnoughBalance']>) {
+    return this.walletRepo.checkEnoughBalance(...args)
+  }
+
+  findByUserIdAndType(...args: Parameters<WalletRepo['findByUserIdAndType']>) {
+    return this.walletRepo.findByUserIdAndType(...args)
+  }
+
+  // Debits only when the balance covers it (A1 T7); null otherwise
+  minusBalanceToWalletWithTypeUserId(
+    ...args: Parameters<WalletRepo['minusBalanceToWalletWithTypeUserId']>
+  ) {
+    return this.walletRepo.minusBalanceToWalletWithTypeUserId(...args)
   }
 }

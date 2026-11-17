@@ -133,4 +133,19 @@ export class UserCoreRepo {
       }
     })
   }
+
+  // A page of active user ids (oldest first) and the number of pages
+  async listIdsPage(currentPage: number, pageSize: number) {
+    const [total, rows] = await Promise.all([
+      this.prismaService.user.count({ where: { deletedAt: null } }),
+      this.prismaService.user.findMany({
+        where: { deletedAt: null },
+        select: { id: true },
+        orderBy: { id: 'asc' },
+        skip: (currentPage - 1) * pageSize,
+        take: pageSize
+      })
+    ])
+    return { ids: rows.map((row) => row.id), totalPage: Math.ceil(total / pageSize) }
+  }
 }

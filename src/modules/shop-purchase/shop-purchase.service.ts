@@ -17,10 +17,9 @@ import { PokemonService } from '@/modules/pokemon/pokemon.service'
 import { ShopBannerRepo } from '../shop-banner/shop-banner.repo'
 import { ShopItemRepo } from '../shop-item/shop-item.repo'
 import { UserHasPokemonException } from '../user-pokemon/dto/user-pokemon.error'
-import { UserPokemonRepo } from '../user-pokemon/user-pokemon.repo'
 import { UserPokemonService } from '../user-pokemon/user-pokemon.service'
-import { WalletTransactionRepo } from '../wallet-transaction/wallet-transaction.repo'
-import { WalletRepo } from '../wallet/wallet.repo'
+import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
+import { WalletService } from '@/modules/wallet/wallet.service'
 import {
   NotEnoughBalanceException,
   PurchaseLimitReachedException,
@@ -41,9 +40,8 @@ export class ShopPurchaseService {
     private readonly shopItemRepo: ShopItemRepo,
     @Inject(forwardRef(() => ShopBannerRepo))
     private readonly shopBannerRepo: ShopBannerRepo,
-    private readonly walletRepo: WalletRepo,
-    private readonly walletTransRepo: WalletTransactionRepo,
-    private readonly userPokemonRepo: UserPokemonRepo,
+    private readonly walletService: WalletService,
+    private readonly walletTransactionService: WalletTransactionService,
     private readonly userPokemonService: UserPokemonService,
     private readonly pokemonService: PokemonService
   ) {}
@@ -84,12 +82,12 @@ export class ShopPurchaseService {
 
       // 3)may co du tien ko ?
       const [userWallet, existed, totalPurchased, shopBanner] = await Promise.all([
-        this.walletRepo.checkEnoughBalance({
+        this.walletService.checkEnoughBalance({
           userId,
           type: walletType.SPARKLES,
           amount: totalPrice
         }),
-        this.userPokemonRepo.findByUserAndPokemon(userId, shopItem.pokemonId),
+        this.userPokemonService.findByUserAndPokemon(userId, shopItem.pokemonId),
         this.shopPurchaseRepo.getTotalPurchasedQuantityByUserAndItem(
           userId,
           data.shopItemId
@@ -136,7 +134,7 @@ export class ShopPurchaseService {
             },
             prismaTx
           ),
-          this.walletRepo.minusBalanceToWalletWithTypeUserId(
+          this.walletService.minusBalanceToWalletWithTypeUserId(
             { userId, type: walletType.SPARKLES, amount: totalPrice },
             prismaTx
           )
@@ -146,7 +144,7 @@ export class ShopPurchaseService {
         if (!updatedWallet) throw new NotEnoughBalanceException()
 
         // 4.3) Create Wallet Transaction referencing the purchase
-        const walletTrans = await this.walletTransRepo.create(
+        const walletTrans = await this.walletTransactionService.record(
           {
             createdById: userId,
             data: {
@@ -235,14 +233,14 @@ export class ShopPurchaseService {
         // 4.1) If total changed: refund old, then charge new
         if (newTotal !== oldTotal) {
           // nhet lai tien cu ve vi
-          const walletAfterRefund = await this.walletRepo.addBalanceToWalletWithType(
+          const walletAfterRefund = await this.walletService.addBalanceToWalletWithType(
             { userId: existing.userId, type: walletType.SPARKLES, amount: oldTotal },
             prismaTx
           )
           if (!walletAfterRefund) throw new NotEnoughBalanceException()
 
           // Log refund transaction (INCREASE)
-          await this.walletTransRepo.create(
+          await this.walletTransactionService.record(
             {
               createdById: userId,
               data: {
@@ -267,14 +265,14 @@ export class ShopPurchaseService {
 
           // tru tien ra
           const walletAfterCharge =
-            await this.walletRepo.minusBalanceToWalletWithTypeUserId(
+            await this.walletService.minusBalanceToWalletWithTypeUserId(
               { userId: existing.userId, type: walletType.SPARKLES, amount: newTotal },
               prismaTx
             )
           if (!walletAfterCharge) throw new NotEnoughBalanceException()
 
           // Log charge transaction (DECREASE)
-          await this.walletTransRepo.create(
+          await this.walletTransactionService.record(
             {
               createdById: userId,
               data: {
@@ -333,7 +331,7 @@ export class ShopPurchaseService {
 
       await this.shopPurchaseRepo.withTransaction(async (prismaTx) => {
         // 1) Refund full amount to wallet
-        const walletAfterRefund = await this.walletRepo.addBalanceToWalletWithType(
+        const walletAfterRefund = await this.walletService.addBalanceToWalletWithType(
           {
             userId: existShopPurchase.userId,
             type: walletType.SPARKLES,
@@ -344,7 +342,7 @@ export class ShopPurchaseService {
         if (!walletAfterRefund) throw new NotFoundRecordException()
 
         // 2) Log refund transaction
-        await this.walletTransRepo.create(
+        await this.walletTransactionService.record(
           {
             createdById: userId,
             data: {

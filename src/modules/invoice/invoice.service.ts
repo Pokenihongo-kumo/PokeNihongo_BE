@@ -27,9 +27,9 @@ import {
   UserHasSubscriptionWithStatusActiveException,
   UserHasSubscriptionWithStatusPendingPaymentException
 } from '../user-subscription/dto/user-subscription.error'
-import { UserSubscriptionRepo } from '../user-subscription/user-subscription.repo'
-import { WalletTransactionRepo } from '../wallet-transaction/wallet-transaction.repo'
-import { WalletRepo } from '../wallet/wallet.repo'
+import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
+import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
+import { WalletService } from '@/modules/wallet/wallet.service'
 import {
   InvoiceDiscountTooHighException,
   InvoiceNotEnoughPokeCoinsException,
@@ -43,14 +43,14 @@ export class InvoiceService {
   constructor(
     private invoiceRepo: InvoiceRepo,
     private readonly subscriptionPlanRepo: SubscriptionPlanRepo,
-    private readonly userSubRepo: UserSubscriptionRepo,
+    private readonly userSubscriptionService: UserSubscriptionService,
     private readonly i18nService: I18nService,
     @Inject(forwardRef(() => PaymentService))
     private readonly paymentService: PaymentService,
     @InjectQueue(BullQueue.INVOICE_EXPIRATION)
     private readonly invoiceExpirationQueue: Queue,
-    private readonly walletRepo: WalletRepo,
-    private readonly walletTransactionRepo: WalletTransactionRepo
+    private readonly walletService: WalletService,
+    private readonly walletTransactionService: WalletTransactionService
   ) {}
 
   async list(pagination: PaginationQueryType, lang: string = 'vi') {
@@ -95,7 +95,7 @@ export class InvoiceService {
       }
       // xem user mua goi nay co dang active khong, neu co goi nay va dang active thi khong duoc mua nua
       const isUserActivePlanExist =
-        await this.userSubRepo.findActiveByUserIdPlanIdAndStatus(
+        await this.userSubscriptionService.findActiveByUserIdPlanIdAndStatus(
           userId,
           data.subscriptionPlanId,
           UserSubscriptionStatus.ACTIVE
@@ -104,11 +104,12 @@ export class InvoiceService {
         throw new UserHasSubscriptionWithStatusActiveException()
       }
       // xem user co dang thanh toan goi nay khong
-      const isUserPayPlanExist = await this.userSubRepo.findActiveByUserIdPlanIdAndStatus(
-        userId,
-        data.subscriptionPlanId,
-        UserSubscriptionStatus.PENDING_PAYMENT
-      )
+      const isUserPayPlanExist =
+        await this.userSubscriptionService.findActiveByUserIdPlanIdAndStatus(
+          userId,
+          data.subscriptionPlanId,
+          UserSubscriptionStatus.PENDING_PAYMENT
+        )
       if (isUserPayPlanExist) {
         throw new UserHasSubscriptionWithStatusPendingPaymentException(
           `Invoice ID: ${isUserPayPlanExist.invoiceId}`,
@@ -119,7 +120,7 @@ export class InvoiceService {
 
       // Nếu có discount > 0, kiểm tra ví có đủ PokeCoin không
       if (discountAmountInput > 0) {
-        const enough = await this.walletRepo.checkEnoughBalance({
+        const enough = await this.walletService.checkEnoughBalance({
           userId,
           type: walletType.POKE_COINS,
           amount: discountAmountInput
@@ -151,7 +152,7 @@ export class InvoiceService {
         )
 
         // Tạo UserSubscription ở trạng thái PENDING_PAYMENT, gắn với invoice vừa tạo
-        await this.userSubRepo.create(
+        await this.userSubscriptionService.createUserSubscription(
           {
             createdById: userId,
             data: {
@@ -165,15 +166,16 @@ export class InvoiceService {
 
         // Nếu có discount > 0: trừ coin và tạo wallet transaction, cập nhật invoice.walletTransactionId
         if (discountAmount > 0) {
-          const updatedWallet = await this.walletRepo.minusBalanceToWalletWithTypeUserId(
-            { userId, type: walletType.POKE_COINS, amount: discountAmount },
-            tx
-          )
+          const updatedWallet =
+            await this.walletService.minusBalanceToWalletWithTypeUserId(
+              { userId, type: walletType.POKE_COINS, amount: discountAmount },
+              tx
+            )
           if (!updatedWallet) {
             throw new InvoiceNotEnoughPokeCoinsException()
           }
 
-          const wtx = await this.walletTransactionRepo.create(
+          const wtx = await this.walletTransactionService.record(
             {
               createdById: userId,
               data: {
@@ -301,5 +303,20 @@ export class InvoiceService {
   async removeExpirationJob(invoiceId: number) {
     const job = await this.invoiceExpirationQueue.getJob(`invoice-expire-${invoiceId}`)
     if (job) await job.remove()
+  }
+
+  // ---- For other modules (module-boundary plan B4) ----
+  // Same arguments (a caller's transaction client included) and results as the
+  // repo methods, so callers keep their transactions and write order.
+
+  // The invoice row or null (the service's findById answers the HTTP route)
+  getById(...args: Parameters<InvoiceRepo['findById']>) {
+    return this.invoiceRepo.findById(...args)
+  }
+
+  findActiveByUserIdPlanIdAndStatus(
+    ...args: Parameters<InvoiceRepo['findActiveByUserIdPlanIdAndStatus']>
+  ) {
+    return this.invoiceRepo.findActiveByUserIdPlanIdAndStatus(...args)
   }
 }

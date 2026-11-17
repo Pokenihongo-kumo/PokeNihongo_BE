@@ -11,7 +11,7 @@ import {
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { LanguagesService } from '@/modules/languages/languages.service'
-import { WalletRepo } from '../wallet/wallet.repo'
+import { WalletService } from '@/modules/wallet/wallet.service'
 import { SubscriptionPlanNotFoundException } from './dto/subscription-plan.error'
 import {
   CreateSubscriptionPlanBodyType,
@@ -25,7 +25,7 @@ export class SubscriptionPlanService {
     private subscriptionPlanRepo: SubscriptionPlanRepo,
     private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
-    private readonly walletRepo: WalletRepo
+    private readonly walletService: WalletService
   ) {}
 
   private async convertTranslationsToLangCodes(
@@ -263,7 +263,7 @@ export class SubscriptionPlanService {
     userId: number,
     lang: string = 'vi'
   ) {
-    const walletPokeCoin = await this.walletRepo.findByUserIdAndType(
+    const walletPokeCoin = await this.walletService.findByUserIdAndType(
       userId,
       walletType.POKE_COINS
     )

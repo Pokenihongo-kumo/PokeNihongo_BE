@@ -51,7 +51,7 @@ import { Queue } from 'bull'
 import Redis from 'ioredis'
 import { LevelService } from '../level/level.service'
 import { UserProgressService } from '../user-progress/user-progress.service'
-import { UserSubscriptionRepo } from '../user-subscription/user-subscription.repo'
+import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
 import { UserTestService } from '../user-test/user-test.service'
 import { WalletService } from '../wallet/wallet.service'
 import {
@@ -79,7 +79,7 @@ export class AuthService {
     @Inject('REDIS_CLIENT') private readonly redisClient: Redis,
     private readonly tokenService: TokenService,
     private readonly walletSer: WalletService,
-    private readonly userSubscriptionRepo: UserSubscriptionRepo
+    private readonly userSubscriptionService: UserSubscriptionService
   ) {}
 
   async login(
@@ -494,7 +494,7 @@ export class AuthService {
 
     // gọi checkActiveSubscriptionByUserId
     const subscription =
-      await this.userSubscriptionRepo.checkActiveSubscriptionByUserId(userId)
+      await this.userSubscriptionService.checkActiveSubscriptionByUserId(userId)
 
     return {
       statusCode: 200,

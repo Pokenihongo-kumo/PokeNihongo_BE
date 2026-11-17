@@ -22,7 +22,7 @@ import { ShopItemRepo } from '../shop-item/shop-item.repo'
 import { ShopPurchaseRepo } from '../shop-purchase/shop-purchase.repo'
 import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
 import { TranslationService } from '@/modules/translation/translation.service'
-import { UserPokemonRepo } from '../user-pokemon/user-pokemon.repo'
+import { UserPokemonService } from '@/modules/user-pokemon/user-pokemon.service'
 import {
   InvalidMinMaxShopBannerException,
   OnlyOneShopBannerActiveException,
@@ -45,7 +45,7 @@ export class ShopBannerService {
     private readonly languagesService: LanguagesService,
     private readonly translationService: TranslationService,
     private readonly shopPurchaseRepo: ShopPurchaseRepo,
-    private readonly userPokemonRepo: UserPokemonRepo,
+    private readonly userPokemonService: UserPokemonService,
     private readonly pokemonService: PokemonService,
     private readonly shopItemRepo: ShopItemRepo
   ) {}
@@ -648,7 +648,7 @@ export class ShopBannerService {
         )
 
         // Fetch user's owned pokemons
-        const userPokemons = await this.userPokemonRepo.getByUserId(userId)
+        const userPokemons = await this.userPokemonService.getByUserId(userId)
         const ownedPokemonIds = new Set<number>(
           (userPokemons || []).map((up: any) => up.pokemonId)
         )
