@@ -2,7 +2,7 @@
   "metrics": {
     "crossModuleRepoImports": 67,
     "moduleForeignRepoProviders": 1,
-    "forwardRefModuleFiles": 15,
+    "forwardRefModuleFiles": 14,
     "injectForwardRefFiles": 8,
     "sharedModuleBusinessRepos": 3,
     "sharedModuleBusinessProviders": 3,
@@ -95,7 +95,6 @@
       "modules/shop-purchase/shop-purchase.module.ts",
       "modules/shop-rarity-price/shop-rarity-price.module.ts",
       "modules/user-reward-history/user-reward-history.module.ts",
-      "modules/user-season-history/user-season-history.module.ts",
       "shared/shared.module.ts",
       "websockets/websockets.module.ts"
     ],
