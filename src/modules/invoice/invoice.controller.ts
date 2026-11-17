@@ -2,10 +2,9 @@ import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
 import { MessageResDTO, PaginationResponseDTO } from '@/shared/dtos/response.dto'
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Put, Query } from '@nestjs/common'
 import { ZodSerializerDto } from 'nestjs-zod'
 import {
-  CreateInvoiceBodyDTO,
   GetInvoiceDetailResDTO,
   GetInvoiceParamsDTO,
   UpdateInvoiceBodyDTO,
@@ -32,23 +31,8 @@ export class InvoiceController {
   ) {
     return this.invoiceService.findById(params.invoiceId, lang)
   }
-  @Post()
-  // @ZodSerializerDto(CreateInvoiceResDTO)
-  create(
-    @Body() body: CreateInvoiceBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
-  ) {
-    console.log('vao controller')
-
-    return this.invoiceService.create(
-      {
-        userId,
-        data: body
-      },
-      lang
-    )
-  }
+  // POST /invoice is served by InvoiceCheckoutController (payment module): it
+  // creates the invoice, then opens its payment link
 
   @Put(':invoiceId')
   @ZodSerializerDto(UpdateInvoiceResDTO)

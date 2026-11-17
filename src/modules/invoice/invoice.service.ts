@@ -18,9 +18,8 @@ import {
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { InjectQueue } from '@nestjs/bull'
-import { forwardRef, Inject, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { Queue } from 'bull'
-import { PaymentService } from '../payment/payment.service'
 import { SubscriptionPlanNotFoundException } from '../subscription-plan/dto/subscription-plan.error'
 import { SubscriptionPlanRepo } from '../subscription-plan/subscription-plan.repo'
 import {
@@ -45,8 +44,6 @@ export class InvoiceService {
     private readonly subscriptionPlanRepo: SubscriptionPlanRepo,
     private readonly userSubscriptionService: UserSubscriptionService,
     private readonly i18nService: I18nService,
-    @Inject(forwardRef(() => PaymentService))
-    private readonly paymentService: PaymentService,
     @InjectQueue(BullQueue.INVOICE_EXPIRATION)
     private readonly invoiceExpirationQueue: Queue,
     private readonly walletService: WalletService,
@@ -75,10 +72,11 @@ export class InvoiceService {
       message: this.i18nService.translate(InvoiceMessage.GET_LIST_SUCCESS, lang)
     }
   }
-  async create(
-    { userId, data }: { userId: number; data: CreateInvoiceBodyType },
-    lang: string = 'vi'
-  ) {
+  // A pending invoice (with its PENDING_PAYMENT subscription and the PokeCoin
+  // discount taken), committed before any payment link exists. POST /invoice
+  // lives in the payment module, which opens the link next (B5: invoice no
+  // longer calls payment).
+  async createPending({ userId, data }: { userId: number; data: CreateInvoiceBodyType }) {
     try {
       // check xem goi plan co active ko
       const isPlanExist = await this.subscriptionPlanRepo.getById(data.subscriptionPlanId)
@@ -209,22 +207,7 @@ export class InvoiceService {
         }
       )
 
-      // Sau khi invoice đã commit vào DB, gọi createPayOSPayment
-      const paymentResult = await this.paymentService.createPayOSPayment(
-        {
-          invoiceId: invoice.id
-        },
-        userId,
-        lang
-      )
-      return {
-        statusCode: 201,
-        data: {
-          invoice,
-          payment: paymentResult.data
-        },
-        message: this.i18nService.translate(InvoiceMessage.CREATE_SUCCESS, lang)
-      }
+      return invoice
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
