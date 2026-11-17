@@ -69,7 +69,10 @@ const configSchema = z.object({
   STORAGE_DRIVER: z.enum(['cloudinary', 'local']).default('cloudinary'),
   LOCAL_STORAGE_DIR: z.string().optional(),
 
-  //PAYOS
+  //PAYOS. PAYMENT_DRIVER=fake: payments without PayOS (tests, local demo:
+  // opening the link pays); refused in production (integration-ports I2, D-IP2)
+  PAYMENT_DRIVER: z.enum(['payos', 'fake']).default('payos'),
+  FAKE_PAYMENT_SECRET: z.string().default('local-fake-payment-secret'),
   PAYOS_CLIENT_ID: z.string().optional(),
   PAYOS_API_KEY: z.string().optional(),
   PAYOS_CHECKSUM_KEY: z.string().optional(),
@@ -88,9 +91,12 @@ export const productionDriverErrors = (env: {
   STORAGE_DRIVER?: string
   SPEECH_DRIVER?: string
   LLM_DRIVER?: string
+  PAYMENT_DRIVER?: string
 }): string[] => {
   const production = (env.NODE_ENV ?? '').toLowerCase() === 'production'
   const errors: string[] = []
+  if (production && env.PAYMENT_DRIVER === 'fake')
+    errors.push('PAYMENT_DRIVER=fake is not allowed in production')
   if (production && env.LLM_DRIVER === 'fake')
     errors.push('LLM_DRIVER=fake is not allowed in production')
   if (production && env.SPEECH_DRIVER === 'fake')

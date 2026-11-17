@@ -7,7 +7,7 @@ import envConfig from '@/config/env.config'
 // Legacy helpers không cần nữa cho invoice flow
 
 import { UserCoreService } from '@/modules/user/user-core.service'
-import { PayOSService } from '../../shared/services/payos.service'
+import { PaymentGateway } from '@/infrastructure/integrations/payment/payment-gateway.port'
 
 import { MailService } from '@/3rdService/mail/mail.service'
 import { BullAction, BullQueue } from '@/common/constants/bull-action.constant'
@@ -45,7 +45,7 @@ export class PaymentService {
     private readonly paymentRepo: PaymentRepo,
     private readonly subscriptionPlanRepo: SubscriptionPlanRepo,
     private readonly userSubscriptionSer: UserSubscriptionService,
-    private readonly payosService: PayOSService,
+    private readonly paymentGateway: PaymentGateway,
     private readonly userCoreService: UserCoreService,
     private readonly i18nService: I18nService,
     private readonly mailService: MailService,
@@ -94,13 +94,20 @@ export class PaymentService {
       const finalBuyerPhone = buyerPhone || user.phoneNumber || ''
 
       // 4. Tạo orderCode duy nhất cho PayOS
-      const orderCode = this.payosService.generateOrderCode()
+      const orderCode = this.generateOrderCode()
 
       // 5. Tạo return/cancel URL
-      const { returnUrl, cancelUrl } = this.payosService.generatePaymentUrls(invoice.id)
+      const { returnUrl, cancelUrl } = this.paymentUrls()
 
       // 6. Sinh danh sách items (hiển thị trên PayOS)
-      const items = this.payosService.createPayOSItems({ invoice, plan })
+      const items = [
+        {
+          name: plan.type === 'LIFETIME' ? 'Lifetime' : 'Recurring',
+          quantity: 1,
+          // must match the invoice total, in whole VND
+          price: Math.round(invoice.totalAmount)
+        }
+      ]
 
       // 7. Tổng tiền lấy từ invoice.totalAmount (đã trừ giảm giá nếu có)
       // Chuẩn hóa về số nguyên VND theo yêu cầu PayOS
@@ -143,9 +150,9 @@ export class PaymentService {
       }
 
       // 10. Create the PayOS link; if it fails, free the slot for a retry
-      let payosResponse: Awaited<ReturnType<PayOSService['createPaymentLink']>>
+      let payosResponse: Awaited<ReturnType<PaymentGateway['createLink']>>
       try {
-        payosResponse = await this.payosService.createPaymentLink(payosRequest)
+        payosResponse = await this.paymentGateway.createLink(payosRequest)
       } catch (error) {
         await this.paymentRepo.failReservedPayment(
           reserved.id,
@@ -209,6 +216,20 @@ export class PaymentService {
     }
   }
 
+  // A unique order code for the provider (timestamp based, 9 digits)
+  private generateOrderCode(): number {
+    return Number(String(Date.now()).slice(-9))
+  }
+
+  // Where the provider sends the browser back (the order code is added by it)
+  private paymentUrls(): { returnUrl: string; cancelUrl: string } {
+    const baseUrl = envConfig.APP_URL || 'http://localhost:4000'
+    return {
+      returnUrl: `${baseUrl}/payments/payos/return`,
+      cancelUrl: `${baseUrl}/payments/payos/cancel`
+    }
+  }
+
   // The open link of an invoice, as POST /payments/payos answers it
   private paymentLinkResult(payment: PaymentType, lang: string) {
     const expiredAtMs = payment.expiredAt
@@ -255,7 +276,7 @@ export class PaymentService {
    * when the webhook URL is confirmed).
    */
   async handlePayOSWebhook(body: unknown, lang: string = 'vi') {
-    const data = await this.payosService.verifyPaymentWebhookData(body)
+    const data = await this.paymentGateway.verifyWebhook(body)
     const payment = await this.paymentRepo.findPaymentByPayOSOrderId(
       String(data.orderCode)
     )
@@ -289,9 +310,7 @@ export class PaymentService {
       }
 
       if (payment.status !== PAYMENT_STATUS.PAID) {
-        const info = await this.payosService.getPaymentLinkInformation(
-          Number(payment.payosOrderId)
-        )
+        const info = await this.paymentGateway.getLink(Number(payment.payosOrderId))
         const fullyPaid =
           info.status === 'PAID' &&
           Number(info.orderCode) === Number(payment.payosOrderId) &&

@@ -1,6 +1,6 @@
 import { AppModule } from '@/app.module'
 import { walletType } from '@/common/constants/wallet.constant'
-import { PayOSService } from '@/shared/services/payos.service'
+import { FakePaymentAdapter } from '@/infrastructure/integrations/payment/fake-payment.adapter'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { INestApplication, VersioningType } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
@@ -11,7 +11,7 @@ import { loginAsTestAdmin, TEST_ADMIN, TEST_USER_AGENT } from '../support/test-a
 // POST /invoice (mobile subscription screen), batch 6d. PokeCoin may pay at
 // most half the plan price (GET /subscription-plan/discount/:id says so, and
 // the app caps it), but the invoice took any discount: 90% off, or the whole
-// price. One pending invoice per plan and user. PayOS is faked.
+// price. One pending invoice per plan and user. PayOS is faked at the PaymentGateway port (PAYMENT_DRIVER=fake).
 describe('Invoice create (e2e)', () => {
   let app: INestApplication<App>
   let prisma: PrismaService
@@ -74,7 +74,7 @@ describe('Invoice create (e2e)', () => {
         }
       })
     ).id
-    jest.spyOn(PayOSService.prototype, 'createPaymentLink').mockImplementation(
+    jest.spyOn(FakePaymentAdapter.prototype, 'createLink').mockImplementation(
       async (req: { orderCode: number; amount: number }) =>
         ({
           orderCode: req.orderCode,

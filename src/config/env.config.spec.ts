@@ -48,4 +48,13 @@ describe('productionDriverErrors', () => {
       productionDriverErrors({ NODE_ENV: 'production', LLM_DRIVER: 'gemini' })
     ).toEqual([])
   })
+
+  it('refuses PAYMENT_DRIVER=fake in production (it grants plans without paying)', () => {
+    expect(
+      productionDriverErrors({ NODE_ENV: 'production', PAYMENT_DRIVER: 'fake' })
+    ).toEqual(['PAYMENT_DRIVER=fake is not allowed in production'])
+    expect(
+      productionDriverErrors({ NODE_ENV: 'production', PAYMENT_DRIVER: 'payos' })
+    ).toEqual([])
+  })
 })

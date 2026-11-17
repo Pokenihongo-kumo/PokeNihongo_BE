@@ -17,7 +17,6 @@ import { APP_GUARD } from '@nestjs/core'
 import { JwtModule } from '@nestjs/jwt'
 import { WebsocketsModule } from 'src/websockets/websockets.module'
 import { SharedNotificationRepo } from './repositories/shared-notification.repo'
-import { PayOSService } from './services/payos.service'
 import { SharedNotificationService } from './services/shared-notification.service'
 import { SharedUserSubscriptionService } from './services/user-subscription.service'
 import { InvoiceExpirationProcessor } from './workers/invoice-expiration.processor'
@@ -32,7 +31,6 @@ const sharedServices = [
   SharedNotificationRepo,
   QuestionBankRepo,
   PokemonRepo,
-  PayOSService,
   UserGateway
 ]
 @Global()

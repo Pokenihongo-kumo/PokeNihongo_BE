@@ -2,7 +2,7 @@ import { AppModule } from '@/app.module'
 import { PaymentRepo } from '@/modules/payment/payment.repo'
 import { PaymentService } from '@/modules/payment/payment.service'
 import { InvoiceService } from '@/modules/invoice/invoice.service'
-import { PayOSService } from '@/shared/services/payos.service'
+import { FakePaymentAdapter } from '@/infrastructure/integrations/payment/fake-payment.adapter'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { INestApplication, VersioningType } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
@@ -14,7 +14,7 @@ import { loginAsTestAdmin, TEST_ADMIN } from '../support/test-admin'
 // PayOS return/cancel URLs are opened by the user's browser: their query
 // string proves nothing. Only PayOS (server-to-server lookup or a signed
 // webhook) may move a payment to PAID and grant the subscription.
-// PayOS itself is faked; the test env has no PayOS credentials.
+// PayOS is faked at the PaymentGateway port (PAYMENT_DRIVER=fake).
 describe('PayOS callbacks (e2e)', () => {
   let app: INestApplication<App>
   let prisma: PrismaService
@@ -100,8 +100,8 @@ describe('PayOS callbacks (e2e)', () => {
       })
     ).id
 
-    lookup = jest.spyOn(PayOSService.prototype, 'getPaymentLinkInformation')
-    verifyWebhook = jest.spyOn(PayOSService.prototype, 'verifyPaymentWebhookData')
+    lookup = jest.spyOn(FakePaymentAdapter.prototype, 'getLink')
+    verifyWebhook = jest.spyOn(FakePaymentAdapter.prototype, 'verifyWebhook')
     grant = jest.spyOn(InvoiceService.prototype, 'removeExpirationJob')
     // No mail in tests
     jest

@@ -1,5 +1,5 @@
 import { AppModule } from '@/app.module'
-import { PayOSService } from '@/shared/services/payos.service'
+import { FakePaymentAdapter } from '@/infrastructure/integrations/payment/fake-payment.adapter'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { INestApplication, VersioningType } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
@@ -80,7 +80,7 @@ describe('Payment link ownership (e2e)', () => {
         data: { subscriptionId, price: PRICE, type: 'LIFETIME' }
       })
     ).id
-    createLink = jest.spyOn(PayOSService.prototype, 'createPaymentLink')
+    createLink = jest.spyOn(FakePaymentAdapter.prototype, 'createLink')
   })
 
   beforeEach(() => createLink.mockReset())
