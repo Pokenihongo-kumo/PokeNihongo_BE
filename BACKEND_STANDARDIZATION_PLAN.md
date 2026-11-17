@@ -256,6 +256,8 @@ Gate từng batch: các consumer liên quan hoạt động; migration message c�
 
 ### Giai đoạn 4 — Làm rõ ownership, thu nhỏ shared và integrations
 
+Chi tiết ranh giới module (quy tắc R1–R7, baseline đo được, batch B0–B8, gate ratchet): [module-boundary-plan.md](docs/standardization/module-boundary-plan.md) — trạng thái design-approved, D-MB1–D-MB4 đã chốt 2026-11-17.
+
 1. Dựa vào dependency graph thực, tách PrismaModule, config và integration modules có owner duy nhất. Tạo `infrastructure/database`, `infrastructure/config`, `infrastructure/integrations`, `infrastructure/queue` khi chuyển capability tương ứng; không tạo một cây thư mục rỗng trước.
 2. Thu nhỏ SharedModule theo nhóm provider; import/export module sở hữu thay vì khai báo lại class. Nghiệp vụ wallet/invoice/subscription/notification/gateway trở về module sở hữu.
 3. Tách helpers theo responsibility; domain ELO ở domain. Chuyển từng cron/processor về owner rõ, giữ job names/schedules/registration.
@@ -278,6 +280,7 @@ Gate: contract không đổi ngoài bảng thay đổi chủ đích; không còn
 ### Giai đoạn 6 — Tách service/gateway/worker nhiều trách nhiệm
 
 - test/user-test-attempt: tách load question, grading, finalization/reward theo invariant và test hiện có.
+- round-question (1273 dòng, 21 query Prisma trực tiếp): làm cùng nhóm battle sau batch B6 của [module-boundary-plan](docs/standardization/module-boundary-plan.md).
 - vocabulary/kanji: tách import/export, lookup, translation mapping khi đang trộn trách nhiệm.
 - kaiwa.gateway: giữ transport/session/event tại gateway; orchestration và AI/speech adapters ở service riêng, bảo toàn streaming/cancel/error/reconnect.
 - timeout processors: dùng chung domain use case nếu cùng invariant; giữ khác biệt nghiệp vụ. Test timeout đối đầu submit, retry/duplicate delivery, thứ tự ghi DB và emit.
@@ -618,6 +621,20 @@ Từ review đối chiếu [product-architecture-plan](docs/standardization/prod
 - [x] T9 ([ADR D1](docs/standardization/adr-d1-billing.md) merged-dev §1 `a33a971`, §3 `ba9a9e0`, §2 `7871ab8`, §4 `a83ee95`; §5 khóa chống cấp thưởng trùng hoãn tới clean nhóm 4; `needsRefund` chưa làm) ADR D1: cấp gói cùng transaction với ghi PAID hoặc cơ chế phục hồi/đối soát bền vững (rà crash giữa `markInvoicePaidOnce` và `updateInvoiceWhenPaymentSuccess`); chốt tối đa một link thanh toán đang hoạt động mỗi invoice, không cấm lịch sử nhiều payment attempts và retry sau expired/failed. Kiểm concurrency tạo link và callback trễ. Khóa chống cấp thưởng trùng phải theo phạm vi nghiệp vụ (user/sourceType/sourceId/reward nếu phù hợp), không thêm unique sourceId đơn lẻ khi chưa xét semantics. Chốt kiểu tiền (`Payment.amount` Float, `User.freeCoins`) và migration riêng.
 - [x] T10 ([ADR D-auth](docs/standardization/adr-d-auth.md) merged-dev: §1–2 BE `39b5ea2` + MO `5f761a4`, §3 `4140c79`; Google live-provider pending; còn bỏ fallback OTP key cũ sau deploy) ADR D-auth: (1) `register` đòi `registrationToken` ngắn hạn, gắn email + mục đích, dùng một lần, kèm OTP gắn mục đích (`otp:{purpose}:{email}`); (2) Google callback trả mã trao đổi 60 giây dùng một lần + `POST /auth/google/exchange`, thay token trên URL. Mã phải gắn với giao dịch đăng nhập/client khởi tạo bằng cơ chế chứng minh phù hợp web/native (ví dụ verifier/challenge), không chỉ clientId do caller tự khai; validate OAuth state, redirect allowlist và consume nguyên tử. Test replay, hết hạn, sai binding/state/redirect, client khác lấy mã không đổi được token; che mã/token trong log. Chốt thiết kế trước triển khai, không coi TTL ngắn là đủ. Bắt buộc xong trước khi mở đăng ký / đăng nhập Google cho người dùng thật; live Google vẫn pending khi chưa cấp lại điều kiện dịch vụ.
 - [x] T11 (BE merged-dev @ `481ab94`, commit `b0b6e61`; MO merged-dev @ `cc5079c`, commit `1b162c1`) Dọn `resend-verified-email`: màn OTP mobile gửi lại bằng `forgot-password`/`check-email`; `authService.resendOtp` (MO) không ai gọi → xóa hàm MO và `resendVerifiedEmail`/`verifiedEmail` (BE).
+
+### Giai đoạn 4 — Ranh giới module ([module-boundary-plan](docs/standardization/module-boundary-plan.md), design-approved 2026-11-17)
+
+Baseline `dev` @ `5ec0e64`: 167 import Repo chéo module (143 trong service), 17 module dùng `forwardRef`, `SharedModule` global export 7 Repo nghiệp vụ, Prisma ngoài repo ở 4 cronjob, 5 processor, khoảng 20 service, 1 gateway. Đã chốt D-MB1 (giữ nguyên module), D-MB2 (import tường minh Languages/Translation), D-MB4 (B0 ngay, B1–B3 xen phase 3), D-MB3 (ngoại lệ chỉ đọc cho dashboard và xếp hạng).
+
+- [ ] B0 — Script đo `arch:deps` + baseline JSON + ratchet
+- [ ] B1 — Kernel i18n (languages, translation)
+- [ ] B2 — User core, role; bỏ provider khai báo trùng
+- [ ] B3 — Catalog (pokemon, level, question-bank, leaderboard-season)
+- [ ] B4 — Kinh tế lõi (wallet, user-pokemon, user-subscription, invoice); gỡ vòng user ↔ wallet
+- [ ] B5 — Gỡ vòng kinh tế (shop, gacha, reward, invoice ↔ payment)
+- [ ] B6 — Battle: gỡ vòng, timeout processor, tách `UserGateway` khỏi `SharedModule`
+- [ ] B7 — Quét Prisma ngoài repo còn lại
+- [ ] B8 — `SharedModule` chỉ còn hạ tầng; cập nhật convention
 
 ### Baseline (2026-11-02, trước mọi thay đổi)
 
