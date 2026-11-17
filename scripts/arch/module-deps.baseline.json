@@ -2,8 +2,8 @@
   "metrics": {
     "crossModuleRepoImports": 67,
     "moduleForeignRepoProviders": 1,
-    "forwardRefModuleFiles": 14,
-    "injectForwardRefFiles": 8,
+    "forwardRefModuleFiles": 12,
+    "injectForwardRefFiles": 6,
     "sharedModuleBusinessRepos": 3,
     "sharedModuleBusinessProviders": 3,
     "prismaOutsideRepoFiles": 34,
@@ -84,12 +84,10 @@
     ],
     "forwardRefModuleFiles": [
       "modules/gacha-item/gacha-item.module.ts",
-      "modules/invoice/invoice.module.ts",
       "modules/match-participant/match-participant.module.ts",
       "modules/match-round-participant/match-round-participant.module.ts",
       "modules/match-round/match-round.module.ts",
       "modules/match/match.module.ts",
-      "modules/payment/payment.module.ts",
       "modules/reward/reward.module.ts",
       "modules/shop-item/shop-item.module.ts",
       "modules/shop-purchase/shop-purchase.module.ts",
@@ -100,8 +98,6 @@
     ],
     "injectForwardRefFiles": [
       "modules/gacha-item/gacha-item.service.ts",
-      "modules/invoice/invoice.service.ts",
-      "modules/payment/payment.service.ts",
       "modules/round-question/round-question.service.ts",
       "modules/shop-item/shop-item.service.ts",
       "modules/shop-purchase/shop-purchase.service.ts",

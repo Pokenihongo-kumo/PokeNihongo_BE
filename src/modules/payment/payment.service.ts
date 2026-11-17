@@ -12,18 +12,16 @@ import { PaymentGateway } from '@/infrastructure/integrations/payment/payment-ga
 import { MailService } from '@/3rdService/mail/mail.service'
 import { BullAction, BullQueue } from '@/common/constants/bull-action.constant'
 import { I18nService } from '@/i18n/i18n.service'
-import { PaymentMessage, SendMailMessage } from '@/i18n/message-keys'
+import { InvoiceMessage, PaymentMessage, SendMailMessage } from '@/i18n/message-keys'
 import { NotFoundRecordException } from '@/shared/error'
-import { InjectQueue } from '@nestjs/bull'
 import {
-  ConflictException,
-  Inject,
-  Injectable,
-  Logger,
-  NotFoundException,
-  forwardRef
-} from '@nestjs/common'
+  isForeignKeyConstraintPrismaError,
+  isNotFoundPrismaError
+} from '@/shared/helpers'
+import { InjectQueue } from '@nestjs/bull'
+import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { Queue } from 'bull'
+import { CreateInvoiceBodyType } from '../invoice/entities/invoice.entity'
 import { InvoiceService } from '../invoice/invoice.service'
 import { SubscriptionPlanNotFoundException } from '../subscription-plan/dto/subscription-plan.error'
 import { SubscriptionPlanRepo } from '../subscription-plan/subscription-plan.repo'
@@ -49,11 +47,37 @@ export class PaymentService {
     private readonly userCoreService: UserCoreService,
     private readonly i18nService: I18nService,
     private readonly mailService: MailService,
-    @Inject(forwardRef(() => InvoiceService))
     private readonly invoiceService: InvoiceService,
     @InjectQueue(BullQueue.INVOICE_EXPIRATION)
     private readonly invoiceExpirationQueue: Queue
   ) {}
+
+  // POST /invoice: the pending invoice is committed first, then its payment
+  // link is opened (the order the invoice module used to follow itself)
+  async checkoutNewInvoice(
+    { userId, data }: { userId: number; data: CreateInvoiceBodyType },
+    lang: string = 'vi'
+  ) {
+    const invoice = await this.invoiceService.createPending({ userId, data })
+    try {
+      const paymentResult = await this.createPayOSPayment(
+        { invoiceId: invoice.id },
+        userId,
+        lang
+      )
+      return {
+        statusCode: 201,
+        data: { invoice, payment: paymentResult.data },
+        message: this.i18nService.translate(InvoiceMessage.CREATE_SUCCESS, lang)
+      }
+    } catch (error) {
+      if (isNotFoundPrismaError(error) || isForeignKeyConstraintPrismaError(error)) {
+        throw new NotFoundRecordException()
+      }
+      throw error
+    }
+  }
+
   // Create PayOS payment
   async createPayOSPayment(
     paymentData: CreatePayOSPaymentDto,
