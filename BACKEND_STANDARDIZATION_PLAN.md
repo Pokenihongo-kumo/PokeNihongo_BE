@@ -263,6 +263,7 @@ Chi tiết ranh giới module (quy tắc R1–R7, baseline đo được, batch B
 3. Tách helpers theo responsibility; domain ELO ở domain. Chuyển từng cron/processor về owner rõ, giữ job names/schedules/registration.
 4. Hợp nhất auth aliases/guard trùng sau ma trận auth test. Không thay permission semantics theo cảm tính.
 5. `3rdService/payos` có code commented trong khi shared PayOSService đang hoạt động: kiểm tra import graph trước khi xóa. Dead code/dependency phải xét cả scripts/build/test.
+   Port, adapter thật/giả và dọn code chết của toàn bộ `3rdService`: [integration-ports-plan.md](docs/standardization/integration-ports-plan.md) (design-approved, D-IP1–D-IP4 chốt 2026-11-17).
 6. Re-export từ path cũ chỉ dùng trong thời gian migration, có danh sách consumer và điều kiện xóa.
 
 Gate: boot/shutdown/DI tests pass; không cycle mới, không provider/cron/queue/socket đăng ký hai lần; BE và consumer hoạt động sau chuyển ownership. Giai đoạn này thuộc mục tiêu dài hạn, không làm đồng thời với response rewrite.
@@ -635,6 +636,18 @@ Baseline `dev` @ `5ec0e64`: 167 import Repo chéo module (143 trong service), 17
 - [ ] B6 — Battle: gỡ vòng, timeout processor, tách `UserGateway` khỏi `SharedModule`
 - [ ] B7 — Quét Prisma ngoài repo còn lại
 - [ ] B8 — `SharedModule` chỉ còn hạ tầng; cập nhật convention
+
+### Giai đoạn 4 — Port dịch vụ ngoài ([integration-ports-plan](docs/standardization/integration-ports-plan.md), design-approved 2026-11-17)
+
+Baseline `dev` @ `5ec0e64`: 5 dịch vụ ngoài (PayOS, mail, Gemini, Google Speech, Cloudinary) gọi thẳng từ service, không port; hai SDK AI và hai bản `getPersonalizedRecommendations`; test giả lập bằng spy prototype (4 spec) hoặc override `MailerService`; code chết ở `3rdService/payos`, `3rdService/microservices`, 3 method mail, 6 template, 6 method upload. Đã chốt D-IP1 (`infrastructure/integrations`), D-IP2 (fake cho test và demo cục bộ), D-IP3 (xóa 7 route AI không client gọi), D-IP4 (chỉ `@google/genai`).
+
+- [ ] I0 — Dọn code chết (payos comment, rabbitmq, mail, upload)
+- [ ] I1 — `MailSender` + tách `OtpService` về auth
+- [ ] I2 — `PaymentGateway` (PayOS + fake), bỏ `PayOSService` khỏi `SharedModule`
+- [ ] I3 — `FileStorage` (Cloudinary + local), gộp biến thể upload
+- [ ] I4 — `SpeechToText`/`TextToSpeech` (Google + fake)
+- [ ] I5 — `LlmClient` một SDK, tách `GeminiService`, gộp recommendations
+- [ ] I6 — Bỏ `3rdService/`, tài liệu `*_DRIVER` và chạy demo không cần key
 
 ### Baseline (2026-11-02, trước mọi thay đổi)
 
