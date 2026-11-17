@@ -363,7 +363,7 @@ export class UploadController {
     return {
       message: 'Upload hình ảnh từ vựng thành công!',
       url,
-      publicId: this.uploadService['extractPublicIdFromUrl'](url) || undefined
+      publicId: this.uploadService.publicIdFromUrl(url) || undefined
     }
   }
 
@@ -402,7 +402,7 @@ export class UploadController {
     return {
       message: 'Upload âm thanh từ vựng thành công!',
       url,
-      publicId: this.uploadService['extractPublicIdFromUrl'](url) || undefined
+      publicId: this.uploadService.publicIdFromUrl(url) || undefined
     }
   }
 

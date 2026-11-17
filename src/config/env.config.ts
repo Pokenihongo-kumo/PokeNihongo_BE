@@ -58,6 +58,11 @@ const configSchema = z.object({
   MAIL_USER: z.string().optional(),
   MAIL_PASSWORD: z.string().optional(),
 
+  // Files. STORAGE_DRIVER=local keeps files on this machine (tests, local
+  // demo); refused in production (integration-ports plan I3, D-IP2)
+  STORAGE_DRIVER: z.enum(['cloudinary', 'local']).default('cloudinary'),
+  LOCAL_STORAGE_DIR: z.string().optional(),
+
   //PAYOS
   PAYOS_CLIENT_ID: z.string().optional(),
   PAYOS_API_KEY: z.string().optional(),
@@ -74,9 +79,12 @@ const configSchema = z.object({
 export const productionDriverErrors = (env: {
   NODE_ENV?: string
   MAIL_DRIVER?: string
+  STORAGE_DRIVER?: string
 }): string[] => {
   const production = (env.NODE_ENV ?? '').toLowerCase() === 'production'
   const errors: string[] = []
+  if (production && env.STORAGE_DRIVER === 'local')
+    errors.push('STORAGE_DRIVER=local is not allowed in production')
   if (production && env.MAIL_DRIVER === 'log')
     errors.push('MAIL_DRIVER=log is not allowed in production')
   return errors
