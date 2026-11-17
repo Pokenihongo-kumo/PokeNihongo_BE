@@ -1,6 +1,6 @@
 import { I18nService } from '@/i18n/i18n.service'
 import { NotificationMessage } from '@/i18n/message-keys'
-import { LanguagesRepo } from '@/modules/languages/languages.repo'
+import { LanguagesService } from '@/modules/languages/languages.service'
 import { NotificationNotFoundException } from '@/modules/notification/dto/notification.error'
 import {
   CreateNotificationBodyType,
@@ -19,7 +19,7 @@ export class SharedNotificationService {
   constructor(
     private notificationRepo: SharedNotificationRepo,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepo,
+    private readonly languagesService: LanguagesService,
     private readonly userGateway: UserGateway
   ) {}
 
@@ -212,7 +212,7 @@ export class SharedNotificationService {
     userId: number,
     lang: string = 'vi'
   ) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const data = await this.notificationRepo.getUserSubWithSubPlan(
       pagination,
       userId,

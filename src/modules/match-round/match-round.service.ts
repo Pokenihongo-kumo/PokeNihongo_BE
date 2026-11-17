@@ -13,7 +13,7 @@ import { PaginationQueryType } from '@/shared/models/request.model'
 import { InjectQueue } from '@nestjs/bull'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { Queue } from 'bull'
-import { LanguagesRepo } from '../languages/languages.repo'
+import { LanguagesService } from '@/modules/languages/languages.service'
 import { LeaderboardSeasonRepo } from '../leaderboard-season/leaderboard-season.repo'
 import { MatchRoundParticipantRepo } from '../match-round-participant/match-round-participant.repo'
 import { MatchRepo } from '../match/match.repo'
@@ -33,7 +33,7 @@ export class MatchRoundService {
     private matchRepo: MatchRepo,
     private matchRoundParticipantRepo: MatchRoundParticipantRepo,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepo,
+    private readonly languagesService: LanguagesService,
     private readonly leaderboardSeasonRepo: LeaderboardSeasonRepo,
     @InjectQueue(BullQueue.MATCH_ROUND_PARTICIPANT_TIMEOUT)
     private readonly matchRoundParticipantTimeoutQueue: Queue,
@@ -42,7 +42,7 @@ export class MatchRoundService {
   ) {}
 
   async list(pagination: PaginationQueryType, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const data = await this.matchRoundRepo.list(pagination, langId ?? undefined)
     return {
       data,

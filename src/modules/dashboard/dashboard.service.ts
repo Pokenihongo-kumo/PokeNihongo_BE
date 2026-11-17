@@ -4,14 +4,14 @@ import { PaginationQueryType } from '@/shared/models/request.model'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
 import { DashboardSeasonNotFoundException } from './dto/dashboard.error'
-import { LanguagesRepo } from '../languages/languages.repo'
+import { LanguagesService } from '@/modules/languages/languages.service'
 import { DashboardRepo } from './dashboard.repo'
 
 @Injectable()
 export class DashboardService {
   constructor(
     private dashboardRepo: DashboardRepo,
-    private readonly langRepo: LanguagesRepo,
+    private readonly languagesService: LanguagesService,
     private readonly prisma: PrismaService
   ) {}
 
@@ -120,7 +120,7 @@ export class DashboardService {
   }
 
   async getListUserRegister(query: PaginationQueryType, lang: string = 'vi') {
-    const langId = await this.langRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     if (!langId) {
       return this.dashboardRepo.getUsersSubWithSubPlan(query)
     }

@@ -6,7 +6,7 @@ import { MatchRepo } from './match.repo'
 import { MatchService } from './match.service'
 
 @Module({
-  imports: [forwardRef(() => LeaderboardSeasonModule), forwardRef(() => LanguagesModule)],
+  imports: [forwardRef(() => LeaderboardSeasonModule), LanguagesModule],
   controllers: [MatchController],
   providers: [MatchService, MatchRepo],
   exports: [MatchService, MatchRepo]

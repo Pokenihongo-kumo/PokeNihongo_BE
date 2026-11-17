@@ -16,12 +16,12 @@ import {
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { LanguagesRepo } from '../languages/languages.repo'
+import { LanguagesService } from '@/modules/languages/languages.service'
 import { PokemonRepo } from '../pokemon/pokemon.repo'
 import { ShopItemRepo } from '../shop-item/shop-item.repo'
 import { ShopPurchaseRepo } from '../shop-purchase/shop-purchase.repo'
 import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
-import { TranslationRepo } from '../translation/translation.repo'
+import { TranslationService } from '@/modules/translation/translation.service'
 import { UserPokemonRepo } from '../user-pokemon/user-pokemon.repo'
 import {
   InvalidMinMaxShopBannerException,
@@ -42,8 +42,8 @@ export class ShopBannerService {
   constructor(
     private shopBannerRepo: ShopBannerRepo,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepo,
-    private readonly translationRepo: TranslationRepo,
+    private readonly languagesService: LanguagesService,
+    private readonly translationService: TranslationService,
     private readonly shopPurchaseRepo: ShopPurchaseRepo,
     private readonly userPokemonRepo: UserPokemonRepo,
     private readonly pokemonRepo: PokemonRepo,
@@ -59,7 +59,7 @@ export class ShopBannerService {
     if (!nameTranslations || nameTranslations.length === 0) return []
 
     const allLangIds = Array.from(new Set(nameTranslations.map((t) => t.languageId)))
-    const langs = await this.languageRepo.getWithListId(allLangIds)
+    const langs = await this.languagesService.getWithListId(allLangIds)
     const idToCode = new Map(langs.map((l) => [l.id, l.code]))
 
     return nameTranslations.map((t) => ({
@@ -69,7 +69,7 @@ export class ShopBannerService {
   }
 
   async list(pagination: PaginationQueryType, lang: string = 'vi', roleName: string) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAllLang = roleName === RoleName.Admin ? true : false
     const data = await this.shopBannerRepo.list(
       pagination,
@@ -161,7 +161,7 @@ export class ShopBannerService {
     lang: string = 'vi',
     roleName?: string
   ) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAllLang = roleName === RoleName.Admin ? true : false
     const data = await this.shopBannerRepo.listwithDetail(
       pagination,
@@ -213,7 +213,7 @@ export class ShopBannerService {
   }
 
   async findById(id: number, lang: string = 'vi', roleName: string) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
 
     if (!langId) {
       return {
@@ -334,7 +334,7 @@ export class ShopBannerService {
         const allLangCodes = Array.from(new Set(nameList))
 
         // Get languages corresponding to the keys
-        const languages = await this.languageRepo.getWithListCode(allLangCodes)
+        const languages = await this.languagesService.getWithListCode(allLangCodes)
 
         // Create map { code: id } for quick access
         const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
@@ -355,7 +355,7 @@ export class ShopBannerService {
         )
 
         // Validate translations (check for duplicate names)
-        await this.translationRepo.validateTranslationRecords(translationRecords)
+        await this.translationService.validateTranslationRecords(translationRecords)
 
         // Build nested upserts for name translations
         const nameUpserts = data.nameTranslations.map((item) => ({
@@ -500,7 +500,7 @@ export class ShopBannerService {
 
           if (allLangCodes.length > 0) {
             // Get languages
-            const languages = await this.languageRepo.getWithListCode(allLangCodes)
+            const languages = await this.languagesService.getWithListCode(allLangCodes)
             const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
 
             // Check missing language
@@ -516,7 +516,7 @@ export class ShopBannerService {
                 value: t.value
               })
             }
-            await this.translationRepo.validateTranslationRecords(translationRecords)
+            await this.translationService.validateTranslationRecords(translationRecords)
 
             // Nested upserts for translations
             nameUpserts = (data.nameTranslations ?? []).map((t) => ({
@@ -586,7 +586,7 @@ export class ShopBannerService {
           id,
           deletedById
         }),
-        this.translationRepo.deleteByKey(existingShopBanner.nameKey)
+        this.translationService.deleteByKey(existingShopBanner.nameKey)
       ])
 
       return {
@@ -605,7 +605,7 @@ export class ShopBannerService {
   async getByToday(lang: string = 'vi', userId?: number) {
     try {
       const date = todayUTCWith0000()
-      const langId = await this.languageRepo.getIdByCode(lang)
+      const langId = await this.languagesService.getIdByCode(lang)
 
       if (!langId) {
         return {

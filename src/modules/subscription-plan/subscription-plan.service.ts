@@ -10,7 +10,7 @@ import {
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
-import { LanguagesRepo } from '../languages/languages.repo'
+import { LanguagesService } from '@/modules/languages/languages.service'
 import { WalletRepo } from '../wallet/wallet.repo'
 import { SubscriptionPlanNotFoundException } from './dto/subscription-plan.error'
 import {
@@ -24,7 +24,7 @@ export class SubscriptionPlanService {
   constructor(
     private subscriptionPlanRepo: SubscriptionPlanRepo,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepo,
+    private readonly languagesService: LanguagesService,
     private readonly walletRepo: WalletRepo
   ) {}
 
@@ -34,7 +34,7 @@ export class SubscriptionPlanService {
     if (!translations || translations.length === 0) return []
 
     const allLangIds = Array.from(new Set(translations.map((t) => t.languageId)))
-    const langs = await this.languageRepo.getWithListId(allLangIds)
+    const langs = await this.languagesService.getWithListId(allLangIds)
     const idToCode = new Map(langs.map((l) => [l.id, l.code]))
 
     return translations.map((t) => ({
@@ -44,7 +44,7 @@ export class SubscriptionPlanService {
   }
 
   async list(pagination: PaginationQueryType, lang: string = 'vi', roleName: string) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     const data = await this.subscriptionPlanRepo.list(pagination, langId ?? undefined)
@@ -93,7 +93,7 @@ export class SubscriptionPlanService {
   }
 
   async findById(id: number, lang: string = 'vi', roleName: string) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     const subscriptionPlan = await this.subscriptionPlanRepo.findById(
@@ -255,7 +255,7 @@ export class SubscriptionPlanService {
   }
 
   async getPlansForUser(lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
   }
 
   async getDiscountToSubPlan(

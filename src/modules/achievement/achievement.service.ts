@@ -13,9 +13,9 @@ import {
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { LanguagesRepo } from '../languages/languages.repo'
+import { LanguagesService } from '@/modules/languages/languages.service'
 import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
-import { TranslationRepo } from '../translation/translation.repo'
+import { TranslationService } from '@/modules/translation/translation.service'
 import { AchievementRepo } from './achievement.repo'
 import { AchievementAlreadyExistsException } from './dto/achievement.error'
 import {
@@ -30,8 +30,8 @@ export class AchievementService {
   constructor(
     private achievementRepo: AchievementRepo,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepo,
-    private readonly translationRepo: TranslationRepo,
+    private readonly languagesService: LanguagesService,
+    private readonly translationService: TranslationService,
     private readonly prismaService: PrismaService
   ) {}
 
@@ -41,7 +41,7 @@ export class AchievementService {
     if (!nameTranslations || nameTranslations.length === 0) return []
 
     const allLangIds = Array.from(new Set(nameTranslations.map((t) => t.languageId)))
-    const langs = await this.languageRepo.getWithListId(allLangIds)
+    const langs = await this.languagesService.getWithListId(allLangIds)
     const idToCode = new Map(langs.map((l) => [l.id, l.code]))
 
     return nameTranslations.map((t) => ({
@@ -51,7 +51,7 @@ export class AchievementService {
   }
 
   async list(pagination: PaginationQueryType, lang: string = 'vi', roleName: string) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     const data = await this.achievementRepo.list(pagination, langId ?? undefined, isAdmin)
@@ -76,7 +76,7 @@ export class AchievementService {
           )
         })
 
-        const langs = await this.languageRepo.getWithListId(Array.from(allLangIds))
+        const langs = await this.languagesService.getWithListId(Array.from(allLangIds))
         const idToCode = new Map(langs.map((l) => [l.id, l.code]))
 
         // Map each achievement's translations
@@ -128,7 +128,7 @@ export class AchievementService {
   }
 
   async findById(id: number, roleName: string, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     if (!langId) {
@@ -272,7 +272,7 @@ export class AchievementService {
         )
 
         // Get languages corresponding to the keys
-        const languages = await this.languageRepo.getWithListCode(allLangCodes)
+        const languages = await this.languagesService.getWithListCode(allLangCodes)
 
         // Create map { code: id } for quick access
         const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
@@ -316,7 +316,9 @@ export class AchievementService {
         }
 
         // Validate all translation records
-        await this.translationRepo.validateTranslationRecords([...nameTranslationRecords])
+        await this.translationService.validateTranslationRecords([
+          ...nameTranslationRecords
+        ])
 
         // Update achievement with final keys and translations
         const result = await this.achievementRepo.update(
@@ -427,7 +429,7 @@ export class AchievementService {
           const uniqueLangCodes = Array.from(new Set(allLangCodes))
 
           // Get languages
-          const languages = await this.languageRepo.getWithListCode(uniqueLangCodes)
+          const languages = await this.languagesService.getWithListCode(uniqueLangCodes)
           const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
 
           // Check missing language
@@ -468,7 +470,7 @@ export class AchievementService {
           }
 
           // Validate translation records
-          await this.translationRepo.validateTranslationRecords([
+          await this.translationService.validateTranslationRecords([
             ...nameTranslationRecords
           ])
         }
@@ -533,9 +535,9 @@ export class AchievementService {
           id,
           deletedById
         }),
-        this.translationRepo.deleteByKey(existingAchievement.nameKey),
-        this.translationRepo.deleteByKey(existingAchievement.descriptionKey),
-        this.translationRepo.deleteByKey(existingAchievement.conditionTextKey)
+        this.translationService.deleteByKey(existingAchievement.nameKey),
+        this.translationService.deleteByKey(existingAchievement.descriptionKey),
+        this.translationService.deleteByKey(existingAchievement.conditionTextKey)
       ])
 
       return {

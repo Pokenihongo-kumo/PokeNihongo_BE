@@ -222,4 +222,28 @@ export class LanguagesService {
       }
     }
   }
+
+  // ---- Narrow lookups for other modules (module-boundary plan R1/R2) ----
+  // Same results as the repo methods they replace: no message, no throw.
+
+  getIdByCode(code: string): Promise<number | null> {
+    return this.languagesRepository.getIdByCode(code)
+  }
+
+  getWithListCode(codes: string[]) {
+    return this.languagesRepository.getWithListCode(codes)
+  }
+
+  getWithListId(ids: number[]) {
+    return this.languagesRepository.getWithListId(ids)
+  }
+
+  // The language row, or null (findById/findByCode above answer the HTTP routes)
+  getById(id: number) {
+    return this.languagesRepository.findById(id)
+  }
+
+  getByCode(code: string) {
+    return this.languagesRepository.findByCode(code)
+  }
 }

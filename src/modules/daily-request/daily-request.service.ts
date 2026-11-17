@@ -11,9 +11,9 @@ import {
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { LanguagesRepo } from '../languages/languages.repo'
+import { LanguagesService } from '@/modules/languages/languages.service'
 import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
-import { TranslationRepo } from '../translation/translation.repo'
+import { TranslationService } from '@/modules/translation/translation.service'
 import { DailyRequestRepo } from './daily-request.repo'
 import { DailyRequestAlreadyExistsException } from './dto/daily-request.error'
 import {
@@ -28,12 +28,12 @@ export class DailyRequestService {
   constructor(
     private dailyRequestRepo: DailyRequestRepo,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepo,
-    private readonly translationRepo: TranslationRepo
+    private readonly languagesService: LanguagesService,
+    private readonly translationService: TranslationService
   ) {}
 
   async list(pagination: PaginationQueryType, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     if (!langId) {
       throw new NotFoundRecordException()
     }
@@ -46,7 +46,7 @@ export class DailyRequestService {
   }
 
   async getListwithAllLang(pagination: PaginationQueryType, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const data = await this.dailyRequestRepo.getListwithAllLang(
       pagination,
       langId ?? undefined
@@ -57,7 +57,7 @@ export class DailyRequestService {
       for (const t of item.nameTranslations ?? []) allLangIds.add(t.languageId)
       for (const t of item.descriptionTranslations ?? []) allLangIds.add(t.languageId)
     }
-    const languages = await this.languageRepo.getWithListId(Array.from(allLangIds))
+    const languages = await this.languagesService.getWithListId(Array.from(allLangIds))
     const codeMap = Object.fromEntries(languages.map((l) => [l.id, l.code]))
 
     const results = (data.results as any[]).map((item) => ({
@@ -80,7 +80,7 @@ export class DailyRequestService {
   }
 
   async findById(id: number, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     if (!langId) {
       throw new NotFoundRecordException()
     }
@@ -102,7 +102,7 @@ export class DailyRequestService {
   }
 
   async findByIdWithAllLang(id: number, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const dailyRequest: any = await this.dailyRequestRepo.findByIdWithAllLang(id)
     if (!dailyRequest) {
       throw new NotFoundRecordException()
@@ -122,7 +122,7 @@ export class DailyRequestService {
       ...(dailyRequest.nameTranslations ?? []).map((t: any) => t.languageId),
       ...(dailyRequest.descriptionTranslations ?? []).map((t: any) => t.languageId)
     ])
-    const languages = await this.languageRepo.getWithListId(Array.from(langIds))
+    const languages = await this.languagesService.getWithListId(Array.from(langIds))
     const codeMap = Object.fromEntries(languages.map((l) => [l.id, l.code]))
 
     const resultRes = {
@@ -194,7 +194,7 @@ export class DailyRequestService {
         const allLangCodes = Array.from(new Set([...nameList, ...desList]))
 
         // Lấy danh sách ngôn ngữ tương ứng với các key
-        const languages = await this.languageRepo.getWithListCode(allLangCodes)
+        const languages = await this.languagesService.getWithListCode(allLangCodes)
 
         // Tạo map { code: id } để truy cập nhanh
         const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
@@ -218,7 +218,7 @@ export class DailyRequestService {
         }
 
         //check khong cho trung name
-        await this.translationRepo.validateTranslationRecords(translationRecords)
+        await this.translationService.validateTranslationRecords(translationRecords)
 
         // descriptionTranslations → key = descriptionKey
         for (const item of data.descriptionTranslations ?? []) {
@@ -340,7 +340,7 @@ export class DailyRequestService {
 
           if (allLangCodes.length > 0) {
             // Lấy languages tương ứng
-            const languages = await this.languageRepo.getWithListCode(allLangCodes)
+            const languages = await this.languagesService.getWithListCode(allLangCodes)
             const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
 
             // Kiểm tra missing language
@@ -360,7 +360,7 @@ export class DailyRequestService {
             }
 
             // --- 5. Validate translation records: check name la dc, desc cho trung---
-            await this.translationRepo.validateTranslationRecords(translationRecords)
+            await this.translationService.validateTranslationRecords(translationRecords)
 
             // descriptionTranslations
             for (const t of data.descriptionTranslations ?? []) {
@@ -447,7 +447,7 @@ export class DailyRequestService {
   ) {
     try {
       const [langId, existingDailyRequest] = await Promise.all([
-        this.languageRepo.getIdByCode(lang),
+        this.languagesService.getIdByCode(lang),
         this.dailyRequestRepo.findById(id)
       ])
       if (!langId) {
@@ -463,8 +463,8 @@ export class DailyRequestService {
           id,
           deletedById
         }),
-        this.translationRepo.deleteByKey(existingDailyRequest.nameKey),
-        this.translationRepo.deleteByKey(existingDailyRequest.descriptionKey)
+        this.translationService.deleteByKey(existingDailyRequest.nameKey),
+        this.translationService.deleteByKey(existingDailyRequest.descriptionKey)
       ])
 
       return {
