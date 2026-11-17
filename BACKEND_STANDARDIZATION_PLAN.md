@@ -647,7 +647,7 @@ Baseline `dev` @ `5ec0e64`: 167 import Repo chéo module (143 trong service), 17
 
 Baseline `dev` @ `5ec0e64`: 5 dịch vụ ngoài (PayOS, mail, Gemini, Google Speech, Cloudinary) gọi thẳng từ service, không port; hai SDK AI và hai bản `getPersonalizedRecommendations`; test giả lập bằng spy prototype (4 spec) hoặc override `MailerService`; code chết ở `3rdService/payos`, `3rdService/microservices`, 3 method mail, 6 template, 6 method upload. Đã chốt D-IP1 (`infrastructure/integrations`), D-IP2 (fake cho test và demo cục bộ), D-IP3 (xóa 7 route AI không client gọi), D-IP4 (chỉ `@google/genai`).
 
-- [ ] I0 — Dọn code chết (payos comment, rabbitmq, mail, upload)
+- [x] I0 — Dọn code chết (payos comment, rabbitmq, mail, upload). Xóa `3rdService/payos` (3 file toàn comment), `3rdService/microservices` (5 file, không module nào import) và dependency `@nestjs/microservices`; 3 method mail không ai gọi (`sendBookingCancellationEmail`, `sendRefundNotificationEmail`, `sendSubscriptionSuccessEmail`), 7 template không dùng (6 trong plan + `invoice.hbs` cũng không chỗ nào dùng); 6 method upload không ai gọi. `mail.service.ts` 295 → 206 dòng, `upload.service.ts` 627 → 542. Kiểm bằng grep (0 tham chiếu), typecheck, build (còn 4 template trong `dist`), unit 136/136, e2e 181/181 snapshot không đổi.
 - [ ] I1 — `MailSender` + tách `OtpService` về auth
 - [ ] I2 — `PaymentGateway` (PayOS + fake), bỏ `PayOSService` khỏi `SharedModule`
 - [ ] I3 — `FileStorage` (Cloudinary + local), gộp biến thể upload
