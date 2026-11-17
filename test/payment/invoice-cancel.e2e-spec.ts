@@ -1,6 +1,6 @@
 import { AppModule } from '@/app.module'
 import { walletType } from '@/common/constants/wallet.constant'
-import { PayOSService } from '@/shared/services/payos.service'
+import { FakePaymentAdapter } from '@/infrastructure/integrations/payment/fake-payment.adapter'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { InvoiceExpirationProcessor } from '@/shared/workers/invoice-expiration.processor'
 import { INestApplication, VersioningType } from '@nestjs/common'
@@ -14,7 +14,7 @@ import { loginAsTestAdmin, TEST_ADMIN } from '../support/test-admin'
 // cancel callback share one conditional step. The PokeCoin discount comes back
 // exactly once (the callback used to give nothing back, and the job then saw
 // the invoice cancelled and gave nothing back either); a paid invoice is never
-// cancelled or refunded. PayOS is faked.
+// cancelled or refunded. PayOS is faked at the PaymentGateway port (PAYMENT_DRIVER=fake).
 describe('Invoice cancel and coin refund (e2e)', () => {
   let app: INestApplication<App>
   let prisma: PrismaService
@@ -114,7 +114,7 @@ describe('Invoice cancel and coin refund (e2e)', () => {
         data: { subscriptionId: created.subscription, price: PRICE, type: 'LIFETIME' }
       })
     ).id
-    lookup = jest.spyOn(PayOSService.prototype, 'getPaymentLinkInformation')
+    lookup = jest.spyOn(FakePaymentAdapter.prototype, 'getLink')
   })
 
   afterAll(async () => {

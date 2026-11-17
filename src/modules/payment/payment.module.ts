@@ -1,3 +1,4 @@
+import { PaymentGatewayModule } from '@/infrastructure/integrations/payment/payment-gateway.module'
 import { UserCoreModule } from '@/modules/user/user-core.module'
 import { BullQueueModule } from '@/3rdService/bull/bull-queue.module'
 import { MailModule } from '@/3rdService/mail/mail.module'
@@ -12,6 +13,7 @@ import { PaymentService } from './payment.service'
 
 @Module({
   imports: [
+    PaymentGatewayModule,
     UserCoreModule,
     forwardRef(() => InvoiceModule),
     SubscriptionPlanModule,

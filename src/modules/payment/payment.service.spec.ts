@@ -10,8 +10,8 @@ describe('PaymentService: paid webhook when the mail provider is down', () => {
       findPaymentByPayOSOrderId: jest.fn().mockResolvedValue(payment),
       markInvoicePaidOnce: jest.fn().mockResolvedValue(true)
     }
-    const payosService = {
-      verifyPaymentWebhookData: jest
+    const paymentGateway = {
+      verifyWebhook: jest
         .fn()
         .mockResolvedValue({ orderCode: 123, code: '00', amount: 99000 })
     }
@@ -41,7 +41,7 @@ describe('PaymentService: paid webhook when the mail provider is down', () => {
       paymentRepo as never,
       {} as never,
       userSubscriptionSer as never,
-      payosService as never,
+      paymentGateway as never,
       {} as never,
       { translate: (key: string) => key } as never,
       mailService as never,
