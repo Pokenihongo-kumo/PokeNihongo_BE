@@ -6,7 +6,7 @@ import {
 import envConfig from '@/config/env.config'
 // Legacy helpers không cần nữa cho invoice flow
 
-import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
+import { UserCoreRepo } from '@/modules/user/user-core.repo'
 import { PayOSService } from '../../shared/services/payos.service'
 
 import { MailService } from '@/3rdService/mail/mail.service'
@@ -48,7 +48,7 @@ export class PaymentService {
     private readonly subscriptionPlanRepo: SubscriptionPlanRepo,
     private readonly userSubscriptionSer: UserSubscriptionService,
     private readonly payosService: PayOSService,
-    private readonly userService: SharedUserRepository,
+    private readonly userService: UserCoreRepo,
     private readonly i18nService: I18nService,
     private readonly mailService: MailService,
     @Inject(forwardRef(() => InvoiceService))

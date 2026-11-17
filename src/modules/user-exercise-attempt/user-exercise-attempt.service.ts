@@ -19,7 +19,7 @@ import { UserAnswerLogService } from '@/modules/user-answer-log/user-answer-log.
 import { UserProgressService } from '@/modules/user-progress/user-progress.service'
 import { ExercisesService } from '@/modules/exercises/exercises.service'
 import { ExercisesRepo } from '@/modules/exercises/exercises.repo'
-import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
+import { UserCoreRepo } from '@/modules/user/user-core.repo'
 import { HttpException, Injectable, Logger } from '@nestjs/common'
 import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { TranslationHelperService } from '@/modules/translation/translation.helper.service'
@@ -43,7 +43,7 @@ export class UserExerciseAttemptService {
     private readonly userProgressService: UserProgressService,
     private readonly exercisesService: ExercisesService,
     private readonly exercisesRepository: ExercisesRepo,
-    private readonly sharedUserRepository: SharedUserRepository,
+    private readonly sharedUserRepository: UserCoreRepo,
     private readonly translationHelper: TranslationHelperService,
     private readonly i18nService: I18nService,
     private readonly rewardService: RewardService

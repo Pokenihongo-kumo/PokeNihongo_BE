@@ -35,7 +35,7 @@ import {
   buildSystemPromptWithLevel,
   DEFAULT_KAIWA_SYSTEM_PROMPT
 } from '@/common/constants/promt.constant'
-import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
+import { UserCoreRepo } from '@/modules/user/user-core.repo'
 import { SharedUserSubscriptionService } from '@/shared/services/user-subscription.service'
 import { exec } from 'child_process'
 import { promisify } from 'util'
@@ -99,7 +99,7 @@ export class KaiwaGateway implements OnGatewayDisconnect {
     private readonly uploadService: UploadService,
     private readonly geminiConfigRepo: GeminiConfigRepo,
     private readonly configService: ConfigService,
-    private readonly sharedUserRepo: SharedUserRepository,
+    private readonly sharedUserRepo: UserCoreRepo,
     private readonly sharedUserSubscriptionService: SharedUserSubscriptionService
   ) {
     // Initialize Gemini API với API Key

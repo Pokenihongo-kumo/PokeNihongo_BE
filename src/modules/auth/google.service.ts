@@ -4,7 +4,7 @@ import { AuthMessage } from '@/i18n/message-keys'
 import { AuthRepository } from '@/modules/auth/auth.repo'
 import { UserProgressService } from '@/modules/user-progress/user-progress.service'
 import { UserTestService } from '@/modules/user-test/user-test.service'
-import { SharedRoleRepository } from '@/shared/repositories/shared-role.repo'
+import { RoleCoreRepo } from '@/modules/role/role-core.repo'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { createHash, randomBytes } from 'crypto'
 import { google } from 'googleapis'
@@ -49,7 +49,7 @@ export class GoogleService {
     private readonly hashingService: HashingService,
     private readonly authService: AuthService,
     private readonly authRepository: AuthRepository,
-    private readonly sharedRoleRepo: SharedRoleRepository,
+    private readonly sharedRoleRepo: RoleCoreRepo,
     private readonly userProgressService: UserProgressService,
     private readonly userTestService: UserTestService,
     private readonly i18nService: I18nService,

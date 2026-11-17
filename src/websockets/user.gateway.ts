@@ -1,5 +1,5 @@
 import { I18nService } from '@/i18n/i18n.service'
-import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
+import { UserCoreRepo } from '@/modules/user/user-core.repo'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable, Logger } from '@nestjs/common'
 import {
@@ -38,7 +38,7 @@ export class UserGateway {
   private readonly logger = new Logger(UserGateway.name)
 
   constructor(
-    private readonly sharedUserRepo: SharedUserRepository,
+    private readonly sharedUserRepo: UserCoreRepo,
     private readonly i18nService: I18nService,
     private readonly socketServerService: SocketServerService,
     private readonly prisma: PrismaService

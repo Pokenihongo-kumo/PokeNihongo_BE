@@ -1,7 +1,7 @@
 import { I18nService } from '@/i18n/i18n.service'
 import { MatchingSocketMessage } from '@/i18n/message-keys'
 import { addTimeUTC } from '@/shared/helpers'
-import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
+import { UserCoreRepo } from '@/modules/user/user-core.repo'
 import { TokenService } from '@/shared/services/token.service'
 import { Injectable, Logger } from '@nestjs/common'
 import {
@@ -47,7 +47,7 @@ export class MatchingGateway {
   private readonly logger = new Logger(MatchingGateway.name)
 
   constructor(
-    private readonly sharedUserRepo: SharedUserRepository,
+    private readonly sharedUserRepo: UserCoreRepo,
     private readonly tokenService: TokenService,
     private readonly i18nService: I18nService,
     private readonly socketServerService: SocketServerService

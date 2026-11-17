@@ -8,7 +8,7 @@ import {
   isNotFoundPrismaError
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
-import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
+import { UserCoreRepo } from '@/modules/user/user-core.repo'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { UserRewardSourceType } from '@prisma/client'
 import { LanguagesService } from '@/modules/languages/languages.service'
@@ -35,7 +35,7 @@ export class UserSeasonHistoryService {
     private readonly rewardService: RewardService,
     private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
-    private readonly sharedUserRepo: SharedUserRepository
+    private readonly sharedUserRepo: UserCoreRepo
   ) {}
 
   async list(pagination: PaginationQueryType, lang: string = 'vi') {

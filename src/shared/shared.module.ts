@@ -19,8 +19,8 @@ import { APP_GUARD } from '@nestjs/core'
 import { JwtModule } from '@nestjs/jwt'
 import { WebsocketsModule } from 'src/websockets/websockets.module'
 import { SharedNotificationRepo } from './repositories/shared-notification.repo'
-import { SharedRoleRepository } from './repositories/shared-role.repo'
-import { SharedUserRepository } from './repositories/shared-user.repo'
+import { RoleCoreRepo } from '@/modules/role/role-core.repo'
+import { UserCoreRepo } from '@/modules/user/user-core.repo'
 import { PayOSService } from './services/payos.service'
 import { SharedNotificationService } from './services/shared-notification.service'
 import { SharedUserSubscriptionService } from './services/user-subscription.service'
@@ -33,8 +33,8 @@ const sharedServices = [
   SharedUserSubscriptionService,
   SharedNotificationService,
   // EmailService,
-  SharedUserRepository,
-  SharedRoleRepository,
+  UserCoreRepo,
+  RoleCoreRepo,
   SharedNotificationRepo,
   QuestionBankRepo,
   PokemonRepo,

@@ -7,7 +7,7 @@ import {
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
-import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
+import { UserCoreRepo } from '@/modules/user/user-core.repo'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
@@ -35,7 +35,7 @@ export class UserPokemonService {
     private pokemonRepo: PokemonRepo,
     private readonly matchRepo: MatchRepo,
     private levelRepo: LevelRepo,
-    private readonly sharedUserRepository: SharedUserRepository,
+    private readonly sharedUserRepository: UserCoreRepo,
     private readonly i18nService: I18nService,
     private prismaService: PrismaService
   ) {}

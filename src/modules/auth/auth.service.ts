@@ -40,8 +40,8 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { SharedRoleRepository } from '@/shared/repositories/shared-role.repo'
-import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
+import { RoleCoreRepo } from '@/modules/role/role-core.repo'
+import { UserCoreRepo } from '@/modules/user/user-core.repo'
 import { HashingService } from '@/shared/services/hashing.service'
 import { TokenService } from '@/shared/services/token.service'
 import { AccessTokenPayloadCreate } from '@/shared/types/jwt.type'
@@ -65,9 +65,9 @@ export class AuthService {
   private readonly logger = new Logger(AuthService.name)
   constructor(
     private readonly hashingService: HashingService,
-    private readonly sharedRoleRepository: SharedRoleRepository,
+    private readonly sharedRoleRepository: RoleCoreRepo,
     private readonly authRepository: AuthRepository,
-    private readonly sharedUserRepository: SharedUserRepository,
+    private readonly sharedUserRepository: UserCoreRepo,
     private readonly mailService: MailService,
     private readonly levelService: LevelService,
     private readonly bullQueueService: BullQueueService,

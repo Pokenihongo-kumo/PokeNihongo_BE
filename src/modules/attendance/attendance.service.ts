@@ -27,7 +27,7 @@ import {
   ENTITY_MESSAGE,
   NotificationMessage
 } from '@/i18n/message-keys'
-import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
+import { UserCoreRepo } from '@/modules/user/user-core.repo'
 import { SharedNotificationService } from '@/shared/services/shared-notification.service'
 import { SharedUserSubscriptionService } from '@/shared/services/user-subscription.service'
 import { AttendenceConfigRepo } from '../attendence-config/attendence-config.repo'
@@ -46,7 +46,7 @@ export class AttendanceService {
   constructor(
     private attendanceRepo: AttendanceRepo,
     private attendanceConfigRepo: AttendenceConfigRepo,
-    private shareUserRepo: SharedUserRepository,
+    private shareUserRepo: UserCoreRepo,
     private readonly i18nService: I18nService,
     private readonly userDailyRequestService: UserDailyRequestService,
     private readonly walletRepo: WalletRepo,

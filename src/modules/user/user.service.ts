@@ -11,7 +11,7 @@ import {
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
-import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
+import { UserCoreRepo } from '@/modules/user/user-core.repo'
 import { HttpStatus, Injectable, Logger } from '@nestjs/common'
 import { UserStatus } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
@@ -42,7 +42,7 @@ export class UserService {
     private i18nService: I18nService,
     private levelRepo: LevelRepo,
     private walletSer: WalletService,
-    private readonly sharedUserRepository: SharedUserRepository,
+    private readonly sharedUserRepository: UserCoreRepo,
     private readonly leaderboardSeasonRepo: LeaderboardSeasonRepo,
     private readonly matchRepo: MatchRepo,
     private readonly userSeaHistoryRepo: UserSeasonHistoryRepo,
