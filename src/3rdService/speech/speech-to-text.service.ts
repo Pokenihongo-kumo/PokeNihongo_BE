@@ -1,8 +1,6 @@
+import { SpeechToText } from '@/infrastructure/integrations/speech/speech-to-text.port'
 import { Injectable, Logger } from '@nestjs/common'
-import { ConfigService } from '@nestjs/config'
-import { SpeechClient } from '@google-cloud/speech'
 import {
-  createSpeechClient,
   SPEECH_CONFIG,
   validateAudioFormat,
   validateLanguageCode,
@@ -41,24 +39,13 @@ export interface SpeechToTextOptions {
   speechContexts?: Array<{ phrases: string[]; boost?: number }>
 }
 
+// Recognition rules (defaults, validation, messages); the provider call goes
+// through the SpeechToText port (integration-ports plan I4)
 @Injectable()
 export class SpeechToTextService {
   private readonly logger = new Logger(SpeechToTextService.name)
-  private speechClient: SpeechClient | null
 
-  constructor(private readonly configService: ConfigService) {
-    try {
-      this.speechClient = createSpeechClient(this.configService)
-      this.logger.log('Google Cloud Speech-to-Text client initialized successfully')
-    } catch (error) {
-      this.logger.error('Failed to initialize Google Cloud Speech client:', error)
-      this.logger.warn(
-        'Speech-to-Text service will not be available. Please check GOOGLE_CLOUD_CLIENT_EMAIL, GOOGLE_CLOUD_PRIVATE_KEY, and GOOGLE_CLOUD_PROJECT_ID in .env'
-      )
-      // Don't throw error - allow service to be created but mark client as null
-      this.speechClient = null
-    }
-  }
+  constructor(private readonly speechToText: SpeechToText) {}
 
   /**
    * Convert audio to text using Google Cloud Speech-to-Text
@@ -67,7 +54,7 @@ export class SpeechToTextService {
     audioBuffer: Buffer,
     options: SpeechToTextOptions = {}
   ): Promise<SpeechToTextResult> {
-    if (!this.speechClient) {
+    if (!this.speechToText.isAvailable()) {
       throw new Error(
         'Speech-to-Text client not initialized. Please check Google Cloud credentials in .env'
       )
@@ -113,30 +100,12 @@ export class SpeechToTextService {
         config.speechContexts = options.speechContexts
       }
 
-      const audio = {
-        content: audioBuffer.toString('base64')
-      }
-
-      const request = {
-        config,
-        audio
-      }
-
       this.logger.log(
         `Starting speech recognition with config: ${JSON.stringify(config)}`
       )
 
-      const [response] = await this.speechClient.recognize(request)
-      const results = response.results
-
-      if (!results || results.length === 0) {
-        throw new Error(SPEECH_CONFIG.ERROR_MESSAGES.NO_SPEECH_RESULTS)
-      }
-
-      const result = results[0]
-      const alternative = result.alternatives?.[0]
-
-      if (!alternative) {
+      const recognized = await this.speechToText.recognize({ audio: audioBuffer, config })
+      if (!recognized) {
         throw new Error(SPEECH_CONFIG.ERROR_MESSAGES.NO_SPEECH_RESULTS)
       }
 
@@ -144,8 +113,8 @@ export class SpeechToTextService {
       this.logger.log(`Speech recognition completed in ${processingTime}ms`)
 
       return {
-        transcript: alternative.transcript || '',
-        confidence: alternative.confidence || 0,
+        transcript: recognized.transcript,
+        confidence: recognized.confidence,
         languageCode: config.languageCode
       }
     } catch (error) {
@@ -154,68 +123,6 @@ export class SpeechToTextService {
         `${SPEECH_CONFIG.ERROR_MESSAGES.SPEECH_RECOGNITION_FAILED}: ${error.message}`
       )
     }
-  }
-
-  /**
-   * Convert audio to text with streaming (for real-time processing)
-   */
-  async convertAudioToTextStreaming(
-    audioStream: NodeJS.ReadableStream,
-    options: SpeechToTextOptions = {}
-  ): Promise<SpeechToTextResult> {
-    if (!this.speechClient) {
-      throw new Error(
-        'Speech-to-Text client not initialized. Please check Google Cloud credentials in .env'
-      )
-    }
-
-    return new Promise((resolve, reject) => {
-      if (!this.speechClient) {
-        reject(
-          new Error(
-            'Speech-to-Text client not initialized. Please check Google Cloud credentials in .env'
-          )
-        )
-        return
-      }
-
-      try {
-        const config = {
-          encoding: options.encoding || 'LINEAR16',
-          sampleRateHertz: options.sampleRateHertz || 16000,
-          languageCode: options.languageCode || 'ja-JP',
-          enableAutomaticPunctuation: options.enableAutomaticPunctuation ?? true,
-          model: options.model || 'default'
-        }
-
-        const recognizeStream = this.speechClient
-          .streamingRecognize({
-            config,
-            interimResults: false // Set to true for real-time results
-          })
-          .on('error', (error) => {
-            this.logger.error('Streaming recognition error:', error)
-            reject(error)
-          })
-          .on('data', (data) => {
-            const result = data.results?.[0]
-            const alternative = result?.alternatives?.[0]
-
-            if (alternative) {
-              resolve({
-                transcript: alternative.transcript || '',
-                confidence: alternative.confidence || 0,
-                languageCode: config.languageCode
-              })
-            }
-          })
-
-        audioStream.pipe(recognizeStream)
-      } catch (error) {
-        this.logger.error('Streaming speech recognition failed:', error)
-        reject(error)
-      }
-    })
   }
 
   /**

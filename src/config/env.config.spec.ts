@@ -30,4 +30,13 @@ describe('productionDriverErrors', () => {
       productionDriverErrors({ NODE_ENV: 'production', STORAGE_DRIVER: 'cloudinary' })
     ).toEqual([])
   })
+
+  it('refuses SPEECH_DRIVER=fake in production', () => {
+    expect(
+      productionDriverErrors({ NODE_ENV: 'production', SPEECH_DRIVER: 'fake' })
+    ).toEqual(['SPEECH_DRIVER=fake is not allowed in production'])
+    expect(
+      productionDriverErrors({ NODE_ENV: 'production', SPEECH_DRIVER: 'google' })
+    ).toEqual([])
+  })
 })

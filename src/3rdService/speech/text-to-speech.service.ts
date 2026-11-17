@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { ConfigService } from '@nestjs/config'
-import { TextToSpeechClient } from '@google-cloud/text-to-speech'
+import { TextToSpeech } from '@/infrastructure/integrations/speech/text-to-speech.port'
 import { UploadService } from '../upload/upload.service'
 
 export interface TextToSpeechResult {
@@ -20,42 +19,16 @@ export interface TextToSpeechOptions {
   volumeGainDb?: number
 }
 
+// Speech rules (Japanese defaults, upload of generated audio); the provider
+// call goes through the TextToSpeech port (integration-ports plan I4)
 @Injectable()
 export class TextToSpeechService {
   private readonly logger = new Logger(TextToSpeechService.name)
-  private textToSpeechClient: TextToSpeechClient | null
 
   constructor(
-    private readonly configService: ConfigService,
+    private readonly textToSpeech: TextToSpeech,
     private readonly uploadService: UploadService
-  ) {
-    // Check if credentials are available before initializing
-    const clientEmail = this.configService.get('GOOGLE_CLOUD_CLIENT_EMAIL')
-    const privateKey = this.configService.get('GOOGLE_CLOUD_PRIVATE_KEY')
-    const projectId = this.configService.get('GOOGLE_CLOUD_PROJECT_ID')
-
-    if (!clientEmail || !privateKey || !projectId) {
-      this.logger.warn(
-        'Google Cloud credentials not configured, Text-to-Speech service disabled'
-      )
-      this.textToSpeechClient = null
-      return
-    }
-
-    try {
-      this.textToSpeechClient = new TextToSpeechClient({
-        credentials: {
-          client_email: clientEmail,
-          private_key: privateKey.replace(/\\n/g, '\n')
-        },
-        projectId: projectId
-      })
-      this.logger.log('Google Cloud Text-to-Speech client initialized successfully')
-    } catch (error) {
-      this.logger.warn('Google Cloud Text-to-Speech client not available:', error.message)
-      this.textToSpeechClient = null
-    }
-  }
+  ) {}
 
   /**
    * Convert text to speech using Google Cloud Text-to-Speech
@@ -66,7 +39,7 @@ export class TextToSpeechService {
   ): Promise<TextToSpeechResult> {
     try {
       // Check if client is available
-      if (!this.textToSpeechClient) {
+      if (!this.textToSpeech.isAvailable()) {
         throw new Error(
           'Text-to-Speech client not initialized. Please check Google Cloud credentials.'
         )
@@ -94,17 +67,21 @@ export class TextToSpeechService {
         `Converting text to speech: "${text}" with config: ${JSON.stringify(request.voice)}`
       )
 
-      const [response] = await this.textToSpeechClient.synthesizeSpeech(request)
-
-      if (!response.audioContent) {
-        throw new Error('No audio content received from Text-to-Speech service')
-      }
+      const audioContent = await this.textToSpeech.synthesize({
+        text,
+        languageCode: request.voice.languageCode,
+        voiceName: request.voice.name,
+        audioEncoding: request.audioConfig.audioEncoding,
+        speakingRate: request.audioConfig.speakingRate,
+        pitch: request.audioConfig.pitch,
+        volumeGainDb: request.audioConfig.volumeGainDb
+      })
 
       const processingTime = Date.now() - startTime
       this.logger.log(`Text-to-Speech conversion completed in ${processingTime}ms`)
 
       return {
-        audioContent: Buffer.from(response.audioContent),
+        audioContent,
         audioConfig: {
           audioEncoding: request.audioConfig.audioEncoding,
           sampleRateHertz: 24000
@@ -121,14 +98,10 @@ export class TextToSpeechService {
    */
   async getSupportedVoices(languageCode: string = 'ja-JP'): Promise<any[]> {
     try {
-      if (!this.textToSpeechClient) {
+      if (!this.textToSpeech.isAvailable()) {
         throw new Error('Text-to-Speech client not initialized')
       }
-
-      const [voices] = await this.textToSpeechClient.listVoices({
-        languageCode
-      })
-      return voices.voices || []
+      return await this.textToSpeech.listVoices(languageCode)
     } catch (error) {
       this.logger.error('Failed to get supported voices:', error)
       throw new Error(`Failed to get supported voices: ${error.message}`)

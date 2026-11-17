@@ -41,6 +41,9 @@ const configSchema = z.object({
   MO_URL: z.string().optional(),
 
   //Google Cloud Text-to-Speech (Optional)
+  // SPEECH_DRIVER=fake: deterministic speech without Google (tests, local
+  // demo); refused in production (integration-ports plan I4, D-IP2)
+  SPEECH_DRIVER: z.enum(['google', 'fake']).default('google'),
   GOOGLE_CLOUD_PROJECT_ID: z.string().optional(),
   GOOGLE_CLOUD_CLIENT_EMAIL: z.string().optional(),
   GOOGLE_CLOUD_PRIVATE_KEY: z.string().optional(),
@@ -80,9 +83,12 @@ export const productionDriverErrors = (env: {
   NODE_ENV?: string
   MAIL_DRIVER?: string
   STORAGE_DRIVER?: string
+  SPEECH_DRIVER?: string
 }): string[] => {
   const production = (env.NODE_ENV ?? '').toLowerCase() === 'production'
   const errors: string[] = []
+  if (production && env.SPEECH_DRIVER === 'fake')
+    errors.push('SPEECH_DRIVER=fake is not allowed in production')
   if (production && env.STORAGE_DRIVER === 'local')
     errors.push('STORAGE_DRIVER=local is not allowed in production')
   if (production && env.MAIL_DRIVER === 'log')
