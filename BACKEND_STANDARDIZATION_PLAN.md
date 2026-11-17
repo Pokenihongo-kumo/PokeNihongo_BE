@@ -79,7 +79,7 @@ src/modules/<feature>/
   ...                              # tách use case/mapper khi có trách nhiệm thực
 ```
 
-- Giữ hậu tố `DTO` in hoa, `.repo.ts`, thư mục `dto/` và `entities/`. Chuẩn đích chọn singular `.entity.ts`; rename `.entities.ts` theo từng module trong commit mechanical, không đổi mọi file ngay đầu.
+- Giữ hậu tố `DTO` in hoa, `.repo.ts`, thư mục `dto/` và `entities/`. Chuẩn đích chọn singular `.entity.ts`; rename `.entities.ts` theo từng module trong commit mechanical, không đổi mọi file ngay đầu. Bố cục schema/DTO đích (schema HTTP ở `dto/`) xem [schema-dto-layout-plan.md](docs/standardization/schema-dto-layout-plan.md), áp dụng ở giai đoạn 7.
 - Không bắt cả repo chuyển sang `.repository.ts`, `schemas/`, `<operation>.dto.ts` hoặc `Dto`.
 - Với schema/DTO quá lớn, được tách file theo use case trong cùng thư mục; không tách một lớp một file chỉ để đủ cấu trúc.
 - Hợp nhất DTO Zod/Swagger trùng ý nghĩa. DTO metadata cho file/multipart có thể giữ riêng và phải có lý do; không ép tất cả response thành JSON.
@@ -274,6 +274,7 @@ Gate: boot/shutdown/DI tests pass; không cycle mới, không provider/cron/queu
 2. Thử trên hai module mẫu: service trả kết quả nghiệp vụ có type; presenter/controller ánh xạ message/data; HTTP boundary sở hữu status và envelope. Chỉ thêm abstraction đủ dùng, không dựng framework response riêng.
 3. Giữ nguyên response công khai `{ statusCode, message?, data }` và pagination shape từng route. Chuyển ownership nội bộ không đồng nghĩa xóa statusCode khỏi wire format.
 4. Test thứ tự TransformInterceptor/ZodSerializerInterceptor bằng HTTP thật. Hỗ trợ trạng thái chuyển tiếp có giới hạn, không double-wrap hay bỏ field do serializer.
+   Cân nhắc `@ZodResponse` khi nâng cấp `nestjs-zod` (bản 4.3.1 chưa có): [schema-dto-layout-plan.md](docs/standardization/schema-dto-layout-plan.md) mục 7, quyết định D-SD1.
 5. Rollout từng nhóm; đối chiếu parser/mapper web/mobile với fixture trả từ BE. Xóa logic envelope cũ sau khi consumer nội bộ đã chuyển xong.
 
 Gate: contract không đổi ngoài bảng thay đổi chủ đích; không còn service tự dựng HTTP envelope trong phần hoàn tất. Nếu xuất hiện breaking change không cần thiết, giữ adapter và sửa thiết kế trước khi tiếp tục.
@@ -294,6 +295,7 @@ Gate: REST/socket/job và consumer regression tests pass; không phát thưởng
 ### Giai đoạn 7 — Dọn migration và hoàn tất toàn src
 
 1. Xóa alias/re-export/DTO/helper cũ không còn consumer, cập nhật import, docs và OpenAPI. Không để hai implementation “tạm” tồn tại vô thời hạn.
+   Bố cục schema/DTO (schema HTTP về `dto/`, entity chỉ giữ hình dạng dữ liệu, `resSchema()`, đặt tên `XSchema`/`X`/`XDTO`, module mẫu level): [schema-dto-layout-plan.md](docs/standardization/schema-dto-layout-plan.md).
 2. Hoàn thành inventory tất cả 81 module và các bucket ngoài modules; recount theo source hiện tại. Trạng thái riêng: inventoried, contract-covered, standardized, extracted-if-needed, verified; không đánh đồng format với clean hoàn tất.
 3. Siết lint/type rules dựa trên debt đã giải quyết, audit any/disable còn lại. Ngoại lệ phải có lý do cụ thể; không đòi 0 any bằng mọi giá ở thư viện dynamic.
 4. CI check không mutation cho BE, consumer checks FE/MO và integration DB/Redis test riêng. Ghi rõ kiểm thử thiết bị nào đã chạy.
@@ -648,6 +650,16 @@ Baseline `dev` @ `5ec0e64`: 5 dịch vụ ngoài (PayOS, mail, Gemini, Google Sp
 - [ ] I4 — `SpeechToText`/`TextToSpeech` (Google + fake)
 - [ ] I5 — `LlmClient` một SDK, tách `GeminiService`, gộp recommendations
 - [ ] I6 — Bỏ `3rdService/`, tài liệu `*_DRIVER` và chạy demo không cần key
+
+### Giai đoạn 7 — Bố cục schema và DTO ([schema-dto-layout-plan](docs/standardization/schema-dto-layout-plan.md), design-approved 2026-11-17)
+
+Baseline `dev` @ `84bba0d`: response schema nằm trong `entities/` ở 72 file (chỉ 8 file ở `dto/`), envelope viết tay ở 77 file, 8 file đặt tên schema là `XType`. Làm sau phase 3, trước giai đoạn 5; mỗi batch đối chiếu module mẫu level và các mẫu tham khảo trong plan.
+
+- [ ] S0 — Module mẫu level làm tay, review và chốt
+- [ ] S1 — `resSchema()` thay envelope viết tay
+- [ ] S2 — Đổi tên `XType` → `XSchema`/`X`
+- [ ] S3 — Dời schema HTTP từ `entities/` sang `dto/` (codemod theo mẫu S0)
+- [ ] S4 — Cập nhật convention, thêm chỉ số chặn tái phát vào `arch:deps`
 
 ### Baseline (2026-11-02, trước mọi thay đổi)
 
