@@ -696,4 +696,31 @@ export class PokemonService {
       message: this.i18nService.translate(PokemonMessage.GET_LIST_SUCCESS, lang)
     }
   }
+
+  // ---- Catalog lookups for other modules (module-boundary plan B3) ----
+  // Same arguments and results as the repo methods; no message, no throw.
+
+  getById(...args: Parameters<PokemonRepo['findById']>) {
+    return this.pokemonRepo.findById(...args)
+  }
+
+  findAllRandomable() {
+    return this.pokemonRepo.findAllRandomable()
+  }
+
+  getPokemonListWithPokemonUser(
+    ...args: Parameters<PokemonRepo['getPokemonListWithPokemonUser']>
+  ) {
+    return this.pokemonRepo.getPokemonListWithPokemonUser(...args)
+  }
+
+  getRandomPokemonsByTypeAndRarity(
+    ...args: Parameters<PokemonRepo['getRandomPokemonsByTypeAndRarity']>
+  ) {
+    return this.pokemonRepo.getRandomPokemonsByTypeAndRarity(...args)
+  }
+
+  listWithNameNumImg(...args: Parameters<PokemonRepo['listWithNameNumImg']>) {
+    return this.pokemonRepo.listWithNameNumImg(...args)
+  }
 }

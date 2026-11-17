@@ -1,7 +1,7 @@
 import { MailService } from '@/3rdService/mail/mail.service'
 import { I18nService } from '@/i18n/i18n.service'
 import { AuthMessage, ENTITY_MESSAGE, UserMessage } from '@/i18n/message-keys'
-import { LevelRepo } from '@/modules/level/level.repo'
+import { LevelService } from '@/modules/level/level.service'
 import { UserPokemonRepo } from '@/modules/user-pokemon/user-pokemon.repo'
 import { NotFoundRecordException } from '@/shared/error'
 import {
@@ -17,7 +17,7 @@ import { UserStatus } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { NotStartedLeaderboardSeasonException } from '../leaderboard-season/dto/leaderboard-season.error'
-import { LeaderboardSeasonRepo } from '../leaderboard-season/leaderboard-season.repo'
+import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
 import { MatchRepo } from '../match/match.repo'
 import { UserPokemonNotFoundException } from '../user-pokemon/dto/user-pokemon.error'
 import { UserProgressService } from '../user-progress/user-progress.service'
@@ -40,10 +40,10 @@ export class UserService {
     private mailService: MailService,
     private userPokemonRepo: UserPokemonRepo,
     private i18nService: I18nService,
-    private levelRepo: LevelRepo,
+    private levelService: LevelService,
     private walletSer: WalletService,
     private readonly userCoreService: UserCoreService,
-    private readonly leaderboardSeasonRepo: LeaderboardSeasonRepo,
+    private readonly leaderboardSeasonService: LeaderboardSeasonService,
     private readonly matchRepo: MatchRepo,
     private readonly userSeaHistoryRepo: UserSeasonHistoryRepo,
     private readonly languagesService: LanguagesService,
@@ -300,7 +300,7 @@ export class UserService {
 
       // If user doesn't have a level, assign first user level
       if (!(user as any).level) {
-        const firstLevel = await this.levelRepo.getFirstLevelUser()
+        const firstLevel = await this.levelService.getFirstLevelUser()
         if (firstLevel) {
           await this.userRepo.update({
             id: userId,
@@ -368,7 +368,7 @@ export class UserService {
       )
 
       // Find next level
-      const nextLevel = await this.levelRepo.findByLevelAndType(
+      const nextLevel = await this.levelService.findByLevelAndType(
         currentLevel.levelNumber + 1,
         currentLevel.levelType as any
       )
@@ -508,7 +508,7 @@ export class UserService {
 
     const [currentSeason, totalMatches, totalWins, currentWinStreak, userInfo] =
       await Promise.all([
-        this.leaderboardSeasonRepo.findActiveSeasonWithLangIdAndUser(userId, langId),
+        this.leaderboardSeasonService.findActiveSeasonWithLangIdAndUser(userId, langId),
         this.matchRepo.countMatchesByUserId(userId),
         this.matchRepo.countWinsByUserId(userId),
         this.getCurrentWinStreak(userId),

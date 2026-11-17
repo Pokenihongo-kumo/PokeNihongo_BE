@@ -4,7 +4,7 @@ import { I18nService } from '@/i18n/i18n.service'
 import { UserTestAttemptMessage as M } from '@/i18n/message-keys'
 import { toPaginationMeta } from '@/shared/utils/pagination'
 import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
-import { LevelRepo } from '@/modules/level/level.repo'
+import { LevelService } from '@/modules/level/level.service'
 import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
 import { TestRepo } from '@/modules/test/test.repo'
 import { TestService } from '@/modules/test/test.service'
@@ -57,7 +57,7 @@ export class UserTestAttemptService {
     private readonly i18nService: I18nService,
     private readonly prisma: PrismaService,
     private readonly userRepo: UserRepo,
-    private readonly levelRepo: LevelRepo,
+    private readonly levelService: LevelService,
     private readonly userProgressRepository: UserProgressRepo,
     private readonly rewardService: RewardService,
     private readonly lessonRepository: LessonRepo

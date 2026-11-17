@@ -195,4 +195,15 @@ export class LevelService {
       )
     }
   }
+
+  // ---- Catalog lookups for other modules (module-boundary plan B3) ----
+  // Same arguments and results as the repo methods; no message, no throw.
+
+  findByLevelAndType(...args: Parameters<LevelRepo['findByLevelAndType']>) {
+    return this.levelRepo.findByLevelAndType(...args)
+  }
+
+  getFirstLevelUser() {
+    return this.levelRepo.getFirstLevelUser()
+  }
 }

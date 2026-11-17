@@ -11,9 +11,9 @@ import { UserCoreService } from '@/modules/user/user-core.service'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import { LevelRepo } from '../level/level.repo'
+import { LevelService } from '@/modules/level/level.service'
 import { MatchRepo } from '../match/match.repo'
-import { PokemonRepo } from '../pokemon/pokemon.repo'
+import { PokemonService } from '@/modules/pokemon/pokemon.service'
 import {
   ErrorInitLevelPokemonException,
   InvalidUserAccessPokemonException,
@@ -32,9 +32,9 @@ import { UserPokemonRepo } from './user-pokemon.repo'
 export class UserPokemonService {
   constructor(
     private userPokemonRepo: UserPokemonRepo,
-    private pokemonRepo: PokemonRepo,
+    private pokemonService: PokemonService,
     private readonly matchRepo: MatchRepo,
-    private levelRepo: LevelRepo,
+    private levelService: LevelService,
     private readonly userCoreService: UserCoreService,
     private readonly i18nService: I18nService,
     private prismaService: PrismaService
@@ -61,7 +61,7 @@ export class UserPokemonService {
     }
 
     // 2) Lấy thông tin pokemon
-    const [pokemon] = await Promise.all([this.pokemonRepo.findById(pokemonId)])
+    const [pokemon] = await Promise.all([this.pokemonService.getById(pokemonId)])
 
     if (!pokemon) {
       throw new NotFoundRecordException()
@@ -89,7 +89,7 @@ export class UserPokemonService {
   ) {
     try {
       // Get Pokemon info to use nameJp as nickname if not provided
-      const pokemon = await this.pokemonRepo.findById(data.pokemonId)
+      const pokemon = await this.pokemonService.getById(data.pokemonId)
       if (!pokemon) {
         throw new NotFoundRecordException()
       }
@@ -155,7 +155,7 @@ export class UserPokemonService {
     filterHasPoke?: boolean
   ) {
     // 1. Lấy danh sách tất cả pokemon
-    const pokemonData = await this.pokemonRepo.getPokemonListWithPokemonUser(
+    const pokemonData = await this.pokemonService.getPokemonListWithPokemonUser(
       query,
       query.pageSize
     )
@@ -443,7 +443,7 @@ export class UserPokemonService {
   ) {
     try {
       // Get Pokemon info to use nameJp as nickname if not provided
-      const pokemon = await this.pokemonRepo.findById(data.pokemonId)
+      const pokemon = await this.pokemonService.getById(data.pokemonId)
       if (!pokemon) {
         throw new NotFoundRecordException()
       }
@@ -459,7 +459,7 @@ export class UserPokemonService {
       let isFirstPokemon = false
 
       if (user?.levelId === null) {
-        const firstLevelUser = await this.levelRepo.getFirstLevelUser()
+        const firstLevelUser = await this.levelService.getFirstLevelUser()
         if (!firstLevelUser) {
           throw new ErrorInitLevelPokemonException()
         }
@@ -683,7 +683,7 @@ export class UserPokemonService {
     lang: string = 'vi'
   ) {
     // 1. Lấy danh sách tất cả pokemon
-    const pokemonData = await this.pokemonRepo.getPokemonListWithPokemonUser(query)
+    const pokemonData = await this.pokemonService.getPokemonListWithPokemonUser(query)
     const pokemonIdToRarity = new Map<number, string>()
     ;(pokemonData.results || []).forEach((p: any) => {
       pokemonIdToRarity.set(p.id, p.rarity)

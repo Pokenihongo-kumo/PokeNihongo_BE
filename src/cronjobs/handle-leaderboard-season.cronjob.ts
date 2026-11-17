@@ -1,5 +1,5 @@
 import { RewardClaimStatus, RewardTarget } from '@/common/constants/reward.constant'
-import { LeaderboardSeasonRepo } from '@/modules/leaderboard-season/leaderboard-season.repo'
+import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
 import { addDaysUTC0000, convertEloToRank, todayUTCWith0000 } from '@/shared/helpers'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable, Logger } from '@nestjs/common'
@@ -11,7 +11,7 @@ export class HandleLeaderboardSeasonCronjob {
   private readonly logger = new Logger(HandleLeaderboardSeasonCronjob.name)
   constructor(
     private prisma: PrismaService,
-    private leaderboardRepo: LeaderboardSeasonRepo
+    private leaderboardSeasonService: LeaderboardSeasonService
   ) {}
 
   // Run daily at 00:00 UTC to expire/activate seasons
@@ -229,7 +229,8 @@ export class HandleLeaderboardSeasonCronjob {
    */
   private async finalizeSeason(seasonId: number) {
     // 1) Get season details via repo (userHistories + bare seasonRankRewards)
-    const season = await this.leaderboardRepo.findWithDetailsWithoutLang(seasonId)
+    const season =
+      await this.leaderboardSeasonService.findWithDetailsWithoutLang(seasonId)
     if (!season) {
       this.logger.warn(`[FinalizeSeason] Season ${seasonId} not found or deleted`)
       return

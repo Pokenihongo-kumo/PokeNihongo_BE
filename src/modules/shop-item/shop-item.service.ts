@@ -9,7 +9,7 @@ import {
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { forwardRef, Inject, Injectable } from '@nestjs/common'
-import { PokemonRepo } from '../pokemon/pokemon.repo'
+import { PokemonService } from '@/modules/pokemon/pokemon.service'
 import { ShopBannerRepo } from '../shop-banner/shop-banner.repo'
 import { ShopRarityPriceRepo } from '../shop-rarity-price/shop-rarity-price.repo'
 import {
@@ -36,7 +36,7 @@ export class ShopItemService {
     private shopItemRepo: ShopItemRepo,
     @Inject(forwardRef(() => ShopBannerRepo))
     private shopBannerRepo: ShopBannerRepo,
-    private pokemonRepo: PokemonRepo,
+    private pokemonService: PokemonService,
     private readonly i18nService: I18nService,
     private shopRarityPriceRepo: ShopRarityPriceRepo
   ) {}
@@ -351,7 +351,7 @@ export class ShopItemService {
       // 4  Lấy bảng giá từ shop-rarity-price
       const [banner, allPokemons, allPrices, existingItems] = await Promise.all([
         this.validateShopBannerForCreate(body.shopBannerId),
-        this.pokemonRepo.findAllRandomable(),
+        this.pokemonService.findAllRandomable(),
         this.shopRarityPriceRepo.list({
           currentPage: 1,
           pageSize: 100,

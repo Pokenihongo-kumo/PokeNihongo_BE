@@ -777,4 +777,31 @@ export class LeaderboardSeasonService {
       message: this.i18nService.translate(LeaderboardSeasonMessage.GET_LIST_SUCCESS, lang)
     }
   }
+
+  // ---- Catalog lookups for other modules (module-boundary plan B3) ----
+  // Same arguments and results as the repo methods; no message, no throw.
+
+  getById(...args: Parameters<LeaderboardSeasonRepo['findById']>) {
+    return this.leaderboardSeasonRepo.findById(...args)
+  }
+
+  findWithDetailsWithoutLang(
+    ...args: Parameters<LeaderboardSeasonRepo['findWithDetailsWithoutLang']>
+  ) {
+    return this.leaderboardSeasonRepo.findWithDetailsWithoutLang(...args)
+  }
+
+  findActiveSeason() {
+    return this.leaderboardSeasonRepo.findActiveSeason()
+  }
+
+  findActiveSeasonWithLangIdAndUser(
+    ...args: Parameters<LeaderboardSeasonRepo['findActiveSeasonWithLangIdAndUser']>
+  ) {
+    return this.leaderboardSeasonRepo.findActiveSeasonWithLangIdAndUser(...args)
+  }
+
+  findByIdWithLangId(...args: Parameters<LeaderboardSeasonRepo['findByIdWithLangId']>) {
+    return this.leaderboardSeasonRepo.findByIdWithLangId(...args)
+  }
 }

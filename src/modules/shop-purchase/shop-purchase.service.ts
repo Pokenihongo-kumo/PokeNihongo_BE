@@ -13,7 +13,7 @@ import {
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { forwardRef, Inject, Injectable } from '@nestjs/common'
-import { PokemonRepo } from '../pokemon/pokemon.repo'
+import { PokemonService } from '@/modules/pokemon/pokemon.service'
 import { ShopBannerRepo } from '../shop-banner/shop-banner.repo'
 import { ShopItemRepo } from '../shop-item/shop-item.repo'
 import { UserHasPokemonException } from '../user-pokemon/dto/user-pokemon.error'
@@ -45,7 +45,7 @@ export class ShopPurchaseService {
     private readonly walletTransRepo: WalletTransactionRepo,
     private readonly userPokemonRepo: UserPokemonRepo,
     private readonly userPokemonService: UserPokemonService,
-    private readonly pokemonRepo: PokemonRepo
+    private readonly pokemonService: PokemonService
   ) {}
 
   async list(pagination: PaginationQueryType, lang: string = 'vi') {
