@@ -1,17 +1,12 @@
-import { v2 as cloudinary } from 'cloudinary'
-import { CloudinaryStorage } from 'multer-storage-cloudinary'
+import { memoryStorage } from 'multer'
+// All configs keep the file in memory: UploadService stores it once, through
+// the FileStorage port. The two vocabulary configs used multer-storage-
+// cloudinary, which uploaded during parsing and left no buffer for the
+// service, so those routes always failed (and left an orphan file).
 
 // Multer config cho hình ảnh
 export const CloudinaryImageMulterConfig = {
-  storage: new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: async (req, file) => ({
-      folder: 'vocabulary/images',
-      resource_type: 'image',
-      format: 'png',
-      public_id: file.originalname.split('.')[0]
-    })
-  }),
+  storage: memoryStorage(),
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
       cb(null, true)
@@ -26,15 +21,7 @@ export const CloudinaryImageMulterConfig = {
 
 // Multer config cho audio
 export const CloudinaryAudioMulterConfig = {
-  storage: new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: async (req, file) => ({
-      folder: 'vocabulary/audio',
-      resource_type: 'video', // Cloudinary treats audio as video
-      format: 'mp3',
-      public_id: file.originalname.split('.')[0]
-    })
-  }),
+  storage: memoryStorage(),
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('audio/')) {
       cb(null, true)
@@ -49,7 +36,7 @@ export const CloudinaryAudioMulterConfig = {
 
 // Multer config chung cho multiple files - sử dụng memory storage để xử lý
 export const CloudinaryMultiMulterConfig = {
-  storage: require('multer').memoryStorage(),
+  storage: memoryStorage(),
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('audio/')) {
       cb(null, true)
@@ -65,7 +52,7 @@ export const CloudinaryMultiMulterConfig = {
 
 // Multer config cho upload image với folder tùy chọn - giới hạn 3MB
 export const CloudinaryImageUploadConfig = {
-  storage: require('multer').memoryStorage(),
+  storage: memoryStorage(),
   fileFilter: (req, file, cb) => {
     // Kiểm tra mimetype
     if (file.mimetype.startsWith('image/')) {
@@ -82,7 +69,7 @@ export const CloudinaryImageUploadConfig = {
 
 // Multer config linh hoạt cho tất cả các loại file - chỉ check basic validation
 export const CloudinaryFlexibleUploadConfig = {
-  storage: require('multer').memoryStorage(),
+  storage: memoryStorage(),
   fileFilter: (req, file, cb) => {
     // Chấp nhận tất cả các loại file phổ biến, sẽ validate chi tiết trong controller
     const allowedMimeTypes = [
