@@ -37,4 +37,8 @@ export class UserCoreService {
   findUniqueWithLevel(where: WhereUniqueUserType) {
     return this.userCoreRepo.findUniqueWithLevel(where)
   }
+
+  listIdsPage(currentPage: number, pageSize: number) {
+    return this.userCoreRepo.listIdsPage(currentPage, pageSize)
+  }
 }

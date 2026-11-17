@@ -1,13 +1,13 @@
 import { FeatureKeyType } from '@/common/constants/subscription.constant'
-import { UserSubscriptionRepo } from '@/modules/user-subscription/user-subscription.repo'
+import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
 import { Injectable } from '@nestjs/common'
 
 @Injectable()
 export class SharedUserSubscriptionService {
-  constructor(private userSubscriptionRepo: UserSubscriptionRepo) {}
+  constructor(private userSubscriptionService: UserSubscriptionService) {}
 
   async getValueConvertByfeatureKeyAndUserId(featureKey: FeatureKeyType, userId: number) {
-    const userSubs = await this.userSubscriptionRepo.findActiveByUserIdWithfeatureKey(
+    const userSubs = await this.userSubscriptionService.findActiveByUserIdWithfeatureKey(
       userId,
       featureKey
     )
@@ -41,7 +41,7 @@ export class SharedUserSubscriptionService {
   }
 
   async getHasByfeatureKeyAndUserId(featureKey: FeatureKeyType, userId: number) {
-    const userSubs = await this.userSubscriptionRepo.findActiveByUserIdWithfeatureKey(
+    const userSubs = await this.userSubscriptionService.findActiveByUserIdWithfeatureKey(
       userId,
       featureKey
     )

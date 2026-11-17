@@ -26,12 +26,12 @@ import { LanguagesService } from '@/modules/languages/languages.service'
 import { PokemonService } from '@/modules/pokemon/pokemon.service'
 import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
 import { TranslationService } from '@/modules/translation/translation.service'
-import { UserPokemonRepo } from '../user-pokemon/user-pokemon.repo'
+import { UserPokemonService } from '@/modules/user-pokemon/user-pokemon.service'
 import { CreateUserRewardHistoryBodyType } from '../user-reward-history/entities/user-reward-history.entities'
 import { UserRewardHistoryService } from '../user-reward-history/user-reward-history.service'
 import { UserService } from '../user/user.service'
-import { WalletTransactionRepo } from '../wallet-transaction/wallet-transaction.repo'
-import { WalletRepo } from '../wallet/wallet.repo'
+import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
+import { WalletService } from '@/modules/wallet/wallet.service'
 import { RewardAlreadyExistsException } from './dto/reward.error'
 import {
   CreateRewardBodyInputType,
@@ -49,12 +49,12 @@ export class RewardService {
     private readonly languagesService: LanguagesService,
     private readonly translationService: TranslationService,
     private readonly userService: UserService,
-    private readonly walletRepo: WalletRepo,
+    private readonly walletService: WalletService,
     private readonly pokemonService: PokemonService,
-    private readonly userPokemonRepo: UserPokemonRepo,
+    private readonly userPokemonService: UserPokemonService,
     private readonly userRewardHistoryService: UserRewardHistoryService,
     private readonly userSubService: SharedUserSubscriptionService,
-    private readonly walletTransactionRepo: WalletTransactionRepo,
+    private readonly walletTransactionService: WalletTransactionService,
     private readonly sharedNotificationService: SharedNotificationService
   ) {}
 
@@ -702,7 +702,7 @@ export class RewardService {
           0
         )
         const finalAmount = totalCoins * valueIncrease
-        const coinsResult = await this.walletRepo.addBalanceToWalletWithType({
+        const coinsResult = await this.walletService.addBalanceToWalletWithType({
           userId,
           type: WalletType.POKE_COINS,
           amount: finalAmount
@@ -714,7 +714,7 @@ export class RewardService {
         // ✅ Create wallet transaction
         if (coinsResult) {
           try {
-            await this.walletTransactionRepo.create({
+            await this.walletTransactionService.record({
               createdById: userId,
               data: {
                 walletId: coinsResult.id,
@@ -766,7 +766,7 @@ export class RewardService {
         )
         const finalAmount = totalSparkles * valueIncrease
 
-        const sparklesResult = await this.walletRepo.addBalanceToWalletWithType({
+        const sparklesResult = await this.walletService.addBalanceToWalletWithType({
           userId,
           type: WalletType.SPARKLES,
           amount: finalAmount
@@ -778,7 +778,7 @@ export class RewardService {
         // ✅ Create wallet transaction
         if (sparklesResult) {
           try {
-            await this.walletTransactionRepo.create({
+            await this.walletTransactionService.record({
               createdById: userId,
               data: {
                 walletId: sparklesResult.id,
@@ -827,14 +827,14 @@ export class RewardService {
         const pokemonId = pokemonReward.rewardItem
 
         // Check if user already has this pokemon
-        const existingUserPokemon = await this.userPokemonRepo.findByUserAndPokemon(
+        const existingUserPokemon = await this.userPokemonService.findByUserAndPokemon(
           userId,
           pokemonId
         )
 
         if (!existingUserPokemon) {
           // User doesn't have this pokemon -> add it
-          const newUserPokemon = await this.userPokemonRepo.create({
+          const newUserPokemon = await this.userPokemonService.insert({
             userId,
             data: {
               pokemonId,
@@ -896,7 +896,7 @@ export class RewardService {
 
           // Add coins to user wallet
           const finalCoinValue = coinValue * valueIncrease
-          const updatedWallet = await this.walletRepo.addBalanceToWalletWithType({
+          const updatedWallet = await this.walletService.addBalanceToWalletWithType({
             userId,
             type: WalletType.SPARKLES,
             amount: finalCoinValue
@@ -905,7 +905,7 @@ export class RewardService {
           // ✅ Create wallet transaction for converted pokemon
           if (updatedWallet) {
             try {
-              await this.walletTransactionRepo.create({
+              await this.walletTransactionService.record({
                 createdById: userId,
                 data: {
                   walletId: updatedWallet.id,

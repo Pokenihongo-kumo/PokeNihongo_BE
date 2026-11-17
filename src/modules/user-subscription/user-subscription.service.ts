@@ -353,4 +353,31 @@ export class UserSubscriptionService {
     )
     return userSubscription
   }
+
+  // ---- For other modules (module-boundary plan B4) ----
+  // Same arguments (a caller's transaction client included) and results as the
+  // repo methods, so callers keep their transactions and write order.
+
+  checkActiveSubscriptionByUserId(
+    ...args: Parameters<UserSubscriptionRepo['checkActiveSubscriptionByUserId']>
+  ) {
+    return this.userSubscriptionRepo.checkActiveSubscriptionByUserId(...args)
+  }
+
+  // The repo's create (the service's create answers the HTTP route)
+  createUserSubscription(...args: Parameters<UserSubscriptionRepo['create']>) {
+    return this.userSubscriptionRepo.create(...args)
+  }
+
+  findActiveByUserIdPlanIdAndStatus(
+    ...args: Parameters<UserSubscriptionRepo['findActiveByUserIdPlanIdAndStatus']>
+  ) {
+    return this.userSubscriptionRepo.findActiveByUserIdPlanIdAndStatus(...args)
+  }
+
+  findActiveByUserIdWithfeatureKey(
+    ...args: Parameters<UserSubscriptionRepo['findActiveByUserIdWithfeatureKey']>
+  ) {
+    return this.userSubscriptionRepo.findActiveByUserIdWithfeatureKey(...args)
+  }
 }

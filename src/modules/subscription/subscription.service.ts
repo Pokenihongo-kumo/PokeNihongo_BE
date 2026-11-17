@@ -14,7 +14,7 @@ import {
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { InvoiceRepo } from '../invoice/invoice.repo'
+import { InvoiceService } from '@/modules/invoice/invoice.service'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { SubscriptionPlanRepo } from '../subscription-plan/subscription-plan.repo'
 import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
@@ -36,7 +36,7 @@ export class SubscriptionService {
     private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
     private readonly translationService: TranslationService,
-    private readonly invoiceRepo: InvoiceRepo
+    private readonly invoiceService: InvoiceService
   ) {}
 
   private async convertTranslationsToLangCodes(
@@ -500,7 +500,7 @@ export class SubscriptionService {
       )
       const pendingInvoicesData = await Promise.all(
         allPlanIds.map((planId) =>
-          this.invoiceRepo.findActiveByUserIdPlanIdAndStatus(
+          this.invoiceService.findActiveByUserIdPlanIdAndStatus(
             userId,
             planId,
             InvoiceStatus.PENDING

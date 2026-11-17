@@ -23,10 +23,9 @@ import { InvalidGachaBannerException } from '../gacha-item/dto/gacha-item.error'
 import { GachaItemType } from '../gacha-item/entities/gacha-item.entity'
 import { GachaRollHistoryRepo } from '../gacha-roll-history/gacha-roll-history.repo'
 import { UserGachaPityRepo } from '../user-gacha-pity/user-gacha-pity.repo'
-import { UserPokemonRepo } from '../user-pokemon/user-pokemon.repo'
 import { UserPokemonService } from '../user-pokemon/user-pokemon.service'
-import { WalletTransactionRepo } from '../wallet-transaction/wallet-transaction.repo'
-import { WalletRepo } from '../wallet/wallet.repo'
+import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
+import { WalletService } from '@/modules/wallet/wallet.service'
 import {
   GachaPurchaseNotFoundException,
   NotEnoughBalanceException
@@ -43,9 +42,8 @@ export class GachaPurchaseService {
     // private readonly gachaItemRepo: GachaItemRepo,
     private readonly gachaRollHistoryRepo: GachaRollHistoryRepo,
     private readonly userGachaPityRepo: UserGachaPityRepo,
-    private readonly walletRepo: WalletRepo,
-    private readonly walletTransRepo: WalletTransactionRepo,
-    private readonly userPokemonRepo: UserPokemonRepo,
+    private readonly walletService: WalletService,
+    private readonly walletTransactionService: WalletTransactionService,
     private readonly userPokemonService: UserPokemonService,
     private readonly userSubService: SharedUserSubscriptionService
     // private readonly pokemonRepo: PokemonRepo
@@ -112,7 +110,7 @@ export class GachaPurchaseService {
       })
 
       const totalCost = gachaBanner.costRoll * rollCount
-      const userWallet = await this.walletRepo.checkEnoughBalance({
+      const userWallet = await this.walletService.checkEnoughBalance({
         userId,
         type: walletType.SPARKLES,
         amount: totalCost
@@ -138,7 +136,7 @@ export class GachaPurchaseService {
             },
             prismaTx
           ),
-          this.walletRepo.minusBalanceToWalletWithTypeUserId(
+          this.walletService.minusBalanceToWalletWithTypeUserId(
             { userId, type: walletType.SPARKLES, amount: totalCost },
             prismaTx
           ),
@@ -149,7 +147,7 @@ export class GachaPurchaseService {
         ])
         if (!updatedWallet) throw new NotEnoughBalanceException()
         // 2. Create Wallet Transaction referencing the purchase
-        const walletTrans = await this.walletTransRepo.create(
+        const walletTrans = await this.walletTransactionService.record(
           {
             createdById: userId,
             data: {
@@ -341,7 +339,7 @@ export class GachaPurchaseService {
         if (addSparklesList.length > 0) {
           const totalSparkles = addSparklesList.reduce((a, b) => a + b, 0)
 
-          await this.walletRepo.addBalanceToWalletWithType(
+          await this.walletService.addBalanceToWalletWithType(
             {
               userId,
               type: walletType.SPARKLES,

@@ -6,7 +6,7 @@ import { LevelModule } from '@/modules/level/level.module'
 import { UserPokemonModule } from '@/modules/user-pokemon/user-pokemon.module'
 import { SharedModule } from '@/shared/shared.module'
 import { SharedUserDeletionProcessor } from '@/shared/workers/user-deletion.processor'
-import { forwardRef, Module } from '@nestjs/common'
+import { Module } from '@nestjs/common'
 import { LanguagesModule } from '../languages/languages.module'
 import { LeaderboardSeasonModule } from '../leaderboard-season/leaderboard-season.module'
 import { MatchModule } from '../match/match.module'
@@ -25,7 +25,7 @@ import { UserService } from './user.service'
     SharedModule,
     BullQueueModule.registerQueue(BullQueue.USER_DELETION),
     MailModule,
-    forwardRef(() => WalletModule),
+    WalletModule,
     LeaderboardSeasonModule,
     MatchModule,
     UserSeasonHistoryModule,

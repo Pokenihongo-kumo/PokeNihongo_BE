@@ -133,4 +133,13 @@ export class WalletTransactionService {
       throw error
     }
   }
+
+  // ---- For other modules (module-boundary plan B4) ----
+  // Same arguments (a caller's transaction client included) and results as the
+  // repo methods, so callers keep their transactions and write order.
+
+  // Records one wallet movement (the repo's create)
+  record(...args: Parameters<WalletTransactionRepo['create']>) {
+    return this.walletTransactionRepo.create(...args)
+  }
 }

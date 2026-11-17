@@ -31,8 +31,8 @@ import { UserCoreService } from '@/modules/user/user-core.service'
 import { SharedNotificationService } from '@/shared/services/shared-notification.service'
 import { SharedUserSubscriptionService } from '@/shared/services/user-subscription.service'
 import { AttendenceConfigRepo } from '../attendence-config/attendence-config.repo'
-import { WalletTransactionRepo } from '../wallet-transaction/wallet-transaction.repo'
-import { WalletRepo } from '../wallet/wallet.repo'
+import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
+import { WalletService } from '@/modules/wallet/wallet.service'
 import { AttendanceRepo } from './attendence.repo'
 import { AttendancegAlreadyExistsException } from './dto/attendance.error'
 import {
@@ -49,8 +49,8 @@ export class AttendanceService {
     private userCoreService: UserCoreService,
     private readonly i18nService: I18nService,
     private readonly userDailyRequestService: UserDailyRequestService,
-    private readonly walletRepo: WalletRepo,
-    private readonly walletTransactionRepo: WalletTransactionRepo,
+    private readonly walletService: WalletService,
+    private readonly walletTransactionService: WalletTransactionService,
     private readonly userSubService: SharedUserSubscriptionService,
     private readonly sharedNotificationService: SharedNotificationService
   ) {}
@@ -192,7 +192,7 @@ export class AttendanceService {
         }),
 
         // Cộng coin vào ví SPARKLES
-        this.walletRepo.addBalanceToWalletWithType({
+        this.walletService.addBalanceToWalletWithType({
           userId: createdById,
           type: walletType.SPARKLES,
           amount: totalCoin * valueIncrease
@@ -201,7 +201,7 @@ export class AttendanceService {
 
       // Lưu lịch sử wallet transaction
       if (wallet) {
-        await this.walletTransactionRepo.create({
+        await this.walletTransactionService.record({
           createdById,
           data: {
             walletId: wallet.id,

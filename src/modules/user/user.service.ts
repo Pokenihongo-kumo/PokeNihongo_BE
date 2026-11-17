@@ -2,7 +2,7 @@ import { MailService } from '@/3rdService/mail/mail.service'
 import { I18nService } from '@/i18n/i18n.service'
 import { AuthMessage, ENTITY_MESSAGE, UserMessage } from '@/i18n/message-keys'
 import { LevelService } from '@/modules/level/level.service'
-import { UserPokemonRepo } from '@/modules/user-pokemon/user-pokemon.repo'
+import { UserPokemonService } from '@/modules/user-pokemon/user-pokemon.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   convertEloToRank,
@@ -38,7 +38,7 @@ export class UserService {
   constructor(
     private userRepo: UserRepo,
     private mailService: MailService,
-    private userPokemonRepo: UserPokemonRepo,
+    private userPokemonService: UserPokemonService,
     private i18nService: I18nService,
     private levelService: LevelService,
     private walletSer: WalletService,
@@ -251,7 +251,7 @@ export class UserService {
       }
 
       // Check if user owns this Pokemon
-      const userPokemon = await this.userPokemonRepo.findByUserAndPokemon(
+      const userPokemon = await this.userPokemonService.findByUserAndPokemon(
         userId,
         data.pokemonId
       )
@@ -260,10 +260,10 @@ export class UserService {
       }
 
       // Unset main for all user's pokemon first
-      await this.userPokemonRepo.unsetMainPokemon(userId)
+      await this.userPokemonService.unsetMainPokemon(userId)
 
       // Set the selected pokemon as main
-      await this.userPokemonRepo.update({
+      await this.userPokemonService.updateUserPokemon({
         id: userPokemon.id,
         data: { isMain: true }
       })

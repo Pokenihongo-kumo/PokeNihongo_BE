@@ -1,3 +1,4 @@
+import { UserSubscriptionModule } from '@/modules/user-subscription/user-subscription.module'
 import { RoleModule } from '@/modules/role/role.module'
 import { UserCoreModule } from '@/modules/user/user-core.module'
 import { MailSenderModule } from '@/infrastructure/integrations/mail/mail-sender.module'
@@ -16,6 +17,7 @@ import { OtpService } from './otp.service'
 
 @Module({
   imports: [
+    UserSubscriptionModule,
     RoleModule,
     UserCoreModule,
     MailSenderModule,
