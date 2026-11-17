@@ -1,7 +1,7 @@
 import { BullQueueService } from '@/3rdService/bull/bull-queue.service'
-import { OtpPurpose } from '@/3rdService/mail/otp-value'
+import { OtpPurpose } from '@/modules/auth/otp-value'
 import { maskEmail } from '@/common/utils/mask'
-import { MailService } from '@/3rdService/mail/mail.service'
+import { OtpService } from '@/modules/auth/otp.service'
 import { UploadService } from '@/3rdService/upload/upload.service'
 import { TypeOfVerificationCode } from '@/common/constants/auth.constant'
 import { BullQueue } from '@/common/constants/bull-action.constant'
@@ -68,7 +68,7 @@ export class AuthService {
     private readonly roleService: RoleService,
     private readonly authRepository: AuthRepository,
     private readonly userCoreService: UserCoreService,
-    private readonly mailService: MailService,
+    private readonly otpService: OtpService,
     private readonly levelService: LevelService,
     private readonly bullQueueService: BullQueueService,
     private readonly uploadService: UploadService,
@@ -348,7 +348,7 @@ export class AuthService {
     const template = 'otp'
     const content = 'Mã OTP của bạn là: '
     const bodyContent = 'Vui lòng nhập mã OTP để làm bước tiếp theo.'
-    await this.mailService.generateAndSendOtp(
+    await this.otpService.generateAndSendOtp(
       registerEmailLowerCase,
       TypeOfVerificationCode.FORGOT_PASSWORD,
       template,
@@ -379,7 +379,7 @@ export class AuthService {
     }
 
     // Verify OTP
-    await this.mailService.verifyOtpStrict(
+    await this.otpService.verifyOtpStrict(
       email,
       code,
       TypeOfVerificationCode.FORGOT_PASSWORD
@@ -561,7 +561,7 @@ export class AuthService {
       const template = 'otp'
       const content = 'MÃ OTP MAIL ĐĂNG KÝ CỦA BẠN: '
       const bodyContent = 'Vui lòng nhập mã OTP để tiếp tục bước tiếp theo.'
-      await this.mailService.generateAndSendOtp(
+      await this.otpService.generateAndSendOtp(
         emailLower,
         TypeOfVerificationCode.REGISTER,
         template,
@@ -595,7 +595,7 @@ export class AuthService {
       const bodyContent = `Chúng tôi phát hiện lần đăng nhập đầu tiên từ thiết bị mới
       Vui lòng nhập mã OTP để xác thực thiết bị này.`
 
-      await this.mailService.generateAndSendOtp(
+      await this.otpService.generateAndSendOtp(
         email,
         TypeOfVerificationCode.LOGIN,
         template,
@@ -634,7 +634,7 @@ export class AuthService {
     try {
       const { email, code, type } = body
       // The code of this purpose only, deleted in the same step (works once)
-      if (await this.mailService.consumeOtp(email, type as OtpPurpose, code)) {
+      if (await this.otpService.consumeOtp(email, type as OtpPurpose, code)) {
         this.logger.log(`OTP verified and deleted for ${maskEmail(email)}`)
 
         // ADR D-auth §2: the proof POST /auth/register asks for

@@ -1,7 +1,7 @@
 import { AppModule } from '@/app.module'
 import { PrismaService } from '@/shared/services/prisma.service'
-import { otpKey } from '@/3rdService/mail/otp-value'
-import { MailerService } from '@nestjs-modules/mailer'
+import { otpKey } from '@/modules/auth/otp-value'
+import { MailSender } from '@/infrastructure/integrations/mail/mail-sender.port'
 import { INestApplication, VersioningType } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import Redis from 'ioredis'
@@ -13,7 +13,7 @@ import { loginAsTestAdmin, TEST_ADMIN, TEST_USER_AGENT } from '../support/test-a
 // without await: the request answered "OTP sent" and the rejected promise was
 // left unhandled, which ends a Node 26 process. Now the request waits for the
 // mail and answers 503, and the code nobody received is dropped. The real
-// MailService runs; only the transport (MailerService) is replaced.
+// OtpService runs; only the MailSender port is replaced.
 describe('Mail provider unavailable (e2e)', () => {
   let app: INestApplication<App>
   let redis: Redis
@@ -39,9 +39,9 @@ describe('Mail provider unavailable (e2e)', () => {
   beforeAll(async () => {
     process.on('unhandledRejection', onUnhandled)
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
-      .overrideProvider(MailerService)
+      .overrideProvider(MailSender)
       .useValue({
-        sendMail: () =>
+        send: () =>
           nextSends.shift()?.() ??
           Promise.reject(new Error('SMTP unavailable (test double)'))
       })

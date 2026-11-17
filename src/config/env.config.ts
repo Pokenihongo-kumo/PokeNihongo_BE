@@ -50,7 +50,9 @@ const configSchema = z.object({
   // Gemini Flash API Key (Optional - riêng cho Flash models)
   GEMINI_FLASH_API_KEY: z.string().optional(),
 
-  // Mail
+  // Mail. MAIL_DRIVER=log writes a log line instead of sending (tests, local
+  // demo); refused in production (integration-ports plan I1, D-IP2)
+  MAIL_DRIVER: z.enum(['smtp', 'log']).default('smtp'),
   MAIL_HOST: z.string().optional(),
   MAIL_PORT: z.coerce.number().optional(),
   MAIL_USER: z.string().optional(),
@@ -68,11 +70,33 @@ const configSchema = z.object({
   FIREBASE_PRIVATE_KEY_ID: z.string().optional() // Optional (not required for initialization)
 })
 
+// A fake integration driver must never run in production
+export const productionDriverErrors = (env: {
+  NODE_ENV?: string
+  MAIL_DRIVER?: string
+}): string[] => {
+  const production = (env.NODE_ENV ?? '').toLowerCase() === 'production'
+  const errors: string[] = []
+  if (production && env.MAIL_DRIVER === 'log')
+    errors.push('MAIL_DRIVER=log is not allowed in production')
+  return errors
+}
+
 const configServer = configSchema.safeParse(process.env)
 
 if (!configServer.success) {
   console.error('Invalid environment variables')
   console.error(configServer.error.format())
+  process.exit(1)
+}
+
+const driverErrors = productionDriverErrors({
+  ...configServer.data,
+  NODE_ENV: process.env.NODE_ENV
+})
+if (driverErrors.length > 0) {
+  console.error('Invalid environment variables')
+  driverErrors.forEach((message) => console.error(message))
   process.exit(1)
 }
 

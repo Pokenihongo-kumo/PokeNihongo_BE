@@ -1,13 +1,10 @@
+import { MailSenderModule } from '@/infrastructure/integrations/mail/mail-sender.module'
 import { Module } from '@nestjs/common'
-import { ConfigModule } from '@nestjs/config'
-import { RedisModule } from '../redis/redis.module'
-import { MailController } from './mail.controller'
 import { MailService } from './mail.service'
-import { MailModule as MailerConfigModule } from './mailer/mail.module'
 
+// Non-OTP emails (account, subscription); OTP lives in auth (OtpService)
 @Module({
-  imports: [ConfigModule, RedisModule, MailerConfigModule],
-  controllers: [MailController],
+  imports: [MailSenderModule],
   providers: [MailService],
   exports: [MailService]
 })

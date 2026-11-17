@@ -1,7 +1,8 @@
 import { AppModule } from '@/app.module'
 import { MailService } from '@/3rdService/mail/mail.service'
+import { OtpService } from '@/modules/auth/otp.service'
 import envConfig from '@/config/env.config'
-import { CONSUME_IF_CODE, OtpPurpose, otpKey } from '@/3rdService/mail/otp-value'
+import { CONSUME_IF_CODE, OtpPurpose, otpKey } from '@/modules/auth/otp-value'
 import { registrationTokenKey } from '@/modules/auth/registration-token'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { INestApplication, VersioningType } from '@nestjs/common'
@@ -61,16 +62,18 @@ describe('Auth batch 5i contract (e2e)', () => {
   beforeAll(async () => {
     envConfig.GOOGLE_CLIENT_REDIRECT_URI = 'https://app.example.test/auth/google'
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
-      .overrideProvider(MailService)
+      .overrideProvider(OtpService)
       .useValue({
         generateAndSendOtp: async (email: string, purpose: OtpPurpose) => {
           await redis.set(otpKey(purpose, email), OTP, 'EX', 300)
         },
         consumeOtp: async (email: string, purpose: OtpPurpose, code: string) =>
           (await redis.eval(CONSUME_IF_CODE, 1, otpKey(purpose, email), code)) === 1,
-        verifyOtpStrict: async () => true,
+        verifyOtpStrict: async () => true
+      })
+      .overrideProvider(MailService)
+      .useValue({
         sendMail: async () => undefined,
-        sendOtpMail: async () => undefined,
         sendEmailPasswordAccount: async () => undefined
       })
       .compile()
