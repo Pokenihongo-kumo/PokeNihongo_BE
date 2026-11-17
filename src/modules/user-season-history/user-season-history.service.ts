@@ -8,7 +8,7 @@ import {
   isNotFoundPrismaError
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
-import { UserCoreRepo } from '@/modules/user/user-core.repo'
+import { UserCoreService } from '@/modules/user/user-core.service'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { UserRewardSourceType } from '@prisma/client'
 import { LanguagesService } from '@/modules/languages/languages.service'
@@ -35,7 +35,7 @@ export class UserSeasonHistoryService {
     private readonly rewardService: RewardService,
     private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
-    private readonly sharedUserRepo: UserCoreRepo
+    private readonly userCoreService: UserCoreService
   ) {}
 
   async list(pagination: PaginationQueryType, lang: string = 'vi') {
@@ -83,7 +83,7 @@ export class UserSeasonHistoryService {
         throw new NotFoundRecordException()
       }
 
-      const userInfo = await this.sharedUserRepo.findUnique({ id: userId })
+      const userInfo = await this.userCoreService.findUnique({ id: userId })
       if (!userInfo) {
         throw new UserNotFoundException()
       }

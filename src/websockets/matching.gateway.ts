@@ -1,7 +1,7 @@
 import { I18nService } from '@/i18n/i18n.service'
 import { MatchingSocketMessage } from '@/i18n/message-keys'
 import { addTimeUTC } from '@/shared/helpers'
-import { UserCoreRepo } from '@/modules/user/user-core.repo'
+import { UserCoreService } from '@/modules/user/user-core.service'
 import { TokenService } from '@/shared/services/token.service'
 import { Injectable, Logger } from '@nestjs/common'
 import {
@@ -47,7 +47,7 @@ export class MatchingGateway {
   private readonly logger = new Logger(MatchingGateway.name)
 
   constructor(
-    private readonly sharedUserRepo: UserCoreRepo,
+    private readonly userCoreService: UserCoreService,
     private readonly tokenService: TokenService,
     private readonly i18nService: I18nService,
     private readonly socketServerService: SocketServerService
@@ -142,8 +142,8 @@ export class MatchingGateway {
     try {
       // Fetch user details for both users
       const [user1, user2] = await Promise.all([
-        this.sharedUserRepo.findUnique({ id: participant1.userId }),
-        this.sharedUserRepo.findUnique({ id: participant2.userId })
+        this.userCoreService.findUnique({ id: participant1.userId }),
+        this.userCoreService.findUnique({ id: participant2.userId })
       ])
 
       if (!user1 || !user2) {

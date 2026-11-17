@@ -40,8 +40,8 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { RoleCoreRepo } from '@/modules/role/role-core.repo'
-import { UserCoreRepo } from '@/modules/user/user-core.repo'
+import { RoleService } from '@/modules/role/role.service'
+import { UserCoreService } from '@/modules/user/user-core.service'
 import { HashingService } from '@/shared/services/hashing.service'
 import { TokenService } from '@/shared/services/token.service'
 import { AccessTokenPayloadCreate } from '@/shared/types/jwt.type'
@@ -65,9 +65,9 @@ export class AuthService {
   private readonly logger = new Logger(AuthService.name)
   constructor(
     private readonly hashingService: HashingService,
-    private readonly sharedRoleRepository: RoleCoreRepo,
+    private readonly roleService: RoleService,
     private readonly authRepository: AuthRepository,
-    private readonly sharedUserRepository: UserCoreRepo,
+    private readonly userCoreService: UserCoreService,
     private readonly mailService: MailService,
     private readonly levelService: LevelService,
     private readonly bullQueueService: BullQueueService,
@@ -162,7 +162,7 @@ export class AuthService {
       const hashedPassword = await this.hashingService.hash(body.password)
 
       // const firstLevel = await this.levelRepo.getFirstLevelUser()
-      const roleId = await this.sharedRoleRepository.getCustomerRoleId()
+      const roleId = await this.roleService.getCustomerRoleId()
       const [user] = await Promise.all([
         this.authRepository.registerUser({
           email: body.email.toLowerCase(),
@@ -174,7 +174,7 @@ export class AuthService {
       // tao device
       const device = await this.createUserDevice(user.id, userAgent, ip)
       // nhan role
-      const role = await this.sharedRoleRepository.getRoleById(roleId)
+      const role = await this.roleService.getRoleById(roleId)
 
       // Khởi tạo UserProgress cho tất cả lesson
       await this.userProgressService.initUserProgress(user.id)
@@ -332,7 +332,7 @@ export class AuthService {
   async forgotPassword(body: ForgotPasswordBodyType, lang: string = 'vi') {
     const { email } = body
     // 1. Kiểm tra email đã tồn tại trong database chưa
-    const user = await this.sharedUserRepository.findUnique({
+    const user = await this.userCoreService.findUnique({
       email
     })
     if (!user) {
@@ -371,7 +371,7 @@ export class AuthService {
   ) {
     const { email, code } = body
     // 1. Kiểm tra email đã tồn tại trong database chưa
-    const user = await this.sharedUserRepository.findUniqueIncludeRole({
+    const user = await this.userCoreService.findUniqueIncludeRole({
       email
     })
     if (!user) {
@@ -419,7 +419,7 @@ export class AuthService {
   async resetPassword(body: ResetPasswordBodyType, userId: number, lang: string = 'vi') {
     const { newPassword, email, confirmNewPassword } = body
     // 1. Kiểm tra email đã tồn tại trong database chưa
-    const user = await this.sharedUserRepository.findUnique({ email })
+    const user = await this.userCoreService.findUnique({ email })
 
     if (!user || user.id !== userId) {
       throw new EmailNotFoundException()
@@ -428,7 +428,7 @@ export class AuthService {
     // tới đây đổi mật khẩu cho nó
     const hashedPassword = await this.hashingService.hash(newPassword)
     await Promise.all([
-      this.sharedUserRepository.update(
+      this.userCoreService.update(
         { id: user.id },
         {
           password: hashedPassword,
@@ -450,7 +450,7 @@ export class AuthService {
   ) {
     const { password, newPassword, confirmNewPassword } = body
     // 1. Kiểm tra email đã tồn tại trong database chưa
-    const user = await this.sharedUserRepository.findUnique({ id: userId })
+    const user = await this.userCoreService.findUnique({ id: userId })
 
     if (!user) {
       throw new EmailNotFoundException()
@@ -467,7 +467,7 @@ export class AuthService {
     // tới đây đổi mật khẩu cho nó
     const hashedPassword = await this.hashingService.hash(newPassword)
     await Promise.all([
-      this.sharedUserRepository.update(
+      this.userCoreService.update(
         { id: user.id },
         {
           password: hashedPassword,
@@ -483,7 +483,7 @@ export class AuthService {
   }
 
   async getMe(userId: number, lang: string = 'vi') {
-    const user = await this.sharedUserRepository.findUniqueProfileWithStats({
+    const user = await this.userCoreService.findUniqueProfileWithStats({
       id: userId
     })
     if (!user) {
@@ -512,7 +512,7 @@ export class AuthService {
     { data, userId }: { data: UpdateMeBodyType; userId: number },
     lang: string = 'vi'
   ) {
-    const user = await this.sharedUserRepository.findUnique({
+    const user = await this.userCoreService.findUnique({
       id: userId
     })
     if (!user) {
@@ -533,7 +533,7 @@ export class AuthService {
       }
     }
 
-    const updatedUser = await this.sharedUserRepository.update(
+    const updatedUser = await this.userCoreService.update(
       { id: userId },
       {
         ...data,
@@ -657,7 +657,7 @@ export class AuthService {
 
         // neu type === 'login' thi tao device
         if (type === TypeOfVerificationCode.LOGIN) {
-          const user = await this.sharedUserRepository.findUnique({ email })
+          const user = await this.userCoreService.findUnique({ email })
           if (!user) {
             throw new EmailNotFoundException()
           }
@@ -696,7 +696,7 @@ export class AuthService {
 
   async verifyForgotPasswordByAction(email: string, userAgent: string, ip: string) {
     // 1. Kiểm tra email đã tồn tại trong database chưa
-    const user = await this.sharedUserRepository.findUniqueIncludeRole({
+    const user = await this.userCoreService.findUniqueIncludeRole({
       email
     })
     if (!user) {

@@ -1,3 +1,4 @@
+import { UserCoreModule } from '@/modules/user/user-core.module'
 import { Module } from '@nestjs/common'
 import { WebsocketsModule } from 'src/websockets/websockets.module'
 import { LeaderboardSeasonModule } from '../leaderboard-season/leaderboard-season.module'
@@ -10,6 +11,7 @@ import { MatchQueueService } from './match-queue.service'
 
 @Module({
   imports: [
+    UserCoreModule,
     UserPokemonModule,
 
     MatchModule,

@@ -1,3 +1,4 @@
+import { UserCoreModule } from '@/modules/user/user-core.module'
 import { LanguagesModule } from '@/modules/languages/languages.module'
 import { Module, forwardRef } from '@nestjs/common'
 import { LeaderboardSeasonModule } from '../leaderboard-season/leaderboard-season.module'
@@ -7,7 +8,12 @@ import { UserSeasonHistoryRepo } from './user-season-history.repo'
 import { UserSeasonHistoryService } from './user-season-history.service'
 
 @Module({
-  imports: [LanguagesModule, LeaderboardSeasonModule, forwardRef(() => RewardModule)],
+  imports: [
+    UserCoreModule,
+    LanguagesModule,
+    LeaderboardSeasonModule,
+    forwardRef(() => RewardModule)
+  ],
   controllers: [UserSeasonHistoryController],
   providers: [UserSeasonHistoryService, UserSeasonHistoryRepo],
   exports: [UserSeasonHistoryService, UserSeasonHistoryRepo]

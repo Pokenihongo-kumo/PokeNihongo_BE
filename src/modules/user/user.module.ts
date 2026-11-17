@@ -1,3 +1,4 @@
+import { UserCoreModule } from '@/modules/user/user-core.module'
 import { BullQueueModule } from '@/3rdService/bull/bull-queue.module'
 import { MailModule } from '@/3rdService/mail/mail.module'
 import { BullQueue } from '@/common/constants/bull-action.constant'
@@ -18,6 +19,7 @@ import { UserService } from './user.service'
 
 @Module({
   imports: [
+    UserCoreModule,
     SharedModule,
     BullQueueModule.registerQueue(BullQueue.USER_DELETION),
     MailModule,

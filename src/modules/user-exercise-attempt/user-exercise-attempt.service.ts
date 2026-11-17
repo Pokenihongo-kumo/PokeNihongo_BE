@@ -19,7 +19,7 @@ import { UserAnswerLogService } from '@/modules/user-answer-log/user-answer-log.
 import { UserProgressService } from '@/modules/user-progress/user-progress.service'
 import { ExercisesService } from '@/modules/exercises/exercises.service'
 import { ExercisesRepo } from '@/modules/exercises/exercises.repo'
-import { UserCoreRepo } from '@/modules/user/user-core.repo'
+import { UserCoreService } from '@/modules/user/user-core.service'
 import { HttpException, Injectable, Logger } from '@nestjs/common'
 import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { TranslationHelperService } from '@/modules/translation/translation.helper.service'
@@ -43,7 +43,7 @@ export class UserExerciseAttemptService {
     private readonly userProgressService: UserProgressService,
     private readonly exercisesService: ExercisesService,
     private readonly exercisesRepository: ExercisesRepo,
-    private readonly sharedUserRepository: UserCoreRepo,
+    private readonly userCoreService: UserCoreService,
     private readonly translationHelper: TranslationHelperService,
     private readonly i18nService: I18nService,
     private readonly rewardService: RewardService
@@ -82,7 +82,7 @@ export class UserExerciseAttemptService {
 
       // A user above the lesson's JLPT level is never blocked
       // (N4 = 4 < N5 = 5: not blocked; N5 = N5: the checks below apply)
-      const user = await this.sharedUserRepository.findUnique({ id: userId })
+      const user = await this.userCoreService.findUnique({ id: userId })
       const userLevelJLPT = user?.levelJLPT ?? null
       const lessonLevelJlpt =
         await this.exercisesRepository.getLessonLevelJlpt(targetLessonId)

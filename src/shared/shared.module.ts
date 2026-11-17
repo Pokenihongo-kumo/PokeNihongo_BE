@@ -1,3 +1,4 @@
+import { UserCoreModule } from '@/modules/user/user-core.module'
 import { BullQueueModule } from '@/3rdService/bull/bull-queue.module'
 import { AccessTokenGuard } from '@/common/guards/access-token.guard'
 import { APIKeyGuard } from '@/common/guards/api-key.guard'
@@ -19,8 +20,6 @@ import { APP_GUARD } from '@nestjs/core'
 import { JwtModule } from '@nestjs/jwt'
 import { WebsocketsModule } from 'src/websockets/websockets.module'
 import { SharedNotificationRepo } from './repositories/shared-notification.repo'
-import { RoleCoreRepo } from '@/modules/role/role-core.repo'
-import { UserCoreRepo } from '@/modules/user/user-core.repo'
 import { PayOSService } from './services/payos.service'
 import { SharedNotificationService } from './services/shared-notification.service'
 import { SharedUserSubscriptionService } from './services/user-subscription.service'
@@ -33,8 +32,6 @@ const sharedServices = [
   SharedUserSubscriptionService,
   SharedNotificationService,
   // EmailService,
-  UserCoreRepo,
-  RoleCoreRepo,
   SharedNotificationRepo,
   QuestionBankRepo,
   PokemonRepo,
@@ -48,6 +45,7 @@ const sharedServices = [
 @Global()
 @Module({
   imports: [
+    UserCoreModule,
     JwtModule,
     BullQueueModule.forRoot(), // Only keep forRoot() here - queues registered in domain modules
     LanguagesModule, // SharedNotificationService reads language ids

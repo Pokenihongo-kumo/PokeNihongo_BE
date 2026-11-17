@@ -1,3 +1,5 @@
+import { RoleModule } from '@/modules/role/role.module'
+import { UserCoreModule } from '@/modules/user/user-core.module'
 import { MailModule } from '@/3rdService/mail/mail.module'
 import { UploadModule } from '@/3rdService/upload/upload.module'
 import { AuthRepository } from '@/modules/auth/auth.repo'
@@ -12,6 +14,8 @@ import { GoogleService } from './google.service'
 
 @Module({
   imports: [
+    RoleModule,
+    UserCoreModule,
     MailModule,
     UploadModule,
     LevelModule,

@@ -4,7 +4,7 @@ import { AuthMessage } from '@/i18n/message-keys'
 import { AuthRepository } from '@/modules/auth/auth.repo'
 import { UserProgressService } from '@/modules/user-progress/user-progress.service'
 import { UserTestService } from '@/modules/user-test/user-test.service'
-import { RoleCoreRepo } from '@/modules/role/role-core.repo'
+import { RoleService } from '@/modules/role/role.service'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { createHash, randomBytes } from 'crypto'
 import { google } from 'googleapis'
@@ -49,7 +49,7 @@ export class GoogleService {
     private readonly hashingService: HashingService,
     private readonly authService: AuthService,
     private readonly authRepository: AuthRepository,
-    private readonly sharedRoleRepo: RoleCoreRepo,
+    private readonly roleService: RoleService,
     private readonly userProgressService: UserProgressService,
     private readonly userTestService: UserTestService,
     private readonly i18nService: I18nService,
@@ -196,7 +196,7 @@ export class GoogleService {
     if (user) return user.id
 
     const hashedPassword = await this.hashingService.hash(uuidv4())
-    const roleId = await this.sharedRoleRepo.getCustomerRoleId()
+    const roleId = await this.roleService.getCustomerRoleId()
     const created = await this.authRepository.createUserInclueRole({
       email,
       name: profile.name ?? '',

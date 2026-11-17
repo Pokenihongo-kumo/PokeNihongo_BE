@@ -27,7 +27,7 @@ import {
   ENTITY_MESSAGE,
   NotificationMessage
 } from '@/i18n/message-keys'
-import { UserCoreRepo } from '@/modules/user/user-core.repo'
+import { UserCoreService } from '@/modules/user/user-core.service'
 import { SharedNotificationService } from '@/shared/services/shared-notification.service'
 import { SharedUserSubscriptionService } from '@/shared/services/user-subscription.service'
 import { AttendenceConfigRepo } from '../attendence-config/attendence-config.repo'
@@ -46,7 +46,7 @@ export class AttendanceService {
   constructor(
     private attendanceRepo: AttendanceRepo,
     private attendanceConfigRepo: AttendenceConfigRepo,
-    private shareUserRepo: UserCoreRepo,
+    private userCoreService: UserCoreService,
     private readonly i18nService: I18nService,
     private readonly userDailyRequestService: UserDailyRequestService,
     private readonly walletRepo: WalletRepo,
@@ -80,7 +80,7 @@ export class AttendanceService {
     console.log(date)
 
     const attendances = await this.findStreakDate(userId, date, true)
-    const userInfo = await this.shareUserRepo.findUnique({ id: userId })
+    const userInfo = await this.userCoreService.findUnique({ id: userId })
     if (!userInfo) {
       throw new NotFoundRecordException()
     }
@@ -105,7 +105,7 @@ export class AttendanceService {
     const [weekly, totalStreak, userInfo] = await Promise.all([
       this.findWeekAttendances(userId, date, true),
       this.findMaxStreakFromToday(userId),
-      this.shareUserRepo.findUnique({ id: userId })
+      this.userCoreService.findUnique({ id: userId })
     ])
 
     if (!userInfo) {

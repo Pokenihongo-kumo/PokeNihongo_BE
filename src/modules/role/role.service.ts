@@ -10,6 +10,7 @@ import {
 } from 'src/modules/role/role.error'
 import { CreateRoleBodyType, UpdateRoleBodyType } from 'src/modules/role/role.model'
 import { RoleRepo } from 'src/modules/role/role.repo'
+import { RoleCoreRepo } from './role-core.repo'
 import { NotFoundRecordException } from 'src/shared/error'
 import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared/helpers'
 
@@ -18,7 +19,8 @@ export class RoleService {
   constructor(
     private roleRepo: RoleRepo,
     private permissionRepo: PermissionRepo,
-    private i18nService: I18nService
+    private i18nService: I18nService,
+    private roleCoreRepo: RoleCoreRepo
   ) {}
 
   async list(pagination: PaginationQueryType, lang: string = 'vi') {
@@ -155,5 +157,20 @@ export class RoleService {
       }
       throw error
     }
+  }
+
+  // ---- For other modules (module-boundary plan B2) ----
+  // Same results as the former shared role repo (ids cached after first read)
+
+  getAdminRoleId() {
+    return this.roleCoreRepo.getAdminRoleId()
+  }
+
+  getCustomerRoleId() {
+    return this.roleCoreRepo.getCustomerRoleId()
+  }
+
+  getRoleById(roleId: number) {
+    return this.roleCoreRepo.getRoleById(roleId)
   }
 }
