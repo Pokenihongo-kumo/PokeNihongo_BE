@@ -18,7 +18,7 @@ import { RewardService } from './reward.service'
     LanguagesModule,
     TranslationModule,
     forwardRef(() => UserModule),
-    forwardRef(() => WalletModule),
+    WalletModule,
     PokemonModule,
     UserPokemonModule,
     forwardRef(() => UserRewardHistoryModule),
