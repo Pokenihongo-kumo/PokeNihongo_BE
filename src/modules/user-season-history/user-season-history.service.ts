@@ -13,7 +13,7 @@ import { HttpStatus, Injectable } from '@nestjs/common'
 import { UserRewardSourceType } from '@prisma/client'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { NotStartedLeaderboardSeasonException } from '../leaderboard-season/dto/leaderboard-season.error'
-import { LeaderboardSeasonRepo } from '../leaderboard-season/leaderboard-season.repo'
+import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
 import { RewardService } from '../reward/reward.service'
 import { UserNotFoundException } from '../user/dto/user.error'
 import {
@@ -31,7 +31,7 @@ import { UserSeasonHistoryRepo } from './user-season-history.repo'
 export class UserSeasonHistoryService {
   constructor(
     private userSeasonHistoryRepo: UserSeasonHistoryRepo,
-    private readonly leaderboardSeasonRepo: LeaderboardSeasonRepo,
+    private readonly leaderboardSeasonService: LeaderboardSeasonService,
     private readonly rewardService: RewardService,
     private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
@@ -67,14 +67,14 @@ export class UserSeasonHistoryService {
         throw new NotFoundRecordException()
       }
       // lay season hien tai
-      const currentSeason = await this.leaderboardSeasonRepo.findActiveSeason()
+      const currentSeason = await this.leaderboardSeasonService.findActiveSeason()
       if (!currentSeason) {
         throw new NotStartedLeaderboardSeasonException()
       }
 
       const preSeason =
         await this.userSeasonHistoryRepo.getInfoPreSeaonUserSeasonHistory(userId)
-      const infoSeasonNow = await this.leaderboardSeasonRepo.findByIdWithLangId(
+      const infoSeasonNow = await this.leaderboardSeasonService.findByIdWithLangId(
         currentSeason.id,
         false,
         langId

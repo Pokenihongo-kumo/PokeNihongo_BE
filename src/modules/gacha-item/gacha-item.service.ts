@@ -13,7 +13,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common'
 import { GachaStarType, RarityPokemon } from '@prisma/client'
 import { GachaBannerRepo } from '../gacha-banner/gacha-banner.repo'
 import { GachaItemRateRepo } from '../gacha-item-rate/gacha-item-rate.repo'
-import { PokemonRepo } from '../pokemon/pokemon.repo'
+import { PokemonService } from '@/modules/pokemon/pokemon.service'
 import {
   DuplicateStarTypeInListException,
   GachaBannerActiveException,
@@ -55,7 +55,7 @@ export class GachaItemService {
     @Inject(forwardRef(() => GachaBannerRepo))
     private gachaBannerRepo: GachaBannerRepo,
     private gachaItemRateRepo: GachaItemRateRepo,
-    private pokemonRepo: PokemonRepo,
+    private pokemonService: PokemonService,
     private readonly i18nService: I18nService
   ) {}
 
@@ -142,7 +142,7 @@ export class GachaItemService {
 
     // Batch fetch pokemons
     const pokemons = await Promise.all(
-      Array.from(allPokemonIds).map((id) => this.pokemonRepo.findById(id))
+      Array.from(allPokemonIds).map((id) => this.pokemonService.getById(id))
     )
     const pokemonMap = new Map(pokemons.filter((p) => p).map((p) => [p!.id, p!]))
 
@@ -254,7 +254,7 @@ export class GachaItemService {
 
         // Batch fetch pokemons
         const pokemons = await Promise.all(
-          Array.from(allPokemonIds).map((id) => this.pokemonRepo.findById(id))
+          Array.from(allPokemonIds).map((id) => this.pokemonService.getById(id))
         )
         const pokemonMap = new Map(pokemons.filter((p) => p).map((p) => [p!.id, p!]))
 
@@ -401,7 +401,7 @@ export class GachaItemService {
       if (limit === 0) continue
 
       const rarity = STAR_TYPE_TO_RARITY[item.starType]
-      const pokemons = await this.pokemonRepo.getRandomPokemonsByTypeAndRarity({
+      const pokemons = await this.pokemonService.getRandomPokemonsByTypeAndRarity({
         limit,
         rarity,
         typeIds: item.typeIds,

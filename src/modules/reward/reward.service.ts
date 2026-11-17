@@ -23,7 +23,7 @@ import {
   WalletType
 } from '@prisma/client'
 import { LanguagesService } from '@/modules/languages/languages.service'
-import { PokemonRepo } from '../pokemon/pokemon.repo'
+import { PokemonService } from '@/modules/pokemon/pokemon.service'
 import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
 import { TranslationService } from '@/modules/translation/translation.service'
 import { UserPokemonRepo } from '../user-pokemon/user-pokemon.repo'
@@ -50,7 +50,7 @@ export class RewardService {
     private readonly translationService: TranslationService,
     private readonly userService: UserService,
     private readonly walletRepo: WalletRepo,
-    private readonly pokemonRepo: PokemonRepo,
+    private readonly pokemonService: PokemonService,
     private readonly userPokemonRepo: UserPokemonRepo,
     private readonly userRewardHistoryService: UserRewardHistoryService,
     private readonly userSubService: SharedUserSubscriptionService,
@@ -843,7 +843,7 @@ export class RewardService {
           })
 
           // Fetch pokemon details for notification
-          const pokemonDetails = await this.pokemonRepo.findById(pokemonId)
+          const pokemonDetails = await this.pokemonService.getById(pokemonId)
 
           results.pokemons.push({
             action: 'added',
@@ -876,7 +876,7 @@ export class RewardService {
           }
         } else {
           // User already has this pokemon -> convert to coins based on rarity
-          const pokemon = await this.pokemonRepo.findById(pokemonId)
+          const pokemon = await this.pokemonService.getById(pokemonId)
           if (!pokemon) {
             throw new NotFoundRecordException()
           }

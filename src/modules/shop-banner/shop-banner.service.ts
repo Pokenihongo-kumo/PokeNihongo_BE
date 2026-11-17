@@ -17,7 +17,7 @@ import {
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { LanguagesService } from '@/modules/languages/languages.service'
-import { PokemonRepo } from '../pokemon/pokemon.repo'
+import { PokemonService } from '@/modules/pokemon/pokemon.service'
 import { ShopItemRepo } from '../shop-item/shop-item.repo'
 import { ShopPurchaseRepo } from '../shop-purchase/shop-purchase.repo'
 import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
@@ -46,7 +46,7 @@ export class ShopBannerService {
     private readonly translationService: TranslationService,
     private readonly shopPurchaseRepo: ShopPurchaseRepo,
     private readonly userPokemonRepo: UserPokemonRepo,
-    private readonly pokemonRepo: PokemonRepo,
+    private readonly pokemonService: PokemonService,
     private readonly shopItemRepo: ShopItemRepo
   ) {}
 
@@ -126,7 +126,7 @@ export class ShopBannerService {
     lang: string = 'vi'
   ) {
     // 1. Lấy tất cả pokemon với pagination
-    const allPokemon = await this.pokemonRepo.listWithNameNumImg(pagination)
+    const allPokemon = await this.pokemonService.listWithNameNumImg(pagination)
 
     // 2. Lấy danh sách shop items của banner này (lấy all, không cần pagination)
     const shopItems = await this.shopItemRepo.list({
