@@ -1,3 +1,4 @@
+import { PrismaClient } from '@prisma/client'
 import { I18nService } from '@/i18n/i18n.service'
 import { TranslationMessage } from '@/i18n/message-keys'
 import { toPaginationMeta } from '@/shared/utils/pagination'
@@ -250,9 +251,10 @@ export class TranslationService {
     }
   }
 
-  async deleteByKey(key: string): Promise<{ count: number }> {
+  // prismaTx: the caller's transaction (other modules delete a key inside theirs)
+  async deleteByKey(key: string, prismaTx?: PrismaClient): Promise<{ count: number }> {
     try {
-      return await this.translationRepository.deleteByKey(key)
+      return await this.translationRepository.deleteByKey(key, prismaTx)
     } catch (error) {
       throw this.toTranslationError(error)
     }
@@ -278,5 +280,24 @@ export class TranslationService {
     }
     if (isNotFoundPrismaError(error)) return new TranslationNotFoundException()
     return new InvalidTranslationDataException()
+  }
+
+  // ---- For other modules (module-boundary plan R1/R2) ----
+  // Pass-throughs with the repo's signatures; a caller's transaction client is
+  // used when given, so nothing moves out of its transaction (rule R3).
+
+  validateTranslationRecords(translationRecords: CreateTranslationBodyType[]) {
+    return this.translationRepository.validateTranslationRecords(translationRecords)
+  }
+
+  createOrUpdateWithTransaction(
+    data: { languageId: number; key: string; value: string },
+    prismaTx?: PrismaClient
+  ) {
+    return this.translationRepository.createOrUpdateWithTransaction(data, prismaTx)
+  }
+
+  findByKeysAndLanguage(keys: string[], languageId: number) {
+    return this.translationRepository.findByKeysAndLanguage(keys, languageId)
   }
 }

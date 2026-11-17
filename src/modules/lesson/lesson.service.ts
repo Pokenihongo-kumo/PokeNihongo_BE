@@ -13,7 +13,7 @@ import {
   LessonTestNotFoundException
 } from './dto/lesson.error'
 import { LessonRepo } from './lesson.repo'
-import { LanguagesRepo } from '../languages/languages.repo'
+import { LanguagesService } from '@/modules/languages/languages.service'
 import { I18nService } from '@/i18n/i18n.service'
 import { LessonMessage as M } from '@/i18n/message-keys'
 import { toPaginationMeta } from '@/shared/utils/pagination'
@@ -30,7 +30,7 @@ export class LessonService {
 
   constructor(
     private readonly lessonRepo: LessonRepo,
-    private readonly languagesRepo: LanguagesRepo,
+    private readonly languagesService: LanguagesService,
     private readonly i18nService: I18nService
   ) {}
 
@@ -159,7 +159,9 @@ export class LessonService {
   // One query for every title. With a known language: that translation (or '');
   // otherwise all of them as [{ language: code, value }] (was lang_{languageId})
   private async titlesOf(keys: string[], titleLang?: string) {
-    const languageId = titleLang ? await this.languagesRepo.getIdByCode(titleLang) : null
+    const languageId = titleLang
+      ? await this.languagesService.getIdByCode(titleLang)
+      : null
     const rows = keys.length
       ? await this.lessonRepo.titles(keys, languageId ?? undefined)
       : []
@@ -180,7 +182,7 @@ export class LessonService {
     const items = meaning?.length
       ? meaning
       : ['vi', 'en'].map((code) => ({ language_code: code, value: titleJp }))
-    const languages = await this.languagesRepo.getWithListCode(
+    const languages = await this.languagesService.getWithListCode(
       items.map((t) => t.language_code)
     )
     const idOf = new Map(languages.map((l) => [l.code, l.id]))

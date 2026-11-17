@@ -22,10 +22,10 @@ import {
   UserRewardSourceType,
   WalletType
 } from '@prisma/client'
-import { LanguagesRepo } from '../languages/languages.repo'
+import { LanguagesService } from '@/modules/languages/languages.service'
 import { PokemonRepo } from '../pokemon/pokemon.repo'
 import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
-import { TranslationRepo } from '../translation/translation.repo'
+import { TranslationService } from '@/modules/translation/translation.service'
 import { UserPokemonRepo } from '../user-pokemon/user-pokemon.repo'
 import { CreateUserRewardHistoryBodyType } from '../user-reward-history/entities/user-reward-history.entities'
 import { UserRewardHistoryService } from '../user-reward-history/user-reward-history.service'
@@ -46,8 +46,8 @@ export class RewardService {
   constructor(
     private rewardRepo: RewardRepo,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepo,
-    private readonly translationRepo: TranslationRepo,
+    private readonly languagesService: LanguagesService,
+    private readonly translationService: TranslationService,
     private readonly userService: UserService,
     private readonly walletRepo: WalletRepo,
     private readonly pokemonRepo: PokemonRepo,
@@ -140,7 +140,7 @@ export class RewardService {
   }
 
   async list(pagination: PaginationQueryType, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const data = await this.rewardRepo.list(pagination, langId ?? undefined)
     return {
       data,
@@ -149,7 +149,7 @@ export class RewardService {
   }
 
   async getListWithAllLang(pagination: PaginationQueryType, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const data = await this.rewardRepo.getListWithAllLang(pagination, langId ?? undefined)
 
     // Build language code map for all referenced languageIds
@@ -157,7 +157,7 @@ export class RewardService {
     for (const item of data.results as any[]) {
       for (const t of item.nameTranslations ?? []) allLangIds.add(t.languageId)
     }
-    const languages = await this.languageRepo.getWithListId(Array.from(allLangIds))
+    const languages = await this.languagesService.getWithListId(Array.from(allLangIds))
     const codeMap = Object.fromEntries(languages.map((l) => [l.id, l.code]))
 
     const results = (data.results as any[]).map((item) => ({
@@ -175,7 +175,7 @@ export class RewardService {
   }
 
   async findById(id: number, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
 
     if (!langId) {
       return {
@@ -204,7 +204,7 @@ export class RewardService {
   }
 
   async findByIdWithAllLang(id: number, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
 
     const reward: any = await this.rewardRepo.findByIdWithAllLang(id)
     if (!reward) {
@@ -218,7 +218,7 @@ export class RewardService {
       : null
 
     // map array to { key: code, value }
-    const languages = await this.languageRepo.getWithListId(
+    const languages = await this.languagesService.getWithListId(
       Array.from(new Set((reward.nameTranslations ?? []).map((t: any) => t.languageId)))
     )
     const codeMap = Object.fromEntries(languages.map((l) => [l.id, l.code]))
@@ -278,7 +278,7 @@ export class RewardService {
         const allLangCodes = Array.from(new Set(nameList))
 
         // Get languages corresponding to the keys
-        const languages = await this.languageRepo.getWithListCode(allLangCodes)
+        const languages = await this.languagesService.getWithListCode(allLangCodes)
 
         // Create map { code: id } for quick access
         const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
@@ -302,11 +302,11 @@ export class RewardService {
         }
 
         // Validate translations (check for duplicate names)
-        await this.translationRepo.validateTranslationRecords(translationRecords)
+        await this.translationService.validateTranslationRecords(translationRecords)
 
         // Create or update translations with transaction
         // const translationPromises = translationRecords.map((record) =>
-        //   this.translationRepo.createOrUpdateWithTransaction(record, prismaTx)
+        //   this.translationService.createOrUpdateWithTransaction(record, prismaTx)
         // )
         // await Promise.all(translationPromises)
 
@@ -378,7 +378,7 @@ export class RewardService {
 
           if (allLangCodes.length > 0) {
             // Get languages
-            const languages = await this.languageRepo.getWithListCode(allLangCodes)
+            const languages = await this.languagesService.getWithListCode(allLangCodes)
             const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
 
             // Check missing language
@@ -398,11 +398,11 @@ export class RewardService {
             }
 
             // Validate translation records
-            await this.translationRepo.validateTranslationRecords(translationRecords)
+            await this.translationService.validateTranslationRecords(translationRecords)
 
             // Update translations with transaction
             // const translationPromises = translationRecords.map((record) =>
-            //   this.translationRepo.createOrUpdateWithTransaction(record, prismaTx)
+            //   this.translationService.createOrUpdateWithTransaction(record, prismaTx)
             // )
             // await Promise.all(translationPromises)
           }
@@ -457,7 +457,7 @@ export class RewardService {
         // together, so a failure (e.g. a Restrict FK from UserRewardHistory)
         // leaves both in place
         await this.rewardRepo.withTransaction(async (prismaTx) => {
-          await this.translationRepo.deleteByKey(existingReward.nameKey, prismaTx)
+          await this.translationService.deleteByKey(existingReward.nameKey, prismaTx)
           await this.rewardRepo.delete({ id, deletedById }, true, prismaTx)
         })
       } else {

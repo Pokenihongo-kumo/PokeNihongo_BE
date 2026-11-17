@@ -7,7 +7,7 @@ import {
 } from '@/shared/utils/prisma-errors'
 import { HttpException, Injectable, Logger } from '@nestjs/common'
 import { LessonCategory } from '@prisma/client'
-import { LanguagesRepo } from '../languages/languages.repo'
+import { LanguagesService } from '@/modules/languages/languages.service'
 import { TranslationService } from '../translation/translation.service'
 import {
   InvalidLessonCategoryDataException,
@@ -36,7 +36,7 @@ export class LessonCategoryService {
   constructor(
     private readonly lessonCategoryRepository: LessonCategoryRepo,
     private readonly translationService: TranslationService,
-    private readonly languagesRepo: LanguagesRepo,
+    private readonly languagesService: LanguagesService,
     private readonly i18nService: I18nService
   ) {}
 
@@ -45,7 +45,7 @@ export class LessonCategoryService {
     lang: string = 'vi'
   ) {
     const result = await this.lessonCategoryRepository.findMany(params)
-    const languageId = await this.languagesRepo.getIdByCode(lang)
+    const languageId = await this.languagesService.getIdByCode(lang)
     const results = await Promise.all(
       result.data.map((item) => this.toView(item, languageId))
     )
@@ -71,7 +71,7 @@ export class LessonCategoryService {
         throw new LessonCategoryNotFoundException()
       }
       return {
-        data: await this.toView(category, await this.languagesRepo.getIdByCode(lang)),
+        data: await this.toView(category, await this.languagesService.getIdByCode(lang)),
         message: this.i18nService.translate(LessonCategoryMessage.GET_SUCCESS, lang)
       }
     } catch (error) {
@@ -86,7 +86,7 @@ export class LessonCategoryService {
         throw new LessonCategoryNotFoundException()
       }
       return {
-        data: await this.toView(category, await this.languagesRepo.getIdByCode(lang)),
+        data: await this.toView(category, await this.languagesService.getIdByCode(lang)),
         message: this.i18nService.translate(LessonCategoryMessage.GET_SUCCESS, lang)
       }
     } catch (error) {
@@ -228,7 +228,7 @@ export class LessonCategoryService {
 
   // Language ids looked up by code; they used to be hard-coded as vi = 1, en = 2
   private async languageIds(): Promise<Record<string, number>> {
-    const languages = await this.languagesRepo.getWithListCode(['vi', 'en'])
+    const languages = await this.languagesService.getWithListCode(['vi', 'en'])
     return Object.fromEntries(languages.map((l) => [l.code, l.id]))
   }
 

@@ -10,7 +10,7 @@ import {
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { LanguagesRepo } from '../languages/languages.repo'
+import { LanguagesService } from '@/modules/languages/languages.service'
 import { LeaderboardSeasonRepo } from '../leaderboard-season/leaderboard-season.repo'
 import { QuestionBankRepo } from '../question-bank/question-bank.repo'
 import {
@@ -25,14 +25,14 @@ export class MatchService {
   constructor(
     private matchRepo: MatchRepo,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepo,
+    private readonly languagesService: LanguagesService,
     private readonly leaderboardSeasonRepo: LeaderboardSeasonRepo,
     private readonly prismaService: PrismaService,
     private readonly questionBankRepo: QuestionBankRepo
   ) {}
 
   async list(pagination: PaginationQueryType, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const data = await this.matchRepo.list(pagination, langId ?? undefined)
     return {
       data,

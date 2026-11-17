@@ -15,7 +15,7 @@ import { HttpStatus, Injectable } from '@nestjs/common'
 import { UserRewardSourceType } from '@prisma/client'
 import { AchievementGroupRepo } from '../achievement-group/achievement-group.repo'
 import { AchievementRepo } from '../achievement/achievement.repo'
-import { LanguagesRepo } from '../languages/languages.repo'
+import { LanguagesService } from '@/modules/languages/languages.service'
 import { RewardService } from '../reward/reward.service'
 import { UserProgressService } from '../user-progress/user-progress.service'
 import {
@@ -34,7 +34,7 @@ export class UserAchievementService {
     private userAchievementRepo: UserAchievementRepo,
     private achievementGroupRepo: AchievementGroupRepo,
     private achievementRepo: AchievementRepo,
-    private readonly languageRepo: LanguagesRepo,
+    private readonly languagesService: LanguagesService,
     private readonly prismaService: PrismaService,
     private readonly i18nService: I18nService,
     private readonly userProgressService: UserProgressService,
@@ -157,7 +157,7 @@ export class UserAchievementService {
     achievementGroupId?: number
   ) {
     // 1. Resolve language id
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
 
     // 2. Fetch paginated achievement groups (non-admin view)
     // NOTE: even when achievementGroupId is provided we still return the groups list

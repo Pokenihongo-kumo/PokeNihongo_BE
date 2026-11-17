@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { TranslationService } from './translation.service'
-import { LanguagesRepo } from '@/modules/languages/languages.repo'
+import { LanguagesService } from '@/modules/languages/languages.service'
 
 @Injectable()
 export class TranslationHelperService {
@@ -8,14 +8,14 @@ export class TranslationHelperService {
 
   constructor(
     private readonly translationService: TranslationService,
-    private readonly languagesRepository: LanguagesRepo
+    private readonly languagesService: LanguagesService
   ) {}
 
   /**
    * Convert languageCode to languageId
    */
   private async getLanguageId(languageCode: string): Promise<number> {
-    const language = await this.languagesRepository.findByCode(languageCode)
+    const language = await this.languagesService.getByCode(languageCode)
     if (!language) {
       throw new Error(`Language with code '${languageCode}' not found`)
     }
@@ -90,7 +90,7 @@ export class TranslationHelperService {
 
       // Cần load language relation để lấy code
       for (const translation of result.translations) {
-        const language = await this.languagesRepository.findById(translation.languageId)
+        const language = await this.languagesService.getById(translation.languageId)
         if (language) {
           translations[language.code] = translation.value
         }

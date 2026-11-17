@@ -9,6 +9,6 @@ import { LanguagesModule } from '@/modules/languages/languages.module'
   imports: [LanguagesModule],
   controllers: [TranslationController],
   providers: [TranslationService, TranslationRepo, TranslationHelperService],
-  exports: [TranslationService, TranslationRepo, TranslationHelperService]
+  exports: [TranslationService, TranslationHelperService]
 })
 export class TranslationModule {}

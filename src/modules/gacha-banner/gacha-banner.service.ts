@@ -17,9 +17,9 @@ import {
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { GachaItemRepo } from '../gacha-item/gacha-item.repo'
-import { LanguagesRepo } from '../languages/languages.repo'
+import { LanguagesService } from '@/modules/languages/languages.service'
 import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
-import { TranslationRepo } from '../translation/translation.repo'
+import { TranslationService } from '@/modules/translation/translation.service'
 import {
   GachaBannerActiveLimitExceededException,
   GachaBannerAlreadyExistsException,
@@ -42,8 +42,8 @@ export class GachaBannerService {
   constructor(
     private gachaBannerRepo: GachaBannerRepo,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepo,
-    private readonly translationRepo: TranslationRepo,
+    private readonly languagesService: LanguagesService,
+    private readonly translationService: TranslationService,
     private readonly gachaItemRepo: GachaItemRepo
   ) {}
 
@@ -53,7 +53,7 @@ export class GachaBannerService {
     if (!nameTranslations || nameTranslations.length === 0) return []
 
     const allLangIds = Array.from(new Set(nameTranslations.map((t) => t.languageId)))
-    const langs = await this.languageRepo.getWithListId(allLangIds)
+    const langs = await this.languagesService.getWithListId(allLangIds)
     const idToCode = new Map(langs.map((l) => [l.id, l.code]))
 
     return nameTranslations.map((t) => ({
@@ -74,7 +74,7 @@ export class GachaBannerService {
   }
 
   async list(pagination: PaginationQueryType, lang: string = 'vi', roleName: string) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
 
     const isAdmin = roleName === RoleName.Admin ? true : false
 
@@ -123,7 +123,7 @@ export class GachaBannerService {
   }
 
   async listwithDetail(pagination: PaginationQueryType, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const data = await this.gachaBannerRepo.listwithDetail(
       pagination,
       langId ?? undefined
@@ -137,7 +137,7 @@ export class GachaBannerService {
         )
       )
     )
-    const langs = await this.languageRepo.getWithListId(allLangIds)
+    const langs = await this.languagesService.getWithListId(allLangIds)
     const idToCode = new Map(langs.map((l) => [l.id, l.code]))
 
     const results = (data.results || []).map((item: any) => {
@@ -162,7 +162,7 @@ export class GachaBannerService {
   }
 
   async findById(id: number, lang: string = 'vi', roleName: string) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     if (!langId) {
@@ -296,7 +296,7 @@ export class GachaBannerService {
         const allLangCodes = Array.from(new Set(nameList))
 
         // Get languages corresponding to the keys
-        const languages = await this.languageRepo.getWithListCode(allLangCodes)
+        const languages = await this.languagesService.getWithListCode(allLangCodes)
 
         // Create map { code: id } for quick access
         const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
@@ -317,7 +317,7 @@ export class GachaBannerService {
         )
 
         // Validate translations (check for duplicate names)
-        await this.translationRepo.validateTranslationRecords(translationRecords)
+        await this.translationService.validateTranslationRecords(translationRecords)
 
         // Build nested upserts for name translations
         const nameUpserts = data.nameTranslations.map((item) => ({
@@ -512,7 +512,7 @@ export class GachaBannerService {
 
           if (allLangCodes.length > 0) {
             // Get languages
-            const languages = await this.languageRepo.getWithListCode(allLangCodes)
+            const languages = await this.languagesService.getWithListCode(allLangCodes)
             const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
 
             // Check missing language
@@ -528,7 +528,7 @@ export class GachaBannerService {
                 value: t.value
               })
             }
-            await this.translationRepo.validateTranslationRecords(translationRecords)
+            await this.translationService.validateTranslationRecords(translationRecords)
 
             // Nested upserts for translations
             nameUpserts = (data.nameTranslations ?? []).map((t) => ({
@@ -598,7 +598,7 @@ export class GachaBannerService {
           id,
           deletedById
         }),
-        this.translationRepo.deleteByKey(existingGachaBanner.nameKey)
+        this.translationService.deleteByKey(existingGachaBanner.nameKey)
       ])
 
       return {
@@ -617,7 +617,7 @@ export class GachaBannerService {
   async getByToday(lang: string = 'vi', userId?: number) {
     try {
       const date = todayUTCWith0000()
-      const langId = await this.languageRepo.getIdByCode(lang)
+      const langId = await this.languagesService.getIdByCode(lang)
 
       if (!langId) {
         return {

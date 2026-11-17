@@ -15,10 +15,10 @@ import {
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { InvoiceRepo } from '../invoice/invoice.repo'
-import { LanguagesRepo } from '../languages/languages.repo'
+import { LanguagesService } from '@/modules/languages/languages.service'
 import { SubscriptionPlanRepo } from '../subscription-plan/subscription-plan.repo'
 import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
-import { TranslationRepo } from '../translation/translation.repo'
+import { TranslationService } from '@/modules/translation/translation.service'
 import { SubscriptionAlreadyExistsException } from './dto/subscription.error'
 import {
   CreateSubscriptionBodyInputType,
@@ -34,8 +34,8 @@ export class SubscriptionService {
     private subscriptionRepo: SubscriptionRepo,
     private subscriptionPlanRepo: SubscriptionPlanRepo,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepo,
-    private readonly translationRepo: TranslationRepo,
+    private readonly languagesService: LanguagesService,
+    private readonly translationService: TranslationService,
     private readonly invoiceRepo: InvoiceRepo
   ) {}
 
@@ -45,7 +45,7 @@ export class SubscriptionService {
     if (!nameTranslations || nameTranslations.length === 0) return []
 
     const allLangIds = Array.from(new Set(nameTranslations.map((t) => t.languageId)))
-    const langs = await this.languageRepo.getWithListId(allLangIds)
+    const langs = await this.languagesService.getWithListId(allLangIds)
     const idToCode = new Map(langs.map((l) => [l.id, l.code]))
 
     return nameTranslations.map((t) => ({
@@ -55,7 +55,7 @@ export class SubscriptionService {
   }
 
   async list(pagination: PaginationQueryType, lang: string = 'vi', roleName: string) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     const data = await this.subscriptionRepo.list(
@@ -100,7 +100,7 @@ export class SubscriptionService {
   }
 
   async findById(id: number, roleName: string, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     if (!langId) {
@@ -157,7 +157,7 @@ export class SubscriptionService {
   }
 
   async findByIdWithAllLang(id: number, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
 
     const subscription: any = await this.subscriptionRepo.findByIdWithAllLang(id)
     if (!subscription) {
@@ -171,7 +171,7 @@ export class SubscriptionService {
       : null
 
     // map array to { key: code, value }
-    const languages = await this.languageRepo.getWithListId(
+    const languages = await this.languagesService.getWithListId(
       Array.from(
         new Set((subscription.nameTranslations ?? []).map((t: any) => t.languageId))
       )
@@ -240,7 +240,7 @@ export class SubscriptionService {
         const allLangCodes = Array.from(new Set([...nameList, ...descriptionList]))
 
         // Get languages corresponding to the keys
-        const languages = await this.languageRepo.getWithListCode(allLangCodes)
+        const languages = await this.languagesService.getWithListCode(allLangCodes)
 
         // Create map { code: id } for quick access
         const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
@@ -274,7 +274,9 @@ export class SubscriptionService {
         }
 
         // Validate translations (check for duplicate names)
-        await this.translationRepo.validateTranslationRecords([...nameTranslationRecords])
+        await this.translationService.validateTranslationRecords([
+          ...nameTranslationRecords
+        ])
 
         // Update subscription with final keys and translations
         const result = await this.subscriptionRepo.update(
@@ -365,7 +367,7 @@ export class SubscriptionService {
 
           if (allLangCodes.length > 0) {
             // Get languages
-            const languages = await this.languageRepo.getWithListCode(allLangCodes)
+            const languages = await this.languagesService.getWithListCode(allLangCodes)
             const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
 
             // Check missing language
@@ -395,7 +397,7 @@ export class SubscriptionService {
             }
 
             // Validate translation records
-            await this.translationRepo.validateTranslationRecords([
+            await this.translationService.validateTranslationRecords([
               ...nameTranslationRecords
             ])
           }
@@ -456,7 +458,7 @@ export class SubscriptionService {
           id,
           deletedById
         }),
-        this.translationRepo.deleteByKey(existingSubscription.nameKey)
+        this.translationService.deleteByKey(existingSubscription.nameKey)
       ])
 
       return {
@@ -473,7 +475,7 @@ export class SubscriptionService {
   }
 
   async listForMarketplace(lang: string = 'vi', roleName: string, userId?: number) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin
 
     // Step 1: Get subscriptions with active plans, sorted by tagName
@@ -652,7 +654,7 @@ export class SubscriptionService {
     lang: string = 'vi',
     roleName: string
   ) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin
 
     // Get subscription with active plans

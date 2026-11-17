@@ -12,7 +12,7 @@ import {
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
-import { LanguagesRepo } from '../languages/languages.repo'
+import { LanguagesService } from '@/modules/languages/languages.service'
 import { SubscriptionPlanNotFoundException } from '../subscription-plan/dto/subscription-plan.error'
 import { SubscriptionPlanRepo } from '../subscription-plan/subscription-plan.repo'
 import {
@@ -32,7 +32,7 @@ export class UserSubscriptionService {
     private userSubscriptionRepo: UserSubscriptionRepo,
     private readonly subscriptionPlanRepo: SubscriptionPlanRepo,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepo,
+    private readonly languagesService: LanguagesService,
     private readonly prismaService: PrismaService
   ) {}
 
@@ -42,7 +42,7 @@ export class UserSubscriptionService {
     if (!translations || translations.length === 0) return []
 
     const allLangIds = Array.from(new Set(translations.map((t) => t.languageId)))
-    const langs = await this.languageRepo.getWithListId(allLangIds)
+    const langs = await this.languagesService.getWithListId(allLangIds)
     const idToCode = new Map(langs.map((l) => [l.id, l.code]))
 
     return translations.map((t) => ({
@@ -192,7 +192,7 @@ export class UserSubscriptionService {
     userId: number,
     lang: string = 'vi'
   ) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const data = await this.userSubscriptionRepo.getUserSubWithSubPlan(
       pagination,
       userId,
@@ -297,7 +297,7 @@ export class UserSubscriptionService {
     let planDescription: string | null = null
     if ((us as any).subscriptionPlan && (us as any).subscriptionPlan.subscription) {
       const sub = (us as any).subscriptionPlan.subscription
-      const langId = await this.languageRepo.getIdByCode(lang)
+      const langId = await this.languagesService.getIdByCode(lang)
       if (langId && sub.nameTranslations) {
         const match = sub.nameTranslations.find((t: any) => t.languageId === langId)
         planName = match?.value || sub.nameKey

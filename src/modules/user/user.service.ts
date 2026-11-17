@@ -15,7 +15,7 @@ import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
 import { HttpStatus, Injectable, Logger } from '@nestjs/common'
 import { UserStatus } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
-import { LanguagesRepo } from '../languages/languages.repo'
+import { LanguagesService } from '@/modules/languages/languages.service'
 import { NotStartedLeaderboardSeasonException } from '../leaderboard-season/dto/leaderboard-season.error'
 import { LeaderboardSeasonRepo } from '../leaderboard-season/leaderboard-season.repo'
 import { MatchRepo } from '../match/match.repo'
@@ -46,7 +46,7 @@ export class UserService {
     private readonly leaderboardSeasonRepo: LeaderboardSeasonRepo,
     private readonly matchRepo: MatchRepo,
     private readonly userSeaHistoryRepo: UserSeasonHistoryRepo,
-    private readonly langRepo: LanguagesRepo,
+    private readonly languagesService: LanguagesService,
     private readonly userProgressService: UserProgressService
   ) {}
 
@@ -500,7 +500,7 @@ export class UserService {
   }
 
   async getInfoBattleWithUser(userId: number, lang: string) {
-    const langId = await this.langRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     if (!langId) {
       throw new NotFoundRecordException()
     }
@@ -629,7 +629,7 @@ export class UserService {
     lang: string,
     pagination?: PaginationQueryType
   ) {
-    const langId = await this.langRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
 
     if (!langId) {
       throw new NotFoundRecordException()

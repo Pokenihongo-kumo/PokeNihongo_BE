@@ -16,8 +16,8 @@ import {
   TestSetAlreadyHasExerciseException,
   TestSetNotFoundException
 } from './dto/exercises.error'
-import { LanguagesRepo } from '@/modules/languages/languages.repo'
-import { TranslationRepo } from '@/modules/translation/translation.repo'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { TranslationService } from '@/modules/translation/translation.service'
 import { I18nService } from '@/i18n/i18n.service'
 import { ExercisesMessage as M } from '@/i18n/message-keys'
 import { toPaginationMeta } from '@/shared/utils/pagination'
@@ -35,8 +35,8 @@ export class ExercisesService {
 
   constructor(
     private readonly exercisesRepo: ExercisesRepo,
-    private readonly languagesRepo: LanguagesRepo,
-    private readonly translationRepo: TranslationRepo,
+    private readonly languagesService: LanguagesService,
+    private readonly translationService: TranslationService,
     private readonly i18nService: I18nService
   ) {}
 
@@ -227,12 +227,12 @@ export class ExercisesService {
   private async rewardSummaries(rewardIds: number[], lang: string) {
     const records = await this.exercisesRepo.getRewardsByIds(rewardIds)
     const languageId =
-      (await this.languagesRepo.getIdByCode(lang)) ??
-      (lang !== 'vi' ? await this.languagesRepo.getIdByCode('vi') : null)
+      (await this.languagesService.getIdByCode(lang)) ??
+      (lang !== 'vi' ? await this.languagesService.getIdByCode('vi') : null)
     const keys = [...new Set(records.map((r) => r.nameKey))]
     const names = new Map<string, string>()
     if (languageId && keys.length > 0) {
-      for (const t of await this.translationRepo.findByKeysAndLanguage(
+      for (const t of await this.translationService.findByKeysAndLanguage(
         keys,
         languageId
       )) {

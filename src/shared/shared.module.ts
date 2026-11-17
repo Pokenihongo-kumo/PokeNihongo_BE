@@ -3,7 +3,7 @@ import { AccessTokenGuard } from '@/common/guards/access-token.guard'
 import { APIKeyGuard } from '@/common/guards/api-key.guard'
 import { AuthenticationGuard } from '@/common/guards/authentication.guard'
 import { InvoiceRepo } from '@/modules/invoice/invoice.repo'
-import { LanguagesRepo } from '@/modules/languages/languages.repo'
+import { LanguagesModule } from '@/modules/languages/languages.module'
 import { PokemonRepo } from '@/modules/pokemon/pokemon.repo'
 import { QuestionBankRepo } from '@/modules/question-bank/question-bank.repo'
 import { UserSubscriptionRepo } from '@/modules/user-subscription/user-subscription.repo'
@@ -32,7 +32,6 @@ const sharedServices = [
   TokenService,
   SharedUserSubscriptionService,
   SharedNotificationService,
-  LanguagesRepo,
   // EmailService,
   SharedUserRepository,
   SharedRoleRepository,
@@ -51,6 +50,7 @@ const sharedServices = [
   imports: [
     JwtModule,
     BullQueueModule.forRoot(), // Only keep forRoot() here - queues registered in domain modules
+    LanguagesModule, // SharedNotificationService reads language ids
     forwardRef(() => WebsocketsModule)
   ],
   controllers: [],

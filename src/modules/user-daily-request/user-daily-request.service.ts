@@ -13,8 +13,8 @@ import {
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { HttpStatus, Injectable, Logger } from '@nestjs/common'
 import { DailyRequestRepo } from '../daily-request/daily-request.repo'
-import { LanguagesRepo } from '../languages/languages.repo'
-import { TranslationRepo } from '../translation/translation.repo'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { TranslationService } from '@/modules/translation/translation.service'
 import { UserDailyRequestAlreadyExistsException } from './dto/user-daily-request.error'
 import {
   CreateUserDailyRequestBodyType,
@@ -30,8 +30,8 @@ export class UserDailyRequestService {
     private userDailyRequestRepo: UserDailyRequestRepo,
     private readonly i18nService: I18nService,
     private readonly dailyReqRepo: DailyRequestRepo,
-    private readonly langRepo: LanguagesRepo,
-    private readonly translationRepo: TranslationRepo,
+    private readonly languagesService: LanguagesService,
+    private readonly translationService: TranslationService,
     private readonly userService: UserService
   ) {}
 
@@ -198,7 +198,7 @@ export class UserDailyRequestService {
       bDate.setDate(bDate.getDate() - 1)
 
       // Lấy languageId từ code
-      const languageId = await this.langRepo.getIdByCode(lang)
+      const languageId = await this.languagesService.getIdByCode(lang)
       if (!languageId) {
         throw new NotFoundRecordException()
       }

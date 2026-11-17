@@ -4,7 +4,7 @@ import { GeminiConfigType as PrismaGeminiConfigType } from '@prisma/client'
 import { I18nService } from '@/i18n/i18n.service'
 import { NotFoundRecordException } from 'src/shared/error'
 import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared/helpers'
-import { LanguagesRepo } from '../languages/languages.repo'
+import { LanguagesService } from '@/modules/languages/languages.service'
 import { GeminiConfigRepo, GeminiPresetRepo } from './gemini-config.repo'
 import { GeminiConfigAlreadyExistsException } from './dto/gemini-config.error'
 import {
@@ -19,7 +19,7 @@ export class GeminiConfigService {
     private geminiConfigRepo: GeminiConfigRepo,
     private readonly geminiPresetRepo: GeminiPresetRepo,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepo
+    private readonly languagesService: LanguagesService
   ) {}
 
   async list(pagination: PaginationQueryType, lang: string = 'vi') {
@@ -147,7 +147,7 @@ export class GeminiConfigService {
   }
 
   async getLang(lang: string) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     if (!langId) {
       throw new NotFoundRecordException()
     }

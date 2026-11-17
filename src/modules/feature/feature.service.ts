@@ -12,9 +12,9 @@ import {
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { LanguagesRepo } from '../languages/languages.repo'
+import { LanguagesService } from '@/modules/languages/languages.service'
 import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
-import { TranslationRepo } from '../translation/translation.repo'
+import { TranslationService } from '@/modules/translation/translation.service'
 import { FeatureAlreadyExistsException } from './dto/feature.error'
 import {
   CreateFeatureBodyInputType,
@@ -29,8 +29,8 @@ export class FeatureService {
   constructor(
     private featureRepo: FeatureRepo,
     private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepo,
-    private readonly translationRepo: TranslationRepo
+    private readonly languagesService: LanguagesService,
+    private readonly translationService: TranslationService
   ) {}
 
   private async convertTranslationsToLangCodes(
@@ -39,7 +39,7 @@ export class FeatureService {
     if (!nameTranslations || nameTranslations.length === 0) return []
 
     const allLangIds = Array.from(new Set(nameTranslations.map((t) => t.languageId)))
-    const langs = await this.languageRepo.getWithListId(allLangIds)
+    const langs = await this.languagesService.getWithListId(allLangIds)
     const idToCode = new Map(langs.map((l) => [l.id, l.code]))
 
     return nameTranslations.map((t) => ({
@@ -49,7 +49,7 @@ export class FeatureService {
   }
 
   async list(pagination: PaginationQueryType, lang: string = 'vi', roleName: string) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     const data = await this.featureRepo.list(pagination, langId ?? undefined, isAdmin)
@@ -90,7 +90,7 @@ export class FeatureService {
   }
 
   async findById(id: number, roleName: string, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     if (!langId) {
@@ -143,7 +143,7 @@ export class FeatureService {
   }
 
   async findByIdWithAllLang(id: number, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
 
     const feature: any = await this.featureRepo.findByIdWithAllLang(id)
     if (!feature) {
@@ -157,7 +157,7 @@ export class FeatureService {
       : null
 
     // map array to { key: code, value }
-    const languages = await this.languageRepo.getWithListId(
+    const languages = await this.languagesService.getWithListId(
       Array.from(new Set((feature.nameTranslations ?? []).map((t: any) => t.languageId)))
     )
     const codeMap = Object.fromEntries(languages.map((l) => [l.id, l.code]))
@@ -218,7 +218,7 @@ export class FeatureService {
         const allLangCodes = Array.from(new Set([...nameList]))
 
         // Get languages corresponding to the keys
-        const languages = await this.languageRepo.getWithListCode(allLangCodes)
+        const languages = await this.languagesService.getWithListCode(allLangCodes)
 
         // Create map { code: id } for quick access
         const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
@@ -242,7 +242,9 @@ export class FeatureService {
         }
 
         // Validate translations (check for duplicate names)
-        await this.translationRepo.validateTranslationRecords([...nameTranslationRecords])
+        await this.translationService.validateTranslationRecords([
+          ...nameTranslationRecords
+        ])
 
         // Update feature with final keys and translations
         const result = await this.featureRepo.update(
@@ -327,7 +329,7 @@ export class FeatureService {
 
           if (allLangCodes.length > 0) {
             // Get languages
-            const languages = await this.languageRepo.getWithListCode(allLangCodes)
+            const languages = await this.languagesService.getWithListCode(allLangCodes)
             const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
 
             // Check missing language
@@ -346,7 +348,7 @@ export class FeatureService {
             }
 
             // Validate translation records
-            await this.translationRepo.validateTranslationRecords([
+            await this.translationService.validateTranslationRecords([
               ...nameTranslationRecords
             ])
           }
@@ -404,7 +406,7 @@ export class FeatureService {
           id,
           deletedById
         }),
-        this.translationRepo.deleteByKey(existingFeature.nameKey)
+        this.translationService.deleteByKey(existingFeature.nameKey)
       ])
 
       return {

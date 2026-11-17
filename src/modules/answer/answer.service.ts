@@ -1,6 +1,6 @@
 import { I18nService } from '@/i18n/i18n.service'
 import { AnswerMessage } from '@/i18n/message-keys'
-import { LanguagesRepo } from '@/modules/languages/languages.repo'
+import { LanguagesService } from '@/modules/languages/languages.service'
 import { TranslationService } from '@/modules/translation/translation.service'
 import { toPaginationMeta } from '@/shared/utils/pagination'
 import {
@@ -43,7 +43,7 @@ export class AnswerService {
   constructor(
     private readonly answerRepository: AnswerRepo,
     private readonly translationService: TranslationService,
-    private readonly languagesRepo: LanguagesRepo,
+    private readonly languagesService: LanguagesService,
     private readonly i18nService: I18nService
   ) {}
 
@@ -568,7 +568,7 @@ export class AnswerService {
   }
 
   private async languageMaps(): Promise<LanguageMaps> {
-    const rows = await this.languagesRepo.getWithListCode(LANGUAGE_CODES)
+    const rows = await this.languagesService.getWithListCode(LANGUAGE_CODES)
     return {
       idByCode: new Map(rows.map((l) => [l.code, l.id])),
       codeById: new Map(rows.map((l) => [l.id, l.code]))
