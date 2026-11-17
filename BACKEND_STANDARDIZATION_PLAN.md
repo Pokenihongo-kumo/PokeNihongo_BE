@@ -4,6 +4,10 @@ Phiên bản 6 — 2026-11-03. Giữ phạm vi clean toàn src BE/web/mobile t�
 
 ## 1. Mục tiêu đã chốt
 
+Ràng buộc ngày 2026-11-15: một số dịch vụ Google đang ngưng do người dùng không tiếp tục trả phí. Giữ tích hợp và chuẩn bị code/config/tests để kích hoạt lại; không coi billing/quota bị chặn là bug cần cố sửa, không tự đổi provider hoặc gọi API tính phí. Test nội bộ qua provider test doubles; live-provider ghi pending đến khi được cấp lại điều kiện và cho phép kiểm thử. Batch clean độc lập vẫn tiếp tục; không tuyên bố tính năng Google đã được kiểm chứng runtime. Quy trình chi tiết và runbook tại mục 6 của kế hoạch kiến trúc bên dưới.
+
+Bổ sung ngày 2026-11-10: mục tiêu phát triển thành sản phẩm có người dùng thật được đề xuất trong [kế hoạch kiến trúc, dữ liệu và vận hành](docs/standardization/product-architecture-plan.md). Tài liệu mới đang chờ review; giữ tiến độ clean hiện có, hoàn thành batch đang dở rồi phối hợp theo từng nghiệp vụ. Clean giữ behavior tiếp tục; schema/contract/nghiệp vụ chỉ thay trong task riêng có thiết kế và migration đã chốt, không gộp vào commit clean. Quy định không đổi schema dưới đây áp dụng phạm vi clean, không loại bỏ các task kiến trúc riêng sau review.
+
 Clean toàn bộ `src` theo lộ trình dài hạn: thống nhất hai phong cách viết, gom logic có thể tái sử dụng, làm rõ trách nhiệm và giảm phụ thuộc giữa các phần. Người dùng chấp nhận làm lâu dài; không thu hẹp công việc chỉ còn các luồng demo phỏng vấn. Tối ưu hiệu năng không phải mục tiêu mặc định.
 
 Phạm vi đã chốt gồm toàn bộ src của backend, web và mobile. Web/mobile vừa là consumer cần bảo vệ contract, vừa là đối tượng refactor đầy đủ: models/services/hooks, state/cache, pages/screens/components/layouts, routing/auth/i18n, config/utils và native/realtime lifecycle. Giữ giao diện và nghiệp vụ đang có; không biến clean code thành viết lại UI hoặc thêm product feature.
