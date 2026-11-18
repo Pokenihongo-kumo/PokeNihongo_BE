@@ -11,8 +11,8 @@ import { PaginationQueryType } from '@/shared/models/request.model'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { LanguagesService } from '@/modules/languages/languages.service'
-import { LeaderboardSeasonRepo } from '../leaderboard-season/leaderboard-season.repo'
-import { QuestionBankRepo } from '../question-bank/question-bank.repo'
+import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
+import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
 import {
   MatchAlreadyExistsException,
   NotHaveActiveLeaderboardSeasonException
@@ -26,9 +26,9 @@ export class MatchService {
     private matchRepo: MatchRepo,
     private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
-    private readonly leaderboardSeasonRepo: LeaderboardSeasonRepo,
+    private readonly leaderboardSeasonService: LeaderboardSeasonService,
     private readonly prismaService: PrismaService,
-    private readonly questionBankRepo: QuestionBankRepo
+    private readonly questionBankService: QuestionBankService
   ) {}
 
   async list(pagination: PaginationQueryType, lang: string = 'vi') {
@@ -64,7 +64,7 @@ export class MatchService {
     let createdMatch: any = null
 
     try {
-      const leaderboardActive = await this.leaderboardSeasonRepo.findActiveSeason()
+      const leaderboardActive = await this.leaderboardSeasonService.findActiveSeason()
       if (!leaderboardActive) {
         throw new NotHaveActiveLeaderboardSeasonException()
       }
@@ -400,7 +400,7 @@ export class MatchService {
         if (currentRq) {
           // Prefer canonical formatting via repository; fallback to included questionBank
           try {
-            const qbList = await this.questionBankRepo.findByIds(
+            const qbList = await this.questionBankService.getByIds(
               [currentRq.questionBankId],
               lang
             )
@@ -502,5 +502,56 @@ export class MatchService {
       matchId: match.id,
       match: { id: match.id, status: match.status }
     }
+  }
+
+  // ---- For other modules (module-boundary plan B6) ----
+  // Same arguments and results as the repo methods.
+
+  // The repo's update (the service's own update answers the HTTP route)
+  updateMatch(...args: Parameters<MatchRepo['update']>) {
+    return this.matchRepo.update(...args)
+  }
+
+  // The repo's create (the service's own create answers the HTTP route)
+  createMatch(...args: Parameters<MatchRepo['create']>) {
+    return this.matchRepo.create(...args)
+  }
+
+  findActiveMatchByUserId(...args: Parameters<MatchRepo['findActiveMatchByUserId']>) {
+    return this.matchRepo.findActiveMatchByUserId(...args)
+  }
+
+  checkUserHasJoinedSeason(...args: Parameters<MatchRepo['checkUserHasJoinedSeason']>) {
+    return this.matchRepo.checkUserHasJoinedSeason(...args)
+  }
+
+  findInProgressByUserId(...args: Parameters<MatchRepo['findInProgressByUserId']>) {
+    return this.matchRepo.findInProgressByUserId(...args)
+  }
+
+  findByIdWithParticipant(...args: Parameters<MatchRepo['findByIdWithParticipant']>) {
+    return this.matchRepo.findByIdWithParticipant(...args)
+  }
+
+  getMatchWithRoundsByUserId(
+    ...args: Parameters<MatchRepo['getMatchWithRoundsByUserId']>
+  ) {
+    return this.matchRepo.getMatchWithRoundsByUserId(...args)
+  }
+
+  countMatchesByUserId(...args: Parameters<MatchRepo['countMatchesByUserId']>) {
+    return this.matchRepo.countMatchesByUserId(...args)
+  }
+
+  countWinsByUserId(...args: Parameters<MatchRepo['countWinsByUserId']>) {
+    return this.matchRepo.countWinsByUserId(...args)
+  }
+
+  getMatchesByUser(...args: Parameters<MatchRepo['getMatchesByUser']>) {
+    return this.matchRepo.getMatchesByUser(...args)
+  }
+
+  getMatchesHistoryByUser(...args: Parameters<MatchRepo['getMatchesHistoryByUser']>) {
+    return this.matchRepo.getMatchesHistoryByUser(...args)
   }
 }

@@ -20,10 +20,10 @@ import { Injectable, Logger } from '@nestjs/common'
 import { Queue } from 'bull'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import { MatchingGateway } from 'src/websockets/matching.gateway'
-import { MatchRoundRepo } from '../match-round/match-round.repo'
-import { PokemonRepo } from '../pokemon/pokemon.repo'
-import { QuestionBankRepo } from '../question-bank/question-bank.repo'
-import { UserPokemonRepo } from '../user-pokemon/user-pokemon.repo'
+import { MatchRoundService } from '@/modules/match-round/match-round.service'
+import { PokemonService } from '@/modules/pokemon/pokemon.service'
+import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
+import { UserPokemonService } from '@/modules/user-pokemon/user-pokemon.service'
 import {
   MatchRoundParticipantNotFoundException,
   NotYourTurnToPickException,
@@ -45,10 +45,10 @@ export class MatchRoundParticipantService {
 
   constructor(
     private matchRoundParticipantRepo: MatchRoundParticipantRepo,
-    private readonly matchRoundRepo: MatchRoundRepo,
-    private readonly userPokemonRepo: UserPokemonRepo,
-    private readonly questionBankRepo: QuestionBankRepo,
-    private readonly pokemonRepo: PokemonRepo,
+    private readonly matchRoundService: MatchRoundService,
+    private readonly userPokemonService: UserPokemonService,
+    private readonly questionBankService: QuestionBankService,
+    private readonly pokemonService: PokemonService,
     private readonly i18nService: I18nService,
     private readonly prismaService: PrismaService,
     private readonly matchingGateway: MatchingGateway,
@@ -177,7 +177,7 @@ export class MatchRoundParticipantService {
     try {
       // Dựa vào matchRoundId lấy ra match-round kèm match và participants
       const existMatchRound =
-        await this.matchRoundRepo.findByIdWithMatchAndParticipants(matchRoundId)
+        await this.matchRoundService.findByIdWithMatchAndParticipants(matchRoundId)
       if (!existMatchRound) {
         throw new MatchRoundParticipantNotFoundException()
       }
@@ -223,7 +223,7 @@ export class MatchRoundParticipantService {
       }
 
       // Tìm userPokemon dựa vào pokemonId và userId
-      const userPokemon = await this.userPokemonRepo.findByUserAndPokemon(
+      const userPokemon = await this.userPokemonService.findByUserAndPokemon(
         userId,
         data.pokemonId
       )
@@ -547,7 +547,7 @@ export class MatchRoundParticipantService {
       }
 
       // Tìm round tiếp theo
-      const nextRound = await this.matchRoundRepo.findByMatchIdAndRoundNumber(
+      const nextRound = await this.matchRoundService.findByMatchIdAndRoundNumber(
         currentMatchRound.matchId,
         nextRoundNumber
       )
@@ -681,14 +681,14 @@ export class MatchRoundParticipantService {
       // Use QuestionBankRepo to fetch random questions
       const baseLevelN = rankToLevel(baseRank)
       const finalBase = baseLevelN
-        ? await this.questionBankRepo.getRandomQuestions(baseCount, baseLevelN)
+        ? await this.questionBankService.getRandomQuestions(baseCount, baseLevelN)
         : []
 
       let finalHigher: any[] = []
       if (higherCount > 0 && higherRank) {
         const higherLevelN = rankToLevel(higherRank)
         if (higherLevelN) {
-          finalHigher = await this.questionBankRepo.getRandomQuestions(
+          finalHigher = await this.questionBankService.getRandomQuestions(
             higherCount,
             higherLevelN
           )
@@ -739,7 +739,7 @@ export class MatchRoundParticipantService {
             // Use PokemonRepo to calculate debuffed pokemon accurately
             let debuffedParticipantId: number | null = null
             try {
-              const debuffCalc = await this.pokemonRepo.calculateDebuffedPokemon(
+              const debuffCalc = await this.pokemonService.calculateDebuffedPokemon(
                 p1.selectedUserPokemon.pokemonId,
                 p2.selectedUserPokemon.pokemonId
               )
@@ -784,7 +784,7 @@ export class MatchRoundParticipantService {
                   const extraRank = higherRank || baseRank
                   const extraLevelN = rankToLevel(extraRank)
                   if (extraLevelN) {
-                    const extraPool = await this.questionBankRepo.getRandomQuestions(
+                    const extraPool = await this.questionBankService.getRandomQuestions(
                       debuffRow.valueDebuff || 1,
                       extraLevelN
                     )
@@ -948,5 +948,18 @@ export class MatchRoundParticipantService {
         `[MatchRoundParticipant] Error in handleQuestionsAndDebuffForCompletedSelection: ${err.message}`
       )
     }
+  }
+
+  // ---- For other modules (module-boundary plan B6) ----
+  // Same arguments and results as the repo methods.
+
+  // The repo's update (the service's own update answers the HTTP route)
+  updateRoundParticipant(...args: Parameters<MatchRoundParticipantRepo['update']>) {
+    return this.matchRoundParticipantRepo.update(...args)
+  }
+
+  // The repo's findMany (the service's own findMany answers the HTTP route)
+  findRoundParticipants(...args: Parameters<MatchRoundParticipantRepo['findMany']>) {
+    return this.matchRoundParticipantRepo.findMany(...args)
   }
 }

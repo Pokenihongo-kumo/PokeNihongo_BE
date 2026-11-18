@@ -4,8 +4,8 @@ import {
   MatchRoundParticipantStatus,
   RoundStatus
 } from '@/common/constants/match.constant'
-import { PokemonRepo } from '@/modules/pokemon/pokemon.repo'
-import { QuestionBankRepo } from '@/modules/question-bank/question-bank.repo'
+import { PokemonService } from '@/modules/pokemon/pokemon.service'
+import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
 import { addTimeUTC, convertEloToRank } from '@/shared/helpers'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { MatchingGateway } from '@/websockets/matching.gateway'
@@ -33,8 +33,8 @@ export class MatchRoundParticipantTimeoutProcessor implements OnModuleInit {
 
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly questionBankRepo: QuestionBankRepo,
-    private readonly pokemonRepo: PokemonRepo,
+    private readonly questionBankService: QuestionBankService,
+    private readonly pokemonService: PokemonService,
     @InjectQueue(BullQueue.MATCH_ROUND_PARTICIPANT_TIMEOUT)
     private readonly matchRoundParticipantTimeoutQueue: Queue,
     @InjectQueue(BullQueue.ROUND_QUESTION_TIMEOUT)
@@ -804,7 +804,7 @@ export class MatchRoundParticipantTimeoutProcessor implements OnModuleInit {
       // Use QuestionBankRepo to fetch random questions
       const baseLevelN = rankToLevel(baseRank)
       const finalBase = baseLevelN
-        ? await this.questionBankRepo.getRandomQuestions(
+        ? await this.questionBankService.getRandomQuestions(
             Math.max(0, baseCount),
             baseLevelN
           )
@@ -814,7 +814,7 @@ export class MatchRoundParticipantTimeoutProcessor implements OnModuleInit {
       if (higherCount > 0 && higherRank) {
         const higherLevelN = rankToLevel(higherRank)
         if (higherLevelN) {
-          finalHigher = await this.questionBankRepo.getRandomQuestions(
+          finalHigher = await this.questionBankService.getRandomQuestions(
             higherCount,
             higherLevelN
           )
@@ -862,7 +862,7 @@ export class MatchRoundParticipantTimeoutProcessor implements OnModuleInit {
           // Calculate which Pokemon is debuffed
           if (p1.selectedUserPokemon?.pokemonId && p2.selectedUserPokemon?.pokemonId) {
             try {
-              const debuffCalc = await this.pokemonRepo.calculateDebuffedPokemon(
+              const debuffCalc = await this.pokemonService.calculateDebuffedPokemon(
                 p1.selectedUserPokemon.pokemonId,
                 p2.selectedUserPokemon.pokemonId
               )
@@ -910,7 +910,7 @@ export class MatchRoundParticipantTimeoutProcessor implements OnModuleInit {
               const extraRank = higherRank || baseRank
               const extraLevelN = rankToLevel(extraRank)
               if (extraLevelN) {
-                const extraPool = await this.questionBankRepo.getRandomQuestions(
+                const extraPool = await this.questionBankService.getRandomQuestions(
                   debuffRow.valueDebuff || 1,
                   extraLevelN
                 )
@@ -1102,7 +1102,7 @@ export class MatchRoundParticipantTimeoutProcessor implements OnModuleInit {
         )
         let firstQuestionForNotify: any | null = null
         try {
-          const qbList = await this.questionBankRepo.findByIds(
+          const qbList = await this.questionBankService.getByIds(
             [firstQuestion.questionBankId],
             userLang
           )

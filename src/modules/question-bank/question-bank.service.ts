@@ -271,4 +271,16 @@ export class QuestionBankService {
     return new InvalidQuestionBankDataException()
   }
   //#endregion
+
+  // ---- For other modules (module-boundary plan B6) ----
+  // Same arguments and results as the repo methods.
+
+  getRandomQuestions(...args: Parameters<QuestionBankRepo['getRandomQuestions']>) {
+    return this.questionBankRepo.getRandomQuestions(...args)
+  }
+
+  // The repo's findByIds (the service's own findByIds answers the HTTP route)
+  getByIds(...args: Parameters<QuestionBankRepo['findByIds']>) {
+    return this.questionBankRepo.findByIds(...args)
+  }
 }

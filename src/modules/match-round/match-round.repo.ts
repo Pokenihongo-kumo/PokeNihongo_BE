@@ -297,4 +297,20 @@ export class MatchRoundRepo {
       }
     })
   }
+
+  // A round is created with its participant rows (POST /match-round): the
+  // round owns them at creation, so match-round does not call back into
+  // match-round-participant (B6)
+  createParticipants(
+    data: Array<{
+      matchRoundId: number
+      matchParticipantId: number
+      selectedUserPokemonId: number | null
+      orderSelected?: number
+      endTimeSelected?: Date | null
+    }>,
+    prismaTx: PrismaClient
+  ): Promise<{ count: number }> {
+    return prismaTx.matchRoundParticipant.createMany({ data })
+  }
 }

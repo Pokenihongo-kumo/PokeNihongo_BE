@@ -18,7 +18,7 @@ import * as bcrypt from 'bcrypt'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { NotStartedLeaderboardSeasonException } from '../leaderboard-season/dto/leaderboard-season.error'
 import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
-import { MatchRepo } from '../match/match.repo'
+import { MatchService } from '@/modules/match/match.service'
 import { UserPokemonNotFoundException } from '../user-pokemon/dto/user-pokemon.error'
 import { UserProgressService } from '../user-progress/user-progress.service'
 import { UserSeasonHistoryRepo } from '../user-season-history/user-season-history.repo'
@@ -44,7 +44,9 @@ export class UserService {
     private walletSer: WalletService,
     private readonly userCoreService: UserCoreService,
     private readonly leaderboardSeasonService: LeaderboardSeasonService,
-    private readonly matchRepo: MatchRepo,
+    private readonly matchService: MatchService,
+    // Exception (B6): reads its season histories through the repo. The service
+    // is out of reach: user -> season history -> reward -> user (B5 cycle)
     private readonly userSeaHistoryRepo: UserSeasonHistoryRepo,
     private readonly languagesService: LanguagesService,
     private readonly userProgressService: UserProgressService
@@ -509,8 +511,8 @@ export class UserService {
     const [currentSeason, totalMatches, totalWins, currentWinStreak, userInfo] =
       await Promise.all([
         this.leaderboardSeasonService.findActiveSeasonWithLangIdAndUser(userId, langId),
-        this.matchRepo.countMatchesByUserId(userId),
-        this.matchRepo.countWinsByUserId(userId),
+        this.matchService.countMatchesByUserId(userId),
+        this.matchService.countWinsByUserId(userId),
         this.getCurrentWinStreak(userId),
         this.userRepo.findById(userId)
       ])
@@ -609,7 +611,7 @@ export class UserService {
   }
 
   async getCurrentWinStreak(userId: number) {
-    const matches = await this.matchRepo.getMatchesByUser(userId)
+    const matches = await this.matchService.getMatchesByUser(userId)
 
     let streak = 0
 
@@ -635,7 +637,7 @@ export class UserService {
       throw new NotFoundRecordException()
     }
 
-    const matchHis = await this.matchRepo.getMatchesHistoryByUser(
+    const matchHis = await this.matchService.getMatchesHistoryByUser(
       userId,
       langId,
       pagination

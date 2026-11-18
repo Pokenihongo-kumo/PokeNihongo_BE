@@ -1,8 +1,9 @@
+import { PokemonModule } from '@/modules/pokemon/pokemon.module'
 import { BullQueueModule } from '@/3rdService/bull/bull-queue.module'
 import { BullQueue } from '@/common/constants/bull-action.constant'
 import { MatchRoundParticipantTimeoutProcessor } from '@/shared/workers/match-round-participant-timeout.processor'
 import { WebsocketsModule } from '@/websockets/websockets.module'
-import { forwardRef, Module } from '@nestjs/common'
+import { Module } from '@nestjs/common'
 import { MatchRoundModule } from '../match-round/match-round.module'
 import { MatchModule } from '../match/match.module'
 import { QuestionBankModule } from '../question-bank/question-bank.module'
@@ -20,11 +21,12 @@ import { MatchRoundParticipantService } from './match-round-participant.service'
       true // Sử dụng Redis riêng cho match
     ),
     MatchModule,
-    forwardRef(() => MatchRoundModule),
+    MatchRoundModule,
     WebsocketsModule,
     UserPokemonModule,
     RoundQuestionModule,
-    QuestionBankModule
+    QuestionBankModule,
+    PokemonModule
   ],
   controllers: [MatchRoundParticipantController],
   providers: [

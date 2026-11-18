@@ -1,12 +1,17 @@
 import { Injectable } from '@nestjs/common'
 
-import { QueueStatus } from '@prisma/client'
+import { PrismaClient, QueueStatus } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import { CreateMatchQueueBodyType, MatchQueueType } from './entities/match-queue.entity'
 
 @Injectable()
 export class MatchQueueRepo {
   constructor(private prismaService: PrismaService) {}
+
+  // The matchmaking run opens its transaction here (match, participants, queue rows)
+  withTransaction<T>(callback: (prismaTx: PrismaClient) => Promise<T>): Promise<T> {
+    return this.prismaService.$transaction(callback)
+  }
 
   create({
     data

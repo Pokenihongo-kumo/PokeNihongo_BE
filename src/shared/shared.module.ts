@@ -5,8 +5,6 @@ import { AccessTokenGuard } from '@/common/guards/access-token.guard'
 import { APIKeyGuard } from '@/common/guards/api-key.guard'
 import { AuthenticationGuard } from '@/common/guards/authentication.guard'
 import { LanguagesModule } from '@/modules/languages/languages.module'
-import { PokemonRepo } from '@/modules/pokemon/pokemon.repo'
-import { QuestionBankRepo } from '@/modules/question-bank/question-bank.repo'
 
 import { HashingService } from '@/shared/services/hashing.service'
 import { PrismaService } from '@/shared/services/prisma.service'
@@ -28,8 +26,6 @@ const sharedServices = [
   SharedNotificationService,
   // EmailService,
   SharedNotificationRepo,
-  QuestionBankRepo,
-  PokemonRepo,
   UserGateway
 ]
 @Global()

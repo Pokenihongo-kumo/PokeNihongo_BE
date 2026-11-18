@@ -1,10 +1,10 @@
 {
   "metrics": {
-    "crossModuleRepoImports": 67,
+    "crossModuleRepoImports": 41,
     "moduleForeignRepoProviders": 1,
-    "forwardRefModuleFiles": 12,
+    "forwardRefModuleFiles": 10,
     "injectForwardRefFiles": 6,
-    "sharedModuleBusinessRepos": 3,
+    "sharedModuleBusinessRepos": 1,
     "sharedModuleBusinessProviders": 3,
     "prismaOutsideRepoFiles": 12,
     "prismaOutsideRepoCalls": 166
@@ -23,27 +23,8 @@
       "modules/lesson-content/lesson-content.service.ts -> modules/grammar/grammar.repo.ts",
       "modules/lesson-content/lesson-content.service.ts -> modules/lesson/lesson.repo.ts",
       "modules/lesson-content/lesson-content.service.ts -> modules/user-exercise-attempt/user-exercise-attempt.repo.ts",
-      "modules/match-participant/match-participant.service.ts -> modules/match-round-participant/match-round-participant.repo.ts",
-      "modules/match-participant/match-participant.service.ts -> modules/match-round/match-round.repo.ts",
-      "modules/match-participant/match-participant.service.ts -> modules/match/match.repo.ts",
-      "modules/match-queue/match-queue.service.ts -> modules/leaderboard-season/leaderboard-season.repo.ts",
-      "modules/match-queue/match-queue.service.ts -> modules/match-participant/match-participant.repo.ts",
-      "modules/match-queue/match-queue.service.ts -> modules/match/match.repo.ts",
-      "modules/match-queue/match-queue.service.ts -> modules/user-pokemon/user-pokemon.repo.ts",
-      "modules/match-round-participant/match-round-participant.service.ts -> modules/match-round/match-round.repo.ts",
-      "modules/match-round-participant/match-round-participant.service.ts -> modules/pokemon/pokemon.repo.ts",
-      "modules/match-round-participant/match-round-participant.service.ts -> modules/question-bank/question-bank.repo.ts",
-      "modules/match-round-participant/match-round-participant.service.ts -> modules/user-pokemon/user-pokemon.repo.ts",
-      "modules/match-round/match-round.service.ts -> modules/leaderboard-season/leaderboard-season.repo.ts",
-      "modules/match-round/match-round.service.ts -> modules/match-round-participant/match-round-participant.repo.ts",
-      "modules/match-round/match-round.service.ts -> modules/match/match.repo.ts",
-      "modules/match-round/match-round.service.ts -> modules/question-bank/question-bank.repo.ts",
-      "modules/match-round/match-round.service.ts -> modules/round-question/round-question.repo.ts",
-      "modules/match/match.service.ts -> modules/leaderboard-season/leaderboard-season.repo.ts",
-      "modules/match/match.service.ts -> modules/question-bank/question-bank.repo.ts",
       "modules/payment/payment.service.ts -> modules/subscription-plan/subscription-plan.repo.ts",
       "modules/role/role.service.ts -> modules/permission/permission.repo.ts",
-      "modules/round-question/round-question.service.ts -> modules/question-bank/question-bank.repo.ts",
       "modules/shop-banner/shop-banner.service.ts -> modules/shop-item/shop-item.repo.ts",
       "modules/shop-banner/shop-banner.service.ts -> modules/shop-purchase/shop-purchase.repo.ts",
       "modules/shop-item/shop-item.service.ts -> modules/shop-banner/shop-banner.repo.ts",
@@ -62,7 +43,6 @@
       "modules/user-achievement/user-achievement.service.ts -> modules/achievement/achievement.repo.ts",
       "modules/user-daily-request/user-daily-request.service.ts -> modules/daily-request/daily-request.repo.ts",
       "modules/user-exercise-attempt/user-exercise-attempt.service.ts -> modules/exercises/exercises.repo.ts",
-      "modules/user-pokemon/user-pokemon.service.ts -> modules/match/match.repo.ts",
       "modules/user-reward-history/user-reward-history.service.ts -> modules/reward/reward.repo.ts",
       "modules/user-subscription/user-subscription.service.ts -> modules/subscription-plan/subscription-plan.repo.ts",
       "modules/user-test-attempt/user-test-attempt.service.ts -> modules/lesson/lesson.repo.ts",
@@ -70,13 +50,7 @@
       "modules/user-test-attempt/user-test-attempt.service.ts -> modules/user-progress/user-progress.repo.ts",
       "modules/user-test-attempt/user-test-attempt.service.ts -> modules/user-test/user-test.repo.ts",
       "modules/user-test-attempt/user-test-attempt.service.ts -> modules/user/user.repo.ts",
-      "modules/user/user.service.ts -> modules/match/match.repo.ts",
       "modules/user/user.service.ts -> modules/user-season-history/user-season-history.repo.ts",
-      "shared/shared.module.ts -> modules/pokemon/pokemon.repo.ts",
-      "shared/shared.module.ts -> modules/question-bank/question-bank.repo.ts",
-      "shared/workers/match-round-participant-timeout.processor.ts -> modules/pokemon/pokemon.repo.ts",
-      "shared/workers/match-round-participant-timeout.processor.ts -> modules/question-bank/question-bank.repo.ts",
-      "shared/workers/round-question-timeout.processor.ts -> modules/question-bank/question-bank.repo.ts",
       "websockets/kaiwa.gateway.ts -> modules/gemini-config/gemini-config.repo.ts"
     ],
     "moduleForeignRepoProviders": [
@@ -85,8 +59,6 @@
     "forwardRefModuleFiles": [
       "modules/gacha-item/gacha-item.module.ts",
       "modules/match-participant/match-participant.module.ts",
-      "modules/match-round-participant/match-round-participant.module.ts",
-      "modules/match-round/match-round.module.ts",
       "modules/match/match.module.ts",
       "modules/reward/reward.module.ts",
       "modules/shop-item/shop-item.module.ts",
@@ -105,8 +77,6 @@
       "shared/workers/match-round-participant-timeout.processor.ts"
     ],
     "sharedModuleBusinessRepos": [
-      "PokemonRepo",
-      "QuestionBankRepo",
       "SharedNotificationRepo"
     ],
     "sharedModuleBusinessProviders": [

@@ -1,7 +1,7 @@
 import { BullAction, BullQueue } from '@/common/constants/bull-action.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { RoundQuestionMessage } from '@/i18n/message-keys'
-import { QuestionBankRepo } from '@/modules/question-bank/question-bank.repo'
+import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   addTimeUTC,
@@ -36,7 +36,7 @@ export class RoundQuestionService {
     private readonly i18nService: I18nService,
     private readonly prismaService: PrismaService,
     private readonly matchingGateway: MatchingGateway,
-    private readonly questionBankRepo: QuestionBankRepo,
+    private readonly questionBankService: QuestionBankService,
     @InjectQueue(BullQueue.ROUND_QUESTION_TIMEOUT)
     private readonly roundQuestionTimeoutQueue: Queue,
     @InjectQueue(BullQueue.MATCH_ROUND_PARTICIPANT_TIMEOUT)
@@ -356,7 +356,7 @@ export class RoundQuestionService {
     let nextQuestionForNotify: any | null = null
     if (nextQuestion) {
       try {
-        const qbList = await this.questionBankRepo.findByIds(
+        const qbList = await this.questionBankService.getByIds(
           [nextQuestion.questionBankId],
           lang
         )
@@ -1284,5 +1284,14 @@ export class RoundQuestionService {
       // Don't swallow errors - let them bubble up
       throw e
     }
+  }
+
+  // ---- For other modules (module-boundary plan B6) ----
+  // Same arguments and results as the repo methods.
+
+  findByMatchRoundParticipantId(
+    ...args: Parameters<RoundQuestionRepo['findByMatchRoundParticipantId']>
+  ) {
+    return this.roundQuestionRepo.findByMatchRoundParticipantId(...args)
   }
 }
