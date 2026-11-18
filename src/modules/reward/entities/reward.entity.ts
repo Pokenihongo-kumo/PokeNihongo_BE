@@ -3,6 +3,7 @@ import { checkIdSchema } from '@/common/utils/id.validation'
 import { RewardMessage } from '@/i18n/message-keys'
 import { UserRewardSourceTypeSchema } from '@/modules/user-reward-history/entities/user-reward-history.entities'
 import { TranslationInputSchema } from '@/shared/models/translation-input.model'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -52,11 +53,7 @@ export const CreateRewardBodySchema = RewardSchema.pick({
   rewardTarget: true
 }).strict()
 
-export const CreateRewardResSchema = z.object({
-  statusCode: z.number(),
-  data: RewardSchema,
-  message: z.string()
-})
+export const CreateRewardResSchema = resSchema(RewardSchema)
 
 export const UpdateRewardBodyInputSchema = CreateRewardBodyInputSchema.partial().strict()
 
@@ -70,9 +67,8 @@ export const GetRewardParamsSchema = z
   })
   .strict()
 
-export const GetRewardDetailWithAllLangResSchema = z.object({
-  statusCode: z.number(),
-  data: RewardSchema.extend({
+export const GetRewardDetailWithAllLangResSchema = resSchema(
+  RewardSchema.extend({
     nameTranslations: z
       .array(
         z.object({
@@ -81,17 +77,14 @@ export const GetRewardDetailWithAllLangResSchema = z.object({
         })
       )
       .optional()
-  }),
-  message: z.string()
-})
+  })
+)
 
-export const GetRewardDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: RewardSchema.extend({
+export const GetRewardDetailResSchema = resSchema(
+  RewardSchema.extend({
     nameTranslation: z.string().nullable().optional()
-  }),
-  message: z.string()
-})
+  })
+)
 
 export const ConvertRewardsBodySchema = z
   .object({
@@ -101,16 +94,14 @@ export const ConvertRewardsBodySchema = z
   })
   .strict()
 
-export const ConvertRewardsResSchema = z.object({
-  statusCode: z.number(),
-  data: z.object({
+export const ConvertRewardsResSchema = resSchema(
+  z.object({
     exp: z.unknown().nullable(),
     pokeCoins: z.unknown().nullable(),
     sparkles: z.unknown().nullable(),
     pokemons: z.array(z.unknown())
-  }),
-  message: z.string()
-})
+  })
+)
 
 export type RewardType = z.infer<typeof RewardSchema>
 export type CreateRewardBodyInputType = z.infer<typeof CreateRewardBodyInputSchema>

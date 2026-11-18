@@ -5,6 +5,7 @@ import { GachaItemRateSchema } from '@/modules/gacha-item-rate/entities/gacha-it
 import { GachaItemSchema } from '@/modules/gacha-item/entities/gacha-item.entity'
 import { PokemonSchema } from '@/modules/pokemon/entities/pokemon.entity'
 import { TranslationInputSchema } from '@/shared/models/translation-input.model'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -81,11 +82,7 @@ export const CreateGachaBannerBodySchema = GachaBannerSchema.pick({
   amount1Star: true
 }).strict()
 
-export const CreateGachaBannerResSchema = z.object({
-  statusCode: z.number(),
-  data: GachaBannerSchema,
-  message: z.string()
-})
+export const CreateGachaBannerResSchema = resSchema(GachaBannerSchema)
 
 export const UpdateGachaBannerBodyInputSchema =
   CreateGachaBannerBodyInputSchema.partial().strict()
@@ -116,9 +113,8 @@ export const GetGachaBannerDetailByUserSchema = GachaBannerSchema.extend({
     .nullable()
 })
 
-export const GetGachaBannerDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: GachaBannerSchema.extend({
+export const GetGachaBannerDetailResSchema = resSchema(
+  GachaBannerSchema.extend({
     nameTranslation: z.string(),
     nameTranslations: TranslationInputSchema.optional().nullable(),
     items: z.array(
@@ -139,15 +135,12 @@ export const GetGachaBannerDetailResSchema = z.object({
     amount3StarCurrent: z.number().optional(),
     amount2StarCurrent: z.number().optional(),
     amount1StarCurrent: z.number().optional()
-  }),
-  message: z.string()
-})
+  })
+)
 
-export const GetGachaBannerByTodayResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(GetGachaBannerDetailByUserSchema),
-  message: z.string()
-})
+export const GetGachaBannerByTodayResSchema = resSchema(
+  z.array(GetGachaBannerDetailByUserSchema)
+)
 
 export type GachaBannerType = z.infer<typeof GachaBannerSchema>
 export type CreateGachaBannerBodyInputType = z.infer<

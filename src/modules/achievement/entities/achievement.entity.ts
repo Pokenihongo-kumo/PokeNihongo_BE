@@ -6,6 +6,7 @@ import { checkIdSchema } from '@/common/utils/id.validation'
 import { ENTITY_MESSAGE } from '@/i18n/message-keys'
 import { RewardSchema } from '@/modules/reward/entities/reward.entity'
 import { TranslationInputSchema } from '@/shared/models/translation-input.model'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -78,11 +79,7 @@ export const CreateAchievementBodySchema = AchievementSchema.pick({
   groupId: true
 })
 
-export const CreateAchievementResSchema = z.object({
-  statusCode: z.number(),
-  data: AchievementSchema,
-  message: z.string()
-})
+export const CreateAchievementResSchema = resSchema(AchievementSchema)
 
 export const UpdateAchievementBodyInputSchema = CreateAchievementBodyInputSchema.partial()
 export const UpdateAchievementBodySchema = CreateAchievementBodySchema.partial()
@@ -95,9 +92,8 @@ export const GetAchievementParamsSchema = z
   })
   .strict()
 
-export const GetAchievementDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: AchievementSchema.extend({
+export const GetAchievementDetailResSchema = resSchema(
+  AchievementSchema.extend({
     nameTranslation: z.string().nullable(),
     nameTranslations: TranslationInputSchema.optional().nullable(),
     descriptionTranslation: z.string().nullable(),
@@ -108,9 +104,8 @@ export const GetAchievementDetailResSchema = z.object({
       nameTranslation: z.string().nullable(),
       nameTranslations: TranslationInputSchema.optional().nullable()
     }).nullable()
-  }),
-  message: z.string()
-})
+  })
+)
 
 //type
 export type AchievementType = z.infer<typeof AchievementSchema>

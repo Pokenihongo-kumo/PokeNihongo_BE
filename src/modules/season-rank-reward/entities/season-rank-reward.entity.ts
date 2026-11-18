@@ -1,6 +1,7 @@
 import { rankName } from '@/common/constants/season-rank-constant'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { ENTITY_MESSAGE } from '@/i18n/message-keys'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -33,11 +34,7 @@ export const CreateSeasonRankRewardBodySchema = SeasonRankRewardSchema.pick({
 
   .strict()
 
-export const CreateSeasonRankRewardResSchema = z.object({
-  statusCode: z.number(),
-  data: SeasonRankRewardSchema,
-  message: z.string()
-})
+export const CreateSeasonRankRewardResSchema = resSchema(SeasonRankRewardSchema)
 
 // Update Schema
 export const UpdateSeasonRankRewardBodySchema =
@@ -67,11 +64,7 @@ export type UpdateWithListSeasonRankRewardBodyType = z.infer<
   typeof UpdateWithListItemBodySchema
 >
 
-export const UpdateWithListItemResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(SeasonRankRewardSchema),
-  message: z.string()
-})
+export const UpdateWithListItemResSchema = resSchema(z.array(SeasonRankRewardSchema))
 
 // Query Schema
 export const GetSeasonRankRewardParamsSchema = z.object({
@@ -80,11 +73,9 @@ export const GetSeasonRankRewardParamsSchema = z.object({
 
 export const GetSeasonRankRewardDetailSchema = SeasonRankRewardSchema
 
-export const GetSeasonRankRewardDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: GetSeasonRankRewardDetailSchema,
-  message: z.string()
-})
+export const GetSeasonRankRewardDetailResSchema = resSchema(
+  GetSeasonRankRewardDetailSchema
+)
 
 // Type exports
 export type SeasonRankRewardType = z.infer<typeof SeasonRankRewardSchema>

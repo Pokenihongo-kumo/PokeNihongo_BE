@@ -1,9 +1,10 @@
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { UserTestMessage as M } from '@/i18n/message-keys'
+import { paginatedResSchema } from '@/shared/utils/pagination'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
+import { TestStatus, UserTestStatus } from '@prisma/client'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
-import { UserTestStatus, TestStatus } from '@prisma/client'
-import { UserTestMessage as M } from '@/i18n/message-keys'
-import { checkIdSchema } from '@/common/utils/id.validation'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
@@ -81,38 +82,10 @@ export const UserTestResSchema = z
   })
   .strict()
 
-export const UserTestListResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(UserTestSchema),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
+export const UserTestListResSchema = paginatedResSchema(UserTestSchema).strict()
 
 // Response schema for my endpoint (with Test info)
-export const UserTestMyListResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(UserTestWithTestSchema),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
+export const UserTestMyListResSchema = paginatedResSchema(UserTestWithTestSchema).strict()
 
 // Params and Query schemas
 export const GetUserTestByIdParamsSchema = z

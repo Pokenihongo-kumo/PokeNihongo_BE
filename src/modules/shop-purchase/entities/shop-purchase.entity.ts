@@ -2,6 +2,7 @@ import { checkIdSchema } from '@/common/utils/id.validation'
 import { ENTITY_MESSAGE } from '@/i18n/message-keys'
 import { ShopItemSchema } from '@/modules/shop-item/entities/shop-item.entity'
 import { WalletTransactionSchema } from '@/modules/wallet-transaction/entities/wallet-transaction.entity'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -31,11 +32,7 @@ export const CreateShopPurchaseBodySchema = ShopPurchaseSchema.pick({
   quantity: true
 }).strict()
 
-export const CreateShopPurchaseResSchema = z.object({
-  statusCode: z.number(),
-  data: ShopPurchaseSchema,
-  message: z.string()
-})
+export const CreateShopPurchaseResSchema = resSchema(ShopPurchaseSchema)
 
 // Update Schema
 export const UpdateShopPurchaseBodySchema = CreateShopPurchaseBodySchema.extend({})
@@ -54,17 +51,11 @@ export const GetShopPurchaseDetailSchema = ShopPurchaseSchema.extend({
   walletTrans: WalletTransactionSchema.nullable().optional()
 })
 
-export const GetShopPurchaseListResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(GetShopPurchaseDetailSchema),
-  message: z.string()
-})
+export const GetShopPurchaseListResSchema = resSchema(
+  z.array(GetShopPurchaseDetailSchema)
+)
 
-export const GetShopPurchaseDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: GetShopPurchaseDetailSchema,
-  message: z.string()
-})
+export const GetShopPurchaseDetailResSchema = resSchema(GetShopPurchaseDetailSchema)
 
 // Type exports
 export type ShopPurchaseType = z.infer<typeof ShopPurchaseSchema>

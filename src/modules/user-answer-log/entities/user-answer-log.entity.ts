@@ -1,8 +1,10 @@
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { UserAnswerLogMessage as M } from '@/i18n/message-keys'
+import { paginatedResSchema } from '@/shared/utils/pagination'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
-import { UserAnswerLogMessage as M } from '@/i18n/message-keys'
-import { checkIdSchema } from '@/common/utils/id.validation'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
@@ -35,29 +37,9 @@ export const UpdateUserAnswerLogBodySchema = UserAnswerLogSchema.pick({
   .partial()
   .strict()
 
-export const UserAnswerLogResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: UserAnswerLogSchema,
-    message: z.string()
-  })
-  .strict()
+export const UserAnswerLogResSchema = resSchema(UserAnswerLogSchema).strict()
 
-export const UserAnswerLogListResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(UserAnswerLogSchema),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
+export const UserAnswerLogListResSchema = paginatedResSchema(UserAnswerLogSchema).strict()
 
 export const GetUserAnswerLogByIdParamsSchema = z
   .object({

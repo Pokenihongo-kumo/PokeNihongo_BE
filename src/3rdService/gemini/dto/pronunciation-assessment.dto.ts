@@ -1,3 +1,4 @@
+import { resSchema } from '@/shared/utils/res-schema'
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
 
@@ -16,12 +17,7 @@ export class PronunciationAssessmentBodyDTO extends createZodDto(
   PronunciationAssessmentBodySchema
 ) {}
 
-export const PronunciationAssessmentResSchema = z.object({
-  statusCode: z.number(),
-  message: z.string(),
-  // The model's JSON as is; {} when it did not return valid JSON
-  data: z.record(z.unknown())
-})
+export const PronunciationAssessmentResSchema = resSchema(z.record(z.unknown()))
 
 export class PronunciationAssessmentResDTO extends createZodDto(
   PronunciationAssessmentResSchema

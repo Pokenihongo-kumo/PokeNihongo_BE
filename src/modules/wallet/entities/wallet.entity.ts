@@ -1,6 +1,7 @@
 import { walletType } from '@/common/constants/wallet.constant'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { WalletMessage } from '@/i18n/message-keys'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -27,11 +28,7 @@ export const CreateWalletBodySchema = WalletSchema.pick({
   balance: true
 }).strict()
 
-export const CreateWalletResSchema = z.object({
-  statusCode: z.number(),
-  data: WalletSchema,
-  message: z.string()
-})
+export const CreateWalletResSchema = resSchema(WalletSchema)
 
 export const UpdateWalletBodySchema = CreateWalletBodySchema
 
@@ -45,11 +42,7 @@ export const GetWalletParamsSchema = z
 
 export const GetWalletDetailResSchema = CreateWalletResSchema
 
-export const GetWalletsWithUserResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(WalletSchema),
-  message: z.string()
-})
+export const GetWalletsWithUserResSchema = resSchema(z.array(WalletSchema))
 export type WalletType = z.infer<typeof WalletSchema>
 export type CreateWalletBodyType = z.infer<typeof CreateWalletBodySchema>
 export type UpdateWalletBodyType = z.infer<typeof UpdateWalletBodySchema>

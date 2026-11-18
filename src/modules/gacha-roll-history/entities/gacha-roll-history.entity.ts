@@ -2,6 +2,7 @@ import { GachaPityType, GachaStarType } from '@/common/constants/gacha.constant'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { ENTITY_MESSAGE } from '@/i18n/message-keys'
 import { PokemonSchema } from '@/modules/pokemon/entities/pokemon.entity'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -51,11 +52,7 @@ export const CreateGachaRollHistoryBodySchema = GachaRollHistorySchema.pick({
   })
   .strict()
 
-export const CreateGachaRollHistoryResSchema = z.object({
-  statusCode: z.number(),
-  data: GachaRollHistorySchema,
-  message: z.string()
-})
+export const CreateGachaRollHistoryResSchema = resSchema(GachaRollHistorySchema)
 
 // Update Schema
 export const UpdateGachaRollHistoryBodySchema =
@@ -63,11 +60,7 @@ export const UpdateGachaRollHistoryBodySchema =
 
 export const UpdateGachaRollHistoryResSchema = CreateGachaRollHistoryResSchema
 
-export const UpdateWithListItemResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(GachaRollHistorySchema),
-  message: z.string()
-})
+export const UpdateWithListItemResSchema = resSchema(z.array(GachaRollHistorySchema))
 
 // Query Schema
 export const GetGachaRollHistoryParamsSchema = z.object({
@@ -76,11 +69,9 @@ export const GetGachaRollHistoryParamsSchema = z.object({
 
 export const GetGachaRollHistoryDetailSchema = GachaRollHistorySchema
 
-export const GetGachaRollHistoryDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: GetGachaRollHistoryDetailSchema,
-  message: z.string()
-})
+export const GetGachaRollHistoryDetailResSchema = resSchema(
+  GetGachaRollHistoryDetailSchema
+)
 
 export const GetGachasRolHisWithPokemonSchema = GachaRollHistorySchema.extend({
   pokemon: PokemonSchema.pick({

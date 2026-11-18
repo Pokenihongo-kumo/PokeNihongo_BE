@@ -4,6 +4,7 @@ import { LeaderboardSeasonSchema } from '@/modules/leaderboard-season/entities/l
 import { LevelSchema } from '@/modules/level/entities/level.entity'
 import { RoleSchema } from '@/shared/models/shared-role.model'
 import { UserSchema } from '@/shared/models/shared-user.model'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -22,11 +23,7 @@ export const CreateUserBodySchema = UserSchema.pick({
   })
   .strict()
 
-export const CreateUserResSchema = z.object({
-  statusCode: z.number(),
-  data: UserSchema.omit({ password: true }), // Không trả về password
-  message: z.string()
-})
+export const CreateUserResSchema = resSchema(UserSchema.omit({ password: true }))
 
 export const UpdateUserBodySchema = UserSchema.pick({
   name: true,
@@ -74,11 +71,7 @@ export const GetStatsUserSeasonSchema = z
 
   .strict()
 
-export const GetUserStatsSeasonResSchema = z.object({
-  statusCode: z.number(),
-  data: GetStatsUserSeasonSchema,
-  message: z.string()
-})
+export const GetUserStatsSeasonResSchema = resSchema(GetStatsUserSeasonSchema)
 
 export const GetListMatchHisByUserSchema = z
   .object({
@@ -93,11 +86,9 @@ export const GetListMatchHisByUserSchema = z
   })
   .strict()
 
-export const GetListMatchHisByUserResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(GetListMatchHisByUserSchema),
-  message: z.string()
-})
+export const GetListMatchHisByUserResSchema = resSchema(
+  z.array(GetListMatchHisByUserSchema)
+)
 
 export const UserWithoutPasswordSchema = z.object({
   ...UserSchema.omit({ password: true }).shape, // Không trả về password
@@ -117,11 +108,7 @@ export const UserWithoutPasswordSchema = z.object({
     .optional()
 })
 
-export const GetUserDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: UserWithoutPasswordSchema,
-  message: z.string()
-})
+export const GetUserDetailResSchema = resSchema(UserWithoutPasswordSchema)
 
 export const SetMainPokemonBodySchema = z
   .object({

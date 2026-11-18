@@ -1,5 +1,6 @@
 import { AttendancesStatus } from '@/common/constants/attendance.constant'
 import { WeekDay } from '@/common/constants/attendence-config.constant'
+import { resSchema } from '@/shared/utils/res-schema'
 
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { ENTITY_MESSAGE } from '@/i18n/message-keys'
@@ -33,9 +34,8 @@ export const CreateAttendanceBodySchema = AttendanceSchema.pick({
   userId: true
 }).strict()
 
-export const CreateAttendanceResSchema = z.object({
-  statusCode: z.number(),
-  data: AttendanceSchema.extend({
+export const CreateAttendanceResSchema = resSchema(
+  AttendanceSchema.extend({
     dayOfWeek: z
       .enum([
         WeekDay.MONDAY,
@@ -48,9 +48,8 @@ export const CreateAttendanceResSchema = z.object({
       ])
       .optional()
       .nullable()
-  }),
-  message: z.string()
-})
+  })
+)
 
 export const UpdateAttendanceBodySchema = AttendanceSchema.pick({
   status: true,
@@ -91,11 +90,7 @@ export const GetAttendanceWithUserSchema = AttendanceSchema.extend({
   })
 })
 
-export const GetAttendanceResSchema = z.object({
-  statusCode: z.number(),
-  data: AttendanceSchema,
-  message: z.string()
-})
+export const GetAttendanceResSchema = resSchema(AttendanceSchema)
 
 export const GetAttendanceWithUserStreakResSchema = GetAttendanceResSchema.extend({
   data: z.object({

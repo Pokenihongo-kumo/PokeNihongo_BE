@@ -1,6 +1,7 @@
 import { RarityPokemon } from '@/common/constants/pokemon.constant'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { PokemonMessage } from '@/i18n/message-keys'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -159,11 +160,9 @@ export const CreatePokemonFormDataSchema = z
     }
   )
 
-export const CreatePokemonResSchema = z.object({
-  statusCode: z.number(),
-  data: PokemonSchema.omit({ nextPokemonsId: true }),
-  message: z.string()
-})
+export const CreatePokemonResSchema = resSchema(
+  PokemonSchema.omit({ nextPokemonsId: true })
+)
 
 // Update Schema
 export const UpdatePokemonBodySchema = PokemonSchema.pick({
@@ -300,15 +299,10 @@ export const GetPokemonParamsSchema = z.object({
   pokemonId: checkIdSchema(PokemonMessage.INVALID_ID)
 })
 
-export const GetPokemonResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(PokemonSchema),
-  message: z.string()
-})
+export const GetPokemonResSchema = resSchema(z.array(PokemonSchema))
 
-export const GetPokemonDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: PokemonSchema.omit({ nextPokemonsId: true }).extend({
+export const GetPokemonDetailResSchema = resSchema(
+  PokemonSchema.omit({ nextPokemonsId: true }).extend({
     types: z
       .array(
         z.object({
@@ -356,14 +350,12 @@ export const GetPokemonDetailResSchema = z.object({
         })
       )
       .optional()
-  }),
-  message: z.string()
-})
+  })
+)
 
 // Pokemon Weakness Response Schema
-export const GetPokemonWeaknessResSchema = z.object({
-  statusCode: z.number(),
-  data: z.object({
+export const GetPokemonWeaknessResSchema = resSchema(
+  z.object({
     pokemon: z.object({
       id: z.number(),
       nameJp: z.string(),
@@ -388,9 +380,8 @@ export const GetPokemonWeaknessResSchema = z.object({
         effectiveness_multiplier: z.number()
       })
     )
-  }),
-  message: z.string()
-})
+  })
+)
 
 // Assign Types Schema
 export const AssignPokemonTypesBodySchema = z
@@ -400,9 +391,8 @@ export const AssignPokemonTypesBodySchema = z
   .strict()
 
 // Evolution Schema
-export const GetEvolutionOptionsResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(
+export const GetEvolutionOptionsResSchema = resSchema(
+  z.array(
     z.object({
       id: z.number(),
       pokedex_number: z.number(),
@@ -412,9 +402,8 @@ export const GetEvolutionOptionsResSchema = z.object({
       imageUrl: z.string().nullable(),
       rarity: z.string()
     })
-  ),
-  message: z.string()
-})
+  )
+)
 
 // Type exports
 export type PokemonType = z.infer<typeof PokemonSchema>

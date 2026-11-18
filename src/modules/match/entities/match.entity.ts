@@ -1,6 +1,7 @@
 import { MatchStatus } from '@/common/constants/match.constant'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { MatchMessage } from '@/i18n/message-keys'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -30,11 +31,7 @@ export const CreateMatchBodySchema = MatchSchema.pick({})
 
   .strict()
 
-export const CreateMatchResSchema = z.object({
-  statusCode: z.number(),
-  data: MatchSchema,
-  message: z.string()
-})
+export const CreateMatchResSchema = resSchema(MatchSchema)
 
 export const UpdateMatchBodySchema = CreateMatchBodySchema.partial().strict()
 
@@ -46,17 +43,9 @@ export const GetMatchParamsSchema = z
   })
   .strict()
 
-export const GetMatchDetailWithAllLangResSchema = z.object({
-  statusCode: z.number(),
-  data: MatchSchema,
-  message: z.string()
-})
+export const GetMatchDetailWithAllLangResSchema = resSchema(MatchSchema)
 
-export const GetMatchDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: MatchSchema,
-  message: z.string()
-})
+export const GetMatchDetailResSchema = resSchema(MatchSchema)
 
 export type MatchType = z.infer<typeof MatchSchema>
 

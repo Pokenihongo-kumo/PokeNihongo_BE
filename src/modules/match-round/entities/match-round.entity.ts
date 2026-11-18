@@ -7,6 +7,7 @@ import { MatchSchema } from '@/modules/match/entities/match.entity'
 import { PokemonSchema } from '@/modules/pokemon/entities/pokemon.entity'
 import { UserPokemonSchema } from '@/modules/user-pokemon/entities/user-pokemon.entity'
 import { UserSchema } from '@/shared/models/shared-user.model'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -105,11 +106,7 @@ export const CreateMatchRoundBodySchema = MatchRoundSchema.pick({
   roundNumber: true
 }).strict()
 
-export const CreateMatchRoundResSchema = z.object({
-  statusCode: z.number(),
-  data: MatchRoundSchema,
-  message: z.string()
-})
+export const CreateMatchRoundResSchema = resSchema(MatchRoundSchema)
 
 export const UpdateMatchRoundBodySchema = CreateMatchRoundBodySchema.partial().strict()
 
@@ -121,17 +118,9 @@ export const GetMatchRoundParamsSchema = z
   })
   .strict()
 
-export const GetMatchRoundDetailWithAllLangResSchema = z.object({
-  statusCode: z.number(),
-  data: MatchRoundSchema,
-  message: z.string()
-})
+export const GetMatchRoundDetailWithAllLangResSchema = resSchema(MatchRoundSchema)
 
-export const GetMatchRoundDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: MatchRoundSchema,
-  message: z.string()
-})
+export const GetMatchRoundDetailResSchema = resSchema(MatchRoundSchema)
 
 export type MatchRoundType = z.infer<typeof MatchRoundSchema>
 

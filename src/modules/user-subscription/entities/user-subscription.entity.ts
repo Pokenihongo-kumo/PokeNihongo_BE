@@ -1,6 +1,7 @@
 import { UserSubscriptionStatus } from '@/common/constants/subscription.constant'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { ENTITY_MESSAGE } from '@/i18n/message-keys'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -40,11 +41,7 @@ export const CreateUserSubscriptionBodySchema = UserSubscriptionSchema.pick({
 
   .strict()
 
-export const CreateUserSubscriptionResSchema = z.object({
-  statusCode: z.number(),
-  data: UserSubscriptionSchema,
-  message: z.string()
-})
+export const CreateUserSubscriptionResSchema = resSchema(UserSubscriptionSchema)
 
 // Update Schema
 export const UpdateUserSubscriptionBodySchema = UserSubscriptionSchema.pick({
@@ -68,11 +65,9 @@ export const GetRewardByLeaderboardParamsSchema = z.object({
 
 export const GetUserSubscriptionDetailSchema = UserSubscriptionSchema
 
-export const GetUserSubscriptionDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: GetUserSubscriptionDetailSchema,
-  message: z.string()
-})
+export const GetUserSubscriptionDetailResSchema = resSchema(
+  GetUserSubscriptionDetailSchema
+)
 
 // Type exports
 export type UserSubscriptionType = z.infer<typeof UserSubscriptionSchema>

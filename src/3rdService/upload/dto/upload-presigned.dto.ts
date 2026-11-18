@@ -1,3 +1,4 @@
+import { resSchema } from '@/shared/utils/res-schema'
 import { ApiProperty } from '@nestjs/swagger'
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
@@ -40,16 +41,14 @@ export const GenerateUploadUrlBodySchema = z
   .strict()
 
 // Schema cho response
-export const GenerateUploadUrlResponseSchema = z.object({
-  statusCode: z.number(),
-  message: z.string(),
-  data: z.object({
+export const GenerateUploadUrlResponseSchema = resSchema(
+  z.object({
     uploadUrl: z.string().url(),
     fileUrl: z.string().url(),
     publicId: z.string(),
     expiresAt: z.string() // ISO timestamp
   })
-})
+)
 
 // Type definitions
 export type GenerateUploadUrlBodyType = z.infer<typeof GenerateUploadUrlBodySchema>

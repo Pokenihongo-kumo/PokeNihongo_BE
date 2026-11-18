@@ -1,9 +1,10 @@
-import { extendZodWithOpenApi } from '@anatine/zod-openapi'
-import { patchNestJsSwagger } from 'nestjs-zod'
-import { z } from 'zod'
 import { GrammarSortField, SortOrder } from '@/common/enum/enum'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { GrammarMessage } from '@/i18n/message-keys'
+import { paginatedResSchema } from '@/shared/utils/pagination'
+import { extendZodWithOpenApi } from '@anatine/zod-openapi'
+import { patchNestJsSwagger } from 'nestjs-zod'
+import { z } from 'zod'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
@@ -98,21 +99,7 @@ export const GetGrammarListQueryType = z.object({
 })
 
 // Response schemas
-export const GrammarListResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(GrammarType),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
+export const GrammarListResSchema = paginatedResSchema(GrammarType).strict()
 
 // Type exports
 export type GrammarType = z.infer<typeof GrammarType>

@@ -1,5 +1,6 @@
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { ENTITY_MESSAGE } from '@/i18n/message-keys'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -26,11 +27,7 @@ export const CreateGeminiConfigBodySchema = GeminiConfigSchema.pick({
   isActive: true
 }).strict()
 
-export const CreateGeminiConfigResSchema = z.object({
-  statusCode: z.number(),
-  data: GeminiConfigSchema,
-  message: z.string()
-})
+export const CreateGeminiConfigResSchema = resSchema(GeminiConfigSchema)
 
 export const UpdateGeminiConfigBodySchema =
   CreateGeminiConfigBodySchema.partial().strict()
@@ -41,11 +38,7 @@ export const GetParamsGeminiConfigSchema = z.object({
   geminiConfigId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
 
-export const GetGeminiConfigResSchema = z.object({
-  statusCode: z.number(),
-  data: GeminiConfigSchema,
-  message: z.string()
-})
+export const GetGeminiConfigResSchema = resSchema(GeminiConfigSchema)
 
 //type
 export type GeminiConfigType = z.infer<typeof GeminiConfigSchema>

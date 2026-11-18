@@ -1,10 +1,7 @@
+import { resSchema } from '@/shared/utils/res-schema'
 import { z } from 'zod'
 
-export const MessageResSchema = z.object({
-  statusCode: z.number(),
-  message: z.string(),
-  data: z.any().optional().nullable()
-})
+export const MessageResSchema = resSchema(z.any().optional().nullable())
 
 export type MessageResType = z.infer<typeof MessageResSchema>
 

@@ -1,5 +1,6 @@
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { UserAIConversationMessage as M } from '@/i18n/message-keys'
+import { resSchema } from '@/shared/utils/res-schema'
 import { z } from 'zod'
 
 // UserAIConversation schema: one message of a kaiwa conversation
@@ -66,11 +67,7 @@ export const GetUserAIConversationByConversationParamsSchema = z
   .strict()
 
 // Was the bare entity: every single-message response failed serialization (500)
-export const UserAIConversationResSchema = z.object({
-  statusCode: z.number(),
-  data: UserAIConversationSchema,
-  message: z.string()
-})
+export const UserAIConversationResSchema = resSchema(UserAIConversationSchema)
 
 export type UserAIConversationType = z.infer<typeof UserAIConversationSchema>
 export type CreateUserAIConversationBodyType = z.infer<

@@ -1,6 +1,7 @@
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { WordTypeMessage } from '@/i18n/message-keys'
 import { paginatedResSchema } from '@/shared/utils/pagination'
+import { resSchema } from '@/shared/utils/res-schema'
 import { z } from 'zod'
 
 // Validation functions
@@ -87,11 +88,7 @@ export const WordTypeViewSchema = z.object({
 export const WordTypeListResSchema = paginatedResSchema(WordTypeViewSchema)
 
 // Detail/create/update response envelope
-export const WordTypeResSchema = z.object({
-  statusCode: z.number(),
-  message: z.string(),
-  data: WordTypeSchema
-})
+export const WordTypeResSchema = resSchema(WordTypeSchema)
 
 // Type exports
 export type WordType = z.infer<typeof WordTypeSchema>

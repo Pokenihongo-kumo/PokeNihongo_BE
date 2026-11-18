@@ -1,3 +1,4 @@
+import { resSchema } from '@/shared/utils/res-schema'
 import { PermissionSchema } from 'src/shared/models/shared-permission.model'
 import { RoleSchema } from 'src/shared/models/shared-role.model'
 import { z } from 'zod'
@@ -27,15 +28,13 @@ export const GetRoleParamsSchema = z
   })
   .strict()
 
-export const GetRoleDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: z.object({
+export const GetRoleDetailResSchema = resSchema(
+  z.object({
     // role: RoleSchema,
     // return the full list of permissions available in the system
     permissions: z.array(PermissionSchema.extend({ hasPermission: z.boolean() }))
-  }),
-  message: z.string()
-})
+  })
+)
 
 export const CreateRoleBodySchema = RoleSchema.pick({
   name: true,

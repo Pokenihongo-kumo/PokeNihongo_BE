@@ -5,6 +5,7 @@ import { FeatureSchema } from '@/modules/feature/entities/feature.entity'
 import { SubscriptionFeatureSchema } from '@/modules/subscription-feature/entities/subscription-feature.entity'
 import { SubscriptionSchema } from '@/modules/subscription/entities/subscription.entity'
 import { TranslationInputSchema } from '@/shared/models/translation-input.model'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -38,11 +39,7 @@ export const CreateSubscriptionPlanBodySchema = SubscriptionPlanSchema.pick({
   durationInDays: true
 }).strict()
 
-export const CreateSubscriptionPlanResSchema = z.object({
-  statusCode: z.number(),
-  data: SubscriptionPlanSchema,
-  message: z.string()
-})
+export const CreateSubscriptionPlanResSchema = resSchema(SubscriptionPlanSchema)
 
 // Update Schema
 export const UpdateSubscriptionPlanBodySchema =
@@ -50,11 +47,7 @@ export const UpdateSubscriptionPlanBodySchema =
 
 export const UpdateSubscriptionPlanResSchema = CreateSubscriptionPlanResSchema
 
-export const UpdateWithListItemResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(SubscriptionPlanSchema),
-  message: z.string()
-})
+export const UpdateWithListItemResSchema = resSchema(z.array(SubscriptionPlanSchema))
 
 // Query Schema
 export const GetSubscriptionPlanParamsSchema = z.object({
@@ -86,20 +79,16 @@ export const GetSubscriptionPlanDetailSchema = SubscriptionPlanSchema.extend({
   }).nullable()
 })
 
-export const GetDiscountBySubPlanResSchema = z.object({
-  statusCode: z.number(),
-  data: z.object({
+export const GetDiscountBySubPlanResSchema = resSchema(
+  z.object({
     availablePokeCoins: z.number(),
     maxPokeCoinsCanUse: z.number(),
     maxDiscountAllowed: z.number()
-  }),
-  message: z.string()
-})
-export const GetSubscriptionPlanDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: GetSubscriptionPlanDetailSchema,
-  message: z.string()
-})
+  })
+)
+export const GetSubscriptionPlanDetailResSchema = resSchema(
+  GetSubscriptionPlanDetailSchema
+)
 
 // Type exports
 export type SubscriptionPlanType = z.infer<typeof SubscriptionPlanSchema>

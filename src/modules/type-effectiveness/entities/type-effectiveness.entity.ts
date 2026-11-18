@@ -1,5 +1,6 @@
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { TypeEffectivenessMessage } from '@/i18n/message-keys'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -42,11 +43,7 @@ export const CreateTypeEffectivenessBodySchema = TypeEffectivenessSchema.pick({
     path: ['attackerId']
   })
 
-export const CreateTypeEffectivenessResSchema = z.object({
-  statusCode: z.number(),
-  data: TypeEffectivenessSchema,
-  message: z.string()
-})
+export const CreateTypeEffectivenessResSchema = resSchema(TypeEffectivenessSchema)
 
 // Update Schema - có thể update multiplier
 export const UpdateTypeEffectivenessBodySchema = TypeEffectivenessSchema.pick({
@@ -88,9 +85,8 @@ export const CalculateMultiTypeBodySchema = z
   })
   .strict()
 
-export const GetTypeEffectivenessDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: z.object({
+export const GetTypeEffectivenessDetailResSchema = resSchema(
+  z.object({
     ...TypeEffectivenessSchema.shape,
     attacker: z
       .object({
@@ -110,9 +106,8 @@ export const GetTypeEffectivenessDetailResSchema = z.object({
       })
       .optional()
       .nullable()
-  }),
-  message: z.string()
-})
+  })
+)
 
 // Response Schema với thông tin attacker và defender
 export const TypeEffectivenessResponseSchema = TypeEffectivenessSchema.extend({

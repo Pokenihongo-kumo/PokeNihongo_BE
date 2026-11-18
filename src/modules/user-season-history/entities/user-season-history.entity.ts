@@ -1,6 +1,7 @@
 import { RewardClaimStatus } from '@/common/constants/reward.constant'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { ENTITY_MESSAGE } from '@/i18n/message-keys'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -39,11 +40,7 @@ export const CreateUserSeasonHistoryBodySchema = UserSeasonHistorySchema.pick({
   })
   .strict()
 
-export const CreateUserSeasonHistoryResSchema = z.object({
-  statusCode: z.number(),
-  data: UserSeasonHistorySchema,
-  message: z.string()
-})
+export const CreateUserSeasonHistoryResSchema = resSchema(UserSeasonHistorySchema)
 
 // Update Schema
 export const UpdateUserSeasonHistoryBodySchema = UserSeasonHistorySchema.pick({
@@ -58,11 +55,7 @@ export const UpdateUserSeasonHistoryBodySchema = UserSeasonHistorySchema.pick({
 
 export const UpdateUserSeasonHistoryResSchema = CreateUserSeasonHistoryResSchema
 
-export const UpdateWithListItemResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(UserSeasonHistorySchema),
-  message: z.string()
-})
+export const UpdateWithListItemResSchema = resSchema(z.array(UserSeasonHistorySchema))
 
 // Query Schema
 export const GetUserSeasonHistoryParamsSchema = z.object({
@@ -75,11 +68,9 @@ export const GetRewardByLeaderboardParamsSchema = z.object({
 
 export const GetUserSeasonHistoryDetailSchema = UserSeasonHistorySchema
 
-export const GetUserSeasonHistoryDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: GetUserSeasonHistoryDetailSchema,
-  message: z.string()
-})
+export const GetUserSeasonHistoryDetailResSchema = resSchema(
+  GetUserSeasonHistoryDetailSchema
+)
 
 // Type exports
 export type UserSeasonHistoryType = z.infer<typeof UserSeasonHistorySchema>

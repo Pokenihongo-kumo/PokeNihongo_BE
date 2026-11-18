@@ -1,11 +1,12 @@
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { isUrl } from '@/common/utils/is-url'
+import { hasJapaneseText } from '@/common/utils/japanese-text'
+import { QuestionBankMessage as M } from '@/i18n/message-keys'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
+import { QuestionType, RoleSpeaking } from '@prisma/client'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
-import { QuestionType, RoleSpeaking } from '@prisma/client'
-import { QuestionBankMessage as M } from '@/i18n/message-keys'
-import { checkIdSchema } from '@/common/utils/id.validation'
-import { hasJapaneseText } from '@/common/utils/japanese-text'
-import { isUrl } from '@/common/utils/is-url'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
@@ -89,13 +90,7 @@ export const GetQuestionBankByIdParamsSchema = z
   })
   .strict()
 
-export const QuestionBankResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: QuestionBankSchema,
-    message: z.string()
-  })
-  .strict()
+export const QuestionBankResSchema = resSchema(QuestionBankSchema).strict()
 
 // Bulk delete schema
 export const BulkDeleteQuestionBankBodySchema = z

@@ -1,5 +1,6 @@
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { AIConversationRoomMessage as M } from '@/i18n/message-keys'
+import { resSchema } from '@/shared/utils/res-schema'
 import { z } from 'zod'
 
 // AIConversationRoom schema
@@ -79,11 +80,7 @@ export const GetAIConversationRoomByConversationParamsSchema = z
   })
   .strict()
 
-export const AIConversationRoomResSchema = z.object({
-  statusCode: z.number(),
-  data: AIConversationRoomSchema,
-  message: z.string()
-})
+export const AIConversationRoomResSchema = resSchema(AIConversationRoomSchema)
 
 export type AIConversationRoomType = z.infer<typeof AIConversationRoomSchema>
 export type CreateAIConversationRoomBodyType = z.infer<

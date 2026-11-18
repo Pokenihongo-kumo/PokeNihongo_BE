@@ -3,6 +3,7 @@ import { ENTITY_MESSAGE } from '@/i18n/message-keys'
 import { DailyRequestSchema } from '@/modules/daily-request/entities/daily-request.entity'
 import { RewardSchema } from '@/modules/reward/entities/reward.entity'
 import { UserSchema } from '@/shared/models/shared-user.model'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { date, z } from 'zod'
@@ -31,11 +32,7 @@ export const CreateUserDailyRequestBodySchema = UserDailyRequestSchema.pick({
   dailyRequestId: true
 }).strict()
 
-export const CreateUserDailyRequestResSchema = z.object({
-  statusCode: z.number(),
-  data: UserDailyRequestSchema,
-  message: z.string()
-})
+export const CreateUserDailyRequestResSchema = resSchema(UserDailyRequestSchema)
 
 export const UpdateUserDailyRequestBodySchema = UserDailyRequestSchema.pick({
   userId: true,
@@ -68,21 +65,14 @@ export const UserDailyRequestDetailSchema = UserDailyRequestSchema.extend({
   user: UserSchema.omit({ password: true }).optional().nullable()
 })
 
-export const GetUserDailyRequestDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: UserDailyRequestDetailSchema,
-  message: z.string()
-})
+export const GetUserDailyRequestDetailResSchema = resSchema(UserDailyRequestDetailSchema)
 
-export const GetListUserDailyRequestTodayDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(UserDailyRequestDetailSchema),
-  message: z.string()
-})
+export const GetListUserDailyRequestTodayDetailResSchema = resSchema(
+  z.array(UserDailyRequestDetailSchema)
+)
 
-export const GetRewardListUserDailyRequestTodayDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: z.object({
+export const GetRewardListUserDailyRequestTodayDetailResSchema = resSchema(
+  z.object({
     rewardsReceived: z.array(
       RewardSchema.pick({
         id: true,
@@ -91,9 +81,8 @@ export const GetRewardListUserDailyRequestTodayDetailResSchema = z.object({
         rewardItem: true
       })
     )
-  }),
-  message: z.string()
-})
+  })
+)
 
 //type
 
