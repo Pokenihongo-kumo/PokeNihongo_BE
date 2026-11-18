@@ -1,3 +1,5 @@
+import { MatchModule } from '@/modules/match/match.module'
+import { UserCoreModule } from '@/modules/user/user-core.module'
 import { QuestionBankModule } from '@/modules/question-bank/question-bank.module'
 import { BullQueueModule } from '@/3rdService/bull/bull-queue.module'
 import { BullQueue } from '@/common/constants/bull-action.constant'
@@ -17,7 +19,9 @@ import { RoundQuestionService } from './round-question.service'
     ),
 
     WebsocketsModule,
-    QuestionBankModule
+    QuestionBankModule,
+    MatchModule,
+    UserCoreModule
   ],
   controllers: [RoundQuestionController],
   providers: [RoundQuestionService, RoundQuestionRepo, RoundQuestionTimeoutProcessor],

@@ -12,7 +12,8 @@ import {
   isNotFoundPrismaError
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
-import { PrismaService } from '@/shared/services/prisma.service'
+import { MatchService } from '@/modules/match/match.service'
+import { UserCoreService } from '@/modules/user/user-core.service'
 import { RoundQuestionTimeoutProcessor } from '@/modules/round-question/round-question-timeout.processor'
 import { MatchingGateway } from '@/websockets/matching.gateway'
 import { InjectQueue } from '@nestjs/bull'
@@ -34,7 +35,8 @@ export class RoundQuestionService {
   constructor(
     private roundQuestionRepo: RoundQuestionRepo,
     private readonly i18nService: I18nService,
-    private readonly prismaService: PrismaService,
+    private readonly matchService: MatchService,
+    private readonly userCoreService: UserCoreService,
     private readonly matchingGateway: MatchingGateway,
     private readonly questionBankService: QuestionBankService,
     @InjectQueue(BullQueue.ROUND_QUESTION_TIMEOUT)
@@ -190,17 +192,7 @@ export class RoundQuestionService {
     lang: string = 'vi'
   ) {
     // Fetch roundQuestion first to get matchRoundParticipantId
-    const roundQuestion = await this.prismaService.roundQuestion.findUnique({
-      where: { id },
-      include: {
-        questionBank: { include: { answers: true } },
-        debuff: true,
-        matchRoundParticipant: {
-          select: { matchParticipant: { select: { userId: true } } }
-        },
-        roundQuestionsAnswerLogs: { select: { id: true }, take: 1 }
-      }
-    })
+    const roundQuestion = await this.roundQuestionRepo.findForAnswer(id)
 
     if (!roundQuestion) throw new RoundQuestionNotFoundException()
     // Only the player's own question (the opponent's could be answered), and
@@ -258,61 +250,42 @@ export class RoundQuestionService {
     )
 
     // Upsert answer log
-    const existingAnswerLog = await this.prismaService.roundQuestionsAnswerLog.findFirst({
-      where: { roundQuestionId: id }
-    })
+    const existingAnswerLog = await this.roundQuestionRepo.findAnswerLog(id)
 
     let finalAnswerLog: any = existingAnswerLog
     if (existingAnswerLog) {
-      finalAnswerLog = await this.prismaService.roundQuestionsAnswerLog.update({
-        where: { id: existingAnswerLog.id },
-        data: {
+      finalAnswerLog = await this.roundQuestionRepo.updateAnswerLog(
+        existingAnswerLog.id,
+        {
           answerId: data.answerId,
           timeAnswerMs: data.timeAnswerMs,
           isCorrect,
           pointsEarned
         }
-      })
+      )
     } else {
-      finalAnswerLog = await this.prismaService.roundQuestionsAnswerLog.create({
-        data: {
-          roundQuestionId: id,
-          answerId: data.answerId,
-          timeAnswerMs: data.timeAnswerMs,
-          isCorrect,
-          pointsEarned
-        }
+      finalAnswerLog = await this.roundQuestionRepo.createAnswerLog(id, {
+        answerId: data.answerId,
+        timeAnswerMs: data.timeAnswerMs,
+        isCorrect,
+        pointsEarned
       })
     }
 
     // Find participant/match info and determine next question BEFORE notifying
-    const matchRoundParticipant =
-      await this.prismaService.matchRoundParticipant.findUnique({
-        where: { id: roundQuestion.matchRoundParticipantId },
-        include: {
-          matchParticipant: { include: { user: true } },
-          matchRound: {
-            include: { match: { include: { participants: { include: { user: true } } } } }
-          }
-        }
-      })
+    const matchRoundParticipant = await this.roundQuestionRepo.findParticipantWithMatch(
+      roundQuestion.matchRoundParticipantId
+    )
     let endTimeQuestion: Date | null = null
 
     // Determine and schedule next question (if any) so we can include it in the socket payload
     let nextQuestion: any | null = null
     try {
       if (matchRoundParticipant) {
-        nextQuestion = await this.prismaService.roundQuestion.findFirst({
-          where: {
-            matchRoundParticipantId: roundQuestion.matchRoundParticipantId,
-            orderNumber: { gt: roundQuestion.orderNumber }
-          },
-          orderBy: { orderNumber: 'asc' },
-          include: {
-            questionBank: { include: { answers: true } },
-            debuff: true
-          }
-        })
+        nextQuestion = await this.roundQuestionRepo.findNextQuestion(
+          roundQuestion.matchRoundParticipantId,
+          roundQuestion.orderNumber
+        )
 
         if (nextQuestion) {
           // CRITICAL: Clear any pending setTimeout for next question
@@ -323,10 +296,10 @@ export class RoundQuestionService {
           )
 
           endTimeQuestion = addTimeUTC(new Date(), nextQuestion.timeLimitMs)
-          await this.prismaService.roundQuestion.update({
-            where: { id: nextQuestion.id },
-            data: { endTimeQuestion }
-          })
+          await this.roundQuestionRepo.setQuestionEndTime(
+            nextQuestion.id,
+            endTimeQuestion
+          )
 
           // Offset + priority for concurrent processing
           const delayOffset = (roundQuestion.matchRoundParticipantId % 2) * 250
@@ -414,16 +387,10 @@ export class RoundQuestionService {
     // If not last question, schedule next question timeout like processor does
     if (!isLastQuestion) {
       try {
-        const nextQuestion = await this.prismaService.roundQuestion.findFirst({
-          where: {
-            matchRoundParticipantId: roundQuestion.matchRoundParticipantId,
-            orderNumber: { gt: roundQuestion.orderNumber }
-          },
-          orderBy: { orderNumber: 'asc' },
-          include: {
-            questionBank: { include: { answers: true } }
-          }
-        })
+        const nextQuestion = await this.roundQuestionRepo.findNextQuestionWithAnswers(
+          roundQuestion.matchRoundParticipantId,
+          roundQuestion.orderNumber
+        )
 
         if (nextQuestion) {
           // ✅ CRITICAL: Clear any pending setTimeout from processor to prevent double-firing
@@ -453,10 +420,10 @@ export class RoundQuestionService {
           }
 
           const endTimeQuestion = addTimeUTC(new Date(), nextQuestion.timeLimitMs)
-          await this.prismaService.roundQuestion.update({
-            where: { id: nextQuestion.id },
-            data: { endTimeQuestion }
-          })
+          await this.roundQuestionRepo.setQuestionEndTime(
+            nextQuestion.id,
+            endTimeQuestion
+          )
 
           // Offset + priority for concurrent processing
           const delayOffset = (roundQuestion.matchRoundParticipantId % 2) * 250
@@ -483,22 +450,18 @@ export class RoundQuestionService {
 
     if (isLastQuestion) {
       // Calculate totals
-      const allAnswerLogs = await this.prismaService.roundQuestionsAnswerLog.findMany({
-        where: {
-          roundQuestion: {
-            matchRoundParticipantId: roundQuestion.matchRoundParticipantId
-          }
-        }
-      })
+      const allAnswerLogs = await this.roundQuestionRepo.findAnswerLogsOfParticipant(
+        roundQuestion.matchRoundParticipantId
+      )
 
       const totalTimeMs = allAnswerLogs.reduce((sum, l) => sum + (l.timeAnswerMs || 0), 0)
       const points = allAnswerLogs.reduce((sum, l) => sum + (l.pointsEarned || 0), 0)
 
-      const updatedParticipant = await this.prismaService.matchRoundParticipant.update({
-        where: { id: roundQuestion.matchRoundParticipantId },
-        data: { totalTimeMs, points, status: 'COMPLETED' },
-        include: { selectedUserPokemon: { include: { pokemon: true } }, debuff: true }
-      })
+      const updatedParticipant = await this.roundQuestionRepo.completeParticipant(
+        roundQuestion.matchRoundParticipantId,
+        totalTimeMs,
+        points
+      )
 
       // Notify completion and opponent
       const opponentMatchParticipant =
@@ -513,15 +476,10 @@ export class RoundQuestionService {
         )
 
         // Find opponent's MatchRoundParticipant to check their status
-        const opponentRoundParticipant =
-          await this.prismaService.matchRoundParticipant.findFirst({
-            where: {
-              matchRoundId: matchRoundParticipant.matchRoundId,
-              matchParticipant: {
-                userId: opponentMatchParticipant.userId
-              }
-            }
-          })
+        const opponentRoundParticipant = await this.roundQuestionRepo.findOpponentInRound(
+          matchRoundParticipant.matchRoundId,
+          opponentMatchParticipant.userId
+        )
 
         // Only notify opponent if they haven't completed yet
         if (opponentRoundParticipant?.status !== 'COMPLETED') {
@@ -555,12 +513,7 @@ export class RoundQuestionService {
   // The following methods are adapted from processor logic to keep behaviour consistent
   private async checkAndCompleteRound(matchRoundId: number, matchId: number) {
     // fetch round and verify both participants completed
-    const matchRound = await this.prismaService.matchRound.findUnique({
-      where: { id: matchRoundId },
-      include: {
-        participants: { include: { matchParticipant: { include: { user: true } } } }
-      }
-    })
+    const matchRound = await this.roundQuestionRepo.findRoundWithPlayers(matchRoundId)
     if (!matchRound) return
 
     // ✅ GUARD: Skip if round already COMPLETED to prevent duplicate emissions
@@ -590,23 +543,9 @@ export class RoundQuestionService {
     const [p1, p2] = allParticipants
 
     // Fetch answer counts for both participants
-    const p1AnswerCount = await this.prismaService.roundQuestionsAnswerLog.count({
-      where: {
-        roundQuestion: {
-          matchRoundParticipantId: p1.id
-        },
-        answerId: { not: null } // Count only answered questions
-      }
-    })
+    const p1AnswerCount = await this.roundQuestionRepo.countAnswered(p1.id)
 
-    const p2AnswerCount = await this.prismaService.roundQuestionsAnswerLog.count({
-      where: {
-        roundQuestion: {
-          matchRoundParticipantId: p2.id
-        },
-        answerId: { not: null }
-      }
-    })
+    const p2AnswerCount = await this.roundQuestionRepo.countAnswered(p2.id)
 
     console.log(
       `[RoundQuestion Service] Round results: p1={points:${p1.points}, answers:${p1AnswerCount}}, p2={points:${p2.points}, answers:${p2AnswerCount}}`
@@ -674,54 +613,10 @@ export class RoundQuestionService {
       }
     }
 
-    const updatedRound = await this.prismaService.matchRound.update({
-      where: { id: matchRoundId },
-      data: { status: 'COMPLETED', roundWinnerId: winnerId },
-      include: {
-        participants: {
-          include: {
-            matchParticipant: {
-              include: {
-                user: {
-                  select: {
-                    id: true,
-                    name: true,
-                    email: true,
-                    avatar: true
-                  }
-                }
-              }
-            },
-            selectedUserPokemon: {
-              include: {
-                pokemon: {
-                  select: {
-                    id: true,
-                    pokedex_number: true,
-                    nameJp: true,
-                    nameTranslations: true,
-                    rarity: true,
-                    imageUrl: true
-                  }
-                }
-              }
-            }
-          }
-        },
-        roundWinner: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                avatar: true
-              }
-            }
-          }
-        }
-      }
-    })
+    const updatedRound = await this.roundQuestionRepo.completeRound(
+      matchRoundId,
+      winnerId
+    )
 
     const userId1 = allParticipants[0].matchParticipant.userId
     const userId2 = allParticipants[1].matchParticipant.userId
@@ -742,15 +637,10 @@ export class RoundQuestionService {
       return
     }
 
-    const nextRound = await this.prismaService.matchRound.findFirst({
-      where: { matchId, roundNumber: nextRoundNumber as any, deletedAt: null },
-      include: {
-        participants: {
-          include: { matchParticipant: { include: { user: true } } },
-          orderBy: { orderSelected: 'asc' }
-        }
-      }
-    })
+    const nextRound = await this.roundQuestionRepo.findRoundByNumber(
+      matchId,
+      nextRoundNumber
+    )
     if (!nextRound) return
 
     // ✅ GUARD: Check if round already IN_PROGRESS to prevent duplicate notifications
@@ -782,10 +672,7 @@ export class RoundQuestionService {
 
   private async completeMatch(matchId: number) {
     // Guard check: prevent duplicate processing if match already completed
-    const currentMatch = await this.prismaService.match.findUnique({
-      where: { id: matchId },
-      select: { status: true }
-    })
+    const currentMatch = await this.matchService.findStatusById(matchId)
 
     if (currentMatch?.status === 'COMPLETED') {
       console.log(
@@ -797,14 +684,7 @@ export class RoundQuestionService {
     console.log(`[RoundQuestion Service] Starting completeMatch for matchId=${matchId}`)
 
     // similar to processor.completeMatch
-    const allRounds = await this.prismaService.matchRound.findMany({
-      where: { matchId, deletedAt: null },
-      include: {
-        roundWinner: { include: { user: true } },
-        participants: { include: { matchParticipant: { include: { user: true } } } }
-      },
-      orderBy: { roundNumber: 'asc' }
-    })
+    const allRounds = await this.roundQuestionRepo.findRoundsOfMatch(matchId)
     if (allRounds.length !== 3) {
       console.warn(
         `[RoundQuestion Service] Match ${matchId} has ${allRounds.length} rounds, expected 3`
@@ -872,10 +752,8 @@ export class RoundQuestionService {
     // ✅ Handle tie case: no winner
     let winnerParticipant: any = null
     if (matchWinnerId) {
-      winnerParticipant = await this.prismaService.matchParticipant.findUnique({
-        where: { id: matchWinnerId },
-        include: { user: true }
-      })
+      winnerParticipant =
+        await this.roundQuestionRepo.findParticipantWithUser(matchWinnerId)
       console.log(
         `[RoundQuestion Service] Match winner determined: participantId=${matchWinnerId}, userId=${winnerParticipant?.userId}, maxWins=${maxWins}`
       )
@@ -885,74 +763,14 @@ export class RoundQuestionService {
 
     // Wrap entire flow in atomic transaction to prevent race conditions
     try {
-      const result = await this.prismaService.$transaction(
+      const result = await this.roundQuestionRepo.withTransaction(
         async (tx) => {
           // First, update match status to COMPLETED to claim ownership
-          const completedMatch = await tx.match.update({
-            where: { id: matchId },
-            data: { status: 'COMPLETED', winnerId: winnerParticipant?.userId || null },
-            include: {
-              winner: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                  avatar: true,
-                  eloscore: true
-                }
-              },
-              participants: {
-                include: {
-                  user: {
-                    select: {
-                      id: true,
-                      name: true,
-                      email: true,
-                      avatar: true,
-                      eloscore: true
-                    }
-                  }
-                }
-              },
-              rounds: {
-                include: {
-                  roundWinner: {
-                    include: {
-                      user: {
-                        select: {
-                          id: true,
-                          name: true,
-                          email: true,
-                          avatar: true,
-                          eloscore: true
-                        }
-                      }
-                    }
-                  },
-                  participants: {
-                    include: {
-                      matchParticipant: { include: { user: true } },
-                      selectedUserPokemon: {
-                        include: {
-                          pokemon: {
-                            select: {
-                              id: true,
-                              pokedex_number: true,
-                              nameJp: true,
-                              nameTranslations: true,
-                              rarity: true,
-                              imageUrl: true
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                },
-                orderBy: { roundNumber: 'asc' }
-              }
-            }
-          })
+          const completedMatch = await this.matchService.completeWithWinner(
+            matchId,
+            winnerParticipant?.userId || null,
+            tx
+          )
 
           // Calculate and update ELO within same transaction
           const participants = completedMatch.participants || []
@@ -1022,22 +840,13 @@ export class RoundQuestionService {
             })
 
             // Update Match with ELO deltas
-            await tx.match.update({
-              where: { id: matchId },
-              data: { eloGained, eloLost }
-            })
+            await this.matchService.setEloResult(matchId, eloGained, eloLost, tx)
 
             // Update winner ELO (cap at 3000)
-            await tx.user.update({
-              where: { id: winnerUserId },
-              data: { eloscore: newWinnerElo }
-            })
+            await this.userCoreService.setEloscore(winnerUserId, newWinnerElo, tx)
 
             // Update loser ELO
-            await tx.user.update({
-              where: { id: loserUserId },
-              data: { eloscore: newLoserElo }
-            })
+            await this.userCoreService.setEloscore(loserUserId, newLoserElo, tx)
 
             console.log(
               `[RoundQuestion Service] ELO after: winner=${newWinnerElo}, loser=${newLoserElo}`
@@ -1049,37 +858,17 @@ export class RoundQuestionService {
 
             if (user1 && user2) {
               // Count total answers across all 3 rounds for each user
-              const user1AnswerCount = await tx.roundQuestionsAnswerLog.count({
-                where: {
-                  roundQuestion: {
-                    matchRoundParticipant: {
-                      matchRound: {
-                        matchId
-                      },
-                      matchParticipant: {
-                        userId: user1.userId
-                      }
-                    }
-                  },
-                  answerId: { not: null }
-                }
-              })
+              const user1AnswerCount = await this.roundQuestionRepo.countAnsweredInMatch(
+                matchId,
+                user1.userId,
+                tx
+              )
 
-              const user2AnswerCount = await tx.roundQuestionsAnswerLog.count({
-                where: {
-                  roundQuestion: {
-                    matchRoundParticipant: {
-                      matchRound: {
-                        matchId
-                      },
-                      matchParticipant: {
-                        userId: user2.userId
-                      }
-                    }
-                  },
-                  answerId: { not: null }
-                }
-              })
+              const user2AnswerCount = await this.roundQuestionRepo.countAnsweredInMatch(
+                matchId,
+                user2.userId,
+                tx
+              )
 
               // ✅ If BOTH didn't answer any questions -> Both lose ELO
               if (user1AnswerCount === 0 && user2AnswerCount === 0) {
@@ -1133,23 +922,14 @@ export class RoundQuestionService {
                 })
 
                 // Update both users' ELO (deduct)
-                await tx.user.update({
-                  where: { id: user1.userId },
-                  data: { eloscore: newUser1Elo }
-                })
+                await this.userCoreService.setEloscore(user1.userId, newUser1Elo, tx)
 
-                await tx.user.update({
-                  where: { id: user2.userId },
-                  data: { eloscore: newUser2Elo }
-                })
+                await this.userCoreService.setEloscore(user2.userId, newUser2Elo, tx)
 
                 // Store the loss amount (both lose, so eloLost represents the penalty)
                 eloLost = Math.round((user1EloLoss + user2EloLoss) / 2) // Average loss
 
-                await tx.match.update({
-                  where: { id: matchId },
-                  data: { eloGained: 0, eloLost }
-                })
+                await this.matchService.setEloResult(matchId, 0, eloLost, tx)
 
                 console.log(
                   `[RoundQuestion Service] ELO after penalty: user1=${newUser1Elo}, user2=${newUser2Elo}`
@@ -1177,82 +957,7 @@ export class RoundQuestionService {
       const userId2 = result.completedMatch.participants[1]?.userId
 
       if (userId1 && userId2) {
-        const updatedMatch = await this.prismaService.match.findUnique({
-          where: { id: matchId },
-          include: {
-            winner: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                avatar: true,
-                eloscore: true
-              }
-            },
-            participants: {
-              include: {
-                user: {
-                  select: {
-                    id: true,
-                    name: true,
-                    email: true,
-                    avatar: true,
-                    eloscore: true
-                  }
-                }
-              }
-            },
-            rounds: {
-              include: {
-                roundWinner: {
-                  include: {
-                    user: {
-                      select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        avatar: true,
-                        eloscore: true
-                      }
-                    }
-                  }
-                },
-                participants: {
-                  include: {
-                    matchParticipant: {
-                      include: {
-                        user: {
-                          select: {
-                            id: true,
-                            name: true,
-                            email: true,
-                            avatar: true,
-                            eloscore: true
-                          }
-                        }
-                      }
-                    },
-                    selectedUserPokemon: {
-                      include: {
-                        pokemon: {
-                          select: {
-                            id: true,
-                            pokedex_number: true,
-                            nameJp: true,
-                            nameTranslations: true,
-                            rarity: true,
-                            imageUrl: true
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              },
-              orderBy: { roundNumber: 'asc' }
-            }
-          }
-        })
+        const updatedMatch = await this.matchService.findCompletedWithDetails(matchId)
 
         console.log(
           `[RoundQuestion Service] Sending match completed notification for match ${matchId}`

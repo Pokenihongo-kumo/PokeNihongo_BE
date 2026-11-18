@@ -6,8 +6,8 @@
     "injectForwardRefFiles": 6,
     "sharedModuleBusinessRepos": 1,
     "sharedModuleBusinessProviders": 3,
-    "prismaOutsideRepoFiles": 7,
-    "prismaOutsideRepoCalls": 152
+    "prismaOutsideRepoFiles": 5,
+    "prismaOutsideRepoCalls": 92
   },
   "details": {
     "crossModuleRepoImports": [
@@ -89,8 +89,6 @@
       "cronjobs/handle-leaderboard-season.cronjob.ts",
       "modules/match-round-participant/match-round-participant-timeout.processor.ts",
       "modules/match-round-participant/match-round-participant.service.ts",
-      "modules/round-question/round-question-timeout.processor.ts",
-      "modules/round-question/round-question.service.ts",
       "websockets/user.gateway.ts"
     ]
   }
