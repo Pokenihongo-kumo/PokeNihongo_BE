@@ -522,4 +522,17 @@ export class UserPokemonRepo {
       }
     })
   }
+
+  // ---- Gacha roll (GachaPurchaseService, in its transaction) ----
+
+  // The user's live rows for any of these pokemon
+  findOwnedAmong(userId: number, pokemonIds: number[], prismaTx: PrismaClient) {
+    return prismaTx.userPokemon.findMany({
+      where: {
+        userId,
+        pokemonId: { in: pokemonIds },
+        deletedAt: null
+      }
+    })
+  }
 }

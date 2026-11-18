@@ -124,4 +124,55 @@ export class SeasonRankRewardRepo {
       }
     })
   }
+
+  // ---- Replacing a season's rank rewards (updateByList, one transaction) ----
+
+  deleteBySeason(seasonId: number, prismaTx: PrismaClient) {
+    return prismaTx.seasonRankReward.deleteMany({ where: { seasonId } })
+  }
+
+  // Which of these reward ids exist
+  findRewardIds(ids: number[], prismaTx: PrismaClient) {
+    return prismaTx.reward.findMany({
+      where: { id: { in: ids } },
+      select: { id: true }
+    })
+  }
+
+  createWithRewards(
+    {
+      seasonId,
+      rankName,
+      order,
+      rewardIds,
+      updatedById
+    }: {
+      seasonId: number
+      rankName: string
+      order: number | null
+      rewardIds: number[]
+      updatedById: number
+    },
+    prismaTx: PrismaClient
+  ) {
+    return prismaTx.seasonRankReward.create({
+      data: {
+        seasonId,
+        rankName: rankName as any,
+        order: order,
+        createdById: updatedById,
+        updatedById,
+        rewards: {
+          connect: rewardIds.map((rid) => ({ id: rid }))
+        }
+      }
+    })
+  }
+
+  listBySeason(seasonId: number, prismaTx: PrismaClient) {
+    return prismaTx.seasonRankReward.findMany({
+      where: { seasonId },
+      orderBy: [{ rankName: 'asc' }, { order: 'asc' }]
+    })
+  }
 }

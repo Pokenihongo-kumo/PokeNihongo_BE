@@ -770,4 +770,10 @@ export class UserPokemonService {
   updateUserPokemon(...args: Parameters<UserPokemonRepo['update']>) {
     return this.userPokemonRepo.update(...args)
   }
+
+  // ---- For other modules (module-boundary plan B7) ----
+
+  findOwnedAmong(...args: Parameters<UserPokemonRepo['findOwnedAmong']>) {
+    return this.userPokemonRepo.findOwnedAmong(...args)
+  }
 }

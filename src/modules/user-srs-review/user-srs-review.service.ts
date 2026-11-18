@@ -1,5 +1,4 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common'
-import { PrismaService } from '@/shared/services/prisma.service'
 import {
   ListSrsQueryDto,
   ReviewActionDto,
@@ -31,7 +30,6 @@ export class SrsReviewService {
   private static readonly HCM_TIMEZONE_OFFSET = '+07:00'
 
   constructor(
-    private readonly prisma: PrismaService,
     private readonly repo: SrsReviewRepo,
     private readonly translationHelper: TranslationHelperService,
     private readonly i18nService: I18nService
@@ -191,12 +189,9 @@ export class SrsReviewService {
         : null
 
     if (t === 'GRAMMAR') {
-      const grammar = await this.prisma.grammar.findUnique({ where: { id } })
+      const grammar = await this.repo.findGrammar(id)
       if (!grammar) return null
-      const usages = await this.prisma.grammarUsage.findMany({
-        where: { grammarId: id },
-        orderBy: { id: 'asc' }
-      })
+      const usages = await this.repo.findGrammarUsages(id)
       return {
         type: 'grammar',
         id: grammar.id,
@@ -212,10 +207,7 @@ export class SrsReviewService {
       }
     }
     if (t === 'KANJI') {
-      const kanji = await this.prisma.kanji.findUnique({
-        where: { id },
-        include: { readings: true }
-      })
+      const kanji = await this.repo.findKanjiWithReadings(id)
       if (!kanji) return null
       // Only the first sentence of the meaning
       const meaning = (await text(kanji.meaningKey))?.split('.')[0].trim() ?? null
@@ -235,10 +227,7 @@ export class SrsReviewService {
       }
     }
     if (t === 'VOCABULARY') {
-      const vocabulary = await this.prisma.vocabulary.findUnique({
-        where: { id },
-        include: { meanings: true }
-      })
+      const vocabulary = await this.repo.findVocabularyWithMeanings(id)
       if (!vocabulary) return null
       const meanings = await Promise.all(
         vocabulary.meanings.map((m) => text(m.meaningKey))

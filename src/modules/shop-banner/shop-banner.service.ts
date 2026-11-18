@@ -737,4 +737,50 @@ export class ShopBannerService {
     const isHaveActive = await this.shopBannerRepo.findByStatus(ShopBannerStatus.ACTIVE)
     return isHaveActive !== null
   }
+
+  // ---- For other modules: Daily banner rotation (HandleShopBannerCronjob) (B7) ----
+
+  expireActiveEndedBefore(
+    ...args: Parameters<ShopBannerRepo['expireActiveEndedBefore']>
+  ) {
+    return this.shopBannerRepo.expireActiveEndedBefore(...args)
+  }
+
+  findPreviewValidOn(...args: Parameters<ShopBannerRepo['findPreviewValidOn']>) {
+    return this.shopBannerRepo.findPreviewValidOn(...args)
+  }
+
+  countActive(...args: Parameters<ShopBannerRepo['countActive']>) {
+    return this.shopBannerRepo.countActive(...args)
+  }
+
+  activate(...args: Parameters<ShopBannerRepo['activate']>) {
+    return this.shopBannerRepo.activate(...args)
+  }
+
+  findActiveWithPrecreate(
+    ...args: Parameters<ShopBannerRepo['findActiveWithPrecreate']>
+  ) {
+    return this.shopBannerRepo.findActiveWithPrecreate(...args)
+  }
+
+  findLiveByNameKeyPrefix(
+    ...args: Parameters<ShopBannerRepo['findLiveByNameKeyPrefix']>
+  ) {
+    return this.shopBannerRepo.findLiveByNameKeyPrefix(...args)
+  }
+
+  createSuccessor(...args: Parameters<ShopBannerRepo['createSuccessor']>) {
+    return this.shopBannerRepo.createSuccessor(...args)
+  }
+
+  setNameKeyAndTranslations(
+    ...args: Parameters<ShopBannerRepo['setNameKeyAndTranslations']>
+  ) {
+    return this.shopBannerRepo.setNameKeyAndTranslations(...args)
+  }
+
+  disablePrecreate(...args: Parameters<ShopBannerRepo['disablePrecreate']>) {
+    return this.shopBannerRepo.disablePrecreate(...args)
+  }
 }

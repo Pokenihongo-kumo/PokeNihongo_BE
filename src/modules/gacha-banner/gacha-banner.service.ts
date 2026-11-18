@@ -671,4 +671,50 @@ export class GachaBannerService {
       throw error
     }
   }
+
+  // ---- For other modules: Daily banner rotation (HandleGachaBannerCronjob) (B7) ----
+
+  expireActiveEndedBefore(
+    ...args: Parameters<GachaBannerRepo['expireActiveEndedBefore']>
+  ) {
+    return this.gachaBannerRepo.expireActiveEndedBefore(...args)
+  }
+
+  findPreviewValidOn(...args: Parameters<GachaBannerRepo['findPreviewValidOn']>) {
+    return this.gachaBannerRepo.findPreviewValidOn(...args)
+  }
+
+  countActive(...args: Parameters<GachaBannerRepo['countActive']>) {
+    return this.gachaBannerRepo.countActive(...args)
+  }
+
+  activate(...args: Parameters<GachaBannerRepo['activate']>) {
+    return this.gachaBannerRepo.activate(...args)
+  }
+
+  findActiveWithPrecreate(
+    ...args: Parameters<GachaBannerRepo['findActiveWithPrecreate']>
+  ) {
+    return this.gachaBannerRepo.findActiveWithPrecreate(...args)
+  }
+
+  findLiveByNameKeyPrefix(
+    ...args: Parameters<GachaBannerRepo['findLiveByNameKeyPrefix']>
+  ) {
+    return this.gachaBannerRepo.findLiveByNameKeyPrefix(...args)
+  }
+
+  createSuccessor(...args: Parameters<GachaBannerRepo['createSuccessor']>) {
+    return this.gachaBannerRepo.createSuccessor(...args)
+  }
+
+  setNameKeyAndTranslations(
+    ...args: Parameters<GachaBannerRepo['setNameKeyAndTranslations']>
+  ) {
+    return this.gachaBannerRepo.setNameKeyAndTranslations(...args)
+  }
+
+  disablePrecreate(...args: Parameters<GachaBannerRepo['disablePrecreate']>) {
+    return this.gachaBannerRepo.disablePrecreate(...args)
+  }
 }

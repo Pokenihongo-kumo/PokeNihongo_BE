@@ -7,7 +7,7 @@ import {
   ShopBannerStatusType
 } from '@/common/constants/shop-banner.constant'
 import { parseQs } from '@/common/utils/qs-parser'
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
   CreateShopBannerBodyType,
@@ -392,6 +392,122 @@ export class ShopBannerRepo {
       where: {
         status,
         deletedAt: null
+      }
+    })
+  }
+
+  // ---- Daily banner rotation (HandleShopBannerCronjob) ----
+
+  // ACTIVE banners ended before today -> EXPIRED
+  expireActiveEndedBefore(now: Date) {
+    return this.prismaService.shopBanner.updateMany({
+      where: {
+        status: ShopBannerStatus.ACTIVE,
+        endDate: {
+          lt: now
+        },
+        deletedAt: null
+      },
+      data: {
+        status: ShopBannerStatus.EXPIRED
+      }
+    })
+  }
+
+  // PREVIEW banners whose dates include today, earliest start first
+  findPreviewValidOn(now: Date) {
+    return this.prismaService.shopBanner.findMany({
+      where: {
+        status: ShopBannerStatus.PREVIEW,
+        deletedAt: null,
+        AND: [
+          {
+            OR: [{ startDate: null }, { startDate: { lte: now } }]
+          },
+          {
+            OR: [{ endDate: null }, { endDate: { gte: now } }]
+          }
+        ]
+      },
+      orderBy: {
+        startDate: 'asc' // Sort theo startDate tăng dần
+      }
+    })
+  }
+
+  countActive() {
+    return this.prismaService.shopBanner.count({
+      where: {
+        status: ShopBannerStatus.ACTIVE,
+        deletedAt: null
+      }
+    })
+  }
+
+  activate(id: number) {
+    return this.prismaService.shopBanner.update({
+      where: {
+        id: id
+      },
+      data: {
+        status: ShopBannerStatus.ACTIVE
+      }
+    })
+  }
+
+  // ACTIVE banners that create their successor, with what is copied
+  findActiveWithPrecreate() {
+    return this.prismaService.shopBanner.findMany({
+      where: {
+        status: ShopBannerStatus.ACTIVE,
+        enablePrecreate: true,
+        deletedAt: null
+      },
+      include: {
+        nameTranslations: true,
+        shopItems: {
+          include: {
+            pokemon: true
+          }
+        }
+      }
+    })
+  }
+
+  findLiveByNameKeyPrefix(prefix: string) {
+    return this.prismaService.shopBanner.findFirst({
+      where: {
+        nameKey: {
+          startsWith: prefix
+        },
+        deletedAt: null
+      }
+    })
+  }
+
+  createSuccessor(data: Prisma.ShopBannerUncheckedCreateInput) {
+    return this.prismaService.shopBanner.create({ data })
+  }
+
+  setNameKeyAndTranslations(id: number, nameKey: string, nameUpserts: unknown[]) {
+    return this.prismaService.shopBanner.update({
+      where: { id: id },
+      data: {
+        nameKey,
+        ...(nameUpserts.length
+          ? { nameTranslations: { upsert: nameUpserts as any } }
+          : {})
+      }
+    })
+  }
+
+  // The successor exists: never create another one
+  disablePrecreate(id: number) {
+    return this.prismaService.shopBanner.update({
+      where: { id: id },
+      data: {
+        enablePrecreate: false,
+        precreateBeforeEndDays: 999
       }
     })
   }
