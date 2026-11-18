@@ -12,7 +12,7 @@ import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 import { TypeEffectivenessService } from '@/modules/type-effectiveness/type-effectiveness.service'
 import { LevelService } from '@/modules/level/level.service'
-import { MatchRepo } from '../match/match.repo'
+import { MatchService } from '@/modules/match/match.service'
 import { PokemonService } from '@/modules/pokemon/pokemon.service'
 import {
   ErrorInitLevelPokemonException,
@@ -33,7 +33,7 @@ export class UserPokemonService {
   constructor(
     private userPokemonRepo: UserPokemonRepo,
     private pokemonService: PokemonService,
-    private readonly matchRepo: MatchRepo,
+    private readonly matchService: MatchService,
     private levelService: LevelService,
     private readonly userCoreService: UserCoreService,
     private readonly i18nService: I18nService,
@@ -671,7 +671,7 @@ export class UserPokemonService {
       })
     }
     // 3. dựa vào userId tìm ra match
-    const matches = await this.matchRepo.getMatchWithRoundsByUserId(userId)
+    const matches = await this.matchService.getMatchWithRoundsByUserId(userId)
 
     // neu ko co tuc la user dang ko co torng tran nao
     if (!matches) {
@@ -775,5 +775,12 @@ export class UserPokemonService {
 
   findOwnedAmong(...args: Parameters<UserPokemonRepo['findOwnedAmong']>) {
     return this.userPokemonRepo.findOwnedAmong(...args)
+  }
+
+  // ---- For other modules (module-boundary plan B6) ----
+  // Same arguments and results as the repo methods.
+
+  countPokemonByUser(...args: Parameters<UserPokemonRepo['countPokemonByUser']>) {
+    return this.userPokemonRepo.countPokemonByUser(...args)
   }
 }

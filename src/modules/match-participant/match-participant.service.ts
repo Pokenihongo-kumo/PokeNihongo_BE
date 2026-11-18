@@ -14,9 +14,9 @@ import { InjectQueue } from '@nestjs/bull'
 import { Injectable, Logger } from '@nestjs/common'
 import { Queue } from 'bull'
 import { MatchingGateway } from 'src/websockets/matching.gateway'
-import { MatchRoundParticipantRepo } from '../match-round-participant/match-round-participant.repo'
-import { MatchRoundRepo } from '../match-round/match-round.repo'
-import { MatchRepo } from '../match/match.repo'
+import { MatchRoundParticipantService } from '@/modules/match-round-participant/match-round-participant.service'
+import { MatchRoundService } from '@/modules/match-round/match-round.service'
+import { MatchService } from '@/modules/match/match.service'
 import {
   MatchParticipantInvalidActionException,
   MatchParticipantNotFoundException
@@ -34,9 +34,9 @@ export class MatchParticipantService {
 
   constructor(
     private matchParticipantRepo: MatchParticipantRepo,
-    private readonly matchRepo: MatchRepo,
-    private readonly matchRoundRepo: MatchRoundRepo,
-    private readonly matchRoundParticipantRepo: MatchRoundParticipantRepo,
+    private readonly matchService: MatchService,
+    private readonly matchRoundService: MatchRoundService,
+    private readonly matchRoundParticipantService: MatchRoundParticipantService,
     private readonly i18nService: I18nService,
     @InjectQueue(BullQueue.MATCH_PARTICIPANT_TIMEOUT)
     private readonly matchParticipantTimeoutQueue: Queue,
@@ -209,7 +209,7 @@ export class MatchParticipantService {
           `[MatchParticipant] Match ${matchId} has rejection - cancelling match`
         )
 
-        const updateMatch = await this.matchRepo.update({
+        const updateMatch = await this.matchService.updateMatch({
           id: matchId,
           data: {
             status: MatchStatus.CANCELLED
@@ -229,7 +229,7 @@ export class MatchParticipantService {
           `[MatchParticipant] Both participants accepted match ${matchId} - match is ready`
         )
 
-        const updateMatch = await this.matchRepo.update({
+        const updateMatch = await this.matchService.updateMatch({
           id: matchId,
           data: {
             status: MatchStatus.IN_PROGRESS
@@ -276,7 +276,7 @@ export class MatchParticipantService {
         MatchRoundNumber.THREE
       ]
 
-      await this.matchRoundRepo.withTransaction(async (prismaTx) => {
+      await this.matchParticipantRepo.withTransaction(async (prismaTx) => {
         let previousOrderMapping: Map<number, number> = new Map() // matchParticipantId -> orderSelected
 
         for (let roundIndex = 0; roundIndex < roundNumbers.length; roundIndex++) {
@@ -355,25 +355,26 @@ export class MatchParticipantService {
       })
 
       // Sau khi tạo xong tất cả rounds, set endTime và Bull job cho người đầu tiên của Round ONE
-      const roundOne = await this.matchRoundRepo.findByMatchIdAndRoundNumber(
+      const roundOne = await this.matchRoundService.findByMatchIdAndRoundNumber(
         matchId,
         MatchRoundNumber.ONE
       )
 
       if (roundOne) {
-        const roundOneParticipants = await this.matchRoundParticipantRepo.findMany({
-          where: {
-            matchRoundId: roundOne.id
-          },
-          orderBy: {
-            orderSelected: 'asc'
-          }
-        })
+        const roundOneParticipants =
+          await this.matchRoundParticipantService.findRoundParticipants({
+            where: {
+              matchRoundId: roundOne.id
+            },
+            orderBy: {
+              orderSelected: 'asc'
+            }
+          })
 
         const firstParticipant = roundOneParticipants[0]
         if (firstParticipant) {
           // Set endTimeSelected cho người đầu tiên
-          await this.matchRoundParticipantRepo.update({
+          await this.matchRoundParticipantService.updateRoundParticipant({
             id: firstParticipant.id,
             data: {
               endTimeSelected: addTimeUTC(new Date(), TIME_CHOOSE_POKEMON_MS)
@@ -514,4 +515,12 @@ export class MatchParticipantService {
   }
 
   async getListPokemonByUser(userId: number, lang: string = 'vi') {}
+
+  // ---- For other modules (module-boundary plan B6) ----
+  // Same arguments and results as the repo methods.
+
+  // The repo's create (the service's own create answers the HTTP route)
+  createParticipant(...args: Parameters<MatchParticipantRepo['create']>) {
+    return this.matchParticipantRepo.create(...args)
+  }
 }

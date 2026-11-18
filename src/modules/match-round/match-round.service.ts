@@ -14,11 +14,10 @@ import { InjectQueue } from '@nestjs/bull'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { Queue } from 'bull'
 import { LanguagesService } from '@/modules/languages/languages.service'
-import { LeaderboardSeasonRepo } from '../leaderboard-season/leaderboard-season.repo'
-import { MatchRoundParticipantRepo } from '../match-round-participant/match-round-participant.repo'
-import { MatchRepo } from '../match/match.repo'
-import { QuestionBankRepo } from '../question-bank/question-bank.repo'
-import { RoundQuestionRepo } from '../round-question/round-question.repo'
+import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
+import { MatchService } from '@/modules/match/match.service'
+import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
+import { RoundQuestionService } from '@/modules/round-question/round-question.service'
 import { MatchRoundAlreadyExistsException } from './dto/match-round.error'
 import {
   CreateMatchRoundBodyType,
@@ -30,15 +29,14 @@ import { MatchRoundRepo } from './match-round.repo'
 export class MatchRoundService {
   constructor(
     private matchRoundRepo: MatchRoundRepo,
-    private matchRepo: MatchRepo,
-    private matchRoundParticipantRepo: MatchRoundParticipantRepo,
+    private matchService: MatchService,
     private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
-    private readonly leaderboardSeasonRepo: LeaderboardSeasonRepo,
+    private readonly leaderboardSeasonService: LeaderboardSeasonService,
     @InjectQueue(BullQueue.MATCH_ROUND_PARTICIPANT_TIMEOUT)
     private readonly matchRoundParticipantTimeoutQueue: Queue,
-    private readonly questionBankRepo: QuestionBankRepo,
-    private readonly roundQuestionRepo: RoundQuestionRepo
+    private readonly questionBankService: QuestionBankService,
+    private readonly roundQuestionService: RoundQuestionService
   ) {}
 
   async list(pagination: PaginationQueryType, lang: string = 'vi') {
@@ -56,7 +54,7 @@ export class MatchRoundService {
     lang: string = 'vi'
   ) {
     // Lấy Match có status IN_PROGRESS của user
-    const match: any = await this.matchRepo.findInProgressByUserId(userId)
+    const match: any = await this.matchService.findInProgressByUserId(userId)
 
     if (!match) {
       return {
@@ -129,14 +127,15 @@ export class MatchRoundService {
       let questionsForUser: any[] = []
       if (userParticipant) {
         // Fetch roundQuestions for that participant and order them via RoundQuestionRepo
-        const roundQuestions = await this.roundQuestionRepo.findByMatchRoundParticipantId(
-          userParticipant.id
-        )
+        const roundQuestions =
+          await this.roundQuestionService.findByMatchRoundParticipantId(
+            userParticipant.id
+          )
 
         if ((roundQuestions || []).length > 0) {
           const qbIds = roundQuestions.map((rq: any) => rq.questionBankId)
           // Use QuestionBankRepo to get formatted canonical question objects
-          const formattedQbs = await this.questionBankRepo.findByIds(qbIds, lang)
+          const formattedQbs = await this.questionBankService.getByIds(qbIds, lang)
           const qbMap = new Map<number, any>()
           for (const fq of formattedQbs) {
             qbMap.set(fq.id, fq)
@@ -201,7 +200,7 @@ export class MatchRoundService {
 
     try {
       // Check match có tồn tại không
-      const matchExist = await this.matchRepo.findByIdWithParticipant(data.matchId)
+      const matchExist = await this.matchService.findByIdWithParticipant(data.matchId)
       if (!matchExist) {
         throw new NotFoundRecordException()
       }
@@ -291,10 +290,7 @@ export class MatchRoundService {
           endTimeSelected: participant.endTimeSelected
         }))
 
-        await this.matchRoundParticipantRepo.createBulk(
-          matchRoundParticipantsData,
-          prismaTx
-        )
+        await this.matchRoundRepo.createParticipants(matchRoundParticipantsData, prismaTx)
 
         // Lấy danh sách match-round-participant vừa tạo để có ID
         const createdParticipants = await prismaTx.matchRoundParticipant.findMany({
@@ -424,5 +420,20 @@ export class MatchRoundService {
       }
       throw error
     }
+  }
+
+  // ---- For other modules (module-boundary plan B6) ----
+  // Same arguments and results as the repo methods.
+
+  findByMatchIdAndRoundNumber(
+    ...args: Parameters<MatchRoundRepo['findByMatchIdAndRoundNumber']>
+  ) {
+    return this.matchRoundRepo.findByMatchIdAndRoundNumber(...args)
+  }
+
+  findByIdWithMatchAndParticipants(
+    ...args: Parameters<MatchRoundRepo['findByIdWithMatchAndParticipants']>
+  ) {
+    return this.matchRoundRepo.findByIdWithMatchAndParticipants(...args)
   }
 }

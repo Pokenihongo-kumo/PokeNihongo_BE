@@ -1,7 +1,7 @@
-import { forwardRef, Module } from '@nestjs/common'
+import { QuestionBankModule } from '@/modules/question-bank/question-bank.module'
+import { Module } from '@nestjs/common'
 import { LanguagesModule } from '../languages/languages.module'
 import { LeaderboardSeasonModule } from '../leaderboard-season/leaderboard-season.module'
-import { MatchRoundParticipantModule } from '../match-round-participant/match-round-participant.module'
 import { MatchModule } from '../match/match.module'
 import { RoundQuestionModule } from '../round-question/round-question.module'
 import { MatchRoundController } from './match-round.controller'
@@ -13,11 +13,11 @@ import { MatchRoundService } from './match-round.service'
     MatchModule,
     LanguagesModule,
     LeaderboardSeasonModule,
-    forwardRef(() => MatchRoundParticipantModule),
-    RoundQuestionModule
+    RoundQuestionModule,
+    QuestionBankModule
   ],
   controllers: [MatchRoundController],
   providers: [MatchRoundService, MatchRoundRepo],
-  exports: [MatchRoundRepo]
+  exports: [MatchRoundService, MatchRoundRepo]
 })
 export class MatchRoundModule {}

@@ -671,4 +671,11 @@ export class PokemonService {
   listWithNameNumImg(...args: Parameters<PokemonRepo['listWithNameNumImg']>) {
     return this.pokemonRepo.listWithNameNumImg(...args)
   }
+
+  // ---- For other modules (module-boundary plan B6) ----
+  // Same arguments and results as the repo methods.
+
+  calculateDebuffedPokemon(...args: Parameters<PokemonRepo['calculateDebuffedPokemon']>) {
+    return this.pokemonRepo.calculateDebuffedPokemon(...args)
+  }
 }
