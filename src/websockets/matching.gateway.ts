@@ -725,7 +725,7 @@ export class MatchingGateway {
       type: 'MATCH_COMPLETED',
       matchId,
       match: matchData,
-      message: `${this.i18nService.translate(MatchingSocketMessage.MATCH_COMPLETED_WITH_WINNER, lang)} ${matchData.winner?.name || 'Unknown'}`
+      message: `${this.i18nService.translate(MatchingSocketMessage.MATCH_COMPLETED_WITH_WINNER, lang).trimEnd()} ${matchData.winner?.name || 'Unknown'}`
     }
 
     this.server.to(userMatchRoom1).emit(MATCHING_EVENTS.MATCH_COMPLETED, payload)

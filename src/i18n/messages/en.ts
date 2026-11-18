@@ -900,6 +900,7 @@ export const enMessages = {
     USER_ALREADY_ATTENDED_TODAY: 'User has already attended today'
   },
   achievement: {
+    INVALID_DATA: 'Invalid achievement data',
     CREATE_SUCCESS: 'Achievement created successfully',
     UPDATE_SUCCESS: 'Achievement updated successfully',
     DELETE_SUCCESS: 'Achievement deleted successfully',
@@ -929,6 +930,8 @@ export const enMessages = {
     INVALID_DAY_OF_WEEK: 'Invalid day of the week'
   },
   attendance: {
+    INVALID_DATA: 'Invalid attendance data',
+    CHECKIN_ALREADY: 'You have already checked in today',
     CREATE_SUCCESS: 'Attendance record created successfully',
     UPDATE_SUCCESS: 'Attendance record updated successfully',
     DELETE_SUCCESS: 'Attendance record deleted successfully',
@@ -960,6 +963,7 @@ export const enMessages = {
     INVALID_DATA: 'Invalid wallet transaction data'
   },
   shop_banner: {
+    INVALID_MIN_MAX: 'Invalid quantity',
     CREATE_SUCCESS: 'Shop banner created successfully',
     UPDATE_SUCCESS: 'Shop banner updated successfully',
     DELETE_SUCCESS: 'Shop banner deleted successfully',
@@ -1025,6 +1029,7 @@ export const enMessages = {
     INVALID_DATA: 'Invalid gacha item rate data'
   },
   gacha_item: {
+    GET_DETAIL_SUCCESS: 'Gacha item details retrieved successfully',
     CREATE_SUCCESS: 'Gacha item created successfully',
     UPDATE_SUCCESS: 'Gacha item updated successfully',
     DELETE_SUCCESS: 'Gacha item deleted successfully',
@@ -1057,6 +1062,7 @@ export const enMessages = {
     INVALID_DATA: 'Invalid shop rarity price data'
   },
   user_gacha_pity: {
+    DELETE_SUCCESS: 'User gacha pity deleted successfully',
     CREATE_SUCCESS: 'User gacha pity created successfully',
     UPDATE_SUCCESS: 'User gacha pity updated successfully',
     GET_SUCCESS: 'User gacha pity retrieved successfully',
@@ -1267,6 +1273,8 @@ export const enMessages = {
     GET_REWARD_SUCCESS: 'Season rewards claimed successfully'
   },
   round_question: {
+    ANSWER_SUCCESS: 'Answer recorded',
+    ALREADY_ANSWERED: 'This question has already been answered',
     CREATE_SUCCESS: 'Round question created successfully',
 
     UPDATE_SUCCESS: 'Round question updated successfully',
@@ -1304,6 +1312,7 @@ export const enMessages = {
     MISSSING_REWARD_FOR_ALL: 'Missing reward non-order for rank'
   },
   leaderboard_season: {
+    HAS_OPENED: 'This leaderboard season has already been opened',
     CREATE_SUCCESS: 'Leaderboard season created successfully',
     UPDATE_SUCCESS: 'Leaderboard season updated successfully',
     DELETE_SUCCESS: 'Leaderboard season deleted successfully',
@@ -1329,6 +1338,7 @@ export const enMessages = {
     INVALID_DATA: 'Invalid user reward history data'
   },
   user_achievement: {
+    GET_REWARD_SUCCESS: 'Achievement reward claimed successfully',
     CREATE_SUCCESS: 'User achievement created successfully',
     UPDATE_SUCCESS: 'User achievement updated successfully',
     DELETE_SUCCESS: 'User achievement deleted successfully',

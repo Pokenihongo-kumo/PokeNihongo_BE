@@ -490,8 +490,9 @@ describe('Battle batch 7c contract (e2e)', () => {
     const aAnswers = await answerAll(matchId, 'ONE', 'a', true)
     const afterA = { match: await matchState(matchId), events: takeEvents() }
     const bAnswers = await answerAll(matchId, 'ONE', 'b', false)
+    // B again on its own first question, after the round: one answer per question
     const answerAgain = await both((l) =>
-      as('a', l)
+      as('b', l)
         .put(`/round-question/answer/${bFirst.id}`)
         .send({ answerId: bFirst.right, timeAnswerMs: 1000 })
     )

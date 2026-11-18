@@ -921,6 +921,7 @@ export const jaMessages = {
     USER_ALREADY_ATTENDED_TODAY: 'ユーザーは本日既に出席しています'
   },
   achievement: {
+    INVALID_DATA: '無効な実績データです',
     CREATE_SUCCESS: '実績の作成が完了しました',
     UPDATE_SUCCESS: '実績の更新が完了しました',
     DELETE_SUCCESS: '実績の削除が完了しました',
@@ -948,6 +949,7 @@ export const jaMessages = {
     ALREADY_EXISTS: '出席設定は既に存在します'
   },
   attendance: {
+    INVALID_DATA: '無効な出席データです',
     CREATE_SUCCESS: '出席記録の作成が完了しました',
     UPDATE_SUCCESS: '出席記録の更新が完了しました',
     DELETE_SUCCESS: '出席記録の削除が完了しました',
@@ -1045,6 +1047,7 @@ export const jaMessages = {
     INVALID_DATA: '無効なガチャアイテムデータです'
   },
   gacha_item: {
+    GET_DETAIL_SUCCESS: 'ガチャアイテムの詳細の取得に成功しました',
     CREATE_SUCCESS: 'ガチャバナーの作成に成功しました',
     UPDATE_SUCCESS: 'ガチャバナーの更新に成功しました',
     DELETE_SUCCESS: 'ガチャバナーの削除に成功しました',
@@ -1237,6 +1240,8 @@ export const jaMessages = {
     GET_REWARD_SUCCESS: 'ユーザーシーズン履歴の報酬取得に成功しました'
   },
   round_question: {
+    ANSWER_SUCCESS: '回答を記録しました',
+    ALREADY_ANSWERED: 'この質問はすでに回答済みです',
     CREATE_SUCCESS: 'ラウンド質問の作成に成功しました',
     UPDATE_SUCCESS: 'ラウンド質問の更新に成功しました',
     DELETE_SUCCESS: 'ラウンド質問の削除に成功しました',
@@ -1335,6 +1340,7 @@ export const jaMessages = {
     INVALID_PAGE_SIZE: 'ページサイズは正の整数でなければなりません'
   },
   user_achievement: {
+    GET_REWARD_SUCCESS: '実績報酬の受け取りに成功しました',
     CREATE_SUCCESS: 'ユーザー実績の作成に成功しました',
     UPDATE_SUCCESS: 'ユーザー実績の更新に成功しました',
     DELETE_SUCCESS: 'ユーザー実績の削除に成功しました',

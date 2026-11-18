@@ -10,6 +10,17 @@ export class RoundQuestionNotFoundException extends NotFoundException {
   }
 }
 
+// One answer per question: a second one (even after the round) used to
+// overwrite the first
+export class RoundQuestionAlreadyAnsweredException extends ConflictException {
+  constructor() {
+    super({
+      message: RoundQuestionMessage.ALREADY_ANSWERED,
+      errorKey: RoundQuestionMessage.ALREADY_ANSWERED
+    })
+  }
+}
+
 export class RoundQuestionAlreadyExistsException extends ConflictException {
   constructor() {
     super({
