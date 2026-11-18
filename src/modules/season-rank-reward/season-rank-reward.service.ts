@@ -145,7 +145,7 @@ export class SeasonRankRewardService {
         }
 
         // 1. Delete existing season rank rewards for seasonId
-        await tx.seasonRankReward.deleteMany({ where: { seasonId } })
+        await this.seasonRankRewardRepo.deleteBySeason(seasonId, tx)
 
         // 2. Validate items: rankName uniqueness + order uniqueness and continuity per rankName
         const seenRankNames = new Set<string>()
@@ -224,10 +224,10 @@ export class SeasonRankRewardService {
         }
 
         if (allRewardIds.size > 0) {
-          const rewards = await tx.reward.findMany({
-            where: { id: { in: Array.from(allRewardIds) } },
-            select: { id: true }
-          })
+          const rewards = await this.seasonRankRewardRepo.findRewardIds(
+            Array.from(allRewardIds),
+            tx
+          )
           const found = new Set(rewards.map((r) => r.id))
           for (const rid of allRewardIds) {
             if (!found.has(rid)) throw new NotFoundRecordException()
@@ -237,26 +237,21 @@ export class SeasonRankRewardService {
         // Create each SeasonRankReward with nested reward connects (including auto-added null orders)
         for (const rankGroup of processedItems) {
           for (const info of rankGroup.infoOrders) {
-            await tx.seasonRankReward.create({
-              data: {
+            await this.seasonRankRewardRepo.createWithRewards(
+              {
                 seasonId,
-                rankName: rankGroup.rankName as any,
+                rankName: rankGroup.rankName,
                 order: info.order,
-                createdById: updatedById,
-                updatedById,
-                rewards: {
-                  connect: info.rewards.map((rid) => ({ id: rid }))
-                }
-              }
-            })
+                rewardIds: info.rewards,
+                updatedById
+              },
+              tx
+            )
           }
         }
 
         // 4. Re-fetch created data (simple list by seasonId)
-        return await tx.seasonRankReward.findMany({
-          where: { seasonId },
-          orderBy: [{ rankName: 'asc' }, { order: 'asc' }]
-        })
+        return await this.seasonRankRewardRepo.listBySeason(seasonId, tx)
       })
 
       return {

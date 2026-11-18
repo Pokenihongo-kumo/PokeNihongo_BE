@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { PrismaService } from '@/shared/services/prisma.service'
+import { VocabularyRepo } from './vocabulary.repo'
 import { KanjiService } from '@/modules/kanji/kanji.service'
 import { MeaningService } from '@/modules/meaning/meaning.service'
 import { TranslationService } from '@/modules/translation/translation.service'
@@ -17,7 +17,7 @@ export class VocabularyHelperService {
   private readonly logger = new Logger(VocabularyHelperService.name)
 
   constructor(
-    private readonly prismaService: PrismaService,
+    private readonly vocabularyRepository: VocabularyRepo,
     private readonly kanjiService: KanjiService,
     private readonly meaningService: MeaningService,
     private readonly translationService: TranslationService,
@@ -47,29 +47,18 @@ export class VocabularyHelperService {
       // kanjiService.findByCharacter throws a 404 for a missing kanji, so the
       // create branch below never ran: look the kanji up directly
       let kanji: { id: number; character: string } | null =
-        await this.prismaService.kanji.findUnique({
-          where: { character },
-          select: { id: true, character: true }
-        })
+        await this.kanjiService.findIdByCharacter(character)
 
       if (!kanji) {
         // Tạo Kanji mới với meaningKey tạm thời (sẽ được cập nhật sau)
         const tempMeaningKey = `kanji.temp.${Date.now()}.meaning`
 
         this.logger.log(`Creating new Kanji: ${character}`)
-        kanji = await this.prismaService.kanji.create({
-          data: {
-            character,
-            meaningKey: tempMeaningKey
-          }
-        })
+        kanji = await this.kanjiService.createWithMeaningKey(character, tempMeaningKey)
 
         // Cập nhật meaningKey với ID thực tế
         const finalMeaningKey = `kanji.${kanji.id}.meaning`
-        await this.prismaService.kanji.update({
-          where: { id: kanji.id },
-          data: { meaningKey: finalMeaningKey }
-        })
+        await this.kanjiService.setMeaningKey(kanji.id, finalMeaningKey)
 
         this.logger.log(`Kanji created successfully: ${character} with id ${kanji.id}`)
       }
@@ -92,28 +81,22 @@ export class VocabularyHelperService {
   ): Promise<{ id: number; character: string }> {
     try {
       // Kiểm tra Kanji đã tồn tại chưa trong transaction
-      let kanji = await prisma.kanji.findUnique({
-        where: { character }
-      })
+      let kanji = await this.kanjiService.findRowByCharacter(character, prisma)
 
       if (!kanji) {
         // Tạo Kanji mới với meaningKey tạm thời trong transaction
         const tempMeaningKey = `kanji.temp.${Date.now()}.meaning`
 
         this.logger.log(`Creating new Kanji in transaction: ${character}`)
-        kanji = await prisma.kanji.create({
-          data: {
-            character,
-            meaningKey: tempMeaningKey
-          }
-        })
+        kanji = await this.kanjiService.createWithMeaningKey(
+          character,
+          tempMeaningKey,
+          prisma
+        )
 
         // Cập nhật meaningKey với ID thực tế trong transaction
         const finalMeaningKey = `kanji.${kanji.id}.meaning`
-        kanji = await prisma.kanji.update({
-          where: { id: kanji.id },
-          data: { meaningKey: finalMeaningKey }
-        })
+        kanji = await this.kanjiService.setMeaningKey(kanji.id, finalMeaningKey, prisma)
 
         this.logger.log(
           `Kanji created successfully in transaction: ${character} with id ${kanji.id}`
@@ -155,22 +138,7 @@ export class VocabularyHelperService {
 
       // Tạo các liên kết trong bảng Vocabulary_Kanji
       const linkPromises = kanjis.map((kanji, index) => {
-        return this.prismaService.vocabulary_Kanji.upsert({
-          where: {
-            vocabularyId_kanjiId: {
-              vocabularyId,
-              kanjiId: kanji.id
-            }
-          },
-          create: {
-            vocabularyId,
-            kanjiId: kanji.id,
-            displayOrder: index + 1 // Thứ tự xuất hiện của Kanji
-          },
-          update: {
-            displayOrder: index + 1 // Cập nhật displayOrder nếu đã tồn tại
-          }
-        })
+        return this.vocabularyRepository.linkKanji(vocabularyId, kanji.id, index + 1)
       })
 
       await Promise.all(linkPromises)
@@ -212,22 +180,12 @@ export class VocabularyHelperService {
 
       // Tạo các liên kết trong bảng Vocabulary_Kanji
       const linkPromises = kanjis.map((kanji, index) => {
-        return prisma.vocabulary_Kanji.upsert({
-          where: {
-            vocabularyId_kanjiId: {
-              vocabularyId,
-              kanjiId: kanji.id
-            }
-          },
-          create: {
-            vocabularyId,
-            kanjiId: kanji.id,
-            displayOrder: index + 1 // Thứ tự xuất hiện của Kanji
-          },
-          update: {
-            displayOrder: index + 1 // Cập nhật displayOrder nếu đã tồn tại
-          }
-        })
+        return this.vocabularyRepository.linkKanji(
+          vocabularyId,
+          kanji.id,
+          index + 1,
+          prisma
+        )
       })
 
       await Promise.all(linkPromises)
@@ -319,18 +277,15 @@ export class VocabularyHelperService {
   ): Promise<any> {
     try {
       // Kiểm tra vocabulary có tồn tại không
-      const vocabulary = await this.prismaService.vocabulary.findUnique({
-        where: { id: vocabularyId }
-      })
+      const vocabulary = await this.vocabularyRepository.findRowById(vocabularyId)
 
       if (!vocabulary) {
         throw new Error(`Vocabulary with id ${vocabularyId} not found`)
       }
 
       // Tạo meaningKey tự động
-      const existingMeaningsCount = await this.prismaService.meaning.count({
-        where: { vocabularyId }
-      })
+      const existingMeaningsCount =
+        await this.meaningService.countForVocabulary(vocabularyId)
 
       const meaningKey = `vocabulary.${vocabularyId}.meaning.${existingMeaningsCount + 1}`
       const exampleSentenceKey = meaningData.exampleSentenceJp
@@ -359,14 +314,7 @@ export class VocabularyHelperService {
     wordJp: string
   ): Promise<{ exists: boolean; vocabularyId?: number }> {
     try {
-      const vocabulary = await this.prismaService.vocabulary.findFirst({
-        where: {
-          wordJp
-        },
-        select: {
-          id: true
-        }
-      })
+      const vocabulary = await this.vocabularyRepository.findIdByWordJp(wordJp)
 
       return {
         exists: !!vocabulary,
@@ -391,9 +339,10 @@ export class VocabularyHelperService {
       this.logger.log(`New translations:`, JSON.stringify(translations.meaning))
 
       // Lấy tất cả meanings của vocabulary này
-      const existingMeanings = await prisma.meaning.findMany({
-        where: { vocabularyId }
-      })
+      const existingMeanings = await this.meaningService.findForVocabulary(
+        vocabularyId,
+        prisma
+      )
 
       this.logger.log(`Found ${existingMeanings.length} existing meanings`)
 
@@ -401,21 +350,12 @@ export class VocabularyHelperService {
       for (const meaning of existingMeanings) {
         // Lấy tất cả translations cho meaning này (không giới hạn theo meaning ID cụ thể)
         // Vì có thể translations được lưu với key khác nhau
-        const meaningTranslations = await prisma.translation.findMany({
-          where: {
-            key: {
-              startsWith: `vocabulary.${vocabularyId}.meaning.`
-            },
-            language: {
-              code: {
-                in: translations.meaning.map((t) => t.language_code)
-              }
-            }
-          },
-          include: {
-            language: true
-          }
-        })
+        const meaningTranslations =
+          await this.translationService.findVocabularyMeaningTranslations(
+            vocabularyId,
+            translations.meaning.map((t) => t.language_code),
+            prisma
+          )
 
         // Filter translations that belong to this specific meaning
         // We need to check all possible meaning IDs for this vocabulary
@@ -518,15 +458,15 @@ export class VocabularyHelperService {
     wordTypeId?: number
   ) {
     // Sử dụng transaction để đảm bảo rollback nếu có lỗi
-    return await this.prismaService.$transaction(async (prisma) => {
+    return await this.vocabularyRepository.withTransaction(async (prisma) => {
       try {
         this.logger.log(
           'Starting transaction: Creating vocabulary with full translations'
         )
 
         // 1. Tạo vocabulary
-        const vocabulary = await prisma.vocabulary.create({
-          data: {
+        const vocabulary = await this.vocabularyRepository.createRow(
+          {
             wordJp: vocabularyData.wordJp,
             reading: vocabularyData.reading,
             levelN: vocabularyData.levelN,
@@ -534,8 +474,9 @@ export class VocabularyHelperService {
             imageUrl: vocabularyData.imageUrl,
             wordTypeId: wordTypeId || undefined, // Chỉ set nếu có giá trị
             createdById: vocabularyData.createdById
-          }
-        })
+          },
+          prisma
+        )
 
         this.logger.log(`Vocabulary created with ID: ${vocabulary.id}`)
 
@@ -566,15 +507,16 @@ export class VocabularyHelperService {
             ? translations.examples[0].original_sentence
             : undefined
 
-        const meaning = await prisma.meaning.create({
-          data: {
+        const meaning = await this.meaningService.createRow(
+          {
             vocabularyId: vocabulary.id,
             wordTypeId: wordTypeId || undefined,
             meaningKey,
             exampleSentenceKey,
             exampleSentenceJp
-          }
-        })
+          },
+          prisma
+        )
 
         this.logger.log(`Meaning created with ID: ${meaning.id}`)
 
@@ -611,10 +553,10 @@ export class VocabularyHelperService {
         const allTranslations = [...meaningTranslations, ...exampleTranslations]
 
         if (allTranslations.length > 0) {
-          await prisma.translation.createMany({
-            data: allTranslations,
-            skipDuplicates: true // Tránh lỗi nếu translation đã tồn tại
-          })
+          await this.translationService.createManySkippingDuplicates(
+            allTranslations,
+            prisma
+          )
           this.logger.log(
             `Bulk create translations successful: ${allTranslations.length} records`
           )
@@ -643,16 +585,17 @@ export class VocabularyHelperService {
     wordTypeId?: number
   ) {
     // Sử dụng transaction để đảm bảo rollback nếu có lỗi
-    return await this.prismaService.$transaction(async (prisma) => {
+    return await this.vocabularyRepository.withTransaction(async (prisma) => {
       try {
         this.logger.log(
           `Starting transaction: Adding new meaning with translations to vocabulary ${vocabularyId}`
         )
 
         // Kiểm tra vocabulary có tồn tại không
-        const vocabulary = await prisma.vocabulary.findUnique({
-          where: { id: vocabularyId }
-        })
+        const vocabulary = await this.vocabularyRepository.findRowById(
+          vocabularyId,
+          prisma
+        )
 
         if (!vocabulary) {
           throw new Error(`Vocabulary with id ${vocabularyId} not found`)
@@ -663,15 +606,13 @@ export class VocabularyHelperService {
 
         for (const newTrans of translations.meaning) {
           const languageId = await this.getLanguageId(newTrans.language_code)
-          const duplicateTranslation = await prisma.translation.findFirst({
-            where: {
+          const duplicateTranslation =
+            await this.translationService.findVocabularyMeaningWithValue(
+              vocabularyId,
               languageId,
-              value: newTrans.value,
-              key: {
-                startsWith: `vocabulary.${vocabularyId}.meaning.`
-              }
-            }
-          })
+              newTrans.value,
+              prisma
+            )
 
           if (duplicateTranslation) {
             this.logger.log(
@@ -686,9 +627,10 @@ export class VocabularyHelperService {
         )
 
         // Đếm số meanings hiện có
-        const existingMeaningsCount = await prisma.meaning.count({
-          where: { vocabularyId }
-        })
+        const existingMeaningsCount = await this.meaningService.countForVocabulary(
+          vocabularyId,
+          prisma
+        )
 
         const meaningIndex = existingMeaningsCount + 1
         const meaningKey = `vocabulary.${vocabularyId}.meaning.${meaningIndex}`
@@ -703,15 +645,16 @@ export class VocabularyHelperService {
             : undefined
 
         // Tạo meaning mới
-        const meaning = await prisma.meaning.create({
-          data: {
+        const meaning = await this.meaningService.createRow(
+          {
             vocabularyId,
             wordTypeId: wordTypeId || undefined, // Chỉ set nếu có giá trị
             meaningKey,
             exampleSentenceKey,
             exampleSentenceJp
-          }
-        })
+          },
+          prisma
+        )
 
         this.logger.log(`Meaning created with ID: ${meaning.id}`)
 
@@ -748,10 +691,10 @@ export class VocabularyHelperService {
         const allTranslations = [...meaningTranslations, ...exampleTranslations]
 
         if (allTranslations.length > 0) {
-          await prisma.translation.createMany({
-            data: allTranslations,
-            skipDuplicates: true
-          })
+          await this.translationService.createManySkippingDuplicates(
+            allTranslations,
+            prisma
+          )
           this.logger.log(
             `Bulk create translations successful for new meaning: ${allTranslations.length} records`
           )

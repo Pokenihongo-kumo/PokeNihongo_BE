@@ -33,7 +33,6 @@ import { UserTestAttemptRepo } from '@/modules/user-test-attempt/user-test-attem
 import { UserTestRepo } from '@/modules/user-test/user-test.repo'
 import { UserRepo } from '@/modules/user/user.repo'
 import { MessageResDTO } from '@/shared/dtos/response.dto'
-import { PrismaService } from '@/shared/services/prisma.service'
 import { HttpException, Injectable, Logger } from '@nestjs/common'
 import { ProgressStatus, UserRewardSourceType } from '@prisma/client'
 import { LessonRepo } from '../lesson/lesson.repo'
@@ -55,7 +54,6 @@ export class UserTestAttemptService {
     private readonly testSetQuestionBankService: TestSetQuestionBankService,
     private readonly translationHelper: TranslationHelperService,
     private readonly i18nService: I18nService,
-    private readonly prisma: PrismaService,
     private readonly userRepo: UserRepo,
     private readonly levelService: LevelService,
     private readonly userProgressRepository: UserProgressRepo,
@@ -166,18 +164,9 @@ export class UserTestAttemptService {
       const testType = (testRes.data as any).testType
 
       // 3. Lấy tất cả TestSets của Test
-      const test = await this.prisma.test.findUnique({
-        where: { id: attempt.testId },
-        include: {
-          testTestSets: {
-            select: {
-              testSet: {
-                select: { id: true }
-              }
-            }
-          }
-        }
-      })
+      const test = await this.userTestAttemptRepository.findTestWithTestSetIds(
+        attempt.testId
+      )
 
       if (!test || !test.testTestSets || test.testTestSets.length === 0) {
         throw new TestHasNoTestSetException()
@@ -441,18 +430,9 @@ export class UserTestAttemptService {
 
       // Logic cho các test type khác (giữ nguyên)
       // 3. Lấy tất cả TestSets của Test
-      const test = await this.prisma.test.findUnique({
-        where: { id: attempt.testId },
-        include: {
-          testTestSets: {
-            select: {
-              testSet: {
-                select: { id: true }
-              }
-            }
-          }
-        }
-      })
+      const test = await this.userTestAttemptRepository.findTestWithTestSetIds(
+        attempt.testId
+      )
 
       if (!test || !test.testTestSets || test.testTestSets.length === 0) {
         throw new TestHasNoTestSetException()
@@ -694,16 +674,10 @@ export class UserTestAttemptService {
       }
 
       // Tìm attempt IN_PROGRESS gần nhất của user với test này
-      const inProgressAttempt = await this.prisma.userTestAttempt.findFirst({
-        where: {
-          userId,
-          testId,
-          status: 'IN_PROGRESS'
-        },
-        orderBy: {
-          createdAt: 'desc' // Lấy attempt được tạo gần nhất
-        }
-      })
+      const inProgressAttempt = await this.userTestAttemptRepository.findLatestInProgress(
+        userId,
+        testId
+      )
 
       let attempt: any
       let userTestAttemptId: number
@@ -720,10 +694,7 @@ export class UserTestAttemptService {
           this.logger.log(
             `Attempt ${inProgressAttempt.id} is older than 1 hour (${Math.round(timeDiffMs / (60 * 1000))} minutes), marking as ABANDONED and creating new one`
           )
-          await this.prisma.userTestAttempt.update({
-            where: { id: inProgressAttempt.id },
-            data: { status: 'ABANDONED' }
-          })
+          await this.userTestAttemptRepository.markAbandoned(inProgressAttempt.id)
 
           // Giảm limit và tạo attempt mới
           await this.userTestRepository.decrementLimit(userId, testId)
@@ -737,10 +708,7 @@ export class UserTestAttemptService {
           )
 
           // Update updatedAt để reset timer
-          await this.prisma.userTestAttempt.update({
-            where: { id: inProgressAttempt.id },
-            data: { updatedAt: now }
-          })
+          await this.userTestAttemptRepository.touch(inProgressAttempt.id, now)
 
           attempt = await this.userTestAttemptRepository.findById(inProgressAttempt.id)
           if (!attempt) {
@@ -1272,14 +1240,8 @@ export class UserTestAttemptService {
       const questionBankIds = [...new Set(logs.map((l: any) => l.questionBankId))]
 
       // Query QuestionBanks với answers từ database
-      const questionBanks = await this.prisma.questionBank.findMany({
-        where: {
-          id: { in: questionBankIds }
-        },
-        include: {
-          answers: true
-        }
-      })
+      const questionBanks =
+        await this.userTestAttemptRepository.findQuestionsWithAnswers(questionBankIds)
 
       // Tạo map để truy cập nhanh
       const questionBankMap = new Map(questionBanks.map((qb) => [qb.id, qb]))
@@ -1760,10 +1722,7 @@ export class UserTestAttemptService {
   ) {
     try {
       // 1. Tìm lesson có testId = testId của attempt
-      const lesson = await this.prisma.lesson.findFirst({
-        where: { testId: testId },
-        select: { id: true, rewardId: true }
-      })
+      const lesson = await this.userTestAttemptRepository.findLessonRewardForTest(testId)
 
       if (!lesson) {
         this.logger.warn(`No lesson found with testId ${testId}, skipping reward grant`)
@@ -1824,10 +1783,7 @@ export class UserTestAttemptService {
       )
 
       // Tìm lesson có testId = testId của attempt
-      const lesson = await this.prisma.lesson.findFirst({
-        where: { testId: testId },
-        select: { id: true }
-      })
+      const lesson = await this.userTestAttemptRepository.findLessonIdForTest(testId)
 
       if (!lesson) {
         this.logger.warn(
@@ -1932,10 +1888,7 @@ export class UserTestAttemptService {
       )
 
       // Tìm lesson có testId = testId của attempt
-      const lesson = await this.prisma.lesson.findFirst({
-        where: { testId: testId },
-        select: { id: true }
-      })
+      const lesson = await this.userTestAttemptRepository.findLessonIdForTest(testId)
 
       if (!lesson) {
         this.logger.warn(

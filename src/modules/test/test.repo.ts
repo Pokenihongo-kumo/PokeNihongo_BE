@@ -6,7 +6,7 @@ import {
   CreateTestWithMeaningsBodyType,
   UpdateTestWithMeaningsBodyType
 } from './entities/test.entity'
-import { TestStatus as PrismaTestStatus } from '@prisma/client'
+import { Prisma, TestStatus as PrismaTestStatus } from '@prisma/client'
 
 @Injectable()
 export class TestRepo {
@@ -587,6 +587,203 @@ export class TestRepo {
         }
       },
       orderBy: { createdAt: 'asc' }
+    })
+  }
+
+  // ---- Test sets of a test and the lookups of TestService ----
+
+  findPlacementDoneTestId() {
+    return this.prisma.test.findFirst({
+      where: { testType: PrismaTestStatus.PLACEMENT_TEST_DONE },
+      select: { id: true }
+    })
+  }
+
+  findCreatorsOf(ids: number[]) {
+    return this.prisma.test.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, creatorId: true }
+    })
+  }
+
+  findTestSetsByIds(testSetIds: number[]) {
+    return this.prisma.testSet.findMany({
+      where: { id: { in: testSetIds } }
+    })
+  }
+
+  // A test set belongs to one test: links to any other test go
+  unlinkTestSetsFromOtherTests(testSetIds: number[], testId: number) {
+    return this.prisma.testTestSet.deleteMany({
+      where: { testSetId: { in: testSetIds }, testId: { not: testId } }
+    })
+  }
+
+  linkTestSets(testId: number, testSetIds: number[]) {
+    return this.prisma.testTestSet.createMany({
+      data: testSetIds.map((testSetId) => ({ testId, testSetId })),
+      skipDuplicates: true
+    })
+  }
+
+  findLessonTestId(lessonId: number) {
+    return this.prisma.lesson.findUnique({
+      where: { id: lessonId },
+      select: { id: true, testId: true }
+    })
+  }
+
+  findTestSetIdsOfTest(testId: number) {
+    return this.prisma.testTestSet.findMany({
+      where: { testId },
+      select: { testSetId: true }
+    })
+  }
+
+  deleteTestSetLinks(where: Prisma.TestTestSetWhereInput) {
+    return this.prisma.testTestSet.deleteMany({ where })
+  }
+
+  findTestSetTypesOfTest(testId: number) {
+    return this.prisma.testTestSet.findMany({
+      where: { testId },
+      select: { testSet: { select: { id: true, testType: true } } }
+    })
+  }
+
+  findTestSetIdsAndTypes(testId: number) {
+    return this.prisma.testTestSet.findMany({
+      where: { testId },
+      select: { testSetId: true, testSet: { select: { testType: true } } }
+    })
+  }
+
+  countSpeakingTestSets(testId: number) {
+    return this.prisma.testTestSet.count({
+      where: { testId, testSet: { testType: 'SPEAKING' } }
+    })
+  }
+
+  findTestSetsWithCreator(testId: number) {
+    return this.prisma.testTestSet.findMany({
+      where: { testId },
+      include: {
+        testSet: {
+          include: {
+            creator: {
+              select: {
+                id: true,
+                name: true,
+                email: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: { createdAt: 'asc' }
+    })
+  }
+
+  findLanguageByCode(language: string) {
+    return this.prisma.languages.findFirst({
+      where: { code: language }
+    })
+  }
+
+  findTranslations(testSetTranslationWhere: Prisma.TranslationWhereInput) {
+    return this.prisma.translation.findMany({
+      where: testSetTranslationWhere,
+      include: { language: true }
+    })
+  }
+
+  findTestSetsOfTest(testId: number) {
+    return this.prisma.testTestSet.findMany({
+      where: { testId },
+      include: {
+        testSet: true
+      },
+      orderBy: { createdAt: 'asc' }
+    })
+  }
+
+  findActivePlacementDoneTestIds() {
+    return this.prisma.test.findMany({
+      where: {
+        testType: 'PLACEMENT_TEST_DONE',
+        status: 'ACTIVE'
+      },
+      select: {
+        id: true
+      }
+    })
+  }
+
+  // Free active vocabulary/grammar/kanji test sets
+  findFreeActiveLearningTestSetIds() {
+    return this.prisma.testSet.findMany({
+      where: {
+        price: 0,
+        status: 'ACTIVE',
+        testType: {
+          in: ['VOCABULARY', 'GRAMMAR', 'KANJI']
+        }
+      },
+      select: {
+        id: true
+      }
+    })
+  }
+
+  // Links without skipDuplicates (callers pass only new ids)
+  addTestSets(testId: number, testSetIds: number[]) {
+    return this.prisma.testTestSet.createMany({
+      data: testSetIds.map((testSetId) => ({
+        testId: testId,
+        testSetId: testSetId
+      }))
+    })
+  }
+
+  findQuestionsOfTestSets(testSetIds: number[]) {
+    return this.prisma.testSetQuestionBank.findMany({
+      where: {
+        testSetId: { in: testSetIds }
+      },
+      include: {
+        questionBank: {
+          include: {
+            answers: true
+          }
+        }
+      }
+    })
+  }
+
+  findTranslationByKey(key: string, languageId: number) {
+    return this.prisma.translation.findFirst({
+      where: {
+        key: key,
+        languageId: languageId
+      }
+    })
+  }
+
+  findQuestionsOfTestSetsAtLevel(testSetIds: number[], levelN: number) {
+    return this.prisma.testSetQuestionBank.findMany({
+      where: {
+        testSetId: { in: testSetIds },
+        questionBank: {
+          levelN: levelN
+        }
+      },
+      include: {
+        questionBank: {
+          include: {
+            answers: true
+          }
+        }
+      }
     })
   }
 }

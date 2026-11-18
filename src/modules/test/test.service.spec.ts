@@ -5,22 +5,18 @@ describe('TestService', () => {
   const repo = {
     findById: jest.fn(),
     updateWithMeanings: jest.fn(),
-    delete: jest.fn()
-  }
-  const prisma = {
-    testSet: { findMany: jest.fn() },
-    testTestSet: {
-      findMany: jest.fn(),
-      count: jest.fn(),
-      deleteMany: jest.fn(),
-      createMany: jest.fn()
-    }
+    delete: jest.fn(),
+    findTestSetsByIds: jest.fn(),
+    findTestSetTypesOfTest: jest.fn(),
+    findTestSetIdsAndTypes: jest.fn(),
+    countSpeakingTestSets: jest.fn(),
+    unlinkTestSetsFromOtherTests: jest.fn(),
+    linkTestSets: jest.fn()
   }
   const userTests = { updateStatusByTestId: jest.fn(), initAllUsersTests: jest.fn() }
   const userTestRepo = { findByUserAndTest: jest.fn() }
   const service = new TestService(
     repo as never,
-    prisma as never,
     {} as never,
     {} as never,
     userTestRepo as never,
@@ -40,8 +36,9 @@ describe('TestService', () => {
       price: 0,
       creatorId: 1
     })
-    prisma.testTestSet.findMany.mockResolvedValue([])
-    prisma.testTestSet.count.mockResolvedValue(0)
+    repo.findTestSetTypesOfTest.mockResolvedValue([])
+    repo.findTestSetIdsAndTypes.mockResolvedValue([])
+    repo.countSpeakingTestSets.mockResolvedValue(0)
   })
 
   it("someone else's test is a 403 and a missing one a 404 (both were thrown as classes: 500)", async () => {
@@ -69,7 +66,7 @@ describe('TestService', () => {
   })
 
   it('adding test sets: missing ones are a 404 with their ids; type rules per test type', async () => {
-    prisma.testSet.findMany.mockResolvedValueOnce([{ id: 1, testType: 'VOCABULARY' }])
+    repo.findTestSetsByIds.mockResolvedValueOnce([{ id: 1, testType: 'VOCABULARY' }])
     await expect(
       service.addTestSetsToTest(5, { testSetIds: [1, 2] })
     ).rejects.toMatchObject({
@@ -78,7 +75,7 @@ describe('TestService', () => {
     })
 
     repo.findById.mockResolvedValue({ id: 5, testType: 'LESSON_REVIEW' })
-    prisma.testSet.findMany.mockResolvedValueOnce([
+    repo.findTestSetsByIds.mockResolvedValueOnce([
       { id: 1, testType: 'VOCABULARY' },
       { id: 2, testType: 'VOCABULARY' }
     ])
@@ -92,8 +89,8 @@ describe('TestService', () => {
     })
 
     repo.findById.mockResolvedValue({ id: 5, testType: 'SPEAKING_TEST' })
-    prisma.testSet.findMany.mockResolvedValueOnce([{ id: 3, testType: 'SPEAKING' }])
-    prisma.testTestSet.count.mockResolvedValueOnce(1)
+    repo.findTestSetsByIds.mockResolvedValueOnce([{ id: 3, testType: 'SPEAKING' }])
+    repo.countSpeakingTestSets.mockResolvedValueOnce(1)
     await expect(service.addTestSetsToTest(5, { testSetIds: [3] })).rejects.toMatchObject(
       {
         response: {
@@ -102,7 +99,7 @@ describe('TestService', () => {
         }
       }
     )
-    expect(prisma.testTestSet.createMany).not.toHaveBeenCalled()
+    expect(repo.linkTestSets).not.toHaveBeenCalled()
   })
 
   it('a status change re-syncs the user tests (paid ACTIVE test -> NOT_STARTED)', async () => {

@@ -1,3 +1,4 @@
+import { PrismaClient } from '@prisma/client'
 import { Kanji, CreateKanjiBodyType, UpdateKanjiBodyType } from './entities/kanji.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
@@ -375,6 +376,37 @@ export class KanjiRepo {
         vocabularyKanjiDeleted: vocabularyKanjiCount,
         translationDeleted: meaningKeys.length
       }
+    })
+  }
+
+  // ---- Kanji found or created while saving a vocabulary (optional tx) ----
+
+  findIdByCharacter(character: string) {
+    return this.prismaService.kanji.findUnique({
+      where: { character },
+      select: { id: true, character: true }
+    })
+  }
+
+  createWithMeaningKey(character: string, meaningKey: string, prismaTx?: PrismaClient) {
+    return (prismaTx ?? this.prismaService).kanji.create({
+      data: {
+        character,
+        meaningKey
+      }
+    })
+  }
+
+  setMeaningKey(id: number, finalMeaningKey: string, prismaTx?: PrismaClient) {
+    return (prismaTx ?? this.prismaService).kanji.update({
+      where: { id: id },
+      data: { meaningKey: finalMeaningKey }
+    })
+  }
+
+  findRowByCharacter(character: string, prismaTx?: PrismaClient) {
+    return (prismaTx ?? this.prismaService).kanji.findUnique({
+      where: { character }
     })
   }
 }

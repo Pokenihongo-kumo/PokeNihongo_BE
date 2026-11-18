@@ -212,6 +212,16 @@ export class AuthRepository {
   //   })
   // }
 
+  deleteExpiredRefreshTokens(): Promise<{ count: number }> {
+    return this.prismaService.refreshToken.deleteMany({
+      where: {
+        expiresAt: {
+          lt: new Date()
+        }
+      }
+    })
+  }
+
   deleteManyRefreshTokenByUserId(where: { userId: number }): Promise<{ count: number }> {
     return this.prismaService.refreshToken.deleteMany({
       where

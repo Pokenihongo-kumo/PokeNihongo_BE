@@ -152,4 +152,18 @@ export class MeaningService {
     if (isNotFoundPrismaError(error)) return new MeaningNotFoundException()
     return new InvalidMeaningDataException()
   }
+
+  // ---- For other modules: Meanings written while saving a vocabulary (optional tx) (B7) ----
+
+  countForVocabulary(...args: Parameters<MeaningRepo['countForVocabulary']>) {
+    return this.meaningRepository.countForVocabulary(...args)
+  }
+
+  findForVocabulary(...args: Parameters<MeaningRepo['findForVocabulary']>) {
+    return this.meaningRepository.findForVocabulary(...args)
+  }
+
+  createRow(...args: Parameters<MeaningRepo['createRow']>) {
+    return this.meaningRepository.createRow(...args)
+  }
 }

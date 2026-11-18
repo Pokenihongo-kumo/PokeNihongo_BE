@@ -10,7 +10,6 @@ import {
   isNotFoundPrismaError
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
-import { PrismaService } from '@/shared/services/prisma.service'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { UserRewardSourceType } from '@prisma/client'
 import { AchievementGroupRepo } from '../achievement-group/achievement-group.repo'
@@ -35,7 +34,6 @@ export class UserAchievementService {
     private achievementGroupRepo: AchievementGroupRepo,
     private achievementRepo: AchievementRepo,
     private readonly languagesService: LanguagesService,
-    private readonly prismaService: PrismaService,
     private readonly i18nService: I18nService,
     private readonly userProgressService: UserProgressService,
 
@@ -197,21 +195,8 @@ export class UserAchievementService {
         achCurrentPage && achPageSize && isTargetGroup ? achTake : defaultPageSize
 
       const [count, rows] = await Promise.all([
-        this.prismaService.achievement.count({
-          where: { groupId: g.id, deletedAt: null, isActive: true }
-        }),
-        this.prismaService.achievement.findMany({
-          where: { groupId: g.id, deletedAt: null, isActive: true },
-          include: {
-            nameTranslations: { select: { value: true, languageId: true } },
-            reward: {
-              include: { nameTranslations: { select: { value: true, languageId: true } } }
-            }
-          },
-          orderBy: [{ achievementTierType: 'asc' }, { id: 'asc' }],
-          skip,
-          take
-        })
+        this.userAchievementRepo.countLiveAchievementsInGroup(g.id),
+        this.userAchievementRepo.pageLiveAchievementsInGroup(g.id, skip, take)
       ])
       perGroupAchievementCounts.set(g.id, count)
       return { groupId: g.id, rows }
@@ -226,9 +211,7 @@ export class UserAchievementService {
 
     // 4. Fetch existing userAchievement for this user and these achievements
     const existingUserAchievements = achievementIds.length
-      ? await this.prismaService.userAchievement.findMany({
-          where: { userId, achievementId: { in: achievementIds }, deletedAt: null }
-        })
+      ? await this.userAchievementRepo.findForUserAndAchievements(userId, achievementIds)
       : []
 
     const existingMap = new Map<number, any>()
@@ -353,16 +336,7 @@ export class UserAchievementService {
   async getReward({ id, userId }: { id: number; userId: number }, lang: string = 'vi') {
     try {
       // 1. Fetch user achievement with achievement details
-      const userAchievement = await this.prismaService.userAchievement.findUnique({
-        where: { id, deletedAt: null },
-        include: {
-          achievement: {
-            include: {
-              reward: true
-            }
-          }
-        }
-      })
+      const userAchievement = await this.userAchievementRepo.findLiveWithReward(id)
 
       if (!userAchievement) {
         throw new UserAchievementNotFoundException()
@@ -475,15 +449,10 @@ export class UserAchievementService {
       if (!qualified) continue
 
       if (ua.status !== UserAchievementStatus.COMPLETED_NOT_CLAIMED || !ua.achievedAt) {
-        const updated = await this.prismaService.userAchievement.update({
-          where: { id: ua.id },
-          data: {
-            status:
-              ua.status === UserAchievementStatus.CLAIMED
-                ? ua.status
-                : UserAchievementStatus.COMPLETED_NOT_CLAIMED,
-            achievedAt: achievedAt ?? new Date()
-          }
+        const updated = await this.userAchievementRepo.markCompleted({
+          id: ua.id,
+          currentStatus: ua.status,
+          achievedAt
         })
         userAchievementMap.set(achievement.id, updated)
       }

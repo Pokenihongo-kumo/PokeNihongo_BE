@@ -14,7 +14,6 @@ import {
   todayUTCWith0000
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
-import { PrismaService } from '@/shared/services/prisma.service'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
@@ -39,8 +38,7 @@ export class LeaderboardSeasonService {
     private leaderboardSeasonRepo: LeaderboardSeasonRepo,
     private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
-    private readonly translationService: TranslationService,
-    private readonly prismaService: PrismaService
+    private readonly translationService: TranslationService
   ) {}
 
   private async convertTranslationsToLangCodes(
@@ -533,10 +531,7 @@ export class LeaderboardSeasonService {
       season = await this.leaderboardSeasonRepo.findActiveSeason()
       if (!season) {
         // fallback to most recent by endDate
-        season = await this.prismaService.leaderboardSeason.findFirst({
-          where: { deletedAt: null },
-          orderBy: { endDate: 'desc' }
-        })
+        season = await this.leaderboardSeasonRepo.findLatestByEndDate()
       }
     }
 
@@ -583,21 +578,14 @@ export class LeaderboardSeasonService {
       if (eloFilter) whereUsers.eloscore = eloFilter
 
       // Count total items matching filter
-      totalItems = await this.prismaService.user.count({ where: whereUsers })
+      totalItems = await this.leaderboardSeasonRepo.countRankedUsers(whereUsers)
 
       // Query top users by eloscore (secondary sort by id for stability)
-      const topUsers = await this.prismaService.user.findMany({
-        where: whereUsers,
-        orderBy: [{ eloscore: 'desc' }, { name: 'asc' }],
+      const topUsers = await this.leaderboardSeasonRepo.pageRankedUsers(
+        whereUsers,
         skip,
-        take,
-        select: {
-          id: true,
-          name: true,
-          avatar: true,
-          eloscore: true
-        }
-      })
+        take
+      )
 
       topMapped = topUsers.map((u: any, idx: number) => ({
         position: skip + idx + 1,
@@ -609,10 +597,7 @@ export class LeaderboardSeasonService {
       }))
 
       // Compute 'me' record
-      const myUser = await this.prismaService.user.findUnique({
-        where: { id: userId, deletedAt: null },
-        select: { id: true, name: true, avatar: true, eloscore: true }
-      })
+      const myUser = await this.leaderboardSeasonRepo.findRankedUser(userId)
 
       if (myUser) {
         // Check if user matches rankName filter (if provided)
@@ -621,19 +606,10 @@ export class LeaderboardSeasonService {
 
         if (matchesFilter) {
           // Count users with same filter and higher elo, or same elo but lower id
-          const higherCount = await this.prismaService.user.count({
-            where: {
-              deletedAt: null,
-              ...(eloFilter ? { eloscore: eloFilter } : {}),
-              OR: [
-                { eloscore: { gt: myUser.eloscore } },
-                {
-                  eloscore: myUser.eloscore,
-                  id: { lt: myUser.id }
-                }
-              ]
-            }
-          })
+          const higherCount = await this.leaderboardSeasonRepo.countUsersRankedAbove(
+            myUser,
+            eloFilter
+          )
 
           me = {
             position: higherCount + 1,
@@ -651,18 +627,14 @@ export class LeaderboardSeasonService {
       if (eloFilter) whereTop.finalElo = eloFilter
 
       // Count total items matching filter
-      totalItems = await this.prismaService.userSeasonHistory.count({ where: whereTop })
+      totalItems = await this.leaderboardSeasonRepo.countSeasonHistories(whereTop)
 
       // Query top records (secondary sort by userId for stability)
-      const top = await this.prismaService.userSeasonHistory.findMany({
-        where: whereTop,
-        orderBy: [{ finalElo: 'desc' }, { userId: 'asc' }],
+      const top = await this.leaderboardSeasonRepo.pageSeasonHistories(
+        whereTop,
         skip,
-        take,
-        include: {
-          user: { select: { id: true, name: true, avatar: true } }
-        }
-      })
+        take
+      )
 
       topMapped = top.map((h: any, idx: number) => ({
         position: skip + idx + 1,
@@ -674,10 +646,7 @@ export class LeaderboardSeasonService {
       }))
 
       // Compute 'me' record
-      const myHist = await this.prismaService.userSeasonHistory.findFirst({
-        where: { seasonId, userId, deletedAt: null },
-        include: { user: { select: { id: true, name: true, avatar: true } } }
-      })
+      const myHist = await this.leaderboardSeasonRepo.findSeasonHistory(seasonId, userId)
 
       if (myHist && myHist.finalElo !== null) {
         // Check if user matches rankName filter (if provided)
@@ -685,20 +654,11 @@ export class LeaderboardSeasonService {
 
         if (matchesFilter) {
           // Count higher records with same filter
-          const higherCount = await this.prismaService.userSeasonHistory.count({
-            where: {
-              seasonId,
-              deletedAt: null,
-              ...(eloFilter ? { finalElo: eloFilter } : {}),
-              OR: [
-                { finalElo: { gt: myHist.finalElo } },
-                {
-                  finalElo: myHist.finalElo,
-                  userId: { lt: myHist.userId }
-                }
-              ]
-            }
-          })
+          const higherCount = await this.leaderboardSeasonRepo.countHistoriesRankedAbove(
+            seasonId,
+            { finalElo: myHist.finalElo, userId: myHist.userId },
+            eloFilter
+          )
 
           me = {
             position: higherCount + 1,

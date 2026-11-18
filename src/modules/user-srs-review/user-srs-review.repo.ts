@@ -88,4 +88,31 @@ export class SrsReviewRepo {
   updateById(id: number, data: Prisma.UserSrsReviewUpdateInput) {
     return this.prisma.userSrsReview.update({ where: { id }, data })
   }
+
+  // ---- Content shown on a review card (read only) ----
+
+  findGrammar(id: number) {
+    return this.prisma.grammar.findUnique({ where: { id } })
+  }
+
+  findGrammarUsages(id: number) {
+    return this.prisma.grammarUsage.findMany({
+      where: { grammarId: id },
+      orderBy: { id: 'asc' }
+    })
+  }
+
+  findKanjiWithReadings(id: number) {
+    return this.prisma.kanji.findUnique({
+      where: { id },
+      include: { readings: true }
+    })
+  }
+
+  findVocabularyWithMeanings(id: number) {
+    return this.prisma.vocabulary.findUnique({
+      where: { id },
+      include: { meanings: true }
+    })
+  }
 }

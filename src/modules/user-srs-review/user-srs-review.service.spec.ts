@@ -11,7 +11,6 @@ describe('SrsReviewService', () => {
     update: jest.fn()
   }
   const service = new SrsReviewService(
-    {} as never,
     repo as never,
     {} as never,
     { translate: (k: string) => k } as never

@@ -272,13 +272,11 @@ export class GachaPurchaseService {
 
         const pokemonIds = rollResults.map((r) => r.id)
         // Use findMany to get all userPokemons with userId and pokemonId in list
-        const userPokemons = await prismaTx.userPokemon.findMany({
-          where: {
-            userId,
-            pokemonId: { in: pokemonIds },
-            deletedAt: null
-          }
-        })
+        const userPokemons = await this.userPokemonService.findOwnedAmong(
+          userId,
+          pokemonIds,
+          prismaTx
+        )
         const ownedPokemonIds = new Set(userPokemons.map((up: any) => up.pokemonId))
 
         // 6. Prepare bulk create for userPokemon and wallet

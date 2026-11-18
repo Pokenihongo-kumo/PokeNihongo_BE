@@ -213,16 +213,14 @@ export class SubscriptionFeatureService {
         const { items } = data
 
         // 1. Delete existing subscription features for subscriptionId
-        await tx.subscriptionFeature.deleteMany({
-          where: { subscriptionId }
-        })
+        await this.subscriptionFeatureRepo.deleteBySubscription(subscriptionId, tx)
 
         // 2. Get all featureIds to validate
         const featureIds = items.map((item) => item.featureId)
-        const features = await tx.feature.findMany({
-          where: { id: { in: featureIds }, deletedAt: null },
-          select: { id: true, featureKey: true }
-        })
+        const features = await this.subscriptionFeatureRepo.findLiveFeatureKeys(
+          featureIds,
+          tx
+        )
 
         // Build map for quick lookup
         const featureMap = new Map(features.map((f) => [f.id, f.featureKey]))
@@ -268,15 +266,10 @@ export class SubscriptionFeatureService {
         })
 
         // 4. Create all features at once
-        await tx.subscriptionFeature.createMany({
-          data: createData
-        })
+        await this.subscriptionFeatureRepo.createManyRows(createData, tx)
 
         // 5. Re-fetch created data
-        return await tx.subscriptionFeature.findMany({
-          where: { subscriptionId, deletedAt: null },
-          orderBy: { id: 'asc' }
-        })
+        return await this.subscriptionFeatureRepo.listBySubscription(subscriptionId, tx)
       })
 
       return {

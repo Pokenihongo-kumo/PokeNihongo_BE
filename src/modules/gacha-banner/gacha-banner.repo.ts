@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common'
 
 import { GachaBannerStatus } from '@/common/constants/shop-banner.constant'
 import { parseQs } from '@/common/utils/qs-parser'
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import { GachaItemRateType } from '../gacha-item-rate/entities/gacha-item-rate.entity'
 import { GachaItemType } from '../gacha-item/entities/gacha-item.entity'
@@ -413,6 +413,123 @@ export class GachaBannerRepo {
             pokemon: true
           }
         }
+      }
+    })
+  }
+
+  // ---- Daily banner rotation (HandleGachaBannerCronjob) ----
+
+  // ACTIVE banners ended before today -> EXPIRED
+  expireActiveEndedBefore(now: Date) {
+    return this.prismaService.gachaBanner.updateMany({
+      where: {
+        status: GachaBannerStatus.ACTIVE,
+        endDate: {
+          lt: now
+        },
+        deletedAt: null
+      },
+      data: {
+        status: GachaBannerStatus.EXPIRED
+      }
+    })
+  }
+
+  // PREVIEW banners whose dates include today, earliest start first
+  findPreviewValidOn(now: Date) {
+    return this.prismaService.gachaBanner.findMany({
+      where: {
+        status: GachaBannerStatus.PREVIEW,
+        deletedAt: null,
+        AND: [
+          {
+            OR: [{ startDate: null }, { startDate: { lte: now } }]
+          },
+          {
+            OR: [{ endDate: null }, { endDate: { gte: now } }]
+          }
+        ]
+      },
+      orderBy: {
+        startDate: 'asc' // Sort theo startDate tăng dần
+      }
+    })
+  }
+
+  countActive() {
+    return this.prismaService.gachaBanner.count({
+      where: {
+        status: GachaBannerStatus.ACTIVE,
+        deletedAt: null
+      }
+    })
+  }
+
+  activate(id: number) {
+    return this.prismaService.gachaBanner.update({
+      where: {
+        id: id
+      },
+      data: {
+        status: GachaBannerStatus.ACTIVE
+      }
+    })
+  }
+
+  // ACTIVE banners that create their successor, with what is copied
+  findActiveWithPrecreate() {
+    return this.prismaService.gachaBanner.findMany({
+      where: {
+        status: GachaBannerStatus.ACTIVE,
+        enablePrecreate: true,
+        deletedAt: null
+      },
+      include: {
+        nameTranslations: true,
+        items: {
+          include: {
+            pokemon: true,
+            gachaItemRate: true
+          }
+        }
+      }
+    })
+  }
+
+  findLiveByNameKeyPrefix(prefix: string) {
+    return this.prismaService.gachaBanner.findFirst({
+      where: {
+        nameKey: {
+          startsWith: prefix
+        },
+        deletedAt: null
+      }
+    })
+  }
+
+  createSuccessor(data: Prisma.GachaBannerUncheckedCreateInput) {
+    return this.prismaService.gachaBanner.create({ data })
+  }
+
+  setNameKeyAndTranslations(id: number, nameKey: string, nameUpserts: unknown[]) {
+    return this.prismaService.gachaBanner.update({
+      where: { id: id },
+      data: {
+        nameKey,
+        ...(nameUpserts.length
+          ? { nameTranslations: { upsert: nameUpserts as any } }
+          : {})
+      }
+    })
+  }
+
+  // The successor exists: never create another one
+  disablePrecreate(id: number) {
+    return this.prismaService.gachaBanner.update({
+      where: { id: id },
+      data: {
+        enablePrecreate: false,
+        precreateBeforeEndDays: 999
       }
     })
   }

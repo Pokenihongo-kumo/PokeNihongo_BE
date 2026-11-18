@@ -1,7 +1,7 @@
 import { parseQs } from '@/common/utils/qs-parser'
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
   CreateSubscriptionFeatureBodyType,
@@ -121,6 +121,38 @@ export class SubscriptionFeatureRepo {
         id,
         deletedAt: null
       }
+    })
+  }
+
+  // ---- Replacing a subscription's features (updateByList, one transaction) ----
+
+  deleteBySubscription(subscriptionId: number, prismaTx: PrismaClient) {
+    return prismaTx.subscriptionFeature.deleteMany({
+      where: { subscriptionId }
+    })
+  }
+
+  // id and key of the live features among these ids
+  findLiveFeatureKeys(featureIds: number[], prismaTx: PrismaClient) {
+    return prismaTx.feature.findMany({
+      where: { id: { in: featureIds }, deletedAt: null },
+      select: { id: true, featureKey: true }
+    })
+  }
+
+  createManyRows(
+    createData: Prisma.SubscriptionFeatureCreateManyInput[],
+    prismaTx: PrismaClient
+  ) {
+    return prismaTx.subscriptionFeature.createMany({
+      data: createData
+    })
+  }
+
+  listBySubscription(subscriptionId: number, prismaTx: PrismaClient) {
+    return prismaTx.subscriptionFeature.findMany({
+      where: { subscriptionId, deletedAt: null },
+      orderBy: { id: 'asc' }
     })
   }
 }

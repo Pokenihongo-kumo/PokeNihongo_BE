@@ -4,15 +4,15 @@ import { VocabularyService } from './vocabulary.service'
 import { Prisma } from '@prisma/client'
 
 describe('VocabularyHelperService.findOrCreateKanji', () => {
-  const prisma = {
-    kanji: { findUnique: jest.fn(), create: jest.fn(), update: jest.fn() }
-  }
   // findByCharacter throws a 404 for a missing kanji: it must not be in the path
   const kanjiService = {
-    findByCharacter: jest.fn().mockRejectedValue(new NotFoundException())
+    findByCharacter: jest.fn().mockRejectedValue(new NotFoundException()),
+    findIdByCharacter: jest.fn(),
+    createWithMeaningKey: jest.fn(),
+    setMeaningKey: jest.fn()
   }
   const helper = new VocabularyHelperService(
-    prisma as never,
+    {} as never,
     kanjiService as never,
     {} as never,
     {} as never,
@@ -20,32 +20,29 @@ describe('VocabularyHelperService.findOrCreateKanji', () => {
   )
 
   beforeEach(() => {
-    prisma.kanji.findUnique.mockReset()
-    prisma.kanji.create.mockReset()
-    prisma.kanji.update.mockReset()
+    kanjiService.findIdByCharacter.mockReset()
+    kanjiService.createWithMeaningKey.mockReset()
+    kanjiService.setMeaningKey.mockReset()
   })
 
   it('creates a missing kanji (the create branch never ran: the 404 escaped)', async () => {
-    prisma.kanji.findUnique.mockResolvedValue(null)
-    prisma.kanji.create.mockResolvedValue({ id: 9, character: '龘' })
+    kanjiService.findIdByCharacter.mockResolvedValue(null)
+    kanjiService.createWithMeaningKey.mockResolvedValue({ id: 9, character: '龘' })
 
     await expect(helper.findOrCreateKanji('龘')).resolves.toEqual({
       id: 9,
       character: '龘'
     })
-    expect(prisma.kanji.update).toHaveBeenCalledWith({
-      where: { id: 9 },
-      data: { meaningKey: 'kanji.9.meaning' }
-    })
+    expect(kanjiService.setMeaningKey).toHaveBeenCalledWith(9, 'kanji.9.meaning')
   })
 
   it('returns an existing kanji without creating one', async () => {
-    prisma.kanji.findUnique.mockResolvedValue({ id: 4, character: '日' })
+    kanjiService.findIdByCharacter.mockResolvedValue({ id: 4, character: '日' })
     await expect(helper.findOrCreateKanji('日')).resolves.toEqual({
       id: 4,
       character: '日'
     })
-    expect(prisma.kanji.create).not.toHaveBeenCalled()
+    expect(kanjiService.createWithMeaningKey).not.toHaveBeenCalled()
   })
 })
 

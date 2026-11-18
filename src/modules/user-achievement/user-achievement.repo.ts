@@ -1,3 +1,4 @@
+import { UserAchievementStatus } from '@/common/constants/achievement.constant'
 import { parseQs } from '@/common/utils/qs-parser'
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
@@ -120,6 +121,70 @@ export class UserAchievementRepo {
       where: {
         id,
         deletedAt: null
+      }
+    })
+  }
+
+  // ---- Achievement screen and claiming ----
+
+  countLiveAchievementsInGroup(groupId: number) {
+    return this.prismaService.achievement.count({
+      where: { groupId: groupId, deletedAt: null, isActive: true }
+    })
+  }
+
+  pageLiveAchievementsInGroup(groupId: number, skip: number, take: number) {
+    return this.prismaService.achievement.findMany({
+      where: { groupId: groupId, deletedAt: null, isActive: true },
+      include: {
+        nameTranslations: { select: { value: true, languageId: true } },
+        reward: {
+          include: { nameTranslations: { select: { value: true, languageId: true } } }
+        }
+      },
+      orderBy: [{ achievementTierType: 'asc' }, { id: 'asc' }],
+      skip,
+      take
+    })
+  }
+
+  findForUserAndAchievements(userId: number, achievementIds: number[]) {
+    return this.prismaService.userAchievement.findMany({
+      where: { userId, achievementId: { in: achievementIds }, deletedAt: null }
+    })
+  }
+
+  findLiveWithReward(id: number) {
+    return this.prismaService.userAchievement.findUnique({
+      where: { id, deletedAt: null },
+      include: {
+        achievement: {
+          include: {
+            reward: true
+          }
+        }
+      }
+    })
+  }
+
+  // Completed, waiting for its claim (a claimed one keeps CLAIMED)
+  markCompleted({
+    id,
+    currentStatus,
+    achievedAt
+  }: {
+    id: number
+    currentStatus: string
+    achievedAt: Date | null | undefined
+  }) {
+    return this.prismaService.userAchievement.update({
+      where: { id: id },
+      data: {
+        status:
+          currentStatus === UserAchievementStatus.CLAIMED
+            ? currentStatus
+            : UserAchievementStatus.COMPLETED_NOT_CLAIMED,
+        achievedAt: achievedAt ?? new Date()
       }
     })
   }

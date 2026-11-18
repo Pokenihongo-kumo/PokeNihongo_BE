@@ -1,3 +1,4 @@
+import { RefreshTokenCleanupCronjob } from './refresh-token-cleanup.cronjob'
 import { UserSubscriptionModule } from '@/modules/user-subscription/user-subscription.module'
 import { RoleModule } from '@/modules/role/role.module'
 import { UserCoreModule } from '@/modules/user/user-core.module'
@@ -29,6 +30,12 @@ import { OtpService } from './otp.service'
   ],
   // MailToolsController keeps the /mail staff routes (OTP send/verify)
   controllers: [AuthController, MailToolsController],
-  providers: [AuthService, AuthRepository, GoogleService, OtpService]
+  providers: [
+    AuthService,
+    AuthRepository,
+    GoogleService,
+    OtpService,
+    RefreshTokenCleanupCronjob
+  ]
 })
 export class AuthModule {}

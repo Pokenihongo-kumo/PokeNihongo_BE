@@ -233,9 +233,7 @@ export class GachaItemService {
         const banner = await this.validateGachaBannerForCreate(bannerId)
 
         // 1. Delete old items
-        await prismaTx.gachaItem.deleteMany({
-          where: { bannerId }
-        })
+        await this.gachaItemRepo.deleteByBanner(bannerId, prismaTx)
 
         // Collect IDs
         const allPokemonIds = new Set<number>()
@@ -331,42 +329,19 @@ export class GachaItemService {
 
         // 4. Create new items
         if (itemsToCreate.length > 0) {
-          await prismaTx.gachaItem.createMany({
-            data: itemsToCreate.map((item) => ({
-              bannerId: item.bannerId,
-              pokemonId: item.pokemonId,
-              gachaItemRateId: item.gachaItemRateId,
-              createdById: updatedById,
-              updatedById
-            }))
-          })
+          await this.gachaItemRepo.createManyForBanner(
+            itemsToCreate,
+            updatedById,
+            prismaTx
+          )
         }
 
         // 5. Fetch created items with relations
-        return await prismaTx.gachaItem.findMany({
-          where: {
-            bannerId,
-            pokemonId: { in: itemsToCreate.map((item) => item.pokemonId) }
-          },
-          include: {
-            pokemon: {
-              select: {
-                id: true,
-                nameJp: true,
-                nameTranslations: true,
-                imageUrl: true,
-                rarity: true
-              }
-            },
-            gachaItemRate: {
-              select: {
-                id: true,
-                starType: true,
-                rate: true
-              }
-            }
-          }
-        })
+        return await this.gachaItemRepo.findCreatedForBanner(
+          bannerId,
+          itemsToCreate.map((item) => item.pokemonId),
+          prismaTx
+        )
       })
 
       return {
