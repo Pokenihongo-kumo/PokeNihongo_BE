@@ -55,13 +55,9 @@ export const GetUserAchievementDetailSchema = UserAchievementSchema
 export const GetUserAchievementDetailResSchema = resSchema(GetUserAchievementDetailSchema)
 
 // Type exports
-export type UserAchievementType = z.infer<typeof UserAchievementSchema>
-export type CreateUserAchievementBodyType = z.infer<
-  typeof CreateUserAchievementBodySchema
->
-export type UpdateUserAchievementBodyType = z.infer<
-  typeof UpdateUserAchievementBodySchema
->
+export type UserAchievement = z.infer<typeof UserAchievementSchema>
+export type CreateUserAchievementBody = z.infer<typeof CreateUserAchievementBodySchema>
+export type UpdateUserAchievementBody = z.infer<typeof UpdateUserAchievementBodySchema>
 // The app's achievements: groups paginated by currentPage/pageSize, the
 // achievements of each group by achCurrentPage/achPageSize (default 1/3)
 export const GetUserAchievementListForUserQuerySchema = PaginationQuerySchema.extend({
@@ -70,10 +66,10 @@ export const GetUserAchievementListForUserQuerySchema = PaginationQuerySchema.ex
   achievementGroupId: checkIdSchema(UserAchievementMessage.INVALID_GROUP_ID).optional()
 })
 
-export type GetUserAchievementListForUserQueryType = z.infer<
+export type GetUserAchievementListForUserQuery = z.infer<
   typeof GetUserAchievementListForUserQuerySchema
 >
-export type GetUserAchievementParamsType = z.infer<typeof GetUserAchievementParamsSchema>
+export type GetUserAchievementParams = z.infer<typeof GetUserAchievementParamsSchema>
 
 // Field for query
 export type UserAchievementFieldType = keyof z.infer<typeof UserAchievementSchema>

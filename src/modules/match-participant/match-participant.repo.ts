@@ -1,13 +1,13 @@
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
-  CreateMatchParticipantBodyType,
+  CreateMatchParticipantBody,
   MATCH_PARTICIPANT_FIELDS,
-  MatchParticipantType,
-  UpdateMatchParticipantBodyType
+  MatchParticipant,
+  UpdateMatchParticipantBody
 } from './entities/match-participant.entity'
 
 @Injectable()
@@ -22,10 +22,10 @@ export class MatchParticipantRepo {
       data
     }: {
       createdById: number
-      data: CreateMatchParticipantBodyType
+      data: CreateMatchParticipantBody
     },
     prismaTx?: PrismaClient
-  ): Promise<MatchParticipantType> {
+  ): Promise<MatchParticipant> {
     const client = prismaTx || this.prismaService
     return client.matchParticipant.create({
       data: {
@@ -42,11 +42,11 @@ export class MatchParticipantRepo {
       updatedById
     }: {
       id: number
-      data: UpdateMatchParticipantBodyType
+      data: UpdateMatchParticipantBody
       updatedById?: number
     },
     prismaTx?: PrismaClient
-  ): Promise<MatchParticipantType> {
+  ): Promise<MatchParticipant> {
     const client = prismaTx || this.prismaService
     return client.matchParticipant.update({
       where: {
@@ -63,7 +63,7 @@ export class MatchParticipantRepo {
     id: number,
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<MatchParticipantType> {
+  ): Promise<MatchParticipant> {
     const client = prismaTx || this.prismaService
     return isHard
       ? client.matchParticipant.delete({
@@ -80,7 +80,7 @@ export class MatchParticipantRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, MATCH_PARTICIPANT_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -115,7 +115,7 @@ export class MatchParticipantRepo {
     }
   }
 
-  findById(id: number): Promise<MatchParticipantType | null> {
+  findById(id: number): Promise<MatchParticipant | null> {
     return this.prismaService.matchParticipant.findUnique({
       where: {
         id,
@@ -124,7 +124,7 @@ export class MatchParticipantRepo {
     })
   }
 
-  findByMatchId(matchId: number): Promise<MatchParticipantType[]> {
+  findByMatchId(matchId: number): Promise<MatchParticipant[]> {
     return this.prismaService.matchParticipant.findMany({
       where: {
         matchId,

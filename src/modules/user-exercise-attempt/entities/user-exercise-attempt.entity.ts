@@ -103,31 +103,29 @@ export const CheckExerciseCompletionBodySchema = z
   .strict()
 
 // Types
-export type ExerciseAttemptStatusType = z.infer<typeof ExerciseAttemptStatusSchema>
-export type UserExerciseAttemptType = z.infer<typeof UserExerciseAttemptSchema>
-export type CreateUserExerciseAttemptBodyType = z.infer<
+export type ExerciseAttemptStatus = z.infer<typeof ExerciseAttemptStatusSchema>
+export type UserExerciseAttempt = z.infer<typeof UserExerciseAttemptSchema>
+export type CreateUserExerciseAttemptBody = z.infer<
   typeof CreateUserExerciseAttemptBodySchema
 >
-export type UpdateUserExerciseAttemptBodyType = z.infer<
+export type UpdateUserExerciseAttemptBody = z.infer<
   typeof UpdateUserExerciseAttemptBodySchema
 >
-export type UserExerciseAttemptResType = z.infer<typeof UserExerciseAttemptResSchema>
-export type UserExerciseAttemptListResType = z.infer<
-  typeof UserExerciseAttemptListResSchema
->
-export type GetUserExerciseAttemptByIdParamsType = z.infer<
+export type UserExerciseAttemptRes = z.infer<typeof UserExerciseAttemptResSchema>
+export type UserExerciseAttemptListRes = z.infer<typeof UserExerciseAttemptListResSchema>
+export type GetUserExerciseAttemptByIdParams = z.infer<
   typeof GetUserExerciseAttemptByIdParamsSchema
 >
-export type CreateUserExerciseAttemptParamsType = z.infer<
+export type CreateUserExerciseAttemptParams = z.infer<
   typeof CreateUserExerciseAttemptParamsSchema
 >
-export type GetUserExerciseAttemptListQueryType = z.infer<
+export type GetUserExerciseAttemptListQuery = z.infer<
   typeof GetUserExerciseAttemptListQuerySchema
 >
-export type LatestExerciseAttemptType = z.infer<typeof LatestExerciseAttemptSchema>
-export type LatestExerciseAttemptsByLessonResType = z.infer<
+export type LatestExerciseAttempt = z.infer<typeof LatestExerciseAttemptSchema>
+export type LatestExerciseAttemptsByLessonRes = z.infer<
   typeof LatestExerciseAttemptsByLessonResSchema
 >
-export type CheckExerciseCompletionBodyType = z.infer<
+export type CheckExerciseCompletionBody = z.infer<
   typeof CheckExerciseCompletionBodySchema
 >

@@ -2,6 +2,8 @@ import { GachaStarType } from '@/common/constants/gacha.constant'
 import { RoleName } from '@/common/constants/role.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { GachaBannerMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { TranslationService } from '@/modules/translation/translation.service'
 import {
   LanguageNotExistToTranslateException,
   NotFoundRecordException
@@ -14,12 +16,10 @@ import {
   todayUTCWith0000,
   todayUTCWith0000ByDate
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { GachaItemRepo } from '../gacha-item/gacha-item.repo'
-import { LanguagesService } from '@/modules/languages/languages.service'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
-import { TranslationService } from '@/modules/translation/translation.service'
+import { CreateTranslationBody } from '../translation/entities/translation.entity'
 import {
   GachaBannerActiveLimitExceededException,
   GachaBannerAlreadyExistsException,
@@ -27,10 +27,10 @@ import {
   InvalidGachaBannerAmountItemsException
 } from './dto/gacha-banner.error'
 import {
-  CreateGachaBannerBodyInputType,
-  CreateGachaBannerBodyType,
-  UpdateGachaBannerBodyInputType,
-  UpdateGachaBannerBodyType
+  CreateGachaBannerBody,
+  CreateGachaBannerBodyInput,
+  UpdateGachaBannerBody,
+  UpdateGachaBannerBodyInput
 } from './entities/gacha-banner.entity'
 import { GachaBannerRepo } from './gacha-banner.repo'
 
@@ -73,7 +73,7 @@ export class GachaBannerService {
     }
   }
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi', roleName: string) {
+  async list(pagination: PaginationQuery, lang: string = 'vi', roleName: string) {
     const langId = await this.languagesService.getIdByCode(lang)
 
     const isAdmin = roleName === RoleName.Admin ? true : false
@@ -122,7 +122,7 @@ export class GachaBannerService {
     }
   }
 
-  async listwithDetail(pagination: PaginationQueryType, lang: string = 'vi') {
+  async listwithDetail(pagination: PaginationQuery, lang: string = 'vi') {
     const langId = await this.languagesService.getIdByCode(lang)
     const data = await this.gachaBannerRepo.listwithDetail(
       pagination,
@@ -228,7 +228,7 @@ export class GachaBannerService {
       data,
       createdById
     }: {
-      data: CreateGachaBannerBodyInputType
+      data: CreateGachaBannerBodyInput
       createdById: number
     },
     lang: string = 'vi'
@@ -262,7 +262,7 @@ export class GachaBannerService {
         }
 
         // Convert data for create
-        const dataCreate: CreateGachaBannerBodyType = {
+        const dataCreate: CreateGachaBannerBody = {
           nameKey,
           startDate: startDateNormalized,
           endDate: endDateNormalized,
@@ -308,7 +308,7 @@ export class GachaBannerService {
         }
 
         // Create translation records (for validation only)
-        const translationRecords: CreateTranslationBodyType[] = data.nameTranslations.map(
+        const translationRecords: CreateTranslationBody[] = data.nameTranslations.map(
           (item) => ({
             languageId: langMap[item.key],
             key: fNameKey,
@@ -381,7 +381,7 @@ export class GachaBannerService {
       updatedById
     }: {
       id: number
-      data: UpdateGachaBannerBodyInputType
+      data: UpdateGachaBannerBodyInput
       updatedById: number
     },
     lang: string = 'vi'
@@ -400,7 +400,7 @@ export class GachaBannerService {
         if (!existingGachaBanner) throw new NotFoundRecordException()
 
         // Prepare data for update
-        const dataUpdate: Partial<UpdateGachaBannerBodyType> = {}
+        const dataUpdate: Partial<UpdateGachaBannerBody> = {}
 
         // Normalize dates if provided
         const normalizedStart =
@@ -520,7 +520,7 @@ export class GachaBannerService {
             if (missingLangs.length > 0) throw new LanguageNotExistToTranslateException()
 
             // Create translation records for validation
-            const translationRecords: CreateTranslationBodyType[] = []
+            const translationRecords: CreateTranslationBody[] = []
             for (const t of data.nameTranslations) {
               translationRecords.push({
                 languageId: langMap[t.key],

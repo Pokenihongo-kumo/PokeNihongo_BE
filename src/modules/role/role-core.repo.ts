@@ -1,7 +1,6 @@
-import { HTTPMethod } from '@/common/constants/role.constant'
-import { RoleName } from '@/common/constants/role.constant'
+import { HTTPMethod, RoleName } from '@/common/constants/role.constant'
 import { Injectable } from '@nestjs/common'
-import { RoleType } from 'src/shared/models/shared-role.model'
+import { Role } from 'src/shared/models/shared-role.model'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
 @Injectable()
@@ -14,9 +13,9 @@ export class RoleCoreRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   private async getRole(roleName: string) {
-    const role: RoleType = await this.prismaService.$queryRaw`
+    const role: Role = await this.prismaService.$queryRaw`
     SELECT * FROM "Role" WHERE name = ${roleName} AND "deletedAt" IS NULL LIMIT 1;
-  `.then((res: RoleType[]) => {
+  `.then((res: Role[]) => {
       if (res.length === 0) {
         throw new Error('Role not found')
       }

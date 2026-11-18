@@ -76,18 +76,18 @@ export const GetMatchRoundParticipantDetailResSchema = resSchema(
 )
 
 // Type exports
-export type MatchRoundParticipantType = z.infer<typeof MatchRoundParticipantSchema>
-export type CreateMatchRoundParticipantBodyType = z.infer<
+export type MatchRoundParticipant = z.infer<typeof MatchRoundParticipantSchema>
+export type CreateMatchRoundParticipantBody = z.infer<
   typeof CreateMatchRoundParticipantBodySchema
 >
-export type UpdateMatchRoundParticipantBodyType = z.infer<
+export type UpdateMatchRoundParticipantBody = z.infer<
   typeof UpdateMatchRoundParticipantBodySchema
 >
-export type GetMatchRoundParticipantParamsType = z.infer<
+export type GetMatchRoundParticipantParams = z.infer<
   typeof GetMatchRoundParticipantParamsSchema
 >
 
-export type ChoosePokemonMatchRoundParticipantBodyType = z.infer<
+export type ChoosePokemonMatchRoundParticipantBody = z.infer<
   typeof ChoosePokemonMatchRoundParticipantBodySchema
 >
 

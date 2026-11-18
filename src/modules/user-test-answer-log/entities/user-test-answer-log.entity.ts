@@ -63,18 +63,18 @@ export const GetUserTestAnswerLogListQuerySchema = z
   .strict()
 
 // Types
-export type UserTestAnswerLogType = z.infer<typeof UserTestAnswerLogSchema>
-export type CreateUserTestAnswerLogBodyType = z.infer<
+export type UserTestAnswerLog = z.infer<typeof UserTestAnswerLogSchema>
+export type CreateUserTestAnswerLogBody = z.infer<
   typeof CreateUserTestAnswerLogBodySchema
 >
-export type UpdateUserTestAnswerLogBodyType = z.infer<
+export type UpdateUserTestAnswerLogBody = z.infer<
   typeof UpdateUserTestAnswerLogBodySchema
 >
-export type UserTestAnswerLogResType = z.infer<typeof UserTestAnswerLogResSchema>
-export type UserTestAnswerLogListResType = z.infer<typeof UserTestAnswerLogListResSchema>
-export type GetUserTestAnswerLogByIdParamsType = z.infer<
+export type UserTestAnswerLogRes = z.infer<typeof UserTestAnswerLogResSchema>
+export type UserTestAnswerLogListRes = z.infer<typeof UserTestAnswerLogListResSchema>
+export type GetUserTestAnswerLogByIdParams = z.infer<
   typeof GetUserTestAnswerLogByIdParamsSchema
 >
-export type GetUserTestAnswerLogListQueryType = z.infer<
+export type GetUserTestAnswerLogListQuery = z.infer<
   typeof GetUserTestAnswerLogListQuerySchema
 >

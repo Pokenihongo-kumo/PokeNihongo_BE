@@ -1,19 +1,19 @@
 import { I18nService } from '@/i18n/i18n.service'
 import { UserPokemonMessage } from '@/i18n/message-keys'
+import { LevelService } from '@/modules/level/level.service'
+import { MatchService } from '@/modules/match/match.service'
+import { PokemonService } from '@/modules/pokemon/pokemon.service'
+import { TypeEffectivenessService } from '@/modules/type-effectiveness/type-effectiveness.service'
+import { UserCoreService } from '@/modules/user/user-core.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
-import { UserCoreService } from '@/modules/user/user-core.service'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
-import { TypeEffectivenessService } from '@/modules/type-effectiveness/type-effectiveness.service'
-import { LevelService } from '@/modules/level/level.service'
-import { MatchService } from '@/modules/match/match.service'
-import { PokemonService } from '@/modules/pokemon/pokemon.service'
 import {
   ErrorInitLevelPokemonException,
   InvalidUserAccessPokemonException,
@@ -23,8 +23,8 @@ import {
   UserPokemonNotFoundException
 } from './dto/user-pokemon.error'
 import {
-  CreateUserPokemonBodyType,
-  UpdateUserPokemonBodyType
+  CreateUserPokemonBody,
+  UpdateUserPokemonBody
 } from './entities/user-pokemon.entity'
 import { UserPokemonRepo } from './user-pokemon.repo'
 
@@ -40,7 +40,7 @@ export class UserPokemonService {
     private readonly typeEffectivenessService: TypeEffectivenessService
   ) {}
 
-  async list(pagination: PaginationQueryType, userId: number, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, userId: number, lang: string = 'vi') {
     const data = await this.userPokemonRepo.list(pagination, userId)
     return {
       statusCode: 200,
@@ -84,7 +84,7 @@ export class UserPokemonService {
   }
 
   async addPokemonByGacha(
-    { userId, data }: { userId: number; data: CreateUserPokemonBodyType },
+    { userId, data }: { userId: number; data: CreateUserPokemonBody },
     prismaTx?: PrismaClient
   ) {
     try {
@@ -149,7 +149,7 @@ export class UserPokemonService {
   }
 
   async getPokemonListWithUser(
-    query: PaginationQueryType,
+    query: PaginationQuery,
     userId: number,
     lang: string = 'vi',
     filterHasPoke?: boolean
@@ -406,7 +406,7 @@ export class UserPokemonService {
   }
 
   async create(
-    { userId, data }: { userId: number; data: CreateUserPokemonBodyType },
+    { userId, data }: { userId: number; data: CreateUserPokemonBody },
     lang: string = 'vi'
   ) {
     try {
@@ -486,7 +486,7 @@ export class UserPokemonService {
       userId
     }: {
       id: number
-      data: UpdateUserPokemonBodyType
+      data: UpdateUserPokemonBody
       userId?: number
     },
     lang: string = 'vi'
@@ -646,7 +646,7 @@ export class UserPokemonService {
   }
 
   async getPokemonListWithUserByRounds(
-    query: PaginationQueryType,
+    query: PaginationQuery,
     userId: number,
     lang: string = 'vi'
   ) {

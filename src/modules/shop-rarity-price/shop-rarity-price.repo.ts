@@ -1,14 +1,14 @@
 import { RarityPokemonType } from '@/common/constants/pokemon.constant'
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
-  CreateShopRarityPriceBodyType,
+  CreateShopRarityPriceBody,
   SHOP_RARITY_PRICE_FIELDS,
-  ShopRarityPriceType,
-  UpdateShopRarityPriceBodyType
+  ShopRarityPrice,
+  UpdateShopRarityPriceBody
 } from './entities/shop-rarity-price.entity'
 
 @Injectable()
@@ -23,10 +23,10 @@ export class ShopRarityPriceRepo {
       data
     }: {
       createdById?: number
-      data: CreateShopRarityPriceBodyType
+      data: CreateShopRarityPriceBody
     },
     prismaTx?: PrismaClient
-  ): Promise<ShopRarityPriceType> {
+  ): Promise<ShopRarityPrice> {
     const client = prismaTx || this.prismaService
     return client.shopRarityPrice.create({
       data: {
@@ -43,11 +43,11 @@ export class ShopRarityPriceRepo {
       updatedById
     }: {
       id: number
-      data: UpdateShopRarityPriceBodyType
+      data: UpdateShopRarityPriceBody
       updatedById?: number
     },
     prismaTx?: PrismaClient
-  ): Promise<ShopRarityPriceType> {
+  ): Promise<ShopRarityPrice> {
     const client = prismaTx || this.prismaService
     return client.shopRarityPrice.update({
       where: {
@@ -65,7 +65,7 @@ export class ShopRarityPriceRepo {
     id: number,
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<ShopRarityPriceType> {
+  ): Promise<ShopRarityPrice> {
     const client = prismaTx || this.prismaService
     return isHard
       ? client.shopRarityPrice.delete({
@@ -82,7 +82,7 @@ export class ShopRarityPriceRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, SHOP_RARITY_PRICE_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -117,7 +117,7 @@ export class ShopRarityPriceRepo {
     }
   }
 
-  findById(id: number): Promise<ShopRarityPriceType | null> {
+  findById(id: number): Promise<ShopRarityPrice | null> {
     return this.prismaService.shopRarityPrice.findUnique({
       where: {
         id,
@@ -126,7 +126,7 @@ export class ShopRarityPriceRepo {
     })
   }
 
-  getByType(rarity: RarityPokemonType): Promise<ShopRarityPriceType | null> {
+  getByType(rarity: RarityPokemonType): Promise<ShopRarityPrice | null> {
     return this.prismaService.shopRarityPrice.findFirst({
       where: {
         rarity,

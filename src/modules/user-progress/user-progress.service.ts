@@ -1,18 +1,17 @@
-import {
-  CreateUserProgressBodyType,
-  GetUserProgressByIdParamsType,
-  GetUserProgressListQueryType,
-  UpdateUserProgressBodyType
-} from '@/modules/user-progress/entities/user-progress.entity'
+import { I18nService } from '@/i18n/i18n.service'
+import { UserProgressMessage as M } from '@/i18n/message-keys'
 import {
   InvalidUserProgressDataException,
   UserProgressNotFoundException
 } from '@/modules/user-progress/dto/user-progress.error'
-import { I18nService } from '@/i18n/i18n.service'
-import { UserProgressMessage as M } from '@/i18n/message-keys'
+import {
+  CreateUserProgressBody,
+  GetUserProgressByIdParams,
+  GetUserProgressListQuery,
+  UpdateUserProgressBody
+} from '@/modules/user-progress/entities/user-progress.entity'
 import { UserProgressRepo } from '@/modules/user-progress/user-progress.repo'
-import { isNotFoundPrismaError } from '@/shared/helpers'
-import { Injectable, Logger, HttpException } from '@nestjs/common'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
 import { ProgressStatus } from '@prisma/client'
 
 @Injectable()
@@ -24,7 +23,7 @@ export class UserProgressService {
     private readonly i18nService: I18nService
   ) {}
 
-  async create(body: CreateUserProgressBodyType, lang: string = 'vi') {
+  async create(body: CreateUserProgressBody, lang: string = 'vi') {
     try {
       // Kiểm tra xem đã tồn tại progress cho user và lesson này chưa
       const existingProgress = await this.userProgressRepository.findByUserAndLesson(
@@ -50,7 +49,7 @@ export class UserProgressService {
     }
   }
 
-  async findAll(query: GetUserProgressListQueryType, lang: string = 'vi') {
+  async findAll(query: GetUserProgressListQuery, lang: string = 'vi') {
     const {
       currentPage,
       pageSize,
@@ -87,7 +86,7 @@ export class UserProgressService {
   }
 
   //KUMO
-  async getMy(userId: number, query: GetUserProgressListQueryType, lang: string = 'vi') {
+  async getMy(userId: number, query: GetUserProgressListQuery, lang: string = 'vi') {
     const {
       currentPage,
       pageSize,
@@ -122,7 +121,7 @@ export class UserProgressService {
     }
   }
 
-  async findOne(params: GetUserProgressByIdParamsType, lang: string = 'vi') {
+  async findOne(params: GetUserProgressByIdParams, lang: string = 'vi') {
     const userProgress = await this.userProgressRepository.findUnique({
       id: params.id
     })
@@ -153,7 +152,7 @@ export class UserProgressService {
     }
   }
 
-  async update(id: number, body: UpdateUserProgressBodyType, lang: string = 'vi') {
+  async update(id: number, body: UpdateUserProgressBody, lang: string = 'vi') {
     try {
       // Validate progress percentage
       if (body.progressPercentage !== undefined) {
@@ -180,7 +179,7 @@ export class UserProgressService {
   async updateByUserAndLesson(
     userId: number,
     lessonId: number,
-    body: UpdateUserProgressBodyType,
+    body: UpdateUserProgressBody,
     lang: string = 'vi'
   ) {
     try {

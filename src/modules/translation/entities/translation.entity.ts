@@ -89,14 +89,12 @@ export const GetTranslationsByLanguageQuerySchema = z.object({
     .default('10')
 })
 
-export type TranslationType = z.infer<typeof TranslationSchema>
-export type CreateTranslationBodyType = z.infer<typeof CreateTranslationSchema>
-export type UpdateTranslationBodyType = z.infer<typeof UpdateTranslationSchema>
-export type GetTranslationByIdParamsType = z.infer<typeof GetTranslationByIdParamsSchema>
-export type GetTranslationListQueryType = z.infer<typeof GetTranslationListQuerySchema>
-export type GetTranslationsByKeyQueryType = z.infer<
-  typeof GetTranslationsByKeyQuerySchema
->
-export type GetTranslationsByLanguageQueryType = z.infer<
+export type Translation = z.infer<typeof TranslationSchema>
+export type CreateTranslationBody = z.infer<typeof CreateTranslationSchema>
+export type UpdateTranslationBody = z.infer<typeof UpdateTranslationSchema>
+export type GetTranslationByIdParams = z.infer<typeof GetTranslationByIdParamsSchema>
+export type GetTranslationListQuery = z.infer<typeof GetTranslationListQuerySchema>
+export type GetTranslationsByKeyQuery = z.infer<typeof GetTranslationsByKeyQuerySchema>
+export type GetTranslationsByLanguageQuery = z.infer<
   typeof GetTranslationsByLanguageQuerySchema
 >

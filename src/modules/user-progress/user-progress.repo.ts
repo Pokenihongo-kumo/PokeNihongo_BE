@@ -1,4 +1,4 @@
-import { UserProgressType } from '@/modules/user-progress/entities/user-progress.entity'
+import { UserProgress } from '@/modules/user-progress/entities/user-progress.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
 import { ProgressStatus } from '@prisma/client'
@@ -88,7 +88,7 @@ export class UserProgressRepo {
     }
   }
 
-  async findUnique(where: { id?: number }): Promise<UserProgressType | null> {
+  async findUnique(where: { id?: number }): Promise<UserProgress | null> {
     if (!where.id) return null
 
     const result = await this.prismaService.userProgress.findUnique({
@@ -112,7 +112,7 @@ export class UserProgressRepo {
   async findByUserAndLesson(
     userId: number,
     lessonId: number
-  ): Promise<UserProgressType | null> {
+  ): Promise<UserProgress | null> {
     const result = await this.prismaService.userProgress.findUnique({
       where: {
         userId_lessonId: {
@@ -148,7 +148,7 @@ export class UserProgressRepo {
     lessonId: number
     status?: string
     progressPercentage?: number
-  }): Promise<UserProgressType> {
+  }): Promise<UserProgress> {
     const result = await this.prismaService.userProgress.create({
       data: {
         userId: data.userId,
@@ -168,7 +168,7 @@ export class UserProgressRepo {
       completedAt?: Date | null
       testId?: number | null
     }
-  ): Promise<UserProgressType> {
+  ): Promise<UserProgress> {
     // Kiểm tra status hiện tại trước khi update
     const currentProgress = await this.prismaService.userProgress.findUnique({
       where,
@@ -215,7 +215,7 @@ export class UserProgressRepo {
       progressPercentage?: number
       testId?: number | null
     }
-  ): Promise<UserProgressType> {
+  ): Promise<UserProgress> {
     // Kiểm tra status hiện tại trước khi update
     const currentProgress = await this.prismaService.userProgress.findUnique({
       where: {
@@ -269,7 +269,7 @@ export class UserProgressRepo {
     return this.transformUserProgress(result)
   }
 
-  async delete(where: { id: number }): Promise<UserProgressType> {
+  async delete(where: { id: number }): Promise<UserProgress> {
     const result = await this.prismaService.userProgress.delete({
       where
     })
@@ -288,7 +288,7 @@ export class UserProgressRepo {
       progressPercentage?: number
       testId?: number | null
     }
-  ): Promise<UserProgressType> {
+  ): Promise<UserProgress> {
     // Lấy testId từ lesson nếu chưa có trong data
     let testId = data.testId
     if (testId === undefined) {

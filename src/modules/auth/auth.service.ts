@@ -1,11 +1,9 @@
 import { BullQueueService } from '@/3rdService/bull/bull-queue.service'
-import { OtpPurpose } from '@/modules/auth/otp-value'
-import { maskEmail } from '@/common/utils/mask'
-import { OtpService } from '@/modules/auth/otp.service'
 import { UploadService } from '@/3rdService/upload/upload.service'
 import { TypeOfVerificationCode } from '@/common/constants/auth.constant'
 import { BullQueue } from '@/common/constants/bull-action.constant'
 import { RoleName } from '@/common/constants/role.constant'
+import { maskEmail } from '@/common/utils/mask'
 import { I18nService } from '@/i18n/i18n.service'
 import { AuthMessage } from '@/i18n/message-keys'
 import { AuthRepository } from '@/modules/auth/auth.repo'
@@ -20,15 +18,20 @@ import {
   UnauthorizedAccessException
 } from '@/modules/auth/dto/auth.error'
 import {
-  ChangePasswordBodyType,
-  ForgotPasswordBodyType,
-  LoginBodyType,
-  RefreshTokenBodyType,
-  RegisterBodyType,
-  ResetPasswordBodyType,
-  UpdateMeBodyType,
-  verifyForgotPasswordBodyType
+  ChangePasswordBody,
+  ForgotPasswordBody,
+  LoginBody,
+  RefreshTokenBody,
+  RegisterBody,
+  ResetPasswordBody,
+  UpdateMeBody,
+  verifyForgotPasswordBody
 } from '@/modules/auth/entities/auth.entities'
+import { OtpPurpose } from '@/modules/auth/otp-value'
+import { OtpService } from '@/modules/auth/otp.service'
+import { RoleService } from '@/modules/role/role.service'
+import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
+import { UserCoreService } from '@/modules/user/user-core.service'
 import {
   InValidNewPasswordAndConfirmPasswordException,
   InValidNewPasswordAndConfirmPasswordRegisterException,
@@ -40,8 +43,6 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { RoleService } from '@/modules/role/role.service'
-import { UserCoreService } from '@/modules/user/user-core.service'
 import { HashingService } from '@/shared/services/hashing.service'
 import { TokenService } from '@/shared/services/token.service'
 import { AccessTokenPayloadCreate } from '@/shared/types/jwt.type'
@@ -51,7 +52,6 @@ import { Queue } from 'bull'
 import Redis from 'ioredis'
 import { LevelService } from '../level/level.service'
 import { UserProgressService } from '../user-progress/user-progress.service'
-import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
 import { UserTestService } from '../user-test/user-test.service'
 import { WalletService } from '../wallet/wallet.service'
 import {
@@ -82,10 +82,7 @@ export class AuthService {
     private readonly userSubscriptionService: UserSubscriptionService
   ) {}
 
-  async login(
-    body: LoginBodyType & { userAgent: string; ip: string },
-    lang: string = 'vi'
-  ) {
+  async login(body: LoginBody & { userAgent: string; ip: string }, lang: string = 'vi') {
     // 1. Lấy thông tin user, kiểm tra user có tồn tại hay không, mật khẩu có đúng không
     const user = await this.authRepository.findUniqueUserIncludeRole({
       email: body.email.toLowerCase()
@@ -139,12 +136,7 @@ export class AuthService {
     }
   }
 
-  async register(
-    body: RegisterBodyType,
-    userAgent: string,
-    ip: string,
-    lang: string = 'vi'
-  ) {
+  async register(body: RegisterBody, userAgent: string, ip: string, lang: string = 'vi') {
     try {
       if (body.password !== body.confirmPassword) {
         throw new InValidNewPasswordAndConfirmPasswordRegisterException()
@@ -250,11 +242,7 @@ export class AuthService {
   }
 
   async refreshToken(
-    {
-      refreshToken,
-      userAgent,
-      ip
-    }: RefreshTokenBodyType & { userAgent: string; ip: string },
+    { refreshToken, userAgent, ip }: RefreshTokenBody & { userAgent: string; ip: string },
     lang: string = 'vi'
   ) {
     // 1. A token that is not ours, malformed or expired: the session is over.
@@ -329,7 +317,7 @@ export class AuthService {
     }
   }
 
-  async forgotPassword(body: ForgotPasswordBodyType, lang: string = 'vi') {
+  async forgotPassword(body: ForgotPasswordBody, lang: string = 'vi') {
     const { email } = body
     // 1. Kiểm tra email đã tồn tại trong database chưa
     const user = await this.userCoreService.findUnique({
@@ -365,7 +353,7 @@ export class AuthService {
   }
 
   async verifyForgotPassword(
-    body: verifyForgotPasswordBodyType,
+    body: verifyForgotPasswordBody,
     userAgent: string,
     ip: string
   ) {
@@ -416,7 +404,7 @@ export class AuthService {
     }
   }
 
-  async resetPassword(body: ResetPasswordBodyType, userId: number, lang: string = 'vi') {
+  async resetPassword(body: ResetPasswordBody, userId: number, lang: string = 'vi') {
     const { newPassword, email, confirmNewPassword } = body
     // 1. Kiểm tra email đã tồn tại trong database chưa
     const user = await this.userCoreService.findUnique({ email })
@@ -443,11 +431,7 @@ export class AuthService {
     }
   }
 
-  async changePassword(
-    body: ChangePasswordBodyType,
-    userId: number,
-    lang: string = 'vi'
-  ) {
+  async changePassword(body: ChangePasswordBody, userId: number, lang: string = 'vi') {
     const { password, newPassword, confirmNewPassword } = body
     // 1. Kiểm tra email đã tồn tại trong database chưa
     const user = await this.userCoreService.findUnique({ id: userId })
@@ -509,7 +493,7 @@ export class AuthService {
   }
 
   async updateMe(
-    { data, userId }: { data: UpdateMeBodyType; userId: number },
+    { data, userId }: { data: UpdateMeBody; userId: number },
     lang: string = 'vi'
   ) {
     const user = await this.userCoreService.findUnique({

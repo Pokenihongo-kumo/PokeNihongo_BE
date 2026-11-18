@@ -1,6 +1,8 @@
 import { RoleName } from '@/common/constants/role.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { AchievementGroupMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { TranslationService } from '@/modules/translation/translation.service'
 import {
   LanguageNotExistToTranslateException,
   NotFoundRecordException
@@ -10,19 +12,17 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { LanguagesService } from '@/modules/languages/languages.service'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
-import { TranslationService } from '@/modules/translation/translation.service'
+import { CreateTranslationBody } from '../translation/entities/translation.entity'
 import { AchievementGroupRepo } from './achievement-group.repo'
 import { AchievementGroupAlreadyExistsException } from './dto/achievement-group.error'
 import {
-  CreateAchievementGroupBodyInputType,
-  CreateAchievementGroupBodyType,
-  UpdateAchievementGroupBodyInputType,
-  UpdateAchievementGroupBodyType
+  CreateAchievementGroupBody,
+  CreateAchievementGroupBodyInput,
+  UpdateAchievementGroupBody,
+  UpdateAchievementGroupBodyInput
 } from './entities/achievement-group.entity'
 
 @Injectable()
@@ -50,7 +50,7 @@ export class AchievementGroupService {
     }))
   }
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi', roleName: string) {
+  async list(pagination: PaginationQuery, lang: string = 'vi', roleName: string) {
     const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
@@ -186,7 +186,7 @@ export class AchievementGroupService {
       data,
       createdById
     }: {
-      data: CreateAchievementGroupBodyInputType
+      data: CreateAchievementGroupBodyInput
       createdById: number
     },
     lang: string = 'vi'
@@ -198,7 +198,7 @@ export class AchievementGroupService {
         const nameKey = `achievementGroup.name.${Date.now()}`
         let hasOpened = false
 
-        const dataCreate: CreateAchievementGroupBodyType = {
+        const dataCreate: CreateAchievementGroupBody = {
           nameKey,
           displayOrder: data.displayOrder,
           isActive: data.isActive
@@ -235,7 +235,7 @@ export class AchievementGroupService {
         }
 
         // Create translation records
-        const translationRecords: CreateTranslationBodyType[] = []
+        const translationRecords: CreateTranslationBody[] = []
 
         // nameTranslations → key = nameKey
         for (const item of data.nameTranslations) {
@@ -311,7 +311,7 @@ export class AchievementGroupService {
       updatedById
     }: {
       id: number
-      data: UpdateAchievementGroupBodyInputType
+      data: UpdateAchievementGroupBodyInput
       updatedById: number
     },
     lang: string = 'vi'
@@ -321,13 +321,13 @@ export class AchievementGroupService {
     try {
       return await this.achievementGroupRepo.withTransaction(async (prismaTx) => {
         let hasOpen = false
-        let translationRecords: CreateTranslationBodyType[] = []
+        let translationRecords: CreateTranslationBody[] = []
         // Get current record
         existingAchievementGroup = await this.achievementGroupRepo.findById(id)
         if (!existingAchievementGroup) throw new NotFoundRecordException()
 
         // Prepare data for update
-        const dataUpdate: Partial<UpdateAchievementGroupBodyType> = {}
+        const dataUpdate: Partial<UpdateAchievementGroupBody> = {}
 
         if (data.nameTranslations) {
           const nameList = data.nameTranslations.map((t) => t.key)

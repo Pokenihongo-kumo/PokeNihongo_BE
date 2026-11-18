@@ -3,15 +3,15 @@ import {
   RoundStatus
 } from '@/common/constants/match.constant'
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
-  CreateMatchRoundParticipantBodyType,
+  CreateMatchRoundParticipantBody,
   MATCH_PARTICIPANT_FIELDS,
-  MatchRoundParticipantType,
-  UpdateMatchRoundParticipantBodyType
+  MatchRoundParticipant,
+  UpdateMatchRoundParticipantBody
 } from './entities/match-round-participant.entity'
 
 @Injectable()
@@ -26,10 +26,10 @@ export class MatchRoundParticipantRepo {
       data
     }: {
       createdById: number
-      data: CreateMatchRoundParticipantBodyType
+      data: CreateMatchRoundParticipantBody
     },
     prismaTx?: PrismaClient
-  ): Promise<MatchRoundParticipantType> {
+  ): Promise<MatchRoundParticipant> {
     const client = prismaTx || this.prismaService
     return client.matchRoundParticipant.create({
       data: {
@@ -61,11 +61,11 @@ export class MatchRoundParticipantRepo {
       updatedById
     }: {
       id: number
-      data: UpdateMatchRoundParticipantBodyType
+      data: UpdateMatchRoundParticipantBody
       updatedById?: number
     },
     prismaTx?: PrismaClient
-  ): Promise<MatchRoundParticipantType> {
+  ): Promise<MatchRoundParticipant> {
     const client = prismaTx || this.prismaService
     return client.matchRoundParticipant.update({
       where: {
@@ -82,7 +82,7 @@ export class MatchRoundParticipantRepo {
     id: number,
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<MatchRoundParticipantType> {
+  ): Promise<MatchRoundParticipant> {
     const client = prismaTx || this.prismaService
     return isHard
       ? client.matchRoundParticipant.delete({
@@ -99,7 +99,7 @@ export class MatchRoundParticipantRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, MATCH_PARTICIPANT_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -134,7 +134,7 @@ export class MatchRoundParticipantRepo {
     }
   }
 
-  findById(id: number): Promise<MatchRoundParticipantType | null> {
+  findById(id: number): Promise<MatchRoundParticipant | null> {
     return this.prismaService.matchRoundParticipant.findUnique({
       where: {
         id,
@@ -146,7 +146,7 @@ export class MatchRoundParticipantRepo {
   async findByMatchRoundIdAndUserId(
     matchRoundId: number,
     userId: number
-  ): Promise<MatchRoundParticipantType | null> {
+  ): Promise<MatchRoundParticipant | null> {
     return this.prismaService.matchRoundParticipant.findFirst({
       where: {
         matchRoundId,
@@ -161,7 +161,7 @@ export class MatchRoundParticipantRepo {
   async findMany(options: {
     where: any
     orderBy?: any
-  }): Promise<MatchRoundParticipantType[]> {
+  }): Promise<MatchRoundParticipant[]> {
     return this.prismaService.matchRoundParticipant.findMany(options)
   }
 

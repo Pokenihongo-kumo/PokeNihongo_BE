@@ -2,16 +2,16 @@ import { LessonContentSortField, SortOrder } from '@/common/enum/enum'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
 import {
-  CreateLessonContentBodyType,
-  GetLessonContentListQueryType,
-  UpdateLessonContentBodyType
+  CreateLessonContentBody,
+  GetLessonContentListQuery,
+  UpdateLessonContentBody
 } from './entities/lesson-content.entities'
 
 @Injectable()
 export class LessonContentRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async findMany(params: GetLessonContentListQueryType) {
+  async findMany(params: GetLessonContentListQuery) {
     const {
       page,
       limit,
@@ -75,7 +75,7 @@ export class LessonContentRepository {
     })
   }
 
-  async create(data: CreateLessonContentBodyType) {
+  async create(data: CreateLessonContentBody) {
     return this.prismaService.lessonContents.create({
       data,
       include: {
@@ -90,7 +90,7 @@ export class LessonContentRepository {
     })
   }
 
-  async update(id: number, data: UpdateLessonContentBodyType) {
+  async update(id: number, data: UpdateLessonContentBody) {
     return this.prismaService.lessonContents.update({
       where: { id },
       data,

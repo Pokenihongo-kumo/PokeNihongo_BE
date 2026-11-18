@@ -69,29 +69,23 @@ export const GetAchievementGroupDetailResSchema = resSchema(
 )
 
 //type
-export type AchievementGroupType = z.infer<typeof AchievementGroupSchema>
+export type AchievementGroup = z.infer<typeof AchievementGroupSchema>
 
-export type CreateAchievementGroupBodyInputType = z.infer<
+export type CreateAchievementGroupBodyInput = z.infer<
   typeof CreateAchievementGroupBodyInputSchema
 >
 
-export type CreateAchievementGroupBodyType = z.infer<
-  typeof CreateAchievementGroupBodySchema
->
+export type CreateAchievementGroupBody = z.infer<typeof CreateAchievementGroupBodySchema>
 
-export type UpdateAchievementGroupBodyInputType = z.infer<
+export type UpdateAchievementGroupBodyInput = z.infer<
   typeof UpdateAchievementGroupBodyInputSchema
 >
 
-export type UpdateAchievementGroupBodyType = z.infer<
-  typeof UpdateAchievementGroupBodySchema
->
+export type UpdateAchievementGroupBody = z.infer<typeof UpdateAchievementGroupBodySchema>
 
-export type GetAchievementGroupParamsType = z.infer<
-  typeof GetAchievementGroupParamsSchema
->
+export type GetAchievementGroupParams = z.infer<typeof GetAchievementGroupParamsSchema>
 
-export type GetAchievementGroupDetailResType = z.infer<
+export type GetAchievementGroupDetailRes = z.infer<
   typeof GetAchievementGroupDetailResSchema
 >
 

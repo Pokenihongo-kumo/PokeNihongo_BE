@@ -69,13 +69,13 @@ export const GetUserAIConversationByConversationParamsSchema = z
 // Was the bare entity: every single-message response failed serialization (500)
 export const UserAIConversationResSchema = resSchema(UserAIConversationSchema)
 
-export type UserAIConversationType = z.infer<typeof UserAIConversationSchema>
-export type CreateUserAIConversationBodyType = z.infer<
+export type UserAIConversation = z.infer<typeof UserAIConversationSchema>
+export type CreateUserAIConversationBody = z.infer<
   typeof CreateUserAIConversationBodySchema
 >
-export type UpdateUserAIConversationBodyType = z.infer<
+export type UpdateUserAIConversationBody = z.infer<
   typeof UpdateUserAIConversationBodySchema
 >
-export type GetUserAIConversationListQueryType = z.infer<
+export type GetUserAIConversationListQuery = z.infer<
   typeof GetUserAIConversationListQuerySchema
 >

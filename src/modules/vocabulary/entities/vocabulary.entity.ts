@@ -220,27 +220,25 @@ export const VocabularySearchHistoryResSchema = paginatedResSchema(
 ).strict()
 
 // Types
-export type VocabularyType = z.infer<typeof VocabularySchema>
-export type CreateVocabularyBodyType = z.infer<typeof CreateVocabularyBodySchema>
-export type UpdateVocabularyBodyType = z.infer<typeof UpdateVocabularyBodySchema>
-export type VocabularyResType = z.infer<typeof VocabularyResSchema>
-export type VocabularyListResType = z.infer<typeof VocabularyListResSchema>
-export type GetVocabularyByIdParamsType = z.infer<typeof GetVocabularyByIdParamsSchema>
-export type GetVocabularyListQueryType = z.infer<typeof GetVocabularyListQuerySchema>
-export type VocabularyStatisticsType = z.infer<typeof VocabularyStatisticsSchema>
-export type VocabularyStatisticsResType = z.infer<typeof VocabularyStatisticsResSchema>
-export type VocabularySearchItemType = z.infer<typeof VocabularySearchItemSchema>
-export type VocabularySearchQueryType = z.infer<typeof VocabularySearchQuerySchema>
-export type VocabularySearchResType = z.infer<typeof VocabularySearchResSchema>
-export type VocabularyMeaningDetailType = z.infer<typeof VocabularyMeaningDetailSchema>
-export type VocabularyDetailType = z.infer<typeof VocabularyDetailSchema>
-export type VocabularyDetailResType = z.infer<typeof VocabularyDetailResSchema>
-export type VocabularySearchHistoryItemType = z.infer<
+export type Vocabulary = z.infer<typeof VocabularySchema>
+export type CreateVocabularyBody = z.infer<typeof CreateVocabularyBodySchema>
+export type UpdateVocabularyBody = z.infer<typeof UpdateVocabularyBodySchema>
+export type VocabularyRes = z.infer<typeof VocabularyResSchema>
+export type VocabularyListRes = z.infer<typeof VocabularyListResSchema>
+export type GetVocabularyByIdParams = z.infer<typeof GetVocabularyByIdParamsSchema>
+export type GetVocabularyListQuery = z.infer<typeof GetVocabularyListQuerySchema>
+export type VocabularyStatistics = z.infer<typeof VocabularyStatisticsSchema>
+export type VocabularyStatisticsRes = z.infer<typeof VocabularyStatisticsResSchema>
+export type VocabularySearchItem = z.infer<typeof VocabularySearchItemSchema>
+export type VocabularySearchQuery = z.infer<typeof VocabularySearchQuerySchema>
+export type VocabularySearchRes = z.infer<typeof VocabularySearchResSchema>
+export type VocabularyMeaningDetail = z.infer<typeof VocabularyMeaningDetailSchema>
+export type VocabularyDetail = z.infer<typeof VocabularyDetailSchema>
+export type VocabularyDetailRes = z.infer<typeof VocabularyDetailResSchema>
+export type VocabularySearchHistoryItem = z.infer<
   typeof VocabularySearchHistoryItemSchema
 >
-export type VocabularySearchHistoryQueryType = z.infer<
+export type VocabularySearchHistoryQuery = z.infer<
   typeof VocabularySearchHistoryQuerySchema
 >
-export type VocabularySearchHistoryResType = z.infer<
-  typeof VocabularySearchHistoryResSchema
->
+export type VocabularySearchHistoryRes = z.infer<typeof VocabularySearchHistoryResSchema>

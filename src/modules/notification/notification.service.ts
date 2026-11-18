@@ -3,18 +3,18 @@ import { NotificationMessage } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { NotificationNotFoundException } from '@/modules/notification/dto/notification.error'
 import {
-  CreateNotificationBodyType,
-  UpdateNotificationBodyType,
-  UpdateNotificationReadListBodyType
+  CreateNotificationBody,
+  UpdateNotificationBody,
+  UpdateNotificationReadListBody
 } from '@/modules/notification/entities/notification.entity'
-import { UserGateway } from '@/websockets/user.gateway'
-import { Injectable } from '@nestjs/common'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
+import { UserGateway } from '@/websockets/user.gateway'
+import { Injectable } from '@nestjs/common'
 import { NotificationRepo } from './notification.repo'
 
 @Injectable()
@@ -26,7 +26,7 @@ export class NotificationService {
     private readonly userGateway: UserGateway
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.notificationRepo.list(pagination)
     return {
       statusCode: 200,
@@ -54,7 +54,7 @@ export class NotificationService {
     }
   }
   async create(
-    { userId, data }: { userId: number; data: CreateNotificationBodyType },
+    { userId, data }: { userId: number; data: CreateNotificationBody },
     lang: string = 'vi'
   ) {
     try {
@@ -88,7 +88,7 @@ export class NotificationService {
       userId
     }: {
       id: number
-      data: UpdateNotificationBodyType
+      data: UpdateNotificationBody
       userId?: number
     },
     lang: string = 'vi'
@@ -154,7 +154,7 @@ export class NotificationService {
       body,
       userId
     }: {
-      body: UpdateNotificationReadListBodyType
+      body: UpdateNotificationReadListBody
       userId?: number
     },
     lang: string = 'vi'
@@ -211,7 +211,7 @@ export class NotificationService {
   }
 
   async getUserSubWithSubPlan(
-    pagination: PaginationQueryType,
+    pagination: PaginationQuery,
     userId: number,
     lang: string = 'vi'
   ) {

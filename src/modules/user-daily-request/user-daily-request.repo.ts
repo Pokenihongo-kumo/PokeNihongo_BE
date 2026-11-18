@@ -1,14 +1,14 @@
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 
 import { parseQs } from '@/common/utils/qs-parser'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
-  CreateUserDailyRequestBodyType,
+  CreateUserDailyRequestBody,
   USER_DAILY_REQUEST_FIELDS,
-  UpdateUserDailyRequestBodyType,
-  UserDailyRequestDetailType,
-  UserDailyRequestType
+  UpdateUserDailyRequestBody,
+  UserDailyRequest,
+  UserDailyRequestDetail
 } from './entities/user-daily-request.entity'
 
 @Injectable()
@@ -20,13 +20,13 @@ export class UserDailyRequestRepo {
     data
   }: {
     createdById: number | null
-    data: CreateUserDailyRequestBodyType & {
+    data: CreateUserDailyRequestBody & {
       date: Date
       progress: number
       isCompleted?: boolean
       completedAt?: Date | null
     }
-  }): Promise<UserDailyRequestType> {
+  }): Promise<UserDailyRequest> {
     return this.prismaService.userDailyRequest.create({
       data: {
         ...data,
@@ -44,8 +44,8 @@ export class UserDailyRequestRepo {
   }: {
     id: number
     updatedById: number
-    data: UpdateUserDailyRequestBodyType
-  }): Promise<UserDailyRequestType> {
+    data: UpdateUserDailyRequestBody
+  }): Promise<UserDailyRequest> {
     return this.prismaService.userDailyRequest.update({
       where: {
         id,
@@ -68,7 +68,7 @@ export class UserDailyRequestRepo {
       deletedById: number
     },
     isHard?: boolean
-  ): Promise<UserDailyRequestType> {
+  ): Promise<UserDailyRequest> {
     return isHard
       ? this.prismaService.userDailyRequest.delete({
           where: {
@@ -87,7 +87,7 @@ export class UserDailyRequestRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, USER_DAILY_REQUEST_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -120,7 +120,7 @@ export class UserDailyRequestRepo {
     }
   }
 
-  findById(id: number): Promise<UserDailyRequestType | null> {
+  findById(id: number): Promise<UserDailyRequest | null> {
     return this.prismaService.userDailyRequest.findUnique({
       where: {
         id,
@@ -137,7 +137,7 @@ export class UserDailyRequestRepo {
     userId: number,
     date: Date,
     dailyRequestId: number
-  ): Promise<UserDailyRequestType | null> {
+  ): Promise<UserDailyRequest | null> {
     return this.prismaService.userDailyRequest.findFirst({
       where: {
         userId,
@@ -149,7 +149,7 @@ export class UserDailyRequestRepo {
   }
 
   // Lấy user daily requests theo userId và date
-  async findByUserAndDate(userId: number, date: Date): Promise<UserDailyRequestType[]> {
+  async findByUserAndDate(userId: number, date: Date): Promise<UserDailyRequest[]> {
     return this.prismaService.userDailyRequest.findMany({
       where: {
         userId,
@@ -167,7 +167,7 @@ export class UserDailyRequestRepo {
     userId: number,
     date: Date,
     langId: number
-  ): Promise<UserDailyRequestDetailType[]> {
+  ): Promise<UserDailyRequestDetail[]> {
     const results = await this.prismaService.userDailyRequest.findMany({
       where: {
         userId,

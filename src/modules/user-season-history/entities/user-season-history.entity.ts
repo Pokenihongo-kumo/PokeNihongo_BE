@@ -73,16 +73,14 @@ export const GetUserSeasonHistoryDetailResSchema = resSchema(
 )
 
 // Type exports
-export type UserSeasonHistoryType = z.infer<typeof UserSeasonHistorySchema>
-export type CreateUserSeasonHistoryBodyType = z.infer<
+export type UserSeasonHistory = z.infer<typeof UserSeasonHistorySchema>
+export type CreateUserSeasonHistoryBody = z.infer<
   typeof CreateUserSeasonHistoryBodySchema
 >
-export type UpdateUserSeasonHistoryBodyType = z.infer<
+export type UpdateUserSeasonHistoryBody = z.infer<
   typeof UpdateUserSeasonHistoryBodySchema
 >
-export type GetUserSeasonHistoryParamsType = z.infer<
-  typeof GetUserSeasonHistoryParamsSchema
->
+export type GetUserSeasonHistoryParams = z.infer<typeof GetUserSeasonHistoryParamsSchema>
 
 // Field for query
 export type UserSeasonHistoryFieldType = keyof z.infer<typeof UserSeasonHistorySchema>

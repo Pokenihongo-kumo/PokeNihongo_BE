@@ -1,15 +1,15 @@
 import {
-  AIConversationRoomType,
+  AIConversationRoom,
   UpdateAIConversationRoomData
 } from '@/modules/ai-conversation-room/entities/ai-conversation-room.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
-import { AIConversationRoom, Prisma } from '@prisma/client'
+import { Prisma, AIConversationRoom as PrismaAIConversationRoom } from '@prisma/client'
 
 const DEFAULT_VOICE = 'ja-JP-Wavenet-A'
 
-const toRoom = (room: AIConversationRoom): AIConversationRoomType => ({
+const toRoom = (room: PrismaAIConversationRoom): AIConversationRoom => ({
   id: room.id,
   userId: room.userId,
   conversationId: room.conversationId,
@@ -50,7 +50,7 @@ export class AIConversationRoomRepo {
   }
 
   // The user's room, not deleted
-  async findOwned(id: string, userId: number): Promise<AIConversationRoomType | null> {
+  async findOwned(id: string, userId: number): Promise<AIConversationRoom | null> {
     const room = await this.prismaService.aIConversationRoom.findFirst({
       where: { id, userId, deletedAt: null }
     })
@@ -60,7 +60,7 @@ export class AIConversationRoomRepo {
   async findByConversationId(
     conversationId: string,
     userId?: number
-  ): Promise<AIConversationRoomType | null> {
+  ): Promise<AIConversationRoom | null> {
     const room = await this.prismaService.aIConversationRoom.findFirst({
       where: { conversationId, deletedAt: null, ...(userId && { userId }) }
     })
@@ -81,7 +81,7 @@ export class AIConversationRoomRepo {
     conversationId: string
     title?: string | null
     voiceName?: string | null
-  }): Promise<AIConversationRoomType> {
+  }): Promise<AIConversationRoom> {
     const room = await this.prismaService.aIConversationRoom.upsert({
       where: { conversationId: data.conversationId },
       create: {
@@ -102,12 +102,12 @@ export class AIConversationRoomRepo {
   async update(
     where: { id: string } | { conversationId: string },
     data: UpdateAIConversationRoomData
-  ): Promise<AIConversationRoomType> {
+  ): Promise<AIConversationRoom> {
     return toRoom(await this.prismaService.aIConversationRoom.update({ where, data }))
   }
 
   // Soft delete
-  async delete(id: string): Promise<AIConversationRoomType> {
+  async delete(id: string): Promise<AIConversationRoom> {
     return toRoom(
       await this.prismaService.aIConversationRoom.update({
         where: { id },

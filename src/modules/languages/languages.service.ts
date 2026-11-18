@@ -12,10 +12,10 @@ import {
   LanguagesNotFoundException
 } from './dto/languages.error'
 import {
-  CreateLanguagesBodyType,
-  GetLanguagesByCodeParamsType,
-  GetLanguagesListQueryType,
-  UpdateLanguagesBodyType
+  CreateLanguagesBody,
+  GetLanguagesByCodeParams,
+  GetLanguagesListQuery,
+  UpdateLanguagesBody
 } from './entities/languages.entity'
 import { LanguagesRepo } from './languages.repo'
 
@@ -30,7 +30,7 @@ export class LanguagesService {
     private readonly i18nService: I18nService
   ) {}
 
-  async findMany(params: GetLanguagesListQueryType, lang: string = 'vi') {
+  async findMany(params: GetLanguagesListQuery, lang: string = 'vi') {
     const result = await this.languagesRepository.findMany(params)
 
     return {
@@ -55,7 +55,7 @@ export class LanguagesService {
     }
   }
 
-  async findByCode(params: GetLanguagesByCodeParamsType, lang: string = 'vi') {
+  async findByCode(params: GetLanguagesByCodeParams, lang: string = 'vi') {
     const language = await this.languagesRepository.findByCode(params.code)
     if (!language) {
       throw new LanguagesNotFoundException()
@@ -67,7 +67,7 @@ export class LanguagesService {
     }
   }
 
-  async create(data: CreateLanguagesBodyType, lang: string = 'vi') {
+  async create(data: CreateLanguagesBody, lang: string = 'vi') {
     try {
       const existingLanguage = await this.languagesRepository.findByCode(data.code)
       if (existingLanguage) {
@@ -86,7 +86,7 @@ export class LanguagesService {
     }
   }
 
-  async update(id: number, data: UpdateLanguagesBodyType, lang: string = 'vi') {
+  async update(id: number, data: UpdateLanguagesBody, lang: string = 'vi') {
     try {
       const existingLanguage = await this.languagesRepository.findById(id)
       if (!existingLanguage) {
@@ -110,7 +110,7 @@ export class LanguagesService {
     }
   }
 
-  async updateByCode(code: string, data: UpdateLanguagesBodyType, lang: string = 'vi') {
+  async updateByCode(code: string, data: UpdateLanguagesBody, lang: string = 'vi') {
     try {
       const existingLanguage = await this.languagesRepository.findByCode(code)
       if (!existingLanguage) {

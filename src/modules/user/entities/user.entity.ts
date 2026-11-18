@@ -119,13 +119,13 @@ export const SetMainPokemonBodySchema = z
   })
   .strict()
 
-export type UserType = z.infer<typeof UserSchema>
-export type CreateUserBodyType = z.infer<typeof CreateUserBodySchema>
-export type UpdateUserBodyType = z.infer<typeof UpdateUserBodySchema>
-export type GetUserParamsType = z.infer<typeof GetUserParamsSchema>
-export type GetUserDetailResType = z.infer<typeof GetUserDetailResSchema>
-export type UserWithoutPasswordType = z.infer<typeof UserWithoutPasswordSchema>
-export type SetMainPokemonBodyType = z.infer<typeof SetMainPokemonBodySchema>
+export type User = z.infer<typeof UserSchema>
+export type CreateUserBody = z.infer<typeof CreateUserBodySchema>
+export type UpdateUserBody = z.infer<typeof UpdateUserBodySchema>
+export type GetUserParams = z.infer<typeof GetUserParamsSchema>
+export type GetUserDetailRes = z.infer<typeof GetUserDetailResSchema>
+export type UserWithoutPassword = z.infer<typeof UserWithoutPasswordSchema>
+export type SetMainPokemonBody = z.infer<typeof SetMainPokemonBodySchema>
 
 type UserFieldType = keyof z.infer<typeof UserSchema>
 export const USER_FIELDS = Object.keys(UserSchema.shape) as UserFieldType[]

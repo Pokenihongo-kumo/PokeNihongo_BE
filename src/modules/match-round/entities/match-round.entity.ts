@@ -122,13 +122,13 @@ export const GetMatchRoundDetailWithAllLangResSchema = resSchema(MatchRoundSchem
 
 export const GetMatchRoundDetailResSchema = resSchema(MatchRoundSchema)
 
-export type MatchRoundType = z.infer<typeof MatchRoundSchema>
+export type MatchRound = z.infer<typeof MatchRoundSchema>
 
-export type CreateMatchRoundBodyType = z.infer<typeof CreateMatchRoundBodySchema>
+export type CreateMatchRoundBody = z.infer<typeof CreateMatchRoundBodySchema>
 
-export type UpdateMatchRoundBodyType = z.infer<typeof UpdateMatchRoundBodySchema>
-export type GetMatchRoundParamsType = z.infer<typeof GetMatchRoundParamsSchema>
-export type GetMatchRoundDetailResType = z.infer<typeof GetMatchRoundDetailResSchema>
+export type UpdateMatchRoundBody = z.infer<typeof UpdateMatchRoundBodySchema>
+export type GetMatchRoundParams = z.infer<typeof GetMatchRoundParamsSchema>
+export type GetMatchRoundDetailRes = z.infer<typeof GetMatchRoundDetailResSchema>
 
 type MatchRoundFieldType = keyof z.infer<typeof MatchRoundSchema>
 export const MATCH_FIELDS = [

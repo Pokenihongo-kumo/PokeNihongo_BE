@@ -1,18 +1,18 @@
 import { RoleName } from '@/common/constants/role.constant'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PermissionService } from '@/modules/permission/permission.service'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { I18nService } from 'src/i18n/i18n.service'
 import { RoleMessage } from 'src/i18n/message-keys'
-import { PermissionService } from '@/modules/permission/permission.service'
 import {
   ProhibitedActionOnBaseRoleException,
   RoleAlreadyExistsException
 } from 'src/modules/role/role.error'
-import { CreateRoleBodyType, UpdateRoleBodyType } from 'src/modules/role/role.model'
+import { CreateRoleBody, UpdateRoleBody } from 'src/modules/role/role.model'
 import { RoleRepo } from 'src/modules/role/role.repo'
-import { RoleCoreRepo } from './role-core.repo'
 import { NotFoundRecordException } from 'src/shared/error'
 import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared/helpers'
+import { RoleCoreRepo } from './role-core.repo'
 
 @Injectable()
 export class RoleService {
@@ -23,7 +23,7 @@ export class RoleService {
     private roleCoreRepo: RoleCoreRepo
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.roleRepo.list(pagination)
     return {
       data,
@@ -31,7 +31,7 @@ export class RoleService {
     }
   }
 
-  async findById(id: number, query: PaginationQueryType, lang: string = 'vi') {
+  async findById(id: number, query: PaginationQuery, lang: string = 'vi') {
     const role = await this.roleRepo.findById(id)
     if (!role) {
       throw new NotFoundRecordException()
@@ -69,7 +69,7 @@ export class RoleService {
   }
 
   async create(
-    { data, createdById }: { data: CreateRoleBodyType; createdById: number },
+    { data, createdById }: { data: CreateRoleBody; createdById: number },
     lang: string = 'vi'
   ) {
     try {
@@ -111,7 +111,7 @@ export class RoleService {
       updatedById
     }: {
       id: number
-      data: UpdateRoleBodyType
+      data: UpdateRoleBody
       updatedById: number
     },
     lang: string = 'vi'

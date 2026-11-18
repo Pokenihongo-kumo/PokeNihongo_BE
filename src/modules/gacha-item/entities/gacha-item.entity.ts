@@ -25,7 +25,7 @@ export const GachaItemSchema = z.object({
   updatedAt: z.date()
 })
 
-export type GachaItemType = z.infer<typeof GachaItemSchema>
+export type GachaItem = z.infer<typeof GachaItemSchema>
 
 // ============ NEW STRUCTURE ============
 
@@ -37,7 +37,7 @@ export const CreateGachaItemBodySchema = z
   })
   .strict()
 
-export type CreateGachaItemBodyType = z.infer<typeof CreateGachaItemBodySchema>
+export type CreateGachaItemBody = z.infer<typeof CreateGachaItemBodySchema>
 
 // Create multiple items: { bannerId, items: [{ starType, pokemons: [...] }] }
 export const CreateGachaItemByStarTypeSchema = z.object({
@@ -50,7 +50,7 @@ export const CreateWithListItemBodySchema = z.object({
   items: z.array(CreateGachaItemByStarTypeSchema)
 })
 
-export type CreateWithListItemBodyType = z.infer<typeof CreateWithListItemBodySchema>
+export type CreateWithListItemBody = z.infer<typeof CreateWithListItemBodySchema>
 
 // Update single item: { starType, pokemonId }
 export const UpdateGachaItemBodySchema = z
@@ -60,7 +60,7 @@ export const UpdateGachaItemBodySchema = z
   })
   .strict()
 
-export type UpdateGachaItemBodyType = z.infer<typeof UpdateGachaItemBodySchema>
+export type UpdateGachaItemBody = z.infer<typeof UpdateGachaItemBodySchema>
 
 // Update multiple items: { bannerId, items: [{ starType, pokemons: [...] }] }
 export const UpdateWithListItemBodySchema = z.object({
@@ -68,7 +68,7 @@ export const UpdateWithListItemBodySchema = z.object({
   items: z.array(CreateGachaItemByStarTypeSchema).min(1)
 })
 
-export type UpdateWithListGachaItemBodyType = z.infer<typeof UpdateWithListItemBodySchema>
+export type UpdateWithListGachaItemBody = z.infer<typeof UpdateWithListItemBodySchema>
 
 // ============ RANDOM API ============
 
@@ -82,7 +82,7 @@ export const GetRamdomAmountGachaItemsBodySchema = z.object({
   items: z.array(GetRandomGachaItemTypeSchema)
 })
 
-export type GetRamdomAmountGachaItemsBodyType = z.infer<
+export type GetRamdomAmountGachaItemsBody = z.infer<
   typeof GetRamdomAmountGachaItemsBodySchema
 >
 
@@ -133,9 +133,9 @@ export const GetGachaItemDetailResSchema = resSchema(GetGachaItemDetailSchema)
 
 // ============ TYPE EXPORTS ============
 
-export type GetGachaItemParamsType = z.infer<typeof GetGachaItemParamsSchema>
-export type GetGachaItemDetailType = z.infer<typeof GetGachaItemDetailSchema>
-export type GetRandomGachaItemTypeType = z.infer<typeof GetRandomGachaItemTypeSchema>
+export type GetGachaItemParams = z.infer<typeof GetGachaItemParamsSchema>
+export type GetGachaItemDetail = z.infer<typeof GetGachaItemDetailSchema>
+export type GetRandomGachaItemType = z.infer<typeof GetRandomGachaItemTypeSchema>
 
 export type GachaItemFieldType = keyof z.infer<typeof GachaItemSchema>
 export const GACHA_ITEM_FIELDS = Object.keys(

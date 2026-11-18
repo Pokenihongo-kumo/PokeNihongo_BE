@@ -132,24 +132,18 @@ export const SpeakingStatisticsSchema = z.object({
 export const SpeakingStatisticsResSchema = resSchema(SpeakingStatisticsSchema).strict()
 
 // Types
-export type UserSpeakingAttemptType = z.infer<typeof UserSpeakingAttemptSchema>
-export type CreateUserSpeakingAttemptType = z.infer<
-  typeof CreateUserSpeakingAttemptSchema
->
-export type UpdateUserSpeakingAttemptType = z.infer<
-  typeof UpdateUserSpeakingAttemptSchema
->
-export type UserSpeakingAttemptResType = z.infer<typeof UserSpeakingAttemptResSchema>
-export type UserSpeakingAttemptListResType = z.infer<
-  typeof UserSpeakingAttemptListResSchema
->
-export type GetUserSpeakingAttemptByIdParamsType = z.infer<
+export type UserSpeakingAttempt = z.infer<typeof UserSpeakingAttemptSchema>
+export type CreateUserSpeakingAttempt = z.infer<typeof CreateUserSpeakingAttemptSchema>
+export type UpdateUserSpeakingAttempt = z.infer<typeof UpdateUserSpeakingAttemptSchema>
+export type UserSpeakingAttemptRes = z.infer<typeof UserSpeakingAttemptResSchema>
+export type UserSpeakingAttemptListRes = z.infer<typeof UserSpeakingAttemptListResSchema>
+export type GetUserSpeakingAttemptByIdParams = z.infer<
   typeof GetUserSpeakingAttemptByIdParamsSchema
 >
-export type GetUserSpeakingAttemptListQueryType = z.infer<
+export type GetUserSpeakingAttemptListQuery = z.infer<
   typeof GetUserSpeakingAttemptListQuerySchema
 >
-export type EvaluateSpeakingRequestType = z.infer<typeof EvaluateSpeakingRequestSchema>
-export type EvaluateSpeakingResponseType = z.infer<typeof EvaluateSpeakingResponseSchema>
-export type SpeakingStatisticsType = z.infer<typeof SpeakingStatisticsSchema>
-export type SpeakingStatisticsResType = z.infer<typeof SpeakingStatisticsResSchema>
+export type EvaluateSpeakingRequest = z.infer<typeof EvaluateSpeakingRequestSchema>
+export type EvaluateSpeakingResponse = z.infer<typeof EvaluateSpeakingResponseSchema>
+export type SpeakingStatistics = z.infer<typeof SpeakingStatisticsSchema>
+export type SpeakingStatisticsRes = z.infer<typeof SpeakingStatisticsResSchema>

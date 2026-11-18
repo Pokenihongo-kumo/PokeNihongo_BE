@@ -1,17 +1,17 @@
-import {
-  CreateUserTestAnswerLogBodyType,
-  GetUserTestAnswerLogListQueryType,
-  UpdateUserTestAnswerLogBodyType
-} from '@/modules/user-test-answer-log/entities/user-test-answer-log.entity'
+import { I18nService } from '@/i18n/i18n.service'
+import { UserTestAnswerLogMessage as M } from '@/i18n/message-keys'
 import {
   AnswerLogRuleViolationException,
   AttemptNotOwnedException,
   InvalidUserTestAnswerLogDataException,
   UserTestAnswerLogNotFoundException
 } from '@/modules/user-test-answer-log/dto/user-test-answer-log.error'
+import {
+  CreateUserTestAnswerLogBody,
+  GetUserTestAnswerLogListQuery,
+  UpdateUserTestAnswerLogBody
+} from '@/modules/user-test-answer-log/entities/user-test-answer-log.entity'
 import { UserTestAnswerLogRepo } from '@/modules/user-test-answer-log/user-test-answer-log.repo'
-import { I18nService } from '@/i18n/i18n.service'
-import { UserTestAnswerLogMessage as M } from '@/i18n/message-keys'
 import { toPaginationMeta } from '@/shared/utils/pagination'
 import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
 import { HttpException, Injectable, Logger } from '@nestjs/common'
@@ -25,7 +25,7 @@ export class UserTestAnswerLogService {
     private readonly i18nService: I18nService
   ) {}
 
-  async create(body: CreateUserTestAnswerLogBodyType, lang: string = 'vi') {
+  async create(body: CreateUserTestAnswerLogBody, lang: string = 'vi') {
     try {
       const isCorrect = await this.checkedAnswer(body.answerId, body.questionBankId)
       const log = await this.userTestAnswerLogRepository.create(body, isCorrect)
@@ -41,11 +41,7 @@ export class UserTestAnswerLogService {
 
   // The app's answer: the attempt is the user's, the question is in its
   // test and the answer is one of the question's. One log per question
-  async upsert(
-    body: CreateUserTestAnswerLogBodyType,
-    userId: number,
-    lang: string = 'vi'
-  ) {
+  async upsert(body: CreateUserTestAnswerLogBody, userId: number, lang: string = 'vi') {
     try {
       const attempt = await this.userTestAnswerLogRepository.findAttempt(
         body.userTestAttemptId
@@ -75,7 +71,7 @@ export class UserTestAnswerLogService {
     }
   }
 
-  async findAll(query: GetUserTestAnswerLogListQueryType, lang: string = 'vi') {
+  async findAll(query: GetUserTestAnswerLogListQuery, lang: string = 'vi') {
     const { items, total } = await this.userTestAnswerLogRepository.findMany(query)
     return {
       statusCode: 200,
@@ -97,7 +93,7 @@ export class UserTestAnswerLogService {
     }
   }
 
-  async update(id: number, body: UpdateUserTestAnswerLogBodyType, lang: string = 'vi') {
+  async update(id: number, body: UpdateUserTestAnswerLogBody, lang: string = 'vi') {
     try {
       const log = await this.userTestAnswerLogRepository.update(id, body)
       return {

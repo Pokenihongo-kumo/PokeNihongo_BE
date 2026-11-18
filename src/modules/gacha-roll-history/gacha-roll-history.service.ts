@@ -5,12 +5,12 @@ import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { GachaRollHistoryNotFoundException } from './dto/gacha-roll-history.error'
 import {
-  CreateGachaRollHistoryBodyType,
-  UpdateGachaRollHistoryBodyType
+  CreateGachaRollHistoryBody,
+  UpdateGachaRollHistoryBody
 } from './entities/gacha-roll-history.entity'
 import { GachaRollHistoryRepo } from './gacha-roll-history.repo'
 
@@ -22,7 +22,7 @@ export class GachaRollHistoryService {
     private readonly i18nService: I18nService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.gachaRollHistoryRepo.list(pagination)
     return {
       statusCode: 200,
@@ -45,11 +45,7 @@ export class GachaRollHistoryService {
     }
   }
 
-  async getGachasHisByUser(
-    userId: number,
-    query: PaginationQueryType,
-    lang: string = 'vi'
-  ) {
+  async getGachasHisByUser(userId: number, query: PaginationQuery, lang: string = 'vi') {
     const gachaRollHistory = await this.gachaRollHistoryRepo.findListGachaHisByUserId(
       userId,
       query
@@ -66,7 +62,7 @@ export class GachaRollHistoryService {
   }
 
   async create(
-    { userId, data }: { userId: number; data: CreateGachaRollHistoryBodyType },
+    { userId, data }: { userId: number; data: CreateGachaRollHistoryBody },
     lang: string = 'vi'
   ) {
     try {
@@ -102,7 +98,7 @@ export class GachaRollHistoryService {
       userId
     }: {
       id: number
-      data: UpdateGachaRollHistoryBodyType
+      data: UpdateGachaRollHistoryBody
       userId?: number
     },
     lang: string = 'vi'

@@ -1,17 +1,17 @@
-import {
-  CreateUserAnswerLogBodyType,
-  GetUserAnswerLogListQueryType,
-  UpdateUserAnswerLogBodyType
-} from '@/modules/user-answer-log/entities/user-answer-log.entity'
+import { I18nService } from '@/i18n/i18n.service'
+import { UserAnswerLogMessage as M } from '@/i18n/message-keys'
 import {
   AnswerLogRuleViolationException,
   AttemptNotOwnedException,
   InvalidUserAnswerLogDataException,
   UserAnswerLogNotFoundException
 } from '@/modules/user-answer-log/dto/user-answer-log.error'
+import {
+  CreateUserAnswerLogBody,
+  GetUserAnswerLogListQuery,
+  UpdateUserAnswerLogBody
+} from '@/modules/user-answer-log/entities/user-answer-log.entity'
 import { UserAnswerLogRepo } from '@/modules/user-answer-log/user-answer-log.repo'
-import { I18nService } from '@/i18n/i18n.service'
-import { UserAnswerLogMessage as M } from '@/i18n/message-keys'
 import { toPaginationMeta } from '@/shared/utils/pagination'
 import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
 import { HttpException, Injectable, Logger } from '@nestjs/common'
@@ -25,7 +25,7 @@ export class UserAnswerLogService {
     private readonly i18nService: I18nService
   ) {}
 
-  async create(body: CreateUserAnswerLogBodyType, lang: string = 'vi') {
+  async create(body: CreateUserAnswerLogBody, lang: string = 'vi') {
     try {
       const isCorrect = await this.checkedAnswer(body.answerId, body.questionBankId)
       const log = await this.userAnswerLogRepository.create(body, isCorrect)
@@ -41,7 +41,7 @@ export class UserAnswerLogService {
 
   // The app's answer: the attempt is the user's, the question is in its
   // exercise and the answer is one of the question's. One log per question
-  async upsert(body: CreateUserAnswerLogBodyType, userId: number, lang: string = 'vi') {
+  async upsert(body: CreateUserAnswerLogBody, userId: number, lang: string = 'vi') {
     try {
       const attempt = await this.userAnswerLogRepository.findAttempt(
         body.userExerciseAttemptId
@@ -72,7 +72,7 @@ export class UserAnswerLogService {
     }
   }
 
-  async findAll(query: GetUserAnswerLogListQueryType, lang: string = 'vi') {
+  async findAll(query: GetUserAnswerLogListQuery, lang: string = 'vi') {
     const { items, total } = await this.userAnswerLogRepository.findMany(query)
     return {
       statusCode: 200,
@@ -94,7 +94,7 @@ export class UserAnswerLogService {
     }
   }
 
-  async update(id: number, body: UpdateUserAnswerLogBodyType, lang: string = 'vi') {
+  async update(id: number, body: UpdateUserAnswerLogBody, lang: string = 'vi') {
     try {
       const log = await this.userAnswerLogRepository.update(id, body)
       return {

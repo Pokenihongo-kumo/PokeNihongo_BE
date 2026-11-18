@@ -148,23 +148,21 @@ export const GetLeaderboardSeasonDetailResSchema = resSchema(
   })
 )
 
-export type LeaderboardSeasonType = z.infer<typeof LeaderboardSeasonSchema>
-export type CreateLeaderboardSeasonBodyInputType = z.infer<
+export type LeaderboardSeason = z.infer<typeof LeaderboardSeasonSchema>
+export type CreateLeaderboardSeasonBodyInput = z.infer<
   typeof CreateLeaderboardSeasonBodyInputSchema
 >
-export type CreateLeaderboardSeasonBodyType = z.infer<
+export type CreateLeaderboardSeasonBody = z.infer<
   typeof CreateLeaderboardSeasonBodySchema
 >
-export type UpdateLeaderboardSeasonBodyInputType = z.infer<
+export type UpdateLeaderboardSeasonBodyInput = z.infer<
   typeof UpdateLeaderboardSeasonBodyInputSchema
 >
-export type UpdateLeaderboardSeasonBodyType = z.infer<
+export type UpdateLeaderboardSeasonBody = z.infer<
   typeof UpdateLeaderboardSeasonBodySchema
 >
-export type GetLeaderboardSeasonParamsType = z.infer<
-  typeof GetLeaderboardSeasonParamsSchema
->
-export type GetLeaderboardSeasonDetailResType = z.infer<
+export type GetLeaderboardSeasonParams = z.infer<typeof GetLeaderboardSeasonParamsSchema>
+export type GetLeaderboardSeasonDetailRes = z.infer<
   typeof GetLeaderboardSeasonDetailResSchema
 >
 

@@ -191,27 +191,21 @@ export const GroupedLessonContentSchema = z.object({
 export const LessonContentFullResSchema = resSchema(GroupedLessonContentSchema).strict()
 
 // Type exports
-export type LessonContentType = z.infer<typeof LessonContentSchema>
-export type LessonContentWithRelationsType = z.infer<
-  typeof LessonContentWithRelationsSchema
->
-export type CreateLessonContentBodyType = z.infer<typeof CreateLessonContentBodySchema>
-export type CreateMutiLessonContentBodyType = z.infer<
+export type LessonContent = z.infer<typeof LessonContentSchema>
+export type LessonContentWithRelations = z.infer<typeof LessonContentWithRelationsSchema>
+export type CreateLessonContentBody = z.infer<typeof CreateLessonContentBodySchema>
+export type CreateMutiLessonContentBody = z.infer<
   typeof CreateMutiLessonContentBodySchema
 >
-export type UpdateLessonContentBodyType = z.infer<typeof UpdateLessonContentBodySchema>
+export type UpdateLessonContentBody = z.infer<typeof UpdateLessonContentBodySchema>
 export type UpdateLessonContentOrder = z.infer<typeof UpdateLessonContentOrder>
-export type GetLessonContentByIdParamsType = z.infer<
-  typeof GetLessonContentByIdParamsSchema
->
-export type GetLessonContentListQueryType = z.infer<
-  typeof GetLessonContentListQuerySchema
->
-export type LessonContentListResType = z.infer<typeof LessonContentListResSchema>
+export type GetLessonContentByIdParams = z.infer<typeof GetLessonContentByIdParamsSchema>
+export type GetLessonContentListQuery = z.infer<typeof GetLessonContentListQuerySchema>
+export type LessonContentListRes = z.infer<typeof LessonContentListResSchema>
 
 // New types for grouped content
-export type VocabularyContentType = z.infer<typeof VocabularyContentSchema>
-export type GrammarContentType = z.infer<typeof GrammarContentSchema>
-export type KanjiContentType = z.infer<typeof KanjiContentSchema>
-export type GroupedLessonContentType = z.infer<typeof GroupedLessonContentSchema>
-export type LessonContentFullResType = z.infer<typeof LessonContentFullResSchema>
+export type VocabularyContent = z.infer<typeof VocabularyContentSchema>
+export type GrammarContent = z.infer<typeof GrammarContentSchema>
+export type KanjiContent = z.infer<typeof KanjiContentSchema>
+export type GroupedLessonContent = z.infer<typeof GroupedLessonContentSchema>
+export type LessonContentFullRes = z.infer<typeof LessonContentFullResSchema>

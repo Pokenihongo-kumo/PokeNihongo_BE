@@ -8,5 +8,5 @@ export const PaginationQuerySchema = z.object({
   qs: z.string().optional()
 })
 
-export type PaginationQueryType = z.infer<typeof PaginationQuerySchema>
-export type EmptyBodyType = z.infer<typeof EmptyBodySchema>
+export type PaginationQuery = z.infer<typeof PaginationQuerySchema>
+export type EmptyBody = z.infer<typeof EmptyBodySchema>

@@ -4,25 +4,25 @@ import {
 } from '@/common/constants/subscription.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { UserSubscriptionMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { SubscriptionPlanService } from '@/modules/subscription-plan/subscription-plan.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
-import { LanguagesService } from '@/modules/languages/languages.service'
 import { SubscriptionPlanNotFoundException } from '../subscription-plan/dto/subscription-plan.error'
-import { SubscriptionPlanService } from '@/modules/subscription-plan/subscription-plan.service'
 import {
   UserHasSubscriptionWithStatusActiveException,
   UserHasSubscriptionWithStatusPendingPaymentException,
   UserSubscriptionNotFoundException
 } from './dto/user-subscription.error'
 import {
-  CreateUserSubscriptionBodyType,
-  UpdateUserSubscriptionBodyType
+  CreateUserSubscriptionBody,
+  UpdateUserSubscriptionBody
 } from './entities/user-subscription.entity'
 import { UserSubscriptionRepo } from './user-subscription.repo'
 
@@ -51,7 +51,7 @@ export class UserSubscriptionService {
     }))
   }
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.userSubscriptionRepo.list(pagination)
     return {
       statusCode: 200,
@@ -74,7 +74,7 @@ export class UserSubscriptionService {
     }
   }
   async create(
-    { userId, data }: { userId: number; data: CreateUserSubscriptionBodyType },
+    { userId, data }: { userId: number; data: CreateUserSubscriptionBody },
     lang: string = 'vi'
   ) {
     try {
@@ -140,7 +140,7 @@ export class UserSubscriptionService {
       userId
     }: {
       id: number
-      data: UpdateUserSubscriptionBodyType
+      data: UpdateUserSubscriptionBody
       userId?: number
     },
     lang: string = 'vi'
@@ -190,7 +190,7 @@ export class UserSubscriptionService {
   }
 
   async getUserSubWithSubPlan(
-    pagination: PaginationQueryType,
+    pagination: PaginationQuery,
     userId: number,
     lang: string = 'vi'
   ) {

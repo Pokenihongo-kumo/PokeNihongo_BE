@@ -60,7 +60,7 @@ export const UpdateWithListItemBodySchema = z.object({
   items: z.array(UpdateSeasonRankRewardByRankTypeSchema)
 })
 
-export type UpdateWithListSeasonRankRewardBodyType = z.infer<
+export type UpdateWithListSeasonRankRewardBody = z.infer<
   typeof UpdateWithListItemBodySchema
 >
 
@@ -78,20 +78,12 @@ export const GetSeasonRankRewardDetailResSchema = resSchema(
 )
 
 // Type exports
-export type SeasonRankRewardType = z.infer<typeof SeasonRankRewardSchema>
-export type CreateSeasonRankRewardBodyType = z.infer<
-  typeof CreateSeasonRankRewardBodySchema
->
-export type UpdateSeasonRankRewardBodyType = z.infer<
-  typeof UpdateSeasonRankRewardBodySchema
->
-export type GetSeasonRankRewardParamsType = z.infer<
-  typeof GetSeasonRankRewardParamsSchema
->
+export type SeasonRankReward = z.infer<typeof SeasonRankRewardSchema>
+export type CreateSeasonRankRewardBody = z.infer<typeof CreateSeasonRankRewardBodySchema>
+export type UpdateSeasonRankRewardBody = z.infer<typeof UpdateSeasonRankRewardBodySchema>
+export type GetSeasonRankRewardParams = z.infer<typeof GetSeasonRankRewardParamsSchema>
 
-export type UpdateWithListItemBodySchemaType = z.infer<
-  typeof UpdateWithListItemBodySchema
->
+export type UpdateWithListItemBody = z.infer<typeof UpdateWithListItemBodySchema>
 // Field for query
 export type SeasonRankRewardFieldType = keyof z.infer<typeof SeasonRankRewardSchema>
 export const USER_SEASON_HISTORY_FIELDS = Object.keys(

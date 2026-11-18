@@ -215,24 +215,18 @@ export const CreateQuestionBankWithAnswersBodySchema = z
   })
 
 // Types
-export type QuestionBankType = z.infer<typeof QuestionBankSchema>
-export type QuestionBankResType = z.infer<typeof QuestionBankResSchema>
-export type GetQuestionBankByIdParamsType = z.infer<
-  typeof GetQuestionBankByIdParamsSchema
->
-export type GetQuestionBankListQueryType = z.infer<typeof GetQuestionBankListQuerySchema>
-export type GetQuestionBanksByIdsQueryType = z.infer<
-  typeof GetQuestionBanksByIdsQuerySchema
->
-export type CreateQuestionBankWithMeaningsBodyType = z.infer<
+export type QuestionBank = z.infer<typeof QuestionBankSchema>
+export type QuestionBankRes = z.infer<typeof QuestionBankResSchema>
+export type GetQuestionBankByIdParams = z.infer<typeof GetQuestionBankByIdParamsSchema>
+export type GetQuestionBankListQuery = z.infer<typeof GetQuestionBankListQuerySchema>
+export type GetQuestionBanksByIdsQuery = z.infer<typeof GetQuestionBanksByIdsQuerySchema>
+export type CreateQuestionBankWithMeaningsBody = z.infer<
   typeof CreateQuestionBankWithMeaningsBodySchema
 >
-export type UpdateQuestionBankWithMeaningsBodyType = z.infer<
+export type UpdateQuestionBankWithMeaningsBody = z.infer<
   typeof UpdateQuestionBankWithMeaningsBodySchema
 >
-export type CreateQuestionBankWithAnswersBodyType = z.infer<
+export type CreateQuestionBankWithAnswersBody = z.infer<
   typeof CreateQuestionBankWithAnswersBodySchema
 >
-export type BulkDeleteQuestionBankBodyType = z.infer<
-  typeof BulkDeleteQuestionBankBodySchema
->
+export type BulkDeleteQuestionBankBody = z.infer<typeof BulkDeleteQuestionBankBodySchema>

@@ -108,23 +108,19 @@ export const GetAchievementDetailResSchema = resSchema(
 )
 
 //type
-export type AchievementType = z.infer<typeof AchievementSchema>
+export type Achievement = z.infer<typeof AchievementSchema>
 
-export type CreateAchievementBodyInputType = z.infer<
-  typeof CreateAchievementBodyInputSchema
->
+export type CreateAchievementBodyInput = z.infer<typeof CreateAchievementBodyInputSchema>
 
-export type CreateAchievementBodyType = z.infer<typeof CreateAchievementBodySchema>
+export type CreateAchievementBody = z.infer<typeof CreateAchievementBodySchema>
 
-export type UpdateAchievementBodyInputType = z.infer<
-  typeof UpdateAchievementBodyInputSchema
->
+export type UpdateAchievementBodyInput = z.infer<typeof UpdateAchievementBodyInputSchema>
 
-export type UpdateAchievementBodyType = z.infer<typeof UpdateAchievementBodySchema>
+export type UpdateAchievementBody = z.infer<typeof UpdateAchievementBodySchema>
 
-export type GetAchievementParamsType = z.infer<typeof GetAchievementParamsSchema>
+export type GetAchievementParams = z.infer<typeof GetAchievementParamsSchema>
 
-export type GetAchievementDetailResType = z.infer<typeof GetAchievementDetailResSchema>
+export type GetAchievementDetailRes = z.infer<typeof GetAchievementDetailResSchema>
 
 // field
 type AchievementFieldType = keyof z.infer<typeof AchievementSchema>

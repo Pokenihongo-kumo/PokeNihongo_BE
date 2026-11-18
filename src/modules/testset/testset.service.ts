@@ -1,27 +1,27 @@
+import { TextToSpeechService } from '@/3rdService/speech/text-to-speech.service'
+import { I18nService } from '@/i18n/i18n.service'
+import { TestSetMessage as M } from '@/i18n/message-keys'
+import { toPaginationMeta } from '@/shared/utils/pagination'
+import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
 import { HttpException, Injectable, Logger } from '@nestjs/common'
-import { QuestionType, TestSetType as PrismaTestSetType } from '@prisma/client'
-import { TestSetRepo, UpsertQuestion } from './testset.repo'
-import {
-  GetTestSetListQueryType,
-  TestSetType,
-  UpdateTestSetBodyType,
-  CreateTestSetWithMeaningsBodyType,
-  UpdateTestSetWithMeaningsBodyType,
-  UpsertQuestionBankType,
-  UpsertTestSetWithQuestionBanksBodyType
-} from './entities/testset.entity'
+import { TestSetType as PrismaTestSetType, QuestionType } from '@prisma/client'
+import { QuestionBankService } from '../question-bank/question-bank.service'
 import {
   InvalidTestSetDataException,
   TestSetChangeNotAllowedException,
   TestSetNotFoundException,
   TestSetQuestionBankNotFoundException
 } from './dto/testset.error'
-import { QuestionBankService } from '../question-bank/question-bank.service'
-import { TextToSpeechService } from '@/3rdService/speech/text-to-speech.service'
-import { I18nService } from '@/i18n/i18n.service'
-import { TestSetMessage as M } from '@/i18n/message-keys'
-import { toPaginationMeta } from '@/shared/utils/pagination'
-import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
+import {
+  CreateTestSetWithMeaningsBody,
+  GetTestSetListQuery,
+  TestSet,
+  UpdateTestSetBody,
+  UpdateTestSetWithMeaningsBody,
+  UpsertQuestionBank,
+  UpsertTestSetWithQuestionBanksBody
+} from './entities/testset.entity'
+import { TestSetRepo, UpsertQuestion } from './testset.repo'
 
 const { GENERAL } = PrismaTestSetType
 
@@ -37,7 +37,7 @@ export class TestSetService {
   ) {}
 
   // GET /testset and /testset/basic (same result)
-  async findAll(query: GetTestSetListQueryType, lang: string = 'vi') {
+  async findAll(query: GetTestSetListQuery, lang: string = 'vi') {
     const { data, total } = await this.testSetRepo.findMany(query)
     // statusCode: the list serializer needs it
     return {
@@ -65,7 +65,7 @@ export class TestSetService {
   }
 
   async createTestSetWithMeanings(
-    data: CreateTestSetWithMeaningsBodyType,
+    data: CreateTestSetWithMeaningsBody,
     userId: number,
     lang: string = 'vi'
   ) {
@@ -80,7 +80,7 @@ export class TestSetService {
     }
   }
 
-  async updateTestSet(id: number, data: UpdateTestSetBodyType, lang: string = 'vi') {
+  async updateTestSet(id: number, data: UpdateTestSetBody, lang: string = 'vi') {
     try {
       await this.assertChangeAllowed(await this.loadTestSet(id), data)
       const testSet = await this.testSetRepo.updateWithTranslations(id, data)
@@ -95,7 +95,7 @@ export class TestSetService {
 
   async updateTestSetWithMeanings(
     id: number,
-    data: UpdateTestSetWithMeaningsBodyType,
+    data: UpdateTestSetWithMeaningsBody,
     lang: string = 'vi'
   ) {
     try {
@@ -128,7 +128,7 @@ export class TestSetService {
   // A question with id is an existing link of this test set (TestSetQuestionBank
   // id) or else an existing QuestionBank; without id it is a new QuestionBank
   async upsertTestSetWithQuestionBanks(
-    data: UpsertTestSetWithQuestionBanksBodyType,
+    data: UpsertTestSetWithQuestionBanksBody,
     userId: number,
     lang: string = 'vi'
   ) {
@@ -137,7 +137,7 @@ export class TestSetService {
       if (data.id) await this.loadTestSet(data.id)
       const links = data.id ? await this.testSetRepo.linksOf(data.id) : new Map()
       const inputs = data.questionBanks ?? []
-      const questionBankIdOf = (q: UpsertQuestionBankType) =>
+      const questionBankIdOf = (q: UpsertQuestionBank) =>
         q.id ? (links.get(q.id) ?? q.id) : undefined
 
       // Every referenced QuestionBank must exist before anything is written
@@ -198,7 +198,7 @@ export class TestSetService {
   }
 
   //#region helpers
-  private async loadTestSet(id: number): Promise<TestSetType> {
+  private async loadTestSet(id: number): Promise<TestSet> {
     const testSet = await this.testSetRepo.findById(id)
     if (!testSet) throw new TestSetNotFoundException()
     return testSet
@@ -209,7 +209,7 @@ export class TestSetService {
   // - type: a specific type may become GENERAL; a GENERAL one may become the
   //   single type of its questions (never when they have several types)
   private async assertChangeAllowed(
-    testSet: TestSetType,
+    testSet: TestSet,
     data: { levelN?: number | null; testType?: PrismaTestSetType }
   ) {
     const levelChanges = data.levelN !== undefined && data.levelN !== testSet.levelN
@@ -249,7 +249,7 @@ export class TestSetService {
   }
 
   // New audio for an edited LISTENING/SPEAKING question (undefined = keep)
-  private async regeneratedAudio(q: UpsertQuestionBankType) {
+  private async regeneratedAudio(q: UpsertQuestionBank) {
     if (
       q.questionType !== QuestionType.SPEAKING &&
       q.questionType !== QuestionType.LISTENING
@@ -265,7 +265,7 @@ export class TestSetService {
 
   // createWithMeanings makes the speech for LISTENING/SPEAKING without audio;
   // SPEAKING questions may repeat questionJp
-  private async createQuestionBank(q: UpsertQuestionBankType, userId: number) {
+  private async createQuestionBank(q: UpsertQuestionBank, userId: number) {
     const result = await this.questionBankService.createWithMeanings(
       {
         questionJp: q.questionJp,

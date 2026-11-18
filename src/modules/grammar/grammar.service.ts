@@ -12,10 +12,10 @@ import {
   InvalidGrammarDataException
 } from './dto/grammar.error'
 import {
-  CreateGrammarBasicBodyType,
-  CreateGrammarBodyType,
-  GetGrammarListQueryType,
-  UpdateGrammarBodyType
+  CreateGrammarBasicBody,
+  CreateGrammarBody,
+  GetGrammarListQuery,
+  UpdateGrammarBody
 } from './entities/grammar.entity'
 import { GrammarRepo } from './grammar.repo'
 
@@ -29,7 +29,7 @@ export class GrammarService {
   ) {}
 
   //#region Get Grammar
-  async getGrammarList(params: GetGrammarListQueryType, lang: string = 'vi') {
+  async getGrammarList(params: GetGrammarListQuery, lang: string = 'vi') {
     const result = await this.grammarRepository.findMany(params)
     return {
       statusCode: 200,
@@ -59,7 +59,7 @@ export class GrammarService {
 
   //#region Create Grammar
   // Grammar + optional first usage + its translations, in one transaction (repo)
-  async createGrammar(data: CreateGrammarBodyType, lang: string = 'vi') {
+  async createGrammar(data: CreateGrammarBody, lang: string = 'vi') {
     try {
       if (await this.grammarRepository.checkStructureExists(data.structure)) {
         throw new GrammarAlreadyExistsException()
@@ -83,7 +83,7 @@ export class GrammarService {
     }
   }
 
-  async createGrammarBasic(data: CreateGrammarBasicBodyType, lang: string = 'vi') {
+  async createGrammarBasic(data: CreateGrammarBasicBody, lang: string = 'vi') {
     try {
       if (await this.grammarRepository.checkStructureExists(data.structure)) {
         throw new GrammarAlreadyExistsException()
@@ -100,7 +100,7 @@ export class GrammarService {
   //#endregion
 
   //#region Update Grammar
-  async updateGrammar(id: number, data: UpdateGrammarBodyType, lang: string = 'vi') {
+  async updateGrammar(id: number, data: UpdateGrammarBody, lang: string = 'vi') {
     try {
       const grammar = await this.grammarRepository.findById(id)
       if (!grammar) {

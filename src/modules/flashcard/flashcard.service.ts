@@ -1,8 +1,23 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { FlashcardMessage } from '@/i18n/message-keys'
+import { TranslationHelperService } from '@/modules/translation/translation.helper.service'
+import { SrsReviewService } from '@/modules/user-srs-review/user-srs-review.service'
+import { Injectable, Logger } from '@nestjs/common'
+import {
+  Prisma,
+  FlashcardContentType as PrismaFlashcardContentType
+} from '@prisma/client'
+import {
+  FlashcardCardNotFoundException,
+  FlashcardContentAlreadyExistsException,
+  FlashcardDeckNotFoundException,
+  InvalidFlashcardImportException
+} from './dto/flashcard.error'
 import {
   CreateFlashcardCardBody,
   CreateFlashcardDeckBody,
   FlashcardCard,
-  FlashcardContentType,
+  FlashcardContent,
   FlashcardDeckDetail,
   FlashcardDeckSummary,
   FlashcardImportContentTypeEnum,
@@ -16,22 +31,7 @@ import {
   UpdateFlashcardCardBody,
   UpdateFlashcardDeckBody
 } from './entities/flashcard.entity'
-import {
-  FlashcardCardNotFoundException,
-  FlashcardContentAlreadyExistsException,
-  FlashcardDeckNotFoundException,
-  InvalidFlashcardImportException
-} from './dto/flashcard.error'
-import { FlashcardMessage } from '@/i18n/message-keys'
 import { FlashcardRepo } from './flashcard.repo'
-import { I18nService } from '@/i18n/i18n.service'
-import { Injectable, Logger } from '@nestjs/common'
-import {
-  Prisma,
-  FlashcardContentType as PrismaFlashcardContentType
-} from '@prisma/client'
-import { SrsReviewService } from '@/modules/user-srs-review/user-srs-review.service'
-import { TranslationHelperService } from '@/modules/translation/translation.helper.service'
 
 const DEFAULT_LANG = 'vi'
 
@@ -675,20 +675,20 @@ export class FlashcardService {
 
     const createPayloads: Prisma.FlashcardCardUncheckedCreateInput[] = []
 
-    const groupByType = body.items.reduce<Record<FlashcardContentType, number[]>>(
+    const groupByType = body.items.reduce<Record<FlashcardContent, number[]>>(
       (acc, item) => {
-        const type = item.contentType as FlashcardContentType
+        const type = item.contentType as FlashcardContent
         if (!acc[type]) {
           acc[type] = []
         }
         acc[type].push(item.contentId)
         return acc
       },
-      {} as Record<FlashcardContentType, number[]>
+      {} as Record<FlashcardContent, number[]>
     )
 
     for (const [type, ids] of Object.entries(groupByType) as [
-      FlashcardContentType,
+      FlashcardContent,
       number[]
     ][]) {
       const uniqueIds = Array.from(new Set(ids))
@@ -778,7 +778,7 @@ export class FlashcardService {
     }
 
     const limit = query.limit ?? 20
-    const targetTypes: Array<Exclude<FlashcardContentType, 'CUSTOM'>> = [
+    const targetTypes: Array<Exclude<FlashcardContent, 'CUSTOM'>> = [
       'VOCABULARY',
       'KANJI',
       'GRAMMAR'
@@ -789,7 +789,7 @@ export class FlashcardService {
       limit
     )
 
-    type NonCustomType = Exclude<FlashcardContentType, 'CUSTOM'>
+    type NonCustomType = Exclude<FlashcardContent, 'CUSTOM'>
     const typeToIds: Record<NonCustomType, number[]> = {
       VOCABULARY: [],
       KANJI: [],
@@ -885,7 +885,7 @@ export class FlashcardService {
         ? (
             await this.flashcardRepository.findSrsEntries(
               userId,
-              card.contentType as Exclude<FlashcardContentType, 'CUSTOM'>,
+              card.contentType as Exclude<FlashcardContent, 'CUSTOM'>,
               [contentId]
             )
           )[0]

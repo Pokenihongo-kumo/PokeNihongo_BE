@@ -86,13 +86,13 @@ export const GetNotificationDetailSchema = NotificationSchema.extend({
 export const GetNotificationDetailResSchema = resSchema(GetNotificationDetailSchema)
 
 // Type exports
-export type NotificationType = z.infer<typeof NotificationSchema>
-export type CreateNotificationBodyType = z.infer<typeof CreateNotificationBodySchema>
-export type UpdateNotificationBodyType = z.infer<typeof UpdateNotificationBodySchema>
-export type UpdateNotificationReadListBodyType = z.infer<
+export type Notification = z.infer<typeof NotificationSchema>
+export type CreateNotificationBody = z.infer<typeof CreateNotificationBodySchema>
+export type UpdateNotificationBody = z.infer<typeof UpdateNotificationBodySchema>
+export type UpdateNotificationReadListBody = z.infer<
   typeof UpdateNotificationReadListBodySchema
 >
-export type GetNotificationParamsType = z.infer<typeof GetNotificationParamsSchema>
+export type GetNotificationParams = z.infer<typeof GetNotificationParamsSchema>
 
 // Field for query
 export type NotificationFieldType = keyof z.infer<typeof NotificationSchema>

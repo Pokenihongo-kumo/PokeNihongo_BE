@@ -1,19 +1,19 @@
 import { I18nService } from '@/i18n/i18n.service'
 import { UserRewardHistoryMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { RewardRepo } from '@/modules/reward/reward.repo'
+import { TranslationService } from '@/modules/translation/translation.service'
 import {
   InvalidUserRewardHistoryDataException,
   UserRewardHistoryNotFoundException
 } from '@/modules/user-reward-history/dto/user-reward-history.error'
 import {
-  CreateUserRewardHistoryBodyType,
-  GetMyRewardHistoryQueryType,
-  GetUserRewardHistoryListQueryType,
-  UpdateUserRewardHistoryBodyType
+  CreateUserRewardHistoryBody,
+  GetMyRewardHistoryQuery,
+  GetUserRewardHistoryListQuery,
+  UpdateUserRewardHistoryBody
 } from '@/modules/user-reward-history/entities/user-reward-history.entities'
 import { UserRewardHistoryRepository } from '@/modules/user-reward-history/user-reward-history.repo'
-import { RewardRepo } from '@/modules/reward/reward.repo'
-import { TranslationService } from '@/modules/translation/translation.service'
-import { LanguagesService } from '@/modules/languages/languages.service'
 import { HttpException, Injectable, Logger } from '@nestjs/common'
 import { RewardTarget, UserRewardSourceType } from '@prisma/client'
 
@@ -49,11 +49,11 @@ export class UserRewardHistoryService {
       note: params.note,
       meta: params.meta,
       sourceId: params.sourceId
-    } as CreateUserRewardHistoryBodyType
+    } as CreateUserRewardHistoryBody
   }
 
   appendEntriesFromRewards(
-    entries: CreateUserRewardHistoryBodyType[],
+    entries: CreateUserRewardHistoryBody[],
     rewards: { id: number; rewardItem: number }[],
     userId: number,
     rewardTarget: RewardTarget,
@@ -78,7 +78,7 @@ export class UserRewardHistoryService {
     }
   }
 
-  async create(body: CreateUserRewardHistoryBodyType, lang: string = 'vi') {
+  async create(body: CreateUserRewardHistoryBody, lang: string = 'vi') {
     try {
       // Nếu có rewardId, lấy thông tin reward và lưu vào meta
       let meta = body.meta
@@ -118,7 +118,7 @@ export class UserRewardHistoryService {
     }
   }
 
-  async findAll(query: GetUserRewardHistoryListQueryType, lang: string = 'vi') {
+  async findAll(query: GetUserRewardHistoryListQuery, lang: string = 'vi') {
     const { currentPage, pageSize } = query
     const result = await this.userRewardHistoryRepository.findMany(query)
 
@@ -142,7 +142,7 @@ export class UserRewardHistoryService {
 
   async getMy(
     userId: number,
-    query: GetMyRewardHistoryQueryType,
+    query: GetMyRewardHistoryQuery,
     languageCode: string = 'vi'
   ) {
     if (!userId) {
@@ -269,7 +269,7 @@ export class UserRewardHistoryService {
     }
   }
 
-  async update(id: number, body: UpdateUserRewardHistoryBodyType, lang: string = 'vi') {
+  async update(id: number, body: UpdateUserRewardHistoryBody, lang: string = 'vi') {
     try {
       const existing = await this.userRewardHistoryRepository.findUnique(id)
       if (!existing) {

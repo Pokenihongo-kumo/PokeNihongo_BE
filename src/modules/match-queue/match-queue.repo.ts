@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 
 import { PrismaClient, QueueStatus } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import { CreateMatchQueueBodyType, MatchQueueType } from './entities/match-queue.entity'
+import { CreateMatchQueueBody, MatchQueue } from './entities/match-queue.entity'
 
 @Injectable()
 export class MatchQueueRepo {
@@ -17,27 +17,27 @@ export class MatchQueueRepo {
     data
   }: {
     createdById: number | null
-    data: CreateMatchQueueBodyType
-  }): Promise<MatchQueueType> {
+    data: CreateMatchQueueBody
+  }): Promise<MatchQueue> {
     return this.prismaService.matchQueue.create({
       data: {
         ...data
       }
-    }) as unknown as Promise<MatchQueueType>
+    }) as unknown as Promise<MatchQueue>
   }
 
-  delete({ deletedById }: { deletedById: number }): Promise<MatchQueueType> {
+  delete({ deletedById }: { deletedById: number }): Promise<MatchQueue> {
     return this.prismaService.matchQueue.delete({
       where: {
         userId: deletedById
       }
-    }) as unknown as Promise<MatchQueueType>
+    }) as unknown as Promise<MatchQueue>
   }
 
   /**
    * Lấy danh sách users đang WAITING trong queue, sắp xếp theo createdAt
    */
-  findWaitingUsers(): Promise<MatchQueueType[]> {
+  findWaitingUsers(): Promise<MatchQueue[]> {
     return this.prismaService.matchQueue.findMany({
       where: {
         status: QueueStatus.WAITING,
@@ -46,7 +46,7 @@ export class MatchQueueRepo {
       orderBy: {
         createdAt: 'asc' // Ưu tiên user vào hàng đợi trước
       }
-    }) as unknown as Promise<MatchQueueType[]>
+    }) as unknown as Promise<MatchQueue[]>
   }
 
   // ---- Matchmaking run (in its transaction) ----

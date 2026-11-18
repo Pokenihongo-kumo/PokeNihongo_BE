@@ -124,18 +124,14 @@ export const CompleteLessonBodySchema = z
   .strict()
 
 // Types
-export type ProgressStatusType = z.infer<typeof ProgressStatusSchema>
-export type UserProgressType = z.infer<typeof UserProgressSchema>
-export type CreateUserProgressBodyType = z.infer<typeof CreateUserProgressBodySchema>
-export type UpdateUserProgressBodyType = z.infer<typeof UpdateUserProgressBodySchema>
-export type UserProgressWithRelationsType = z.infer<
-  typeof UserProgressWithRelationsSchema
->
-export type UserProgressResType = z.infer<typeof UserProgressResSchema>
-export type UserProgressListResType = z.infer<typeof UserProgressListResSchema>
-export type GetUserProgressByIdParamsType = z.infer<
-  typeof GetUserProgressByIdParamsSchema
->
-export type GetUserProgressListQueryType = z.infer<typeof GetUserProgressListQuerySchema>
-export type StartLessonBodyType = z.infer<typeof StartLessonBodySchema>
-export type CompleteLessonBodyType = z.infer<typeof CompleteLessonBodySchema>
+export type ProgressStatus = z.infer<typeof ProgressStatusSchema>
+export type UserProgress = z.infer<typeof UserProgressSchema>
+export type CreateUserProgressBody = z.infer<typeof CreateUserProgressBodySchema>
+export type UpdateUserProgressBody = z.infer<typeof UpdateUserProgressBodySchema>
+export type UserProgressWithRelations = z.infer<typeof UserProgressWithRelationsSchema>
+export type UserProgressRes = z.infer<typeof UserProgressResSchema>
+export type UserProgressListRes = z.infer<typeof UserProgressListResSchema>
+export type GetUserProgressByIdParams = z.infer<typeof GetUserProgressByIdParamsSchema>
+export type GetUserProgressListQuery = z.infer<typeof GetUserProgressListQuerySchema>
+export type StartLessonBody = z.infer<typeof StartLessonBodySchema>
+export type CompleteLessonBody = z.infer<typeof CompleteLessonBodySchema>

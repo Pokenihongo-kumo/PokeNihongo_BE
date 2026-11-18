@@ -1,7 +1,7 @@
 import { I18nService } from '@/i18n/i18n.service'
 import { AttendenceConfigMessage } from '@/i18n/message-keys'
 import { NotFoundRecordException } from '@/shared/error'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
@@ -10,8 +10,8 @@ import { HttpStatus, Injectable } from '@nestjs/common'
 import { AttendenceConfigRepo } from './attendence-config.repo'
 import { AttendenceConfigAlreadyExistsException } from './dto/attendence-config.error'
 import {
-  CreateAttendanceConfigBodyType,
-  UpdateAttendanceConfigBodyType
+  CreateAttendanceConfigBody,
+  UpdateAttendanceConfigBody
 } from './entities/attendence-config.entity'
 
 @Injectable()
@@ -21,7 +21,7 @@ export class AttendenceConfigService {
     private readonly i18nService: I18nService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.attendenceConfigRepo.list(pagination)
     return {
       statusCode: HttpStatus.OK,
@@ -47,7 +47,7 @@ export class AttendenceConfigService {
       data,
       createdById
     }: {
-      data: CreateAttendanceConfigBodyType
+      data: CreateAttendanceConfigBody
       createdById: number
     },
     lang: string = 'vi'
@@ -77,7 +77,7 @@ export class AttendenceConfigService {
       updatedById
     }: {
       id: number
-      data: UpdateAttendanceConfigBodyType
+      data: UpdateAttendanceConfigBody
       updatedById: number
     },
     lang: string = 'vi'

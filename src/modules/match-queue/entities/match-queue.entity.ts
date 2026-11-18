@@ -38,11 +38,11 @@ export const GetMatchQueueParamsSchema = z
 
 export const GetMatchQueueDetailResSchema = resSchema(MatchQueueSchema)
 
-export type MatchQueueType = z.infer<typeof MatchQueueSchema>
-export type CreateMatchQueueBodyType = z.infer<typeof CreateMatchQueueBodySchema>
-export type UpdateMatchQueueBodyType = z.infer<typeof UpdateMatchQueueBodySchema>
-export type GetMatchQueueParamsType = z.infer<typeof GetMatchQueueParamsSchema>
-export type GetMatchQueueDetailResType = z.infer<typeof GetMatchQueueDetailResSchema>
+export type MatchQueue = z.infer<typeof MatchQueueSchema>
+export type CreateMatchQueueBody = z.infer<typeof CreateMatchQueueBodySchema>
+export type UpdateMatchQueueBody = z.infer<typeof UpdateMatchQueueBodySchema>
+export type GetMatchQueueParams = z.infer<typeof GetMatchQueueParamsSchema>
+export type GetMatchQueueDetailRes = z.infer<typeof GetMatchQueueDetailResSchema>
 
 type MatchQueueFieldType = keyof z.infer<typeof MatchQueueSchema>
 export const MATCH_QUEUE_FIELDS = Object.keys(

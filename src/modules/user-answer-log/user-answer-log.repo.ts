@@ -1,10 +1,10 @@
-import { UserAnswerLogType } from '@/modules/user-answer-log/entities/user-answer-log.entity'
+import { UserAnswerLog } from '@/modules/user-answer-log/entities/user-answer-log.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
-import { Prisma, UserAnswerLog } from '@prisma/client'
+import { Prisma, UserAnswerLog as PrismaUserAnswerLog } from '@prisma/client'
 
-const toLog = (log: UserAnswerLog): UserAnswerLogType => ({
+const toLog = (log: PrismaUserAnswerLog): UserAnswerLog => ({
   id: log.id,
   isCorrect: log.isCorrect,
   userExerciseAttemptId: log.userExerciseAttemptId,
@@ -49,7 +49,7 @@ export class UserAnswerLogRepo {
     return { items: items.map(toLog), total }
   }
 
-  async findUnique(id: number): Promise<UserAnswerLogType | null> {
+  async findUnique(id: number): Promise<UserAnswerLog | null> {
     const log = await this.prismaService.userAnswerLog.findUnique({ where: { id } })
     return log ? toLog(log) : null
   }
@@ -77,14 +77,14 @@ export class UserAnswerLogRepo {
     })
   }
 
-  async create(data: LogInput, isCorrect: boolean): Promise<UserAnswerLogType> {
+  async create(data: LogInput, isCorrect: boolean): Promise<UserAnswerLog> {
     return toLog(
       await this.prismaService.userAnswerLog.create({ data: { ...data, isCorrect } })
     )
   }
 
   // One log per question of an attempt: a new answer replaces the old one
-  async upsert(data: LogInput, isCorrect: boolean): Promise<UserAnswerLogType> {
+  async upsert(data: LogInput, isCorrect: boolean): Promise<UserAnswerLog> {
     const existing = await this.prismaService.userAnswerLog.findFirst({
       where: {
         userExerciseAttemptId: data.userExerciseAttemptId,
@@ -101,11 +101,11 @@ export class UserAnswerLogRepo {
     return toLog(log)
   }
 
-  async update(id: number, data: { isCorrect?: boolean }): Promise<UserAnswerLogType> {
+  async update(id: number, data: { isCorrect?: boolean }): Promise<UserAnswerLog> {
     return toLog(await this.prismaService.userAnswerLog.update({ where: { id }, data }))
   }
 
-  async delete(id: number): Promise<UserAnswerLogType> {
+  async delete(id: number): Promise<UserAnswerLog> {
     return toLog(await this.prismaService.userAnswerLog.delete({ where: { id } }))
   }
 

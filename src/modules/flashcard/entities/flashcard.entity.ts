@@ -1,8 +1,8 @@
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { FlashcardMessage as M } from '@/i18n/message-keys'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
-import { FlashcardMessage as M } from '@/i18n/message-keys'
-import { checkIdSchema } from '@/common/utils/id.validation'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
@@ -266,7 +266,7 @@ export const DeleteFlashcardCardsBodySchema = z.object({
 export type FlashcardDeckStatus = z.infer<typeof FlashcardDeckStatusEnum>
 export type FlashcardDeckSource = z.infer<typeof FlashcardDeckSourceEnum>
 export type FlashcardCardStatus = z.infer<typeof FlashcardCardStatusEnum>
-export type FlashcardContentType = z.infer<typeof FlashcardContentTypeEnum>
+export type FlashcardContent = z.infer<typeof FlashcardContentTypeEnum>
 export type FlashcardDeckSummary = z.infer<typeof FlashcardDeckSummarySchema>
 export type FlashcardDeckDetail = z.infer<typeof FlashcardDeckDetailSchema>
 export type FlashcardCard = z.infer<typeof FlashcardCardSchema>

@@ -58,11 +58,11 @@ export const GetShopPurchaseListResSchema = resSchema(
 export const GetShopPurchaseDetailResSchema = resSchema(GetShopPurchaseDetailSchema)
 
 // Type exports
-export type ShopPurchaseType = z.infer<typeof ShopPurchaseSchema>
-export type CreateShopPurchaseBodyType = z.infer<typeof CreateShopPurchaseBodySchema>
-export type UpdateShopPurchaseBodyType = z.infer<typeof UpdateShopPurchaseBodySchema>
-export type GetShopPurchaseParamsType = z.infer<typeof GetShopPurchaseParamsSchema>
-export type GetShopPurchaseDetailType = z.infer<typeof GetShopPurchaseDetailSchema>
+export type ShopPurchase = z.infer<typeof ShopPurchaseSchema>
+export type CreateShopPurchaseBody = z.infer<typeof CreateShopPurchaseBodySchema>
+export type UpdateShopPurchaseBody = z.infer<typeof UpdateShopPurchaseBodySchema>
+export type GetShopPurchaseParams = z.infer<typeof GetShopPurchaseParamsSchema>
+export type GetShopPurchaseDetail = z.infer<typeof GetShopPurchaseDetailSchema>
 
 // Field for query
 export type ShopPurchaseFieldType = keyof z.infer<typeof ShopPurchaseSchema>

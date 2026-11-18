@@ -23,4 +23,4 @@ export const PermissionSchema = z.object({
   createdAt: z.date(),
   updatedAt: z.date()
 })
-export type PermissionType = z.infer<typeof PermissionSchema>
+export type Permission = z.infer<typeof PermissionSchema>

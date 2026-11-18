@@ -1,11 +1,11 @@
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import {
-  CreatePermissionBodyType,
+  CreatePermissionBody,
   PERMISSION_FIELDS,
-  PermissionType,
-  UpdatePermissionBodyType
+  Permission,
+  UpdatePermissionBody
 } from 'src/modules/permission/permission.model'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
@@ -13,7 +13,7 @@ import { PrismaService } from 'src/shared/services/prisma.service'
 export class PermissionRepo {
   constructor(private prismaService: PrismaService) {}
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     pagination.pageSize = 10000
     const { where, orderBy } = parseQs(pagination.qs, PERMISSION_FIELDS)
 
@@ -43,7 +43,7 @@ export class PermissionRepo {
     }
   }
 
-  findById(id: number): Promise<PermissionType | null> {
+  findById(id: number): Promise<Permission | null> {
     return this.prismaService.permission.findUnique({
       where: {
         id,
@@ -57,8 +57,8 @@ export class PermissionRepo {
     data
   }: {
     createdById: number | null
-    data: CreatePermissionBodyType
-  }): Promise<PermissionType> {
+    data: CreatePermissionBody
+  }): Promise<Permission> {
     return this.prismaService.permission.create({
       data: {
         ...data,
@@ -74,8 +74,8 @@ export class PermissionRepo {
   }: {
     id: number
     updatedById: number
-    data: UpdatePermissionBodyType
-  }): Promise<PermissionType> {
+    data: UpdatePermissionBody
+  }): Promise<Permission> {
     return this.prismaService.permission.update({
       where: {
         id,
@@ -97,7 +97,7 @@ export class PermissionRepo {
       deletedById: number
     },
     isHard?: boolean
-  ): Promise<PermissionType> {
+  ): Promise<Permission> {
     return isHard
       ? this.prismaService.permission.delete({
           where: {

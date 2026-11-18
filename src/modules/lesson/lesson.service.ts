@@ -16,9 +16,9 @@ import {
   LessonTestNotFoundException
 } from './dto/lesson.error'
 import {
-  CreateLessonBodyType,
-  GetLessonListQueryType,
-  UpdateLessonBodyType
+  CreateLessonBody,
+  GetLessonListQuery,
+  UpdateLessonBody
 } from './entities/lesson.entity'
 import { LessonRepo } from './lesson.repo'
 
@@ -35,7 +35,7 @@ export class LessonService {
   ) {}
 
   // titleLang (?lang): the title in that language; without it, every translation
-  async getLessonList(params: GetLessonListQueryType, lang: string = 'vi') {
+  async getLessonList(params: GetLessonListQuery, lang: string = 'vi') {
     const { data, total } = await this.lessonRepo.findMany(params)
     const titleOf = await this.titlesOf(
       data.map((l) => l.titleKey),
@@ -59,7 +59,7 @@ export class LessonService {
     return this.withTitle(await this.lessonRepo.findBySlug(slug), titleLang, lang)
   }
 
-  async createLesson(data: CreateLessonBodyType, userId: number, lang: string = 'vi') {
+  async createLesson(data: CreateLessonBody, userId: number, lang: string = 'vi') {
     try {
       await this.assertReferences(data)
       // The slug is always lesson-{id}
@@ -85,7 +85,7 @@ export class LessonService {
     }
   }
 
-  async updateLesson(id: number, data: UpdateLessonBodyType, lang: string = 'vi') {
+  async updateLesson(id: number, data: UpdateLessonBody, lang: string = 'vi') {
     try {
       if (!(await this.lessonRepo.findById(id))) throw new LessonNotFoundException()
       await this.assertReferences(data)

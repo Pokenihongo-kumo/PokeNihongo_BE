@@ -92,11 +92,9 @@ export const WordTypeResSchema = resSchema(WordTypeSchema)
 
 // Type exports
 export type WordType = z.infer<typeof WordTypeSchema>
-export type CreateWordTypeBodyType = z.infer<typeof CreateWordTypeSchema>
-export type UpdateWordTypeBodyType = z.infer<typeof UpdateWordTypeSchema>
-export type GetWordTypeByIdParamsType = z.infer<typeof GetWordTypeByIdParamsSchema>
-export type GetWordTypeListQueryType = z.infer<typeof GetWordTypeListQuerySchema>
-export type GetWordTypeByNameKeyParamsType = z.infer<
-  typeof GetWordTypeByNameKeyParamsSchema
->
-export type WordTypeListResType = z.infer<typeof WordTypeListResSchema>
+export type CreateWordTypeBody = z.infer<typeof CreateWordTypeSchema>
+export type UpdateWordTypeBody = z.infer<typeof UpdateWordTypeSchema>
+export type GetWordTypeByIdParams = z.infer<typeof GetWordTypeByIdParamsSchema>
+export type GetWordTypeListQuery = z.infer<typeof GetWordTypeListQuerySchema>
+export type GetWordTypeByNameKeyParams = z.infer<typeof GetWordTypeByNameKeyParamsSchema>
+export type WordTypeListRes = z.infer<typeof WordTypeListResSchema>

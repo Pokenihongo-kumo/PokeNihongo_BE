@@ -1,19 +1,19 @@
 import { RewardClaimStatus } from '@/common/constants/reward.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { UserSeasonHistoryMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
+import { UserCoreService } from '@/modules/user/user-core.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   convertEloToRank,
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
-import { UserCoreService } from '@/modules/user/user-core.service'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { UserRewardSourceType } from '@prisma/client'
-import { LanguagesService } from '@/modules/languages/languages.service'
 import { NotStartedLeaderboardSeasonException } from '../leaderboard-season/dto/leaderboard-season.error'
-import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
 import { RewardService } from '../reward/reward.service'
 import { UserNotFoundException } from '../user/dto/user.error'
 import {
@@ -22,8 +22,8 @@ import {
   UserSeasonHistoryNotFoundException
 } from './dto/user-season-history.error'
 import {
-  CreateUserSeasonHistoryBodyType,
-  UpdateUserSeasonHistoryBodyType
+  CreateUserSeasonHistoryBody,
+  UpdateUserSeasonHistoryBody
 } from './entities/user-season-history.entity'
 import { UserSeasonHistoryRepo } from './user-season-history.repo'
 
@@ -38,7 +38,7 @@ export class UserSeasonHistoryService {
     private readonly userCoreService: UserCoreService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.userSeasonHistoryRepo.list(pagination)
     return {
       statusCode: 200,
@@ -132,7 +132,7 @@ export class UserSeasonHistoryService {
   }
 
   async create(
-    { userId, data }: { userId: number; data: CreateUserSeasonHistoryBodyType },
+    { userId, data }: { userId: number; data: CreateUserSeasonHistoryBody },
     lang: string = 'vi'
   ) {
     try {
@@ -171,7 +171,7 @@ export class UserSeasonHistoryService {
       userId
     }: {
       id: number
-      data: UpdateUserSeasonHistoryBodyType
+      data: UpdateUserSeasonHistoryBody
       userId?: number
     },
     lang: string = 'vi'

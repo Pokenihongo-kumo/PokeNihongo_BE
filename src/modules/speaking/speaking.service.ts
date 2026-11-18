@@ -1,25 +1,24 @@
-import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common'
-import { SpeakingRepository } from './speaking.repo'
-import {
-  CreateUserSpeakingAttemptType,
-  UpdateUserSpeakingAttemptType,
-  GetUserSpeakingAttemptListQueryType,
-  EvaluateSpeakingRequestType,
-  EvaluateSpeakingResponseType
-} from './entities/speaking.entities'
-import {
-  UserSpeakingAttemptNotFoundException,
-  InvalidUserSpeakingAttemptDataException,
-  QuestionBankNotFoundException,
-  GoogleApiException,
-  AudioProcessingException,
-  EvaluationException,
-  SPEAKING_MESSAGE
-} from './dto/speaking.error'
-import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { SpeechToTextService } from '@/3rdService/speech/speech-to-text.service'
 import { TextToSpeechService } from '@/3rdService/speech/text-to-speech.service'
 import { UploadService } from '@/3rdService/upload/upload.service'
+import { MessageResDTO } from '@/shared/dtos/response.dto'
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common'
+import {
+  AudioProcessingException,
+  EvaluationException,
+  GoogleApiException,
+  InvalidUserSpeakingAttemptDataException,
+  QuestionBankNotFoundException,
+  SPEAKING_MESSAGE,
+  UserSpeakingAttemptNotFoundException
+} from './dto/speaking.error'
+import {
+  CreateUserSpeakingAttempt,
+  EvaluateSpeakingRequest,
+  GetUserSpeakingAttemptListQuery,
+  UpdateUserSpeakingAttempt
+} from './entities/speaking.entities'
+import { SpeakingRepository } from './speaking.repo'
 
 @Injectable()
 export class SpeakingService {
@@ -33,7 +32,7 @@ export class SpeakingService {
   ) {}
 
   async createUserSpeakingAttempt(
-    data: CreateUserSpeakingAttemptType,
+    data: CreateUserSpeakingAttempt,
     userId: number
   ): Promise<MessageResDTO> {
     try {
@@ -75,7 +74,7 @@ export class SpeakingService {
   }
 
   async getUserSpeakingAttempts(
-    query: GetUserSpeakingAttemptListQueryType
+    query: GetUserSpeakingAttemptListQuery
   ): Promise<MessageResDTO> {
     const { data, total } = await this.speakingRepo.findMany(query)
     const { currentPage, pageSize } = query
@@ -98,7 +97,7 @@ export class SpeakingService {
 
   async updateUserSpeakingAttempt(
     id: number,
-    data: UpdateUserSpeakingAttemptType
+    data: UpdateUserSpeakingAttempt
   ): Promise<MessageResDTO> {
     try {
       const userSpeakingAttempt = await this.speakingRepo.update(id, data)
@@ -160,7 +159,7 @@ export class SpeakingService {
   }
 
   async evaluateSpeaking(
-    data: EvaluateSpeakingRequestType,
+    data: EvaluateSpeakingRequest,
     userId: number,
     audioFile?: Express.Multer.File
   ): Promise<MessageResDTO> {

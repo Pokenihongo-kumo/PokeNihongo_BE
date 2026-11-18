@@ -103,25 +103,23 @@ export const GetDailyRequestDetailwithAllLangResSchema = resSchema(
 )
 
 // Type definitions
-export type DailyRequestType = z.infer<typeof DailyRequestSchema>
+export type DailyRequest = z.infer<typeof DailyRequestSchema>
 
-export type CreateDailyRequestBodyInputType = z.infer<
+export type CreateDailyRequestBodyInput = z.infer<
   typeof CreateDailyRequestBodyInputSchema
 >
 
-export type CreateDailyRequestBodyType = z.infer<typeof CreateDailyRequestBodySchema>
+export type CreateDailyRequestBody = z.infer<typeof CreateDailyRequestBodySchema>
 
-export type UpdateDailyRequestBodyInputType = z.infer<
+export type UpdateDailyRequestBodyInput = z.infer<
   typeof UpdateDailyRequestBodyInputSchema
 >
 
-export type UpdateDailyRequestBodyType = z.infer<typeof UpdateDailyRequestBodySchema>
+export type UpdateDailyRequestBody = z.infer<typeof UpdateDailyRequestBodySchema>
 
-export type GetParamsDailyRequestType = z.infer<typeof GetParamsDailyRequestSchema>
+export type GetParamsDailyRequest = z.infer<typeof GetParamsDailyRequestSchema>
 
-export type GetParamDailyRequestDetailType = z.infer<
-  typeof GetDailyRequestDetailResSchema
->
+export type GetParamDailyRequestDetail = z.infer<typeof GetDailyRequestDetailResSchema>
 
 // Field
 

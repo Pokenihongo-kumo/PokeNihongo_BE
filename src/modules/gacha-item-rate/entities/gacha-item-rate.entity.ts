@@ -54,10 +54,10 @@ export const GetGachaItemRateDetailSchema = GachaItemRateSchema
 export const GetGachaItemRateDetailResSchema = resSchema(GetGachaItemRateDetailSchema)
 
 // Type exports
-export type GachaItemRateType = z.infer<typeof GachaItemRateSchema>
-export type CreateGachaItemRateBodyType = z.infer<typeof CreateGachaItemRateBodySchema>
-export type UpdateGachaItemRateBodyType = z.infer<typeof UpdateGachaItemRateBodySchema>
-export type GetGachaItemRateParamsType = z.infer<typeof GetGachaItemRateParamsSchema>
+export type GachaItemRate = z.infer<typeof GachaItemRateSchema>
+export type CreateGachaItemRateBody = z.infer<typeof CreateGachaItemRateBodySchema>
+export type UpdateGachaItemRateBody = z.infer<typeof UpdateGachaItemRateBodySchema>
+export type GetGachaItemRateParams = z.infer<typeof GetGachaItemRateParamsSchema>
 
 // Field for query
 export type GachaItemFieldType = keyof z.infer<typeof GachaItemRateSchema>

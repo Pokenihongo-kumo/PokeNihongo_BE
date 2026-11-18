@@ -1,18 +1,18 @@
-import { Injectable } from '@nestjs/common'
 import { PrismaService } from '@/shared/services/prisma.service'
-import {
-  TestType,
-  GetTestListQueryType,
-  CreateTestWithMeaningsBodyType,
-  UpdateTestWithMeaningsBodyType
-} from './entities/test.entity'
+import { Injectable } from '@nestjs/common'
 import { Prisma, TestStatus as PrismaTestStatus } from '@prisma/client'
+import {
+  CreateTestWithMeaningsBody,
+  GetTestListQuery,
+  Test,
+  UpdateTestWithMeaningsBody
+} from './entities/test.entity'
 
 @Injectable()
 export class TestRepo {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findById(id: number, language?: string): Promise<TestType | null> {
+  async findById(id: number, language?: string): Promise<Test | null> {
     const result = await this.prisma.test.findUnique({
       where: { id }
     })
@@ -173,9 +173,7 @@ export class TestRepo {
     return test
   }
 
-  async findMany(
-    query: GetTestListQueryType
-  ): Promise<{ data: TestType[]; total: number }> {
+  async findMany(query: GetTestListQuery): Promise<{ data: Test[]; total: number }> {
     const {
       currentPage,
       pageSize,
@@ -323,7 +321,7 @@ export class TestRepo {
     return { data, total }
   }
 
-  async delete(id: number): Promise<TestType> {
+  async delete(id: number): Promise<Test> {
     const result = await this.prisma.test.delete({
       where: { id }
     })
@@ -389,9 +387,9 @@ export class TestRepo {
   }
 
   async createWithMeanings(
-    data: CreateTestWithMeaningsBodyType,
+    data: CreateTestWithMeaningsBody,
     userId: number
-  ): Promise<TestType> {
+  ): Promise<Test> {
     const { meanings, ...testData } = data
 
     return await this.prisma.$transaction(async (tx) => {
@@ -471,10 +469,7 @@ export class TestRepo {
     })
   }
 
-  async updateWithMeanings(
-    id: number,
-    data: UpdateTestWithMeaningsBodyType
-  ): Promise<TestType> {
+  async updateWithMeanings(id: number, data: UpdateTestWithMeaningsBody): Promise<Test> {
     const { meanings, ...testData } = data
 
     return await this.prisma.$transaction(async (tx) => {

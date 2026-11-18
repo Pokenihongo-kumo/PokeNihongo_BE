@@ -1,6 +1,8 @@
 import { RoleName } from '@/common/constants/role.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { FeatureMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { TranslationService } from '@/modules/translation/translation.service'
 import {
   LanguageNotExistToTranslateException,
   NotFoundRecordException
@@ -10,17 +12,15 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { LanguagesService } from '@/modules/languages/languages.service'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
-import { TranslationService } from '@/modules/translation/translation.service'
+import { CreateTranslationBody } from '../translation/entities/translation.entity'
 import { FeatureAlreadyExistsException } from './dto/feature.error'
 import {
-  CreateFeatureBodyInputType,
-  CreateFeatureBodyType,
-  UpdateFeatureBodyInputType,
-  UpdateFeatureBodyType
+  CreateFeatureBody,
+  CreateFeatureBodyInput,
+  UpdateFeatureBody,
+  UpdateFeatureBodyInput
 } from './entities/feature.entity'
 import { FeatureRepo } from './feature.repo'
 
@@ -48,7 +48,7 @@ export class FeatureService {
     }))
   }
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi', roleName: string) {
+  async list(pagination: PaginationQuery, lang: string = 'vi', roleName: string) {
     const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
@@ -182,7 +182,7 @@ export class FeatureService {
       data,
       createdById
     }: {
-      data: CreateFeatureBodyInputType
+      data: CreateFeatureBodyInput
       createdById: number
     },
     lang: string = 'vi'
@@ -193,7 +193,7 @@ export class FeatureService {
       return await this.featureRepo.withTransaction(async (prismaTx) => {
         const nameKey = `feature.name.${Date.now()}`
 
-        const dataCreate: CreateFeatureBodyType = {
+        const dataCreate: CreateFeatureBody = {
           nameKey,
           featureKey: data.featureKey
         }
@@ -230,7 +230,7 @@ export class FeatureService {
         }
 
         // Create translation records
-        const nameTranslationRecords: CreateTranslationBodyType[] = []
+        const nameTranslationRecords: CreateTranslationBody[] = []
 
         // nameTranslations → key = fNameKey
         for (const item of data.nameTranslations) {
@@ -299,7 +299,7 @@ export class FeatureService {
       updatedById
     }: {
       id: number
-      data: UpdateFeatureBodyInputType
+      data: UpdateFeatureBodyInput
       updatedById: number
     },
     lang: string = 'vi'
@@ -313,14 +313,14 @@ export class FeatureService {
         if (!existingFeature) throw new NotFoundRecordException()
 
         // Prepare data for update
-        const dataUpdate: Partial<UpdateFeatureBodyType> = {}
+        const dataUpdate: Partial<UpdateFeatureBody> = {}
 
         if (data.featureKey) {
           dataUpdate.featureKey = data.featureKey
         }
 
         // Handle translations if provided
-        let nameTranslationRecords: CreateTranslationBodyType[] = []
+        let nameTranslationRecords: CreateTranslationBody[] = []
 
         if (data.nameTranslations) {
           const nameList = data.nameTranslations?.map((t) => t.key) || []

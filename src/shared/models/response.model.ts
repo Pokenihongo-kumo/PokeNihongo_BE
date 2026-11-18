@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 export const MessageResSchema = resSchema(z.any().optional().nullable())
 
-export type MessageResType = z.infer<typeof MessageResSchema>
+export type MessageRes = z.infer<typeof MessageResSchema>
 
 export const PaginationMetaSchema = z.object({
   current: z.number(),

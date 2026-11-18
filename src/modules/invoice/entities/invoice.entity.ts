@@ -65,10 +65,10 @@ export const GetInvoiceDetailSchema = InvoiceSchema
 export const GetInvoiceDetailResSchema = resSchema(GetInvoiceDetailSchema)
 
 // Type exports
-export type InvoiceType = z.infer<typeof InvoiceSchema>
-export type CreateInvoiceBodyType = z.infer<typeof CreateInvoiceBodySchema>
-export type UpdateInvoiceBodyType = z.infer<typeof UpdateInvoiceBodySchema>
-export type GetInvoiceParamsType = z.infer<typeof GetInvoiceParamsSchema>
+export type Invoice = z.infer<typeof InvoiceSchema>
+export type CreateInvoiceBody = z.infer<typeof CreateInvoiceBodySchema>
+export type UpdateInvoiceBody = z.infer<typeof UpdateInvoiceBodySchema>
+export type GetInvoiceParams = z.infer<typeof GetInvoiceParamsSchema>
 
 // Field for query
 export type InvoiceFieldType = keyof z.infer<typeof InvoiceSchema>

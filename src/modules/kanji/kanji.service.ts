@@ -1,21 +1,21 @@
-import { GetKanjiListQueryType } from './entities/kanji.entity'
-import { CreateKanjiWithMeaningsBodyType } from './dto/kanji-with-meanings.dto'
-import { UpdateKanjiWithMeaningsBodyType } from './dto/update-kanji-with-meanings.dto'
-import { KanjiRepo } from './kanji.repo'
-import { KanjiReadingService } from '@/modules/kanji-reading/kanji-reading.service'
 import { UploadService } from '@/3rdService/upload/upload.service'
-import { HttpException, Injectable, Logger } from '@nestjs/common'
-import * as XLSX from 'xlsx'
-import {
-  KanjiNotFoundException,
-  KanjiAlreadyExistsException,
-  InvalidKanjiDataException,
-  KanjiCharacterInvalidException
-} from './dto/kanji.error'
+import { isKanjiCharacter } from '@/common/utils/japanese-text'
 import { I18nService } from '@/i18n/i18n.service'
 import { KanjiMessage as M } from '@/i18n/message-keys'
-import { isKanjiCharacter } from '@/common/utils/japanese-text'
+import { KanjiReadingService } from '@/modules/kanji-reading/kanji-reading.service'
 import { isUniqueConstraintPrismaError } from '@/shared/utils/prisma-errors'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
+import * as XLSX from 'xlsx'
+import { CreateKanjiWithMeaningsBody } from './dto/kanji-with-meanings.dto'
+import {
+  InvalidKanjiDataException,
+  KanjiAlreadyExistsException,
+  KanjiCharacterInvalidException,
+  KanjiNotFoundException
+} from './dto/kanji.error'
+import { UpdateKanjiWithMeaningsBody } from './dto/update-kanji-with-meanings.dto'
+import { GetKanjiListQuery } from './entities/kanji.entity'
+import { KanjiRepo } from './kanji.repo'
 
 // The meaning of kanji {id} lives in translations under kanji.{id}.meaning
 const meaningKeyOf = (id: number) => `kanji.${id}.meaning`
@@ -34,7 +34,7 @@ export class KanjiService {
   ) {}
 
   // Admin table: the meaning in Vietnamese (else the first one), readings joined
-  async getKanjiManagementList(params: GetKanjiListQueryType, lang: string = 'vi') {
+  async getKanjiManagementList(params: GetKanjiListQuery, lang: string = 'vi') {
     const result = await this.kanjiRepository.findMany(this.listParams(params))
     const meaningsOf = await this.meaningsOf(result.data.map((k) => k.meaningKey))
     const readingsOf = (kanji: (typeof result.data)[number], type: string) =>
@@ -67,7 +67,7 @@ export class KanjiService {
   }
 
   // Each kanji with its meaning as { meaningKey, translations: { code: value } }
-  async findMany(params: GetKanjiListQueryType, lang: string = 'vi') {
+  async findMany(params: GetKanjiListQuery, lang: string = 'vi') {
     const result = await this.kanjiRepository.findMany({
       ...this.listParams(params),
       lessonId: params.lessonId
@@ -108,7 +108,7 @@ export class KanjiService {
   // The schema checks the character (one kanji) and parses readings/meanings
   // sent as JSON strings by multipart forms. Only the first meaning is kept
   async createWithMeanings(
-    data: CreateKanjiWithMeaningsBodyType,
+    data: CreateKanjiWithMeaningsBody,
     image?: Express.Multer.File,
     lang: string = 'vi'
   ) {
@@ -157,7 +157,7 @@ export class KanjiService {
   // identifier: the id, or the kanji itself. The character never changes
   async updateWithMeanings(
     identifier: string,
-    data: UpdateKanjiWithMeaningsBodyType,
+    data: UpdateKanjiWithMeaningsBody,
     image?: Express.Multer.File,
     lang: string = 'vi'
   ) {
@@ -229,7 +229,7 @@ export class KanjiService {
   }
 
   //#region helpers
-  private listParams(params: GetKanjiListQueryType) {
+  private listParams(params: GetKanjiListQuery) {
     return {
       currentPage: params.currentPage || 1,
       pageSize: params.pageSize || 10,

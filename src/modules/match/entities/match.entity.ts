@@ -47,13 +47,13 @@ export const GetMatchDetailWithAllLangResSchema = resSchema(MatchSchema)
 
 export const GetMatchDetailResSchema = resSchema(MatchSchema)
 
-export type MatchType = z.infer<typeof MatchSchema>
+export type Match = z.infer<typeof MatchSchema>
 
-export type CreateMatchBodyType = z.infer<typeof CreateMatchBodySchema>
+export type CreateMatchBody = z.infer<typeof CreateMatchBodySchema>
 
-export type UpdateMatchBodyType = z.infer<typeof UpdateMatchBodySchema>
-export type GetMatchParamsType = z.infer<typeof GetMatchParamsSchema>
-export type GetMatchDetailResType = z.infer<typeof GetMatchDetailResSchema>
+export type UpdateMatchBody = z.infer<typeof UpdateMatchBodySchema>
+export type GetMatchParams = z.infer<typeof GetMatchParamsSchema>
+export type GetMatchDetailRes = z.infer<typeof GetMatchDetailResSchema>
 
 type MatchFieldType = keyof z.infer<typeof MatchSchema>
 export const MATCH_FIELDS = [...Object.keys(MatchSchema.shape)] as MatchFieldType[]

@@ -1,24 +1,24 @@
-import { HttpException, Injectable, Logger } from '@nestjs/common'
-import { Cron, CronExpression } from '@nestjs/schedule'
-import { UserTestRepo } from './user-test.repo'
-import {
-  CreateUserTestBodyType,
-  UpdateUserTestBodyType,
-  GetUserTestListQueryType,
-  UserTestType
-} from './entities/user-test.entity'
+import { FeatureKey, FeatureKeyType } from '@/common/constants/subscription.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { UserTestMessage as M } from '@/i18n/message-keys'
+import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
 import { toPaginationMeta } from '@/shared/utils/pagination'
 import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
+import { Cron, CronExpression } from '@nestjs/schedule'
+import { TestStatus, UserTestStatus } from '@prisma/client'
 import {
   InvalidUserTestDataException,
   UserTestAlreadyExistsException,
   UserTestNotFoundException
 } from './dto/user-test.error'
-import { UserTestStatus, TestStatus } from '@prisma/client'
-import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
-import { FeatureKey, FeatureKeyType } from '@/common/constants/subscription.constant'
+import {
+  CreateUserTestBody,
+  GetUserTestListQuery,
+  UpdateUserTestBody,
+  UserTest
+} from './entities/user-test.entity'
+import { UserTestRepo } from './user-test.repo'
 
 @Injectable()
 export class UserTestService {
@@ -55,7 +55,7 @@ export class UserTestService {
     }
   }
 
-  async create(body: CreateUserTestBodyType, lang: string = 'vi') {
+  async create(body: CreateUserTestBody, lang: string = 'vi') {
     try {
       // Kiểm tra xem đã tồn tại UserTest cho user và test này chưa
       const existingUserTest = await this.userTestRepo.findByUserAndTest(
@@ -79,9 +79,9 @@ export class UserTestService {
   }
 
   // withTest (the app's /my): each row carries its test, translated to lang
-  async findAll(query: GetUserTestListQueryType, lang: string = 'vi', withTest = false) {
+  async findAll(query: GetUserTestListQuery, lang: string = 'vi', withTest = false) {
     const language = withTest ? lang : undefined
-    const normalizedQuery: GetUserTestListQueryType = {
+    const normalizedQuery: GetUserTestListQuery = {
       ...query,
       order: query.order ?? 'asc'
     }
@@ -151,13 +151,13 @@ export class UserTestService {
   }
 
   private async unlockUserTestsBySubscription(
-    userTests: UserTestType[],
+    userTests: UserTest[],
     userId: number,
     language?: string
-  ): Promise<{ userTests: UserTestType[]; testCache: Map<number, any> }> {
+  ): Promise<{ userTests: UserTest[]; testCache: Map<number, any> }> {
     const featureAccessCache = new Map<FeatureKeyType, boolean>()
     const testCache = new Map<number, any>()
-    const updatedUserTests: UserTestType[] = []
+    const updatedUserTests: UserTest[] = []
 
     for (const userTest of userTests) {
       let test = testCache.get(userTest.testId)
@@ -233,7 +233,7 @@ export class UserTestService {
     }
   }
 
-  async update(id: number, data: UpdateUserTestBodyType, lang: string = 'vi') {
+  async update(id: number, data: UpdateUserTestBody, lang: string = 'vi') {
     try {
       const userTest = await this.userTestRepo.update(id, data)
       return {

@@ -1,17 +1,17 @@
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { GEMINI_PRESETS, getPresetByKey } from '@/3rdService/gemini/config/gemini-presets'
+import { I18nService } from '@/i18n/i18n.service'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { GeminiConfigType as PrismaGeminiConfigType } from '@prisma/client'
-import { I18nService } from '@/i18n/i18n.service'
 import { NotFoundRecordException } from 'src/shared/error'
 import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared/helpers'
-import { LanguagesService } from '@/modules/languages/languages.service'
-import { GeminiConfigRepo, GeminiPresetRepo } from './gemini-config.repo'
 import { GeminiConfigAlreadyExistsException } from './dto/gemini-config.error'
 import {
-  CreateGeminiConfigBodyType,
-  UpdateGeminiConfigBodyType
+  CreateGeminiConfigBody,
+  UpdateGeminiConfigBody
 } from './entities/gemini-config.entity'
-import { getPresetByKey, GEMINI_PRESETS } from '@/3rdService/gemini/config/gemini-presets'
+import { GeminiConfigRepo, GeminiPresetRepo } from './gemini-config.repo'
 
 @Injectable()
 export class GeminiConfigService {
@@ -22,7 +22,7 @@ export class GeminiConfigService {
     private readonly languagesService: LanguagesService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     await this.getLang(lang)
     const data = await this.geminiConfigRepo.list(pagination)
     return {
@@ -52,7 +52,7 @@ export class GeminiConfigService {
       data,
       createdById
     }: {
-      data: CreateGeminiConfigBodyType
+      data: CreateGeminiConfigBody
       createdById: number
     },
     lang: string = 'vi'
@@ -89,7 +89,7 @@ export class GeminiConfigService {
       updatedById
     }: {
       id: number
-      data: UpdateGeminiConfigBodyType
+      data: UpdateGeminiConfigBody
       updatedById: number
     },
     lang: string = 'vi'
@@ -202,7 +202,7 @@ export class GeminiConfigService {
   }
 
   // GeminiConfigModel CRUD
-  async listConfigModels(pagination: PaginationQueryType, lang: string = 'vi') {
+  async listConfigModels(pagination: PaginationQuery, lang: string = 'vi') {
     await this.getLang(lang)
     const data = await this.geminiConfigRepo.listConfigModels(pagination)
     return {

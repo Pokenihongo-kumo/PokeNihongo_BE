@@ -4,15 +4,15 @@ import {
   UserSubscriptionStatusType
 } from '@/common/constants/subscription.constant'
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
-  CreateUserSubscriptionBodyType,
+  CreateUserSubscriptionBody,
   USER_SEASON_HISTORY_FIELDS,
-  UpdateUserSubscriptionBodyType,
-  UserSubscriptionType
+  UpdateUserSubscriptionBody,
+  UserSubscription
 } from './entities/user-subscription.entity'
 
 @Injectable()
@@ -27,10 +27,10 @@ export class UserSubscriptionRepo {
       data
     }: {
       createdById: number
-      data: CreateUserSubscriptionBodyType & { userId: number }
+      data: CreateUserSubscriptionBody & { userId: number }
     },
     prismaTx?: PrismaClient
-  ): Promise<UserSubscriptionType> {
+  ): Promise<UserSubscription> {
     const client = prismaTx || this.prismaService
     return client.userSubscription.create({
       data: {
@@ -47,11 +47,11 @@ export class UserSubscriptionRepo {
       updatedById
     }: {
       id: number
-      data: UpdateUserSubscriptionBodyType
+      data: UpdateUserSubscriptionBody
       updatedById?: number
     },
     prismaTx?: PrismaClient
-  ): Promise<UserSubscriptionType> {
+  ): Promise<UserSubscription> {
     const client = prismaTx || this.prismaService
     return client.userSubscription.update({
       where: {
@@ -68,7 +68,7 @@ export class UserSubscriptionRepo {
     id: number,
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<UserSubscriptionType> {
+  ): Promise<UserSubscription> {
     const client = prismaTx || this.prismaService
     return isHard
       ? client.userSubscription.delete({
@@ -85,7 +85,7 @@ export class UserSubscriptionRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, USER_SEASON_HISTORY_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -121,7 +121,7 @@ export class UserSubscriptionRepo {
   }
 
   async getUserSubWithSubPlan(
-    pagination: PaginationQueryType,
+    pagination: PaginationQuery,
     userId: number,
     langId?: number
   ) {
@@ -200,7 +200,7 @@ export class UserSubscriptionRepo {
     }
   }
 
-  findById(id: number): Promise<UserSubscriptionType | null> {
+  findById(id: number): Promise<UserSubscription | null> {
     return this.prismaService.userSubscription.findUnique({
       where: {
         id,
@@ -282,7 +282,7 @@ export class UserSubscriptionRepo {
     userId: number,
     planId: number,
     status: UserSubscriptionStatusType
-  ): Promise<UserSubscriptionType | null> {
+  ): Promise<UserSubscription | null> {
     return this.prismaService.userSubscription.findFirst({
       where: {
         userId,
@@ -293,7 +293,7 @@ export class UserSubscriptionRepo {
     })
   }
 
-  findByInvoiceId(invoiceId: number): Promise<UserSubscriptionType | null> {
+  findByInvoiceId(invoiceId: number): Promise<UserSubscription | null> {
     return this.prismaService.userSubscription.findFirst({
       where: {
         invoiceId,
@@ -427,7 +427,7 @@ export class UserSubscriptionRepo {
   findByUserAndInvoice(
     userId: number,
     invoiceId: number
-  ): Promise<UserSubscriptionType | null> {
+  ): Promise<UserSubscription | null> {
     return this.prismaService.userSubscription.findFirst({
       where: {
         userId,

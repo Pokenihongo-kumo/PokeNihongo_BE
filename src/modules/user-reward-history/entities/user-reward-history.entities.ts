@@ -121,19 +121,19 @@ export const UserRewardHistoryListResSchema = paginatedResSchema(
   UserRewardHistorySchema
 ).strict()
 
-export type UserRewardHistoryType = z.infer<typeof UserRewardHistorySchema>
-export type CreateUserRewardHistoryBodyType = z.infer<
+export type UserRewardHistory = z.infer<typeof UserRewardHistorySchema>
+export type CreateUserRewardHistoryBody = z.infer<
   typeof CreateUserRewardHistoryBodySchema
 >
-export type UpdateUserRewardHistoryBodyType = z.infer<
+export type UpdateUserRewardHistoryBody = z.infer<
   typeof UpdateUserRewardHistoryBodySchema
 >
-export type UserRewardHistoryResType = z.infer<typeof UserRewardHistoryResSchema>
-export type UserRewardHistoryListResType = z.infer<typeof UserRewardHistoryListResSchema>
-export type GetUserRewardHistoryByIdParamsType = z.infer<
+export type UserRewardHistoryRes = z.infer<typeof UserRewardHistoryResSchema>
+export type UserRewardHistoryListRes = z.infer<typeof UserRewardHistoryListResSchema>
+export type GetUserRewardHistoryByIdParams = z.infer<
   typeof GetUserRewardHistoryByIdParamsSchema
 >
-export type GetUserRewardHistoryListQueryType = z.infer<
+export type GetUserRewardHistoryListQuery = z.infer<
   typeof GetUserRewardHistoryListQuerySchema
 >
-export type GetMyRewardHistoryQueryType = z.infer<typeof GetMyRewardHistoryQuerySchema>
+export type GetMyRewardHistoryQuery = z.infer<typeof GetMyRewardHistoryQuerySchema>

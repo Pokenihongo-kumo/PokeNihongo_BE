@@ -5,7 +5,7 @@ import {
 } from '@/infrastructure/integrations/storage/file-storage.port'
 import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import sharp from 'sharp'
-import { GenerateUploadUrlBodyType } from './dto/upload-presigned.dto'
+import { GenerateUploadUrlBody } from './dto/upload-presigned.dto'
 
 export interface UploadResult {
   message: string
@@ -329,7 +329,7 @@ export class UploadService {
   /**
    * Generate pre-signed upload URL for direct client upload to Cloudinary
    */
-  async generateUploadUrl(data: GenerateUploadUrlBodyType) {
+  async generateUploadUrl(data: GenerateUploadUrlBody) {
     const { fileName, fileType, folderName, mimeType, fileSize } = data
 
     // Validate file type matches MIME type

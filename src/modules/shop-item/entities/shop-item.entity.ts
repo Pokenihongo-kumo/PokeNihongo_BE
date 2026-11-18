@@ -110,15 +110,15 @@ export const GetShopItemDetailSchema = ShopItemSchema.extend({
 export const GetShopItemDetailResSchema = resSchema(GetShopItemDetailSchema)
 
 // Type exports
-export type ShopItemType = z.infer<typeof ShopItemSchema>
-export type CreateShopItemBodyType = z.infer<typeof CreateShopItemBodySchema>
-export type CreateWithListItemBodyType = z.infer<typeof CreateWithListItemBodySchema>
-export type UpdateShopItemBodyType = z.infer<typeof UpdateShopItemBodySchema>
-export type UpdateShopItemWithIdType = z.infer<typeof UpdateShopItemWithIdSchema>
-export type UpdateWithListItemBodyType = z.infer<typeof UpdateWithListItemBodySchema>
-export type GetShopItemParamsType = z.infer<typeof GetShopItemParamsSchema>
-export type GetShopItemDetailType = z.infer<typeof GetShopItemDetailSchema>
-export type GetRamdomAmountShopItemBodyType = z.infer<
+export type ShopItem = z.infer<typeof ShopItemSchema>
+export type CreateShopItemBody = z.infer<typeof CreateShopItemBodySchema>
+export type CreateWithListItemBody = z.infer<typeof CreateWithListItemBodySchema>
+export type UpdateShopItemBody = z.infer<typeof UpdateShopItemBodySchema>
+export type UpdateShopItemWithId = z.infer<typeof UpdateShopItemWithIdSchema>
+export type UpdateWithListItemBody = z.infer<typeof UpdateWithListItemBodySchema>
+export type GetShopItemParams = z.infer<typeof GetShopItemParamsSchema>
+export type GetShopItemDetail = z.infer<typeof GetShopItemDetailSchema>
+export type GetRamdomAmountShopItemBody = z.infer<
   typeof GetRamdomAmountShopItemBodySchema
 >
 // Field for query

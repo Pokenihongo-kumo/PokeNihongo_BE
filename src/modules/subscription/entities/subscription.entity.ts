@@ -114,17 +114,17 @@ export const GetSubscriptionDetailResSchema = resSchema(
   })
 )
 
-export type SubscriptionType = z.infer<typeof SubscriptionSchema>
-export type CreateSubscriptionBodyInputType = z.infer<
+export type Subscription = z.infer<typeof SubscriptionSchema>
+export type CreateSubscriptionBodyInput = z.infer<
   typeof CreateSubscriptionBodyInputSchema
 >
-export type CreateSubscriptionBodyType = z.infer<typeof CreateSubscriptionBodySchema>
-export type UpdateSubscriptionBodyInputType = z.infer<
+export type CreateSubscriptionBody = z.infer<typeof CreateSubscriptionBodySchema>
+export type UpdateSubscriptionBodyInput = z.infer<
   typeof UpdateSubscriptionBodyInputSchema
 >
-export type UpdateSubscriptionBodyType = z.infer<typeof UpdateSubscriptionBodySchema>
-export type GetSubscriptionParamsType = z.infer<typeof GetSubscriptionParamsSchema>
-export type GetSubscriptionDetailResType = z.infer<typeof GetSubscriptionDetailResSchema>
+export type UpdateSubscriptionBody = z.infer<typeof UpdateSubscriptionBodySchema>
+export type GetSubscriptionParams = z.infer<typeof GetSubscriptionParamsSchema>
+export type GetSubscriptionDetailRes = z.infer<typeof GetSubscriptionDetailResSchema>
 
 type SubscriptionFieldType = keyof z.infer<typeof SubscriptionSchema>
 export const LEADERBOARD_SEASON_FIELDS = [

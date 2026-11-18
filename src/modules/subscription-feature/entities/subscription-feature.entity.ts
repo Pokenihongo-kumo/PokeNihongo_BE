@@ -51,7 +51,7 @@ export const UpdateWithListItemBodySchema = z.object({
     .min(1)
 })
 
-export type UpdateWithListItemBodyType = z.infer<typeof UpdateWithListItemBodySchema>
+export type UpdateWithListItemBody = z.infer<typeof UpdateWithListItemBodySchema>
 
 export const UpdateWithListItemResSchema = resSchema(z.array(SubscriptionFeatureSchema))
 
@@ -67,14 +67,14 @@ export const GetSubscriptionFeatureDetailResSchema = resSchema(
 )
 
 // Type exports
-export type SubscriptionFeatureType = z.infer<typeof SubscriptionFeatureSchema>
-export type CreateSubscriptionFeatureBodyType = z.infer<
+export type SubscriptionFeature = z.infer<typeof SubscriptionFeatureSchema>
+export type CreateSubscriptionFeatureBody = z.infer<
   typeof CreateSubscriptionFeatureBodySchema
 >
-export type UpdateSubscriptionFeatureBodyType = z.infer<
+export type UpdateSubscriptionFeatureBody = z.infer<
   typeof UpdateSubscriptionFeatureBodySchema
 >
-export type GetSubscriptionFeatureParamsType = z.infer<
+export type GetSubscriptionFeatureParams = z.infer<
   typeof GetSubscriptionFeatureParamsSchema
 >
 

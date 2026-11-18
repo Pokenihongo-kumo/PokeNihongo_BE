@@ -43,11 +43,11 @@ export const GetWalletParamsSchema = z
 export const GetWalletDetailResSchema = CreateWalletResSchema
 
 export const GetWalletsWithUserResSchema = resSchema(z.array(WalletSchema))
-export type WalletType = z.infer<typeof WalletSchema>
-export type CreateWalletBodyType = z.infer<typeof CreateWalletBodySchema>
-export type UpdateWalletBodyType = z.infer<typeof UpdateWalletBodySchema>
-export type GetWalletParamsType = z.infer<typeof GetWalletParamsSchema>
-export type GetWalletDetailResType = z.infer<typeof GetWalletDetailResSchema>
+export type Wallet = z.infer<typeof WalletSchema>
+export type CreateWalletBody = z.infer<typeof CreateWalletBodySchema>
+export type UpdateWalletBody = z.infer<typeof UpdateWalletBodySchema>
+export type GetWalletParams = z.infer<typeof GetWalletParamsSchema>
+export type GetWalletDetailRes = z.infer<typeof GetWalletDetailResSchema>
 
 type WalletFieldType = keyof z.infer<typeof WalletSchema>
 export const WALLET_FIELDS = Object.keys(WalletSchema.shape) as WalletFieldType[]

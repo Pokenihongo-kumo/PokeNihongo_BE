@@ -1,4 +1,4 @@
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
 
 import { dailyRequestType } from '@/common/constants/achievement.constant'
@@ -27,20 +27,20 @@ import {
   ENTITY_MESSAGE,
   NotificationMessage
 } from '@/i18n/message-keys'
-import { UserCoreService } from '@/modules/user/user-core.service'
+import { AttendenceConfigService } from '@/modules/attendence-config/attendence-config.service'
 import { NotificationService } from '@/modules/notification/notification.service'
 import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
-import { AttendenceConfigService } from '@/modules/attendence-config/attendence-config.service'
+import { UserCoreService } from '@/modules/user/user-core.service'
 import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
 import { WalletService } from '@/modules/wallet/wallet.service'
 import { AttendanceRepo } from './attendence.repo'
 import { AttendancegAlreadyExistsException } from './dto/attendance.error'
 import {
-  AttendanceType,
-  CreateAttendanceBodyType,
-  UpdateAttendanceBodyType
+  Attendance,
+  CreateAttendanceBody,
+  UpdateAttendanceBody
 } from './entities/attendance.entity'
-type AttendanceWithDayOfWeekType = AttendanceType & { dayOfWeek: WeekDayType }
+type AttendanceWithDayOfWeekType = Attendance & { dayOfWeek: WeekDayType }
 @Injectable()
 export class AttendanceService {
   constructor(
@@ -55,7 +55,7 @@ export class AttendanceService {
     private readonly sharedNotificationService: NotificationService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.attendanceRepo.list(pagination)
     return {
       statusCode: HttpStatus.OK,
@@ -148,7 +148,7 @@ export class AttendanceService {
       console.log('Total streak (with today):', totalStreakWithToday)
       console.log('Is bonus day (7, 14, 21...):', isStreakSunday)
 
-      const data: CreateAttendanceBodyType = {
+      const data: CreateAttendanceBody = {
         date,
         status: AttendancesStatus.PRESENT,
         coin: attendenceConfig.baseCoin,
@@ -257,7 +257,7 @@ export class AttendanceService {
       updatedById
     }: {
       id: number
-      data: UpdateAttendanceBodyType
+      data: UpdateAttendanceBody
       updatedById: number
     },
     lang: string = 'vi'
@@ -326,7 +326,7 @@ export class AttendanceService {
     const expectedDate = new Date(today)
     expectedDate.setDate(expectedDate.getDate() - 1) // Bắt đầu từ hôm qua
 
-    const streakAttendances: AttendanceType[] = []
+    const streakAttendances: Attendance[] = []
 
     for (const att of sortedAttendances) {
       const attDate = new Date(att.date)

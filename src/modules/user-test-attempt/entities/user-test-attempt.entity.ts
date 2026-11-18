@@ -3,7 +3,7 @@ import { UserTestAttemptMessage as M } from '@/i18n/message-keys'
 import { paginatedResSchema } from '@/shared/utils/pagination'
 import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
-import { TestAttemptStatus } from '@prisma/client'
+import { TestAttemptStatus as PrismaTestAttemptStatus } from '@prisma/client'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
 
@@ -11,8 +11,8 @@ extendZodWithOpenApi(z)
 patchNestJsSwagger()
 
 // TestAttemptStatus enum
-export const TestAttemptStatusSchema = z.nativeEnum(TestAttemptStatus)
-const statusOf = z.nativeEnum(TestAttemptStatus, {
+export const TestAttemptStatusSchema = z.nativeEnum(PrismaTestAttemptStatus)
+const statusOf = z.nativeEnum(PrismaTestAttemptStatus, {
   errorMap: () => ({ message: M.INVALID_STATUS })
 })
 
@@ -76,23 +76,19 @@ export const CheckTestCompletionBodySchema = z
   .default({})
 
 // Types
-export type TestAttemptStatusType = z.infer<typeof TestAttemptStatusSchema>
-export type UserTestAttemptType = z.infer<typeof UserTestAttemptSchema>
-export type CreateUserTestAttemptBodyType = z.infer<
-  typeof CreateUserTestAttemptBodySchema
->
-export type UpdateUserTestAttemptBodyType = z.infer<
-  typeof UpdateUserTestAttemptBodySchema
->
-export type UserTestAttemptResType = z.infer<typeof UserTestAttemptResSchema>
-export type UserTestAttemptListResType = z.infer<typeof UserTestAttemptListResSchema>
-export type GetUserTestAttemptByIdParamsType = z.infer<
+export type TestAttemptStatus = z.infer<typeof TestAttemptStatusSchema>
+export type UserTestAttempt = z.infer<typeof UserTestAttemptSchema>
+export type CreateUserTestAttemptBody = z.infer<typeof CreateUserTestAttemptBodySchema>
+export type UpdateUserTestAttemptBody = z.infer<typeof UpdateUserTestAttemptBodySchema>
+export type UserTestAttemptRes = z.infer<typeof UserTestAttemptResSchema>
+export type UserTestAttemptListRes = z.infer<typeof UserTestAttemptListResSchema>
+export type GetUserTestAttemptByIdParams = z.infer<
   typeof GetUserTestAttemptByIdParamsSchema
 >
-export type CreateUserTestAttemptParamsType = z.infer<
+export type CreateUserTestAttemptParams = z.infer<
   typeof CreateUserTestAttemptParamsSchema
 >
-export type GetUserTestAttemptListQueryType = z.infer<
+export type GetUserTestAttemptListQuery = z.infer<
   typeof GetUserTestAttemptListQuerySchema
 >
-export type CheckTestCompletionBodyType = z.infer<typeof CheckTestCompletionBodySchema>
+export type CheckTestCompletionBody = z.infer<typeof CheckTestCompletionBodySchema>

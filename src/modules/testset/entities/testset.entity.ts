@@ -1,17 +1,17 @@
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { isUrl } from '@/common/utils/is-url'
+import { hasJapaneseText } from '@/common/utils/japanese-text'
+import { TestSetMessage as M } from '@/i18n/message-keys'
+import { paginatedResSchema } from '@/shared/utils/pagination'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
-import { patchNestJsSwagger } from 'nestjs-zod'
-import { z } from 'zod'
 import {
-  TestSetStatus,
   TestSetType as PrismaTestSetType,
   QuestionType,
-  RoleSpeaking
+  RoleSpeaking,
+  TestSetStatus
 } from '@prisma/client'
-import { TestSetMessage as M } from '@/i18n/message-keys'
-import { checkIdSchema } from '@/common/utils/id.validation'
-import { hasJapaneseText } from '@/common/utils/japanese-text'
-import { isUrl } from '@/common/utils/is-url'
-import { paginatedResSchema } from '@/shared/utils/pagination'
+import { patchNestJsSwagger } from 'nestjs-zod'
+import { z } from 'zod'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
@@ -282,18 +282,18 @@ export const GetTestSetListQuerySchema = z
   .strict()
 
 // Types
-export type TestSetType = z.infer<typeof TestSetSchema>
-export type UpdateTestSetBodyType = z.infer<typeof UpdateTestSetBodySchema>
-export type CreateTestSetWithMeaningsBodyType = z.infer<
+export type TestSet = z.infer<typeof TestSetSchema>
+export type UpdateTestSetBody = z.infer<typeof UpdateTestSetBodySchema>
+export type CreateTestSetWithMeaningsBody = z.infer<
   typeof CreateTestSetWithMeaningsBodySchema
 >
-export type UpdateTestSetWithMeaningsBodyType = z.infer<
+export type UpdateTestSetWithMeaningsBody = z.infer<
   typeof UpdateTestSetWithMeaningsBodySchema
 >
-export type UpsertTestSetWithQuestionBanksBodyType = z.infer<
+export type UpsertTestSetWithQuestionBanksBody = z.infer<
   typeof UpsertTestSetWithQuestionBanksBodySchema
 >
-export type UpsertQuestionBankType = z.infer<typeof UpsertQuestionBankSchema>
-export type TestSetListResType = z.infer<typeof TestSetListResSchema>
-export type GetTestSetByIdParamsType = z.infer<typeof GetTestSetByIdParamsSchema>
-export type GetTestSetListQueryType = z.infer<typeof GetTestSetListQuerySchema>
+export type UpsertQuestionBank = z.infer<typeof UpsertQuestionBankSchema>
+export type TestSetListRes = z.infer<typeof TestSetListResSchema>
+export type GetTestSetByIdParams = z.infer<typeof GetTestSetByIdParamsSchema>
+export type GetTestSetListQuery = z.infer<typeof GetTestSetListQuerySchema>

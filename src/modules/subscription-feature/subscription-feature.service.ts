@@ -1,15 +1,15 @@
 import { FeatureKey } from '@/common/constants/subscription.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { SubscriptionFeatureMessage } from '@/i18n/message-keys'
+import { SubscriptionService } from '@/modules/subscription/subscription.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
-import { SubscriptionService } from '@/modules/subscription/subscription.service'
 import {
   InvalidValueForCoinMultiplierExistsException,
   InvalidValueForXPMultiplierExistsException,
@@ -17,9 +17,9 @@ import {
   SubscriptionFeatureNotFoundException
 } from './dto/subscription-feature.error'
 import {
-  CreateSubscriptionFeatureBodyType,
-  UpdateSubscriptionFeatureBodyType,
-  UpdateWithListItemBodyType
+  CreateSubscriptionFeatureBody,
+  UpdateSubscriptionFeatureBody,
+  UpdateWithListItemBody
 } from './entities/subscription-feature.entity'
 import { SubscriptionFeatureRepo } from './subscription-feature.repo'
 
@@ -31,7 +31,7 @@ export class SubscriptionFeatureService {
     private readonly i18nService: I18nService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.subscriptionFeatureRepo.list(pagination)
     return {
       statusCode: 200,
@@ -61,7 +61,7 @@ export class SubscriptionFeatureService {
   }
 
   async create(
-    { userId, data }: { userId: number; data: CreateSubscriptionFeatureBodyType },
+    { userId, data }: { userId: number; data: CreateSubscriptionFeatureBody },
     lang: string = 'vi'
   ) {
     try {
@@ -112,7 +112,7 @@ export class SubscriptionFeatureService {
       userId
     }: {
       id: number
-      data: UpdateSubscriptionFeatureBodyType
+      data: UpdateSubscriptionFeatureBody
       userId?: number
     },
     lang: string = 'vi'
@@ -198,7 +198,7 @@ export class SubscriptionFeatureService {
     }: {
       subscriptionId: number
       updatedById: number
-      data: UpdateWithListItemBodyType
+      data: UpdateWithListItemBody
     },
     lang: string = 'vi'
   ) {

@@ -1,13 +1,13 @@
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
-  CreateSeasonRankRewardBodyType,
-  SeasonRankRewardType,
+  CreateSeasonRankRewardBody,
+  SeasonRankReward,
   USER_SEASON_HISTORY_FIELDS,
-  UpdateSeasonRankRewardBodyType
+  UpdateSeasonRankRewardBody
 } from './entities/season-rank-reward.entity'
 
 @Injectable()
@@ -22,10 +22,10 @@ export class SeasonRankRewardRepo {
       data
     }: {
       createdById: number
-      data: CreateSeasonRankRewardBodyType
+      data: CreateSeasonRankRewardBody
     },
     prismaTx?: PrismaClient
-  ): Promise<SeasonRankRewardType> {
+  ): Promise<SeasonRankReward> {
     const client = prismaTx || this.prismaService
     return client.seasonRankReward.create({
       data: {
@@ -42,11 +42,11 @@ export class SeasonRankRewardRepo {
       updatedById
     }: {
       id: number
-      data: UpdateSeasonRankRewardBodyType
+      data: UpdateSeasonRankRewardBody
       updatedById?: number
     },
     prismaTx?: PrismaClient
-  ): Promise<SeasonRankRewardType> {
+  ): Promise<SeasonRankReward> {
     const client = prismaTx || this.prismaService
     return client.seasonRankReward.update({
       where: {
@@ -64,7 +64,7 @@ export class SeasonRankRewardRepo {
     id: number,
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<SeasonRankRewardType> {
+  ): Promise<SeasonRankReward> {
     const client = prismaTx || this.prismaService
     return isHard
       ? client.seasonRankReward.delete({
@@ -81,7 +81,7 @@ export class SeasonRankRewardRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, USER_SEASON_HISTORY_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -116,7 +116,7 @@ export class SeasonRankRewardRepo {
     }
   }
 
-  findById(id: number): Promise<SeasonRankRewardType | null> {
+  findById(id: number): Promise<SeasonRankReward | null> {
     return this.prismaService.seasonRankReward.findUnique({
       where: {
         id,

@@ -1,8 +1,8 @@
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { TestSetQuestionBankMessage } from '@/i18n/message-keys'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
-import { TestSetQuestionBankMessage } from '@/i18n/message-keys'
-import { checkIdSchema } from '@/common/utils/id.validation'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
@@ -83,23 +83,23 @@ export const DeleteManyTestSetQuestionBankBodySchema = z
   .strict()
 
 // Types
-export type TestSetQuestionBankType = z.infer<typeof TestSetQuestionBankSchema>
-export type CreateTestSetQuestionBankBodyType = z.infer<
+export type TestSetQuestionBank = z.infer<typeof TestSetQuestionBankSchema>
+export type CreateTestSetQuestionBankBody = z.infer<
   typeof CreateTestSetQuestionBankBodySchema
 >
-export type UpdateTestSetQuestionBankBodyType = z.infer<
+export type UpdateTestSetQuestionBankBody = z.infer<
   typeof UpdateTestSetQuestionBankBodySchema
 >
-export type CreateMultipleTestSetQuestionBankBodyType = z.infer<
+export type CreateMultipleTestSetQuestionBankBody = z.infer<
   typeof CreateMultipleTestSetQuestionBankBodySchema
 >
-export type GetTestSetQuestionBankByTestSetIdParamsType = z.infer<
+export type GetTestSetQuestionBankByTestSetIdParams = z.infer<
   typeof GetTestSetQuestionBankByTestSetIdParamsSchema
 >
-export type GetTestSetQuestionBankByIdParamsType = z.infer<
+export type GetTestSetQuestionBankByIdParams = z.infer<
   typeof GetTestSetQuestionBankByIdParamsSchema
 >
-export type UpdateQuestionOrderType = z.infer<typeof UpdateQuestionOrderSchema>
-export type DeleteManyTestSetQuestionBankBodyType = z.infer<
+export type UpdateQuestionOrder = z.infer<typeof UpdateQuestionOrderSchema>
+export type DeleteManyTestSetQuestionBankBody = z.infer<
   typeof DeleteManyTestSetQuestionBankBodySchema
 >

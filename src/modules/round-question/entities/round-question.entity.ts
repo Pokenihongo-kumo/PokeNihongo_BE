@@ -60,10 +60,10 @@ export const GetRoundQuestionDetailSchema = RoundQuestionSchema
 export const GetRoundQuestionDetailResSchema = resSchema(GetRoundQuestionDetailSchema)
 
 // Type exports
-export type RoundQuestionType = z.infer<typeof RoundQuestionSchema>
-export type CreateRoundQuestionBodyType = z.infer<typeof CreateRoundQuestionBodySchema>
-export type UpdateRoundQuestionBodyType = z.infer<typeof UpdateRoundQuestionBodySchema>
-export type GetRoundQuestionParamsType = z.infer<typeof GetRoundQuestionParamsSchema>
+export type RoundQuestion = z.infer<typeof RoundQuestionSchema>
+export type CreateRoundQuestionBody = z.infer<typeof CreateRoundQuestionBodySchema>
+export type UpdateRoundQuestionBody = z.infer<typeof UpdateRoundQuestionBodySchema>
+export type GetRoundQuestionParams = z.infer<typeof GetRoundQuestionParamsSchema>
 
 // Field for query
 export type RoundQuestionFieldType = keyof z.infer<typeof RoundQuestionSchema>
@@ -71,4 +71,4 @@ export const USER_SEASON_HISTORY_FIELDS = Object.keys(
   RoundQuestionSchema.shape
 ) as RoundQuestionFieldType[]
 
-export type AnswerQuestionBodyType = z.infer<typeof AnswerQuestionBodySchema>
+export type AnswerQuestionBody = z.infer<typeof AnswerQuestionBodySchema>

@@ -1,4 +1,4 @@
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 
 import { WalletTransactionTypeType } from '@/common/constants/wallet-transaction.constant'
@@ -6,10 +6,10 @@ import { parseQs } from '@/common/utils/qs-parser'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
-  CreateWalletTransactionBodyType,
-  UpdateWalletTransactionBodyType,
+  CreateWalletTransactionBody,
+  UpdateWalletTransactionBody,
   WALLET_TRANSACTION_FIELDS,
-  WalletTransactionType
+  WalletTransaction
 } from './entities/wallet-transaction.entity'
 
 @Injectable()
@@ -24,10 +24,10 @@ export class WalletTransactionRepo {
       data
     }: {
       createdById?: number | null
-      data: CreateWalletTransactionBodyType
+      data: CreateWalletTransactionBody
     },
     prismaTx?: PrismaClient
-  ): Promise<WalletTransactionType> {
+  ): Promise<WalletTransaction> {
     const client = prismaTx || this.prismaService
     return client.walletTransaction.create({
       data: {
@@ -45,10 +45,10 @@ export class WalletTransactionRepo {
     }: {
       id: number
       updatedById: number
-      data: UpdateWalletTransactionBodyType
+      data: UpdateWalletTransactionBody
     },
     prismaTx?: PrismaClient
-  ): Promise<WalletTransactionType> {
+  ): Promise<WalletTransaction> {
     const client = prismaTx || this.prismaService
     return client.walletTransaction.update({
       where: {
@@ -72,7 +72,7 @@ export class WalletTransactionRepo {
     },
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<WalletTransactionType> {
+  ): Promise<WalletTransaction> {
     const client = prismaTx || this.prismaService
     return isHard
       ? client.walletTransaction.delete({
@@ -92,7 +92,7 @@ export class WalletTransactionRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, WALLET_TRANSACTION_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -121,7 +121,7 @@ export class WalletTransactionRepo {
     }
   }
 
-  findById(id: number): Promise<WalletTransactionType | null> {
+  findById(id: number): Promise<WalletTransaction | null> {
     return this.prismaService.walletTransaction.findUnique({
       where: {
         id,
@@ -133,7 +133,7 @@ export class WalletTransactionRepo {
   findByUserIdAndType(
     userId: number,
     type: WalletTransactionTypeType
-  ): Promise<WalletTransactionType | null> {
+  ): Promise<WalletTransaction | null> {
     return this.prismaService.walletTransaction.findFirst({
       where: {
         userId,
@@ -143,7 +143,7 @@ export class WalletTransactionRepo {
     })
   }
 
-  findByUserId(userId: number): Promise<WalletTransactionType[] | null> {
+  findByUserId(userId: number): Promise<WalletTransaction[] | null> {
     return this.prismaService.walletTransaction.findMany({
       where: {
         userId,

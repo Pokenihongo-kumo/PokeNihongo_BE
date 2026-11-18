@@ -1,4 +1,4 @@
-import { UserTestAttemptType } from '@/modules/user-test-attempt/entities/user-test-attempt.entity'
+import { UserTestAttempt } from '@/modules/user-test-attempt/entities/user-test-attempt.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
 
@@ -59,7 +59,7 @@ export class UserTestAttemptRepo {
     }
   }
 
-  async findUnique(where: { id?: number }): Promise<UserTestAttemptType | null> {
+  async findUnique(where: { id?: number }): Promise<UserTestAttempt | null> {
     if (!where.id) return null
 
     const result = await this.prismaService.userTestAttempt.findUnique({
@@ -79,7 +79,7 @@ export class UserTestAttemptRepo {
     return result ? this.transformUserTestAttempt(result) : null
   }
 
-  async create(data: { userId: number; testId: number }): Promise<UserTestAttemptType> {
+  async create(data: { userId: number; testId: number }): Promise<UserTestAttempt> {
     const result = await this.prismaService.userTestAttempt.create({
       data: {
         ...data,
@@ -96,7 +96,7 @@ export class UserTestAttemptRepo {
       time?: number
       score?: number
     }
-  ): Promise<UserTestAttemptType> {
+  ): Promise<UserTestAttempt> {
     const result = await this.prismaService.userTestAttempt.update({
       where,
       data: {
@@ -108,7 +108,7 @@ export class UserTestAttemptRepo {
     return this.transformUserTestAttempt(result)
   }
 
-  async delete(where: { id: number }): Promise<UserTestAttemptType> {
+  async delete(where: { id: number }): Promise<UserTestAttempt> {
     const result = await this.prismaService.userTestAttempt.delete({
       where
     })
@@ -119,7 +119,7 @@ export class UserTestAttemptRepo {
     return this.prismaService.userTestAttempt.count({ where })
   }
 
-  private transformUserTestAttempt(userTestAttempt: any): UserTestAttemptType {
+  private transformUserTestAttempt(userTestAttempt: any): UserTestAttempt {
     return {
       id: userTestAttempt.id,
       userId: userTestAttempt.userId,
@@ -132,7 +132,7 @@ export class UserTestAttemptRepo {
     }
   }
 
-  async findById(id: number): Promise<UserTestAttemptType | null> {
+  async findById(id: number): Promise<UserTestAttempt | null> {
     const result = await this.prismaService.userTestAttempt.findUnique({
       where: { id },
       include: {
@@ -158,7 +158,7 @@ export class UserTestAttemptRepo {
   async findLatestByUserAndTest(
     userId: number,
     testId: number
-  ): Promise<UserTestAttemptType | null> {
+  ): Promise<UserTestAttempt | null> {
     const result = await this.prismaService.userTestAttempt.findFirst({
       where: { userId, testId },
       orderBy: { createdAt: 'desc' }
@@ -174,7 +174,7 @@ export class UserTestAttemptRepo {
   async findLatestByPriority(
     userId: number,
     testId: number
-  ): Promise<UserTestAttemptType | null> {
+  ): Promise<UserTestAttempt | null> {
     // Lấy tất cả attempts và sắp xếp theo updatedAt desc
     const allAttempts = await this.prismaService.userTestAttempt.findMany({
       where: { userId, testId },

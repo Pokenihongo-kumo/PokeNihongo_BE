@@ -103,15 +103,15 @@ export const ConvertRewardsResSchema = resSchema(
   })
 )
 
-export type RewardType = z.infer<typeof RewardSchema>
-export type CreateRewardBodyInputType = z.infer<typeof CreateRewardBodyInputSchema>
-export type CreateRewardBodyType = z.infer<typeof CreateRewardBodySchema>
-export type UpdateRewardBodyInputType = z.infer<typeof UpdateRewardBodyInputSchema>
-export type UpdateRewardBodyType = z.infer<typeof UpdateRewardBodySchema>
-export type GetRewardParamsType = z.infer<typeof GetRewardParamsSchema>
-export type GetRewardDetailResType = z.infer<typeof GetRewardDetailResSchema>
-export type ConvertRewardsBodyType = z.infer<typeof ConvertRewardsBodySchema>
-export type ConvertRewardsResType = z.infer<typeof ConvertRewardsResSchema>
+export type Reward = z.infer<typeof RewardSchema>
+export type CreateRewardBodyInput = z.infer<typeof CreateRewardBodyInputSchema>
+export type CreateRewardBody = z.infer<typeof CreateRewardBodySchema>
+export type UpdateRewardBodyInput = z.infer<typeof UpdateRewardBodyInputSchema>
+export type UpdateRewardBody = z.infer<typeof UpdateRewardBodySchema>
+export type GetRewardParams = z.infer<typeof GetRewardParamsSchema>
+export type GetRewardDetailRes = z.infer<typeof GetRewardDetailResSchema>
+export type ConvertRewardsBody = z.infer<typeof ConvertRewardsBodySchema>
+export type ConvertRewardsRes = z.infer<typeof ConvertRewardsResSchema>
 
 type RewardFieldType = keyof z.infer<typeof RewardSchema>
 export const REWARD_FIELDS = [

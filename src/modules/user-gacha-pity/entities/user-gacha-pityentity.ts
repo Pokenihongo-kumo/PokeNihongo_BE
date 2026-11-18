@@ -57,10 +57,10 @@ export const GetUserGachaPityDetailSchema = UserGachaPitySchema.nullable()
 export const GetUserGachaPityDetailResSchema = resSchema(GetUserGachaPityDetailSchema)
 
 // Type exports
-export type UserGachaPityType = z.infer<typeof UserGachaPitySchema>
-export type CreateUserGachaPityBodyType = z.infer<typeof CreateUserGachaPityBodySchema>
-export type UpdateUserGachaPityBodyType = z.infer<typeof UpdateUserGachaPityBodySchema>
-export type GetUserGachaPityParamsType = z.infer<typeof GetUserGachaPityParamsSchema>
+export type UserGachaPity = z.infer<typeof UserGachaPitySchema>
+export type CreateUserGachaPityBody = z.infer<typeof CreateUserGachaPityBodySchema>
+export type UpdateUserGachaPityBody = z.infer<typeof UpdateUserGachaPityBodySchema>
+export type GetUserGachaPityParams = z.infer<typeof GetUserGachaPityParamsSchema>
 
 // Field for query
 export type UserGachaPityFieldType = keyof z.infer<typeof UserGachaPitySchema>

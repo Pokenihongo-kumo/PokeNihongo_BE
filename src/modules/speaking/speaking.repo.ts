@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common'
 import { PrismaService } from '@/shared/services/prisma.service'
+import { Injectable } from '@nestjs/common'
 import {
-  UserSpeakingAttemptType,
-  CreateUserSpeakingAttemptType,
-  UpdateUserSpeakingAttemptType,
-  GetUserSpeakingAttemptListQueryType
+  CreateUserSpeakingAttempt,
+  GetUserSpeakingAttemptListQuery,
+  UpdateUserSpeakingAttempt,
+  UserSpeakingAttempt
 } from './entities/speaking.entities'
 
 @Injectable()
@@ -17,18 +17,18 @@ export class SpeakingRepository {
   }
 
   async create(
-    _data: CreateUserSpeakingAttemptType & { userId: number }
-  ): Promise<UserSpeakingAttemptType> {
+    _data: CreateUserSpeakingAttempt & { userId: number }
+  ): Promise<UserSpeakingAttempt> {
     throw new Error('UserSpeakingAttempt model has been removed')
   }
 
-  async findById(_id: number): Promise<UserSpeakingAttemptType | null> {
+  async findById(_id: number): Promise<UserSpeakingAttempt | null> {
     return null
   }
 
   async findMany(
-    query: GetUserSpeakingAttemptListQueryType
-  ): Promise<{ data: UserSpeakingAttemptType[]; total: number }> {
+    query: GetUserSpeakingAttemptListQuery
+  ): Promise<{ data: UserSpeakingAttempt[]; total: number }> {
     const { currentPage, pageSize, userId, questionBankId, minScore, maxScore, search } =
       query
     const skip = (currentPage - 1) * pageSize
@@ -60,7 +60,7 @@ export class SpeakingRepository {
       ]
     }
 
-    const data: UserSpeakingAttemptType[] = []
+    const data: UserSpeakingAttempt[] = []
     const total = 0
 
     return { data, total }
@@ -68,22 +68,20 @@ export class SpeakingRepository {
 
   async update(
     _id: number,
-    _data: UpdateUserSpeakingAttemptType
-  ): Promise<UserSpeakingAttemptType> {
+    _data: UpdateUserSpeakingAttempt
+  ): Promise<UserSpeakingAttempt> {
     throw new Error('UserSpeakingAttempt model has been removed')
   }
 
-  async delete(_id: number): Promise<UserSpeakingAttemptType> {
+  async delete(_id: number): Promise<UserSpeakingAttempt> {
     throw new Error('UserSpeakingAttempt model has been removed')
   }
 
-  async findByUserId(_userId: number): Promise<UserSpeakingAttemptType[]> {
+  async findByUserId(_userId: number): Promise<UserSpeakingAttempt[]> {
     return []
   }
 
-  async findByQuestionBankId(
-    _questionBankId: number
-  ): Promise<UserSpeakingAttemptType[]> {
+  async findByQuestionBankId(_questionBankId: number): Promise<UserSpeakingAttempt[]> {
     return []
   }
 

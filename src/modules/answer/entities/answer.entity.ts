@@ -205,17 +205,15 @@ export const CreateMultipleAnswersResponseSchema = resSchema(
 ).strict()
 
 // Type exports
-export type AnswerType = z.infer<typeof AnswerSchema>
-export type AnswerWithTranslationType = z.infer<typeof AnswerWithTranslationSchema>
-export type CreateAnswerBodyType = z.infer<typeof CreateAnswerBodySchema>
-export type CreateMultipleAnswersBodyType = z.infer<
-  typeof CreateMultipleAnswersBodySchema
->
-export type UpdateAnswerBodyType = z.infer<typeof UpdateAnswerBodySchema>
-export type GetAnswerByIdParamsType = z.infer<typeof GetAnswerByIdParamsSchema>
-export type GetAnswerListQueryType = z.infer<typeof GetAnswerListQuerySchema>
-export type AnswerResponseType = z.infer<typeof AnswerResponseSchema>
-export type AnswerListResType = z.infer<typeof AnswerListResSchema>
-export type CreateMultipleAnswersResponseType = z.infer<
+export type Answer = z.infer<typeof AnswerSchema>
+export type AnswerWithTranslation = z.infer<typeof AnswerWithTranslationSchema>
+export type CreateAnswerBody = z.infer<typeof CreateAnswerBodySchema>
+export type CreateMultipleAnswersBody = z.infer<typeof CreateMultipleAnswersBodySchema>
+export type UpdateAnswerBody = z.infer<typeof UpdateAnswerBodySchema>
+export type GetAnswerByIdParams = z.infer<typeof GetAnswerByIdParamsSchema>
+export type GetAnswerListQuery = z.infer<typeof GetAnswerListQuerySchema>
+export type AnswerResponse = z.infer<typeof AnswerResponseSchema>
+export type AnswerListRes = z.infer<typeof AnswerListResSchema>
+export type CreateMultipleAnswersResponse = z.infer<
   typeof CreateMultipleAnswersResponseSchema
 >

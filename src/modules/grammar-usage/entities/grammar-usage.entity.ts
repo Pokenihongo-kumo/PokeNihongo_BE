@@ -59,11 +59,9 @@ export const GetGrammarUsageListQuerySchema = z.object({
 })
 
 // Type exports
-export type GrammarUsageType = z.infer<typeof GrammarUsageSchema>
-export type GrammarUsageWithGrammarType = z.infer<typeof GrammarUsageWithGrammarSchema>
-export type CreateGrammarUsageBodyType = z.infer<typeof CreateGrammarUsageBodySchema>
-export type UpdateGrammarUsageBodyType = z.infer<typeof UpdateGrammarUsageBodySchema>
-export type GetGrammarUsageByIdParamsType = z.infer<
-  typeof GetGrammarUsageByIdParamsSchema
->
-export type GetGrammarUsageListQueryType = z.infer<typeof GetGrammarUsageListQuerySchema>
+export type GrammarUsage = z.infer<typeof GrammarUsageSchema>
+export type GrammarUsageWithGrammar = z.infer<typeof GrammarUsageWithGrammarSchema>
+export type CreateGrammarUsageBody = z.infer<typeof CreateGrammarUsageBodySchema>
+export type UpdateGrammarUsageBody = z.infer<typeof UpdateGrammarUsageBodySchema>
+export type GetGrammarUsageByIdParams = z.infer<typeof GetGrammarUsageByIdParamsSchema>
+export type GetGrammarUsageListQuery = z.infer<typeof GetGrammarUsageListQuerySchema>

@@ -1,14 +1,14 @@
+import { pickLabelFromComposite } from '@/common/utils/prase.utils'
 import {
-  QuestionBankType,
-  CreateQuestionBankWithMeaningsBodyType,
-  UpdateQuestionBankWithMeaningsBodyType,
-  GetQuestionBankListQueryType
+  CreateQuestionBankWithMeaningsBody,
+  GetQuestionBankListQuery,
+  QuestionBank,
+  UpdateQuestionBankWithMeaningsBody
 } from '@/modules/question-bank/entities/question-bank.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
-import { Injectable } from '@nestjs/common'
-import { pickLabelFromComposite } from '@/common/utils/prase.utils'
 import { toSkipTake } from '@/shared/utils/pagination'
-import { Prisma, QuestionBank } from '@prisma/client'
+import { Injectable } from '@nestjs/common'
+import { Prisma, QuestionBank as PrismaQuestionBank } from '@prisma/client'
 
 type Tx = Prisma.TransactionClient
 type Meaning = { meaningKey?: string | null; translations: Record<string, string> }
@@ -34,7 +34,7 @@ export class QuestionBankRepo {
 
   // Each row gets `meaning` (first one in `language`, else '') when a language
   // is asked, or `meanings` [{ language, value }]
-  async findMany(query: GetQuestionBankListQueryType) {
+  async findMany(query: GetQuestionBankListQuery) {
     const where = this.listWhere(query)
     const [rows, total] = await Promise.all([
       this.prisma.questionBank.findMany({
@@ -68,7 +68,7 @@ export class QuestionBankRepo {
 
   // Same filters as the list, every level (for the N5..N1 counters)
   async countByLevelN(
-    query: GetQuestionBankListQueryType
+    query: GetQuestionBankListQuery
   ): Promise<{ N5: number; N4: number; N3: number; N2: number; N1: number }> {
     const byLevel = await this.prisma.questionBank.groupBy({
       by: ['levelN'],
@@ -113,7 +113,7 @@ export class QuestionBankRepo {
 
   // Used by the match game (sockets): question text in the language, answers as
   // { id, answer } picked from the composite answerJp
-  async findByIds(ids: number[], language?: string): Promise<QuestionBankType[]> {
+  async findByIds(ids: number[], language?: string): Promise<QuestionBank[]> {
     const questionBanks = await this.prisma.questionBank.findMany({
       where: {
         id: { in: ids }
@@ -312,7 +312,7 @@ export class QuestionBankRepo {
     return data
   }
 
-  findByTestSetId(testSetId: number): Promise<QuestionBank[]> {
+  findByTestSetId(testSetId: number): Promise<PrismaQuestionBank[]> {
     return this.prisma.questionBank.findMany({
       where: { testSetQuestionBanks: { some: { testSetId } } },
       orderBy: { id: 'asc' }
@@ -329,7 +329,7 @@ export class QuestionBankRepo {
 
   // Creates the question, gives it its questionKey (unless one is sent) and
   // writes the meanings, in one transaction
-  createWithMeanings(data: CreateQuestionBankWithMeaningsBodyType, userId: number) {
+  createWithMeanings(data: CreateQuestionBankWithMeaningsBody, userId: number) {
     const { meanings, questionKey, ...fields } = data
     return this.prisma.$transaction(async (tx) => {
       const created = await tx.questionBank.create({
@@ -348,7 +348,7 @@ export class QuestionBankRepo {
   }
 
   // A questionKey not in the question.{type}.{id} format is replaced by one
-  updateWithMeanings(id: number, data: UpdateQuestionBankWithMeaningsBodyType) {
+  updateWithMeanings(id: number, data: UpdateQuestionBankWithMeaningsBody) {
     const { meanings, ...fields } = data
     return this.prisma.$transaction(async (tx) => {
       const updated = await tx.questionBank.update({ where: { id }, data: fields })
@@ -365,7 +365,7 @@ export class QuestionBankRepo {
   }
 
   // Deletes the question and its meanings; null when it does not exist
-  async delete(id: number): Promise<QuestionBank | null> {
+  async delete(id: number): Promise<PrismaQuestionBank | null> {
     const { deleted } = await this.deleteWithMeanings([id])
     return deleted[0] ?? null
   }
@@ -379,7 +379,7 @@ export class QuestionBankRepo {
   }
 
   // Used by the match game: up to count VOCABULARY/GRAMMAR/KANJI questions of a level
-  async getRandomQuestions(count: number, levelN: number): Promise<QuestionBankType[]> {
+  async getRandomQuestions(count: number, levelN: number): Promise<QuestionBank[]> {
     // Lấy tất cả câu hỏi phù hợp với điều kiện
     const questions = await this.prisma.questionBank.findMany({
       where: {
@@ -401,7 +401,7 @@ export class QuestionBankRepo {
   }
 
   //#region helpers
-  private listWhere(query: GetQuestionBankListQueryType): Prisma.QuestionBankWhereInput {
+  private listWhere(query: GetQuestionBankListQuery): Prisma.QuestionBankWhereInput {
     const { search, questionType, testSetId, noTestSet } = query
     return {
       ...(search && {

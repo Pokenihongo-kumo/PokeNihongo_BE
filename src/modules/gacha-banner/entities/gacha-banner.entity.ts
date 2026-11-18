@@ -142,17 +142,13 @@ export const GetGachaBannerByTodayResSchema = resSchema(
   z.array(GetGachaBannerDetailByUserSchema)
 )
 
-export type GachaBannerType = z.infer<typeof GachaBannerSchema>
-export type CreateGachaBannerBodyInputType = z.infer<
-  typeof CreateGachaBannerBodyInputSchema
->
-export type CreateGachaBannerBodyType = z.infer<typeof CreateGachaBannerBodySchema>
-export type UpdateGachaBannerBodyInputType = z.infer<
-  typeof UpdateGachaBannerBodyInputSchema
->
-export type UpdateGachaBannerBodyType = z.infer<typeof UpdateGachaBannerBodySchema>
-export type GetGachaBannerParamsType = z.infer<typeof GetGachaBannerParamsSchema>
-export type GetGachaBannerDetailResType = z.infer<typeof GetGachaBannerDetailResSchema>
+export type GachaBanner = z.infer<typeof GachaBannerSchema>
+export type CreateGachaBannerBodyInput = z.infer<typeof CreateGachaBannerBodyInputSchema>
+export type CreateGachaBannerBody = z.infer<typeof CreateGachaBannerBodySchema>
+export type UpdateGachaBannerBodyInput = z.infer<typeof UpdateGachaBannerBodyInputSchema>
+export type UpdateGachaBannerBody = z.infer<typeof UpdateGachaBannerBodySchema>
+export type GetGachaBannerParams = z.infer<typeof GetGachaBannerParamsSchema>
+export type GetGachaBannerDetailRes = z.infer<typeof GetGachaBannerDetailResSchema>
 
 type GachaBannerFieldType = keyof z.infer<typeof GachaBannerSchema>
 export const GACHA_BANNER_FIELDS = [

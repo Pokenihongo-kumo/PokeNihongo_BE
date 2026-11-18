@@ -1,20 +1,20 @@
-import { PrismaClient } from '@prisma/client'
 import { Level } from '@/modules/level/entities/level.entity'
 import { Injectable } from '@nestjs/common'
-import { PermissionType } from 'src/shared/models/shared-permission.model'
-import { RoleType } from 'src/shared/models/shared-role.model'
-import { UserType, WhereUniqueUserType } from 'src/shared/models/shared-user.model'
+import { PrismaClient } from '@prisma/client'
+import { Permission } from 'src/shared/models/shared-permission.model'
+import { Role } from 'src/shared/models/shared-role.model'
+import { User, WhereUniqueUserType } from 'src/shared/models/shared-user.model'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
-type UserIncludeRolePermissionsType = UserType & {
-  role: RoleType & { permissions: PermissionType[] }
+type UserIncludeRolePermissionsType = User & {
+  role: Role & { permissions: Permission[] }
 }
-type UserIncludeRoleType = UserType & {
-  role: RoleType
+type UserIncludeRoleType = User & {
+  role: Role
 }
 
-type UserProfileWithStatsType = UserType & {
-  role: RoleType
+type UserProfileWithStatsType = User & {
+  role: Role
   level: any | null
   _count: {
     userPokemons: number
@@ -27,7 +27,7 @@ type UserProfileWithStatsType = UserType & {
 export class UserCoreRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
-  findUnique(where: WhereUniqueUserType): Promise<UserType | null> {
+  findUnique(where: WhereUniqueUserType): Promise<User | null> {
     return this.prismaService.user.findFirst({
       where: {
         ...where,
@@ -97,7 +97,7 @@ export class UserCoreRepo {
     })
   }
 
-  update(where: { id: number }, data: Partial<UserType>): Promise<UserType | null> {
+  update(where: { id: number }, data: Partial<User>): Promise<User | null> {
     return this.prismaService.user.update({
       where: {
         ...where,
@@ -121,7 +121,7 @@ export class UserCoreRepo {
 
   findUniqueWithLevel(
     where: WhereUniqueUserType
-  ): Promise<(UserType & { level: Pick<Level, 'id' | 'levelNumber'> | null }) | null> {
+  ): Promise<(User & { level: Pick<Level, 'id' | 'levelNumber'> | null }) | null> {
     return this.prismaService.user.findFirst({
       where: {
         ...where,

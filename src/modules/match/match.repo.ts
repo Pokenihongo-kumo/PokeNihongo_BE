@@ -1,19 +1,19 @@
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 
 import { MatchStatus, MatchStatusType } from '@/common/constants/match.constant'
 import { parseQs } from '@/common/utils/qs-parser'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import { MatchParticipantType } from '../match-participant/entities/match-participant.entity'
+import { MatchParticipant } from '../match-participant/entities/match-participant.entity'
 import {
-  CreateMatchBodyType,
+  CreateMatchBody,
   MATCH_FIELDS,
-  MatchType,
-  UpdateMatchBodyType
+  Match,
+  UpdateMatchBody
 } from './entities/match.entity'
 
-type MatchPrismaType = Omit<MatchType, 'nameKey'> & { name: string }
+type MatchPrismaType = Omit<Match, 'nameKey'> & { name: string }
 
 @Injectable()
 export class MatchRepo {
@@ -30,10 +30,10 @@ export class MatchRepo {
       data
     }: {
       createdById: number | null
-      data: CreateMatchBodyType & { leaderboardSeasonId: number }
+      data: CreateMatchBody & { leaderboardSeasonId: number }
     },
     prismaTx?: PrismaClient
-  ): Promise<MatchType> {
+  ): Promise<Match> {
     const client = prismaTx || this.prismaService
     return client.match.create({
       data: {
@@ -50,10 +50,10 @@ export class MatchRepo {
     }: {
       id: number
       updatedById?: number
-      data: UpdateMatchBodyType
+      data: UpdateMatchBody
     },
     prismaTx?: PrismaClient
-  ): Promise<MatchType> {
+  ): Promise<Match> {
     const client = prismaTx || this.prismaService
 
     const updatedMatch = await client.match.update({
@@ -76,7 +76,7 @@ export class MatchRepo {
     },
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<MatchType> {
+  ): Promise<Match> {
     const client = prismaTx || this.prismaService
     const result = isHard
       ? await this.prismaService.match.delete({
@@ -96,7 +96,7 @@ export class MatchRepo {
     return result
   }
 
-  async list(pagination: PaginationQueryType, langId?: number) {
+  async list(pagination: PaginationQuery, langId?: number) {
     const { where: rawWhere = {}, orderBy } = parseQs(pagination.qs, MATCH_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -129,7 +129,7 @@ export class MatchRepo {
     }
   }
 
-  findById(id: number): Promise<MatchType | null> {
+  findById(id: number): Promise<Match | null> {
     return this.prismaService.match.findUnique({
       where: {
         id,
@@ -139,7 +139,7 @@ export class MatchRepo {
   }
   findByIdWithParticipant(
     id: number
-  ): Promise<(MatchType & { participants: MatchParticipantType[] }) | null> {
+  ): Promise<(Match & { participants: MatchParticipant[] }) | null> {
     return this.prismaService.match.findUnique({
       where: {
         id,
@@ -151,7 +151,7 @@ export class MatchRepo {
     })
   }
 
-  findInProgressByUserId(userId: number): Promise<MatchType | null> {
+  findInProgressByUserId(userId: number): Promise<Match | null> {
     return this.prismaService.match.findFirst({
       where: {
         status: 'IN_PROGRESS',
@@ -197,7 +197,7 @@ export class MatchRepo {
     })
   }
 
-  updateWithStatusById(status: MatchStatusType, id: number): Promise<MatchType> {
+  updateWithStatusById(status: MatchStatusType, id: number): Promise<Match> {
     return this.prismaService.match.update({
       where: {
         id,
@@ -218,7 +218,7 @@ export class MatchRepo {
       eloLost: number
     }
     id: number
-  }): Promise<MatchType> {
+  }): Promise<Match> {
     return this.prismaService.match.update({
       where: {
         id,
@@ -232,7 +232,7 @@ export class MatchRepo {
     })
   }
 
-  findActiveMatchByUserId(userId: number): Promise<MatchType | null> {
+  findActiveMatchByUserId(userId: number): Promise<Match | null> {
     return this.prismaService.match.findFirst({
       where: {
         status: { in: ['IN_PROGRESS', 'PENDING'] },
@@ -271,7 +271,7 @@ export class MatchRepo {
     })
   }
 
-  getMatchesByUser(userId: number, langId?: number): Promise<MatchType[]> {
+  getMatchesByUser(userId: number, langId?: number): Promise<Match[]> {
     return this.prismaService.match.findMany({
       where: {
         participants: {
@@ -303,7 +303,7 @@ export class MatchRepo {
   async getMatchesHistoryByUser(
     userId: number,
     langId?: number,
-    pagination?: PaginationQueryType
+    pagination?: PaginationQuery
   ): Promise<any> {
     const baseWhere: any = {
       participants: {

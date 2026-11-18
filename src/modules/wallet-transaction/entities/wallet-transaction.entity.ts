@@ -72,17 +72,15 @@ export const GetWalletTransactionParamsSchema = z
 export const GetWalletTransactionDetailResSchema = CreateWalletTransactionResSchema
 
 export const GetWalletsWithUserResSchema = resSchema(z.array(WalletSchema))
-export type WalletTransactionType = z.infer<typeof WalletTransactionSchema>
-export type CreateWalletTransactionBodyType = z.infer<
+export type WalletTransaction = z.infer<typeof WalletTransactionSchema>
+export type CreateWalletTransactionBody = z.infer<
   typeof CreateWalletTransactionBodySchema
 >
-export type UpdateWalletTransactionBodyType = z.infer<
+export type UpdateWalletTransactionBody = z.infer<
   typeof UpdateWalletTransactionBodySchema
 >
-export type GetWalletTransactionParamsType = z.infer<
-  typeof GetWalletTransactionParamsSchema
->
-export type GetWalletTransactionDetailResType = z.infer<
+export type GetWalletTransactionParams = z.infer<typeof GetWalletTransactionParamsSchema>
+export type GetWalletTransactionDetailRes = z.infer<
   typeof GetWalletTransactionDetailResSchema
 >
 

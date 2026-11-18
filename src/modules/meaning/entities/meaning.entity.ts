@@ -123,13 +123,13 @@ export const MeaningWithTranslationsSchema = MeaningSchema.extend({
   exampleTranslations: z.array(TranslationItemSchema)
 })
 
-export type MeaningType = z.infer<typeof MeaningSchema>
-export type MeaningWithTranslationsType = z.infer<typeof MeaningWithTranslationsSchema>
-export type CreateMeaningBodyType = z.infer<typeof CreateMeaningSchema>
-export type CreateMeaningServiceType = z.infer<typeof CreateMeaningServiceSchema>
-export type UpdateMeaningBodyType = z.infer<typeof UpdateMeaningSchema>
-export type GetMeaningByIdParamsType = z.infer<typeof GetMeaningByIdParamsSchema>
-export type GetMeaningListQueryType = z.infer<typeof GetMeaningListQuerySchema>
-export type GetMeaningsByVocabularyParamsType = z.infer<
+export type Meaning = z.infer<typeof MeaningSchema>
+export type MeaningWithTranslations = z.infer<typeof MeaningWithTranslationsSchema>
+export type CreateMeaningBody = z.infer<typeof CreateMeaningSchema>
+export type CreateMeaningService = z.infer<typeof CreateMeaningServiceSchema>
+export type UpdateMeaningBody = z.infer<typeof UpdateMeaningSchema>
+export type GetMeaningByIdParams = z.infer<typeof GetMeaningByIdParamsSchema>
+export type GetMeaningListQuery = z.infer<typeof GetMeaningListQuerySchema>
+export type GetMeaningsByVocabularyParams = z.infer<
   typeof GetMeaningsByVocabularyParamsSchema
 >

@@ -1,4 +1,3 @@
-import { PrismaClient } from '@prisma/client'
 import { I18nService } from '@/i18n/i18n.service'
 import { TranslationMessage } from '@/i18n/message-keys'
 import { toPaginationMeta } from '@/shared/utils/pagination'
@@ -8,6 +7,7 @@ import {
   isUniqueConstraintPrismaError
 } from '@/shared/utils/prisma-errors'
 import { HttpException, Injectable, Logger } from '@nestjs/common'
+import { PrismaClient } from '@prisma/client'
 import {
   InvalidTranslationDataException,
   TranslationAlreadyExistsException,
@@ -15,12 +15,12 @@ import {
   TranslationNotFoundException
 } from './dto/translation.error'
 import {
-  CreateTranslationBodyType,
-  GetTranslationListQueryType,
-  GetTranslationsByKeyQueryType,
-  GetTranslationsByLanguageQueryType,
-  TranslationType,
-  UpdateTranslationBodyType
+  CreateTranslationBody,
+  GetTranslationListQuery,
+  GetTranslationsByKeyQuery,
+  GetTranslationsByLanguageQuery,
+  Translation,
+  UpdateTranslationBody
 } from './entities/translation.entity'
 import { TranslationRepo } from './translation.repo'
 
@@ -34,7 +34,7 @@ export class TranslationService {
   ) {}
 
   //#region HTTP routes (envelope + translated message)
-  async findMany(params: GetTranslationListQueryType, lang: string = 'vi') {
+  async findMany(params: GetTranslationListQuery, lang: string = 'vi') {
     const result = await this.translationRepository.findMany(params)
     return {
       statusCode: 200,
@@ -47,7 +47,7 @@ export class TranslationService {
   }
 
   // { results, pagination } like every list (was { data[], total, page, limit, totalPages })
-  async findByLanguage(params: GetTranslationsByLanguageQueryType, lang: string = 'vi') {
+  async findByLanguage(params: GetTranslationsByLanguageQuery, lang: string = 'vi') {
     const result = await this.translationRepository.findByLanguage(params.languageId, {
       page: params.page,
       limit: params.limit
@@ -62,7 +62,7 @@ export class TranslationService {
     }
   }
 
-  async getByKey(params: GetTranslationsByKeyQueryType, lang: string = 'vi') {
+  async getByKey(params: GetTranslationsByKeyQuery, lang: string = 'vi') {
     return {
       data: await this.findByKey(params),
       message: this.i18nService.translate(TranslationMessage.GET_SUCCESS, lang)
@@ -76,25 +76,21 @@ export class TranslationService {
     }
   }
 
-  async createTranslation(data: CreateTranslationBodyType, lang: string = 'vi') {
+  async createTranslation(data: CreateTranslationBody, lang: string = 'vi') {
     return {
       data: await this.create(data),
       message: this.i18nService.translate(TranslationMessage.CREATE_SUCCESS, lang)
     }
   }
 
-  async createTranslations(data: CreateTranslationBodyType[], lang: string = 'vi') {
+  async createTranslations(data: CreateTranslationBody[], lang: string = 'vi') {
     return {
       data: await this.createMany(data),
       message: this.i18nService.translate(TranslationMessage.CREATE_SUCCESS, lang)
     }
   }
 
-  async updateTranslation(
-    id: number,
-    data: UpdateTranslationBodyType,
-    lang: string = 'vi'
-  ) {
+  async updateTranslation(id: number, data: UpdateTranslationBody, lang: string = 'vi') {
     return {
       data: await this.update(id, data),
       message: this.i18nService.translate(TranslationMessage.UPDATE_SUCCESS, lang)
@@ -103,7 +99,7 @@ export class TranslationService {
   //#endregion
 
   //#region Used by other modules too (plain data, unchanged shapes)
-  async findById(id: number): Promise<TranslationType> {
+  async findById(id: number): Promise<Translation> {
     const translation = await this.translationRepository.findById(id)
     if (!translation) {
       throw new TranslationNotFoundException()
@@ -114,7 +110,7 @@ export class TranslationService {
   async findByKeyAndLanguage(
     key: string,
     languageId: number
-  ): Promise<TranslationType | null> {
+  ): Promise<Translation | null> {
     if (!key || key.trim() === '') {
       this.logger.warn(`Translation key is empty or undefined: ${key}`)
       return null
@@ -125,7 +121,7 @@ export class TranslationService {
   async findByKeyOrMeaningPrefix(
     key: string,
     languageId: number
-  ): Promise<TranslationType[]> {
+  ): Promise<Translation[]> {
     if (!key || key.trim() === '') {
       this.logger.warn(`Translation key is empty or undefined: ${key}`)
       return []
@@ -150,12 +146,12 @@ export class TranslationService {
     return meaningTranslation?.value || directTranslation?.value || null
   }
 
-  async findByKey(params: GetTranslationsByKeyQueryType) {
+  async findByKey(params: GetTranslationsByKeyQuery) {
     const translations = await this.translationRepository.findByKey(params.key)
     return { key: params.key, translations }
   }
 
-  async create(data: CreateTranslationBodyType): Promise<TranslationType> {
+  async create(data: CreateTranslationBody): Promise<Translation> {
     try {
       if (
         await this.translationRepository.findByKeyAndLanguage(data.key, data.languageId)
@@ -168,7 +164,7 @@ export class TranslationService {
     }
   }
 
-  async createMany(data: CreateTranslationBodyType[]): Promise<{ count: number }> {
+  async createMany(data: CreateTranslationBody[]): Promise<{ count: number }> {
     try {
       for (const item of data) {
         if (
@@ -183,7 +179,7 @@ export class TranslationService {
     }
   }
 
-  async update(id: number, data: UpdateTranslationBodyType): Promise<TranslationType> {
+  async update(id: number, data: UpdateTranslationBody): Promise<Translation> {
     try {
       const existing = await this.translationRepository.findById(id)
       if (!existing) {
@@ -213,8 +209,8 @@ export class TranslationService {
   async updateByKeyAndLanguage(
     key: string,
     languageId: number,
-    data: UpdateTranslationBodyType
-  ): Promise<TranslationType> {
+    data: UpdateTranslationBody
+  ): Promise<Translation> {
     try {
       if (!(await this.translationRepository.findByKeyAndLanguage(key, languageId))) {
         throw new TranslationNotFoundException()
@@ -286,7 +282,7 @@ export class TranslationService {
   // Pass-throughs with the repo's signatures; a caller's transaction client is
   // used when given, so nothing moves out of its transaction (rule R3).
 
-  validateTranslationRecords(translationRecords: CreateTranslationBodyType[]) {
+  validateTranslationRecords(translationRecords: CreateTranslationBody[]) {
     return this.translationRepository.validateTranslationRecords(translationRecords)
   }
 

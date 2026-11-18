@@ -1,13 +1,13 @@
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { DEFAULT_GEMINI_MODELS } from '@/3rdService/gemini/config/gemini-default-configs'
+import { parseQs, parseQs as parseQsGeneric } from '@/common/utils/qs-parser'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
-import { GeminiConfigType as PrismaGeminiConfigType } from '@prisma/client'
-import { parseQs } from '@/common/utils/qs-parser'
+import {
+  GeminiConfigType as PrismaGeminiConfigType,
+  GeminiConfigType as PrismaGeminiConfigTypeEnum
+} from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import { GEMINI_CONFIG_FIELDS } from './entities/gemini-config.entity'
-import { GEMINI_DEFAULT_CONFIGS } from '@/3rdService/gemini/config/gemini-default-configs'
-import { GeminiConfigType as PrismaGeminiConfigTypeEnum } from '@prisma/client'
-import { DEFAULT_GEMINI_MODELS } from '@/3rdService/gemini/config/gemini-default-configs'
-import { parseQs as parseQsGeneric } from '@/common/utils/qs-parser'
 
 @Injectable()
 export class GeminiConfigRepo {
@@ -71,7 +71,7 @@ export class GeminiConfigRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, GEMINI_CONFIG_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -246,7 +246,7 @@ export class GeminiConfigRepo {
     'updatedAt'
   ]
 
-  async listConfigModels(pagination: PaginationQueryType) {
+  async listConfigModels(pagination: PaginationQuery) {
     const { where, orderBy } = parseQsGeneric(
       pagination.qs,
       GeminiConfigRepo.GEMINI_CONFIG_MODEL_FIELDS

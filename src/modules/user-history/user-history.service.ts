@@ -1,16 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common'
-import {
-  GetHistoryListQueryType,
-  GetAdminHistoryListQueryType,
-  GetRecentExercisesQueryType,
-  HistoryTestsResType
-} from './entities/user-history.entity'
-import { MessageResDTO } from '@/shared/dtos/response.dto'
-import { TestAttemptStatus, ExerciseAttemptStatus } from '@prisma/client'
 import { I18nService } from '@/i18n/i18n.service'
 import { UserHistoryMessage } from '@/i18n/message-keys'
-import { TranslationService } from '@/modules/translation/translation.service'
 import { LanguagesService } from '@/modules/languages/languages.service'
+import { TranslationService } from '@/modules/translation/translation.service'
+import { MessageResDTO } from '@/shared/dtos/response.dto'
+import { Injectable, Logger } from '@nestjs/common'
+import { ExerciseAttemptStatus, TestAttemptStatus } from '@prisma/client'
+import {
+  GetAdminHistoryListQuery,
+  GetHistoryListQuery,
+  GetRecentExercisesQuery
+} from './entities/user-history.entity'
 import { UserHistoryRepo } from './user-history.repo'
 
 @Injectable()
@@ -26,7 +25,7 @@ export class UserHistoryService {
 
   async findHistory(
     userId: number,
-    query: GetHistoryListQueryType,
+    query: GetHistoryListQuery,
     language?: string
   ): Promise<MessageResDTO> {
     try {
@@ -211,7 +210,7 @@ export class UserHistoryService {
   }
 
   async findAllHistory(
-    query: GetAdminHistoryListQueryType,
+    query: GetAdminHistoryListQuery,
     language?: string
   ): Promise<MessageResDTO> {
     try {
@@ -427,7 +426,7 @@ export class UserHistoryService {
 
   async findRecentExercises(
     userId: number,
-    query: GetRecentExercisesQueryType,
+    query: GetRecentExercisesQuery,
     language?: string
   ): Promise<MessageResDTO> {
     try {
@@ -627,7 +626,7 @@ export class UserHistoryService {
 
   async findHistoryExercises(
     userId: number,
-    query: GetRecentExercisesQueryType,
+    query: GetRecentExercisesQuery,
     language?: string
   ): Promise<MessageResDTO> {
     try {
@@ -780,7 +779,7 @@ export class UserHistoryService {
 
   async findHistoryTests(
     userId: number,
-    query: GetRecentExercisesQueryType,
+    query: GetRecentExercisesQuery,
     language?: string
   ): Promise<MessageResDTO> {
     try {

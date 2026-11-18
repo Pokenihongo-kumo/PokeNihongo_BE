@@ -37,7 +37,7 @@ import {
   LessonContentFullResDTO
 } from './dto/lesson-content.zod-dto'
 import {
-  CreateMutiLessonContentBodyType,
+  CreateMutiLessonContentBody,
   UpdateLessonContentOrder
 } from './entities/lesson-content.entities'
 import { LessonContentService } from './lesson-content.service'
@@ -63,7 +63,7 @@ export class LessonContentController {
     description: 'Tạo nội dung bài học thành công',
     type: LessonContentResponseSwaggerDTO
   })
-  async createLessonContent(@Body() body: CreateMutiLessonContentBodyType) {
+  async createLessonContent(@Body() body: CreateMutiLessonContentBody) {
     return await this.lessonContentService.createLessonContent(body)
   }
 

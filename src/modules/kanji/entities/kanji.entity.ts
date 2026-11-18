@@ -172,11 +172,11 @@ export const KanjiManagementListResSchema =
 
 // Type exports
 export type Kanji = z.infer<typeof KanjiSchema>
-export type CreateKanjiBodyType = z.infer<typeof CreateKanjiSchema>
-export type UpdateKanjiBodyType = z.infer<typeof UpdateKanjiSchema>
-export type GetKanjiByIdParamsType = z.infer<typeof GetKanjiByIdParamsSchema>
-export type GetKanjiListQueryType = z.infer<typeof GetKanjiListQuerySchema>
-export type KanjiResType = z.infer<typeof KanjiResSchema>
-export type KanjiListResType = z.infer<typeof KanjiListResSchema>
+export type CreateKanjiBody = z.infer<typeof CreateKanjiSchema>
+export type UpdateKanjiBody = z.infer<typeof UpdateKanjiSchema>
+export type GetKanjiByIdParams = z.infer<typeof GetKanjiByIdParamsSchema>
+export type GetKanjiListQuery = z.infer<typeof GetKanjiListQuerySchema>
+export type KanjiRes = z.infer<typeof KanjiResSchema>
+export type KanjiListRes = z.infer<typeof KanjiListResSchema>
 export type KanjiManagement = z.infer<typeof KanjiManagementSchema>
-export type KanjiManagementListResType = z.infer<typeof KanjiManagementListResSchema>
+export type KanjiManagementListRes = z.infer<typeof KanjiManagementListResSchema>

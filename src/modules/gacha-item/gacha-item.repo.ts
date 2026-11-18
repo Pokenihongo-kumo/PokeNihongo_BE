@@ -1,5 +1,5 @@
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { GachaItem, Prisma, PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
@@ -231,7 +231,7 @@ export class GachaItemRepo {
     })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where: rawWhere = {}, orderBy } = parseQs(pagination.qs, [
       ...GACHA_ITEM_FIELDS
     ])
@@ -283,7 +283,7 @@ export class GachaItemRepo {
     }
   }
 
-  async getListItemsByBannerId(bannerId: number, pagination: PaginationQueryType) {
+  async getListItemsByBannerId(bannerId: number, pagination: PaginationQuery) {
     // const { where: rawWhere = {}, orderBy } = parseQs(pagination.qs, [
     //   ...GACHA_ITEM_FIELDS
     // ])

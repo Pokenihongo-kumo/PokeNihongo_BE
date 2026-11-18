@@ -143,10 +143,10 @@ export const LessonResSchema = resSchema(LessonWithRelationsSchema)
 export const LessonListResSchema = paginatedResSchema(LessonWithRelationsSchema)
 
 // Type exports
-export type LessonType = z.infer<typeof LessonSchema>
-export type LessonWithRelationsType = z.infer<typeof LessonWithRelationsSchema>
-export type CreateLessonBodyType = z.infer<typeof CreateLessonBodySchema>
-export type UpdateLessonBodyType = z.infer<typeof UpdateLessonBodySchema>
-export type GetLessonByIdParamsType = z.infer<typeof GetLessonByIdParamsSchema>
-export type GetLessonListQueryType = z.infer<typeof GetLessonListQuerySchema>
-export type LessonListResType = z.infer<typeof LessonListResSchema>
+export type Lesson = z.infer<typeof LessonSchema>
+export type LessonWithRelations = z.infer<typeof LessonWithRelationsSchema>
+export type CreateLessonBody = z.infer<typeof CreateLessonBodySchema>
+export type UpdateLessonBody = z.infer<typeof UpdateLessonBodySchema>
+export type GetLessonByIdParams = z.infer<typeof GetLessonByIdParamsSchema>
+export type GetLessonListQuery = z.infer<typeof GetLessonListQuerySchema>
+export type LessonListRes = z.infer<typeof LessonListResSchema>

@@ -1,13 +1,13 @@
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { Prisma, PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
-  CreateRoundQuestionBodyType,
-  RoundQuestionType,
+  CreateRoundQuestionBody,
+  RoundQuestion,
   USER_SEASON_HISTORY_FIELDS,
-  UpdateRoundQuestionBodyType
+  UpdateRoundQuestionBody
 } from './entities/round-question.entity'
 
 @Injectable()
@@ -26,10 +26,10 @@ export class RoundQuestionRepo {
       data
     }: {
       createdById: number
-      data: CreateRoundQuestionBodyType
+      data: CreateRoundQuestionBody
     },
     prismaTx?: PrismaClient
-  ): Promise<RoundQuestionType> {
+  ): Promise<RoundQuestion> {
     const client = prismaTx || this.prismaService
     return client.roundQuestion.create({
       data: {
@@ -45,11 +45,11 @@ export class RoundQuestionRepo {
       updatedById
     }: {
       id: number
-      data: UpdateRoundQuestionBodyType
+      data: UpdateRoundQuestionBody
       updatedById?: number
     },
     prismaTx?: PrismaClient
-  ): Promise<RoundQuestionType> {
+  ): Promise<RoundQuestion> {
     const client = prismaTx || this.prismaService
     return client.roundQuestion.update({
       where: {
@@ -62,11 +62,7 @@ export class RoundQuestionRepo {
     })
   }
 
-  delete(
-    id: number,
-    isHard?: boolean,
-    prismaTx?: PrismaClient
-  ): Promise<RoundQuestionType> {
+  delete(id: number, isHard?: boolean, prismaTx?: PrismaClient): Promise<RoundQuestion> {
     const client = prismaTx || this.prismaService
     return isHard
       ? client.roundQuestion.delete({
@@ -83,7 +79,7 @@ export class RoundQuestionRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, USER_SEASON_HISTORY_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -118,7 +114,7 @@ export class RoundQuestionRepo {
     }
   }
 
-  findById(id: number): Promise<RoundQuestionType | null> {
+  findById(id: number): Promise<RoundQuestion | null> {
     return this.prismaService.roundQuestion.findUnique({
       where: {
         id,

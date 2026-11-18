@@ -1,8 +1,8 @@
-import { Prisma, PrismaClient } from '@prisma/client'
-import { VocabularyType } from '@/modules/vocabulary/entities/vocabulary.entity'
+import { VocabularySortField, VocabularySortOrder } from '@/common/enum/enum'
+import { Vocabulary } from '@/modules/vocabulary/entities/vocabulary.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
-import { VocabularySortField, VocabularySortOrder } from '@/common/enum/enum'
+import { Prisma, PrismaClient } from '@prisma/client'
 
 @Injectable()
 export class VocabularyRepo {
@@ -86,7 +86,7 @@ export class VocabularyRepo {
     }
   }
 
-  async findUnique(where: { id?: number }): Promise<VocabularyType | null> {
+  async findUnique(where: { id?: number }): Promise<Vocabulary | null> {
     if (!where.id) return null
 
     const result = await this.prismaService.vocabulary.findUnique({
@@ -136,7 +136,7 @@ export class VocabularyRepo {
     }))
   }
 
-  async findFirst(where: { wordJp: string }): Promise<VocabularyType | null> {
+  async findFirst(where: { wordJp: string }): Promise<Vocabulary | null> {
     const result = await this.prismaService.vocabulary.findFirst({
       where,
       include: {
@@ -152,7 +152,7 @@ export class VocabularyRepo {
     imageUrl?: string
     audioUrl?: string
     createdById?: number | null
-  }): Promise<VocabularyType> {
+  }): Promise<Vocabulary> {
     const result = await this.prismaService.vocabulary.create({
       data
     })
@@ -168,7 +168,7 @@ export class VocabularyRepo {
       audioUrl?: string
       levelN?: number | null
     }
-  ): Promise<VocabularyType> {
+  ): Promise<Vocabulary> {
     const result = await this.prismaService.vocabulary.update({
       where,
       data
@@ -176,7 +176,7 @@ export class VocabularyRepo {
     return this.transformVocabulary(result)
   }
 
-  async delete(where: { id: number }): Promise<VocabularyType> {
+  async delete(where: { id: number }): Promise<Vocabulary> {
     const result = await this.prismaService.vocabulary.delete({
       where
     })
@@ -440,7 +440,7 @@ export class VocabularyRepo {
     }))
   }
 
-  private transformVocabulary(vocabulary: any): VocabularyType {
+  private transformVocabulary(vocabulary: any): Vocabulary {
     return {
       ...vocabulary,
       imageUrl: vocabulary.imageUrl || null,

@@ -1,26 +1,26 @@
 import { FolderName } from '@/common/constants/media.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { PokemonMessage } from '@/i18n/message-keys'
+import { TypeEffectivenessService } from '@/modules/type-effectiveness/type-effectiveness.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { UploadService } from 'src/3rdService/upload/upload.service'
-import { TypeEffectivenessService } from '@/modules/type-effectiveness/type-effectiveness.service'
 import {
   PokemonAlreadyExistsException,
   PokemonNotFoundException
 } from './dto/pokemon.error'
 import {
-  AssignPokemonTypesBodyType,
-  CreatePokemonBodyType,
-  CreatePokemonFormDataType,
-  UpdatePokemonBodyType,
-  UpdatePokemonFormDataType
+  AssignPokemonTypesBody,
+  CreatePokemonBody,
+  CreatePokemonFormData,
+  UpdatePokemonBody,
+  UpdatePokemonFormData
 } from './entities/pokemon.entity'
 import { PokemonRepo } from './pokemon.repo'
 
@@ -35,8 +35,8 @@ export class PokemonService {
 
   // Helper function to normalize form-data to standard format
   private normalizeCreateData(
-    data: CreatePokemonBodyType | CreatePokemonFormDataType
-  ): CreatePokemonBodyType {
+    data: CreatePokemonBody | CreatePokemonFormData
+  ): CreatePokemonBody {
     return {
       pokedex_number: data.pokedex_number,
       nameJp: data.nameJp,
@@ -53,15 +53,15 @@ export class PokemonService {
 
   // Helper function to normalize update data
   private normalizeUpdateData(
-    data: UpdatePokemonBodyType | UpdatePokemonFormDataType
-  ): UpdatePokemonBodyType {
+    data: UpdatePokemonBody | UpdatePokemonFormData
+  ): UpdatePokemonBody {
     return {
       ...data,
       description: data.description === undefined ? undefined : (data.description ?? null)
     }
   }
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.pokemonRepo.list(pagination)
 
     // Optimize: Calculate weaknesses for all Pokemon in batch
@@ -149,7 +149,7 @@ export class PokemonService {
       data,
       createdById
     }: {
-      data: CreatePokemonBodyType
+      data: CreatePokemonBody
       createdById: number
     },
     lang: string = 'vi'
@@ -203,7 +203,7 @@ export class PokemonService {
       imageFile
     }: {
       id: number
-      data: UpdatePokemonBodyType | UpdatePokemonFormDataType
+      data: UpdatePokemonBody | UpdatePokemonFormData
       updatedById: number
       imageFile?: Express.Multer.File
     },
@@ -350,7 +350,7 @@ export class PokemonService {
     }
   }
 
-  async assignTypes(id: number, data: AssignPokemonTypesBodyType, lang: string = 'vi') {
+  async assignTypes(id: number, data: AssignPokemonTypesBody, lang: string = 'vi') {
     try {
       const existPokemon = await this.pokemonRepo.findById(id)
       if (!existPokemon) {

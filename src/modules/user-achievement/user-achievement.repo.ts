@@ -1,14 +1,14 @@
 import { UserAchievementStatus } from '@/common/constants/achievement.constant'
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
-  CreateUserAchievementBodyType,
+  CreateUserAchievementBody,
   USER_GACHA_PITY_FIELDS,
-  UpdateUserAchievementBodyType,
-  UserAchievementType
+  UpdateUserAchievementBody,
+  UserAchievement
 } from './entities/user-achievement.entity'
 
 @Injectable()
@@ -23,10 +23,10 @@ export class UserAchievementRepo {
       data
     }: {
       createdById: number
-      data: CreateUserAchievementBodyType
+      data: CreateUserAchievementBody
     },
     prismaTx?: PrismaClient
-  ): Promise<UserAchievementType> {
+  ): Promise<UserAchievement> {
     const client = prismaTx || this.prismaService
     return client.userAchievement.create({
       data: {
@@ -43,11 +43,11 @@ export class UserAchievementRepo {
       updatedById
     }: {
       id: number
-      data: UpdateUserAchievementBodyType
+      data: UpdateUserAchievementBody
       updatedById?: number
     },
     prismaTx?: PrismaClient
-  ): Promise<UserAchievementType> {
+  ): Promise<UserAchievement> {
     const client = prismaTx || this.prismaService
     return client.userAchievement.update({
       where: {
@@ -64,7 +64,7 @@ export class UserAchievementRepo {
     id: number,
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<UserAchievementType> {
+  ): Promise<UserAchievement> {
     const client = prismaTx || this.prismaService
     return isHard
       ? client.userAchievement.delete({
@@ -81,7 +81,7 @@ export class UserAchievementRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, USER_GACHA_PITY_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -116,7 +116,7 @@ export class UserAchievementRepo {
     }
   }
 
-  findById(id: number): Promise<UserAchievementType | null> {
+  findById(id: number): Promise<UserAchievement | null> {
     return this.prismaService.userAchievement.findUnique({
       where: {
         id,

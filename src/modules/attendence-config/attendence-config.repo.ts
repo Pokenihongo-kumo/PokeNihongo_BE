@@ -1,14 +1,14 @@
 import { WeekDayType } from '@/common/constants/attendence-config.constant'
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { toPaginationMeta, toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
 import {
   ATTENDANCE_CONFIG_FIELDS,
-  AttendanceConfigType,
-  CreateAttendanceConfigBodyType,
-  UpdateAttendanceConfigBodyType
+  AttendanceConfig,
+  CreateAttendanceConfigBody,
+  UpdateAttendanceConfigBody
 } from './entities/attendence-config.entity'
 
 @Injectable()
@@ -20,8 +20,8 @@ export class AttendenceConfigRepo {
     data
   }: {
     createdById: number | null
-    data: CreateAttendanceConfigBodyType
-  }): Promise<AttendanceConfigType> {
+    data: CreateAttendanceConfigBody
+  }): Promise<AttendanceConfig> {
     return this.prismaService.attendanceConfig.create({
       data: {
         ...data,
@@ -37,8 +37,8 @@ export class AttendenceConfigRepo {
   }: {
     id: number
     updatedById: number
-    data: UpdateAttendanceConfigBodyType
-  }): Promise<AttendanceConfigType> {
+    data: UpdateAttendanceConfigBody
+  }): Promise<AttendanceConfig> {
     return this.prismaService.attendanceConfig.update({
       where: {
         id,
@@ -60,7 +60,7 @@ export class AttendenceConfigRepo {
       deletedById: number
     },
     isHard?: boolean
-  ): Promise<AttendanceConfigType> {
+  ): Promise<AttendanceConfig> {
     return isHard
       ? this.prismaService.attendanceConfig.delete({
           where: {
@@ -79,7 +79,7 @@ export class AttendenceConfigRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, ATTENDANCE_CONFIG_FIELDS)
 
     const { skip, take } = toSkipTake(pagination.currentPage, pagination.pageSize)
@@ -107,7 +107,7 @@ export class AttendenceConfigRepo {
     }
   }
 
-  findById(id: number): Promise<AttendanceConfigType | null> {
+  findById(id: number): Promise<AttendanceConfig | null> {
     return this.prismaService.attendanceConfig.findUnique({
       where: {
         id,
@@ -116,7 +116,7 @@ export class AttendenceConfigRepo {
     })
   }
 
-  findByDateOfWeek(dayOfWeek: WeekDayType): Promise<AttendanceConfigType | null> {
+  findByDateOfWeek(dayOfWeek: WeekDayType): Promise<AttendanceConfig | null> {
     return this.prismaService.attendanceConfig.findFirst({
       where: {
         dayOfWeek,

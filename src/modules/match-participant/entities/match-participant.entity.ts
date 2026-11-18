@@ -50,16 +50,10 @@ export const GetMatchParticipantDetailResSchema = resSchema(
 )
 
 // Type exports
-export type MatchParticipantType = z.infer<typeof MatchParticipantSchema>
-export type CreateMatchParticipantBodyType = z.infer<
-  typeof CreateMatchParticipantBodySchema
->
-export type UpdateMatchParticipantBodyType = z.infer<
-  typeof UpdateMatchParticipantBodySchema
->
-export type GetMatchParticipantParamsType = z.infer<
-  typeof GetMatchParticipantParamsSchema
->
+export type MatchParticipant = z.infer<typeof MatchParticipantSchema>
+export type CreateMatchParticipantBody = z.infer<typeof CreateMatchParticipantBodySchema>
+export type UpdateMatchParticipantBody = z.infer<typeof UpdateMatchParticipantBodySchema>
+export type GetMatchParticipantParams = z.infer<typeof GetMatchParticipantParamsSchema>
 
 // Field for query
 export type MatchParticipantFieldType = keyof z.infer<typeof MatchParticipantSchema>

@@ -86,21 +86,15 @@ export const GetRewardListUserDailyRequestTodayDetailResSchema = resSchema(
 
 //type
 
-export type UserDailyRequestType = z.infer<typeof UserDailyRequestSchema>
-export type CreateUserDailyRequestBodyType = z.infer<
-  typeof CreateUserDailyRequestBodySchema
->
-export type UpdateUserDailyRequestBodyType = z.infer<
-  typeof UpdateUserDailyRequestBodySchema
->
-export type GetUserDailyRequestParamsSchemaType = z.infer<
-  typeof GetUserDailyRequestParamsSchema
->
-export type GetUserDailyRequestDetailResType = z.infer<
+export type UserDailyRequest = z.infer<typeof UserDailyRequestSchema>
+export type CreateUserDailyRequestBody = z.infer<typeof CreateUserDailyRequestBodySchema>
+export type UpdateUserDailyRequestBody = z.infer<typeof UpdateUserDailyRequestBodySchema>
+export type GetUserDailyRequestParams = z.infer<typeof GetUserDailyRequestParamsSchema>
+export type GetUserDailyRequestDetailRes = z.infer<
   typeof GetUserDailyRequestDetailResSchema
 >
 
-export type UserDailyRequestDetailType = z.infer<typeof UserDailyRequestDetailSchema>
+export type UserDailyRequestDetail = z.infer<typeof UserDailyRequestDetailSchema>
 
 // field
 export type UserDailyRequestFieldType = keyof z.infer<typeof UserDailyRequestSchema>

@@ -1,6 +1,8 @@
 import { RoleName } from '@/common/constants/role.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { LeaderboardSeasonMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { TranslationService } from '@/modules/translation/translation.service'
 import {
   LanguageNotExistToTranslateException,
   NotFoundRecordException
@@ -13,11 +15,9 @@ import {
   isUniqueConstraintPrismaError,
   todayUTCWith0000
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { LanguagesService } from '@/modules/languages/languages.service'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
-import { TranslationService } from '@/modules/translation/translation.service'
+import { CreateTranslationBody } from '../translation/entities/translation.entity'
 import {
   LeaderboardSeasonAlreadyExistsException,
   LeaderboardSeasonHasActiveException,
@@ -26,10 +26,10 @@ import {
   NotStartedLeaderboardSeasonException
 } from './dto/leaderboard-season.error'
 import {
-  CreateLeaderboardSeasonBodyInputType,
-  CreateLeaderboardSeasonBodyType,
-  UpdateLeaderboardSeasonBodyInputType,
-  UpdateLeaderboardSeasonBodyType
+  CreateLeaderboardSeasonBody,
+  CreateLeaderboardSeasonBodyInput,
+  UpdateLeaderboardSeasonBody,
+  UpdateLeaderboardSeasonBodyInput
 } from './entities/leaderboard-season.entity'
 import { LeaderboardSeasonRepo } from './leaderboard-season.repo'
 
@@ -57,7 +57,7 @@ export class LeaderboardSeasonService {
     }))
   }
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi', roleName: string) {
+  async list(pagination: PaginationQuery, lang: string = 'vi', roleName: string) {
     const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
@@ -198,7 +198,7 @@ export class LeaderboardSeasonService {
       data,
       createdById
     }: {
-      data: CreateLeaderboardSeasonBodyInputType
+      data: CreateLeaderboardSeasonBodyInput
       createdById: number
     },
     lang: string = 'vi'
@@ -226,7 +226,7 @@ export class LeaderboardSeasonService {
           : addDaysUTC0000(startDateUtc, 30)
         // Convert data for create
         const now = todayUTCWith0000()
-        const dataCreate: CreateLeaderboardSeasonBodyType = {
+        const dataCreate: CreateLeaderboardSeasonBody = {
           nameKey,
           startDate: startDateUtc,
           endDate: endDateUtc,
@@ -268,7 +268,7 @@ export class LeaderboardSeasonService {
         }
 
         // Create translation records
-        const translationRecords: CreateTranslationBodyType[] = []
+        const translationRecords: CreateTranslationBody[] = []
 
         // nameTranslations → key = nameKey
         for (const item of data.nameTranslations) {
@@ -345,7 +345,7 @@ export class LeaderboardSeasonService {
       updatedById
     }: {
       id: number
-      data: UpdateLeaderboardSeasonBodyInputType
+      data: UpdateLeaderboardSeasonBodyInput
       updatedById: number
     },
     lang: string = 'vi'
@@ -355,13 +355,13 @@ export class LeaderboardSeasonService {
     try {
       return await this.leaderboardSeasonRepo.withTransaction(async (prismaTx) => {
         let hasOpen = false
-        let translationRecords: CreateTranslationBodyType[] = []
+        let translationRecords: CreateTranslationBody[] = []
         // Get current record
         existingLeaderboardSeason = await this.leaderboardSeasonRepo.findById(id)
         if (!existingLeaderboardSeason) throw new NotFoundRecordException()
 
         // Prepare data for update
-        const dataUpdate: Partial<UpdateLeaderboardSeasonBodyType> = {}
+        const dataUpdate: Partial<UpdateLeaderboardSeasonBody> = {}
 
         if (data.startDate) {
           dataUpdate.startDate = addDaysUTC0000(data.startDate, 0)
@@ -517,7 +517,7 @@ export class LeaderboardSeasonService {
     lang?: string
     userId: number
     rankName: string | undefined
-    pagination: PaginationQueryType
+    pagination: PaginationQuery
   }) {
     const currentPage = pagination.currentPage || 1
     const pageSize = pagination.pageSize || 20

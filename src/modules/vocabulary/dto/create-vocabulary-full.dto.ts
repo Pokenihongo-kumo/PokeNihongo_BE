@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { z } from 'zod'
 import { createZodDto } from 'nestjs-zod'
+import { z } from 'zod'
 
 // Schema cho translation item
 const TranslationItemSchema = z.object({
@@ -456,10 +456,10 @@ export class CreateVocabularyFullResponseDTO extends createZodDto(
 ) {}
 
 // Type exports
-export type CreateVocabularyFullType = z.infer<typeof CreateVocabularyFullSchema>
-export type TranslationItemType = z.infer<typeof TranslationItemSchema>
-export type ExampleTranslationType = z.infer<typeof ExampleTranslationSchema>
-export type TranslationsType = z.infer<typeof TranslationsSchema>
-export type CreateVocabularyFullResponseType = z.infer<
+export type CreateVocabularyFull = z.infer<typeof CreateVocabularyFullSchema>
+export type TranslationItem = z.infer<typeof TranslationItemSchema>
+export type ExampleTranslation = z.infer<typeof ExampleTranslationSchema>
+export type Translations = z.infer<typeof TranslationsSchema>
+export type CreateVocabularyFullResponse = z.infer<
   typeof CreateVocabularyFullResponseSchema
 >

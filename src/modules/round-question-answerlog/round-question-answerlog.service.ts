@@ -5,12 +5,12 @@ import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { RoundQuestionsAnswerLogNotFoundException } from './dto/round-question-answerlog.error'
 import {
-  CreateRoundQuestionsAnswerLogBodyType,
-  UpdateRoundQuestionsAnswerLogBodyType
+  CreateRoundQuestionsAnswerLogBody,
+  UpdateRoundQuestionsAnswerLogBody
 } from './entities/round-question-answerlog.entity'
 import { RoundQuestionsAnswerLogRepo } from './round-question-answerlog.repo'
 
@@ -22,7 +22,7 @@ export class RoundQuestionsAnswerLogService {
     private readonly i18nService: I18nService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.roundQuestionsAnswerLogRepo.list(pagination)
     return {
       statusCode: 200,
@@ -52,7 +52,7 @@ export class RoundQuestionsAnswerLogService {
   }
 
   async create(
-    { userId, data }: { userId: number; data: CreateRoundQuestionsAnswerLogBodyType },
+    { userId, data }: { userId: number; data: CreateRoundQuestionsAnswerLogBody },
     lang: string = 'vi'
   ) {
     try {
@@ -88,7 +88,7 @@ export class RoundQuestionsAnswerLogService {
       userId
     }: {
       id: number
-      data: UpdateRoundQuestionsAnswerLogBodyType
+      data: UpdateRoundQuestionsAnswerLogBody
       userId?: number
     },
     lang: string = 'vi'

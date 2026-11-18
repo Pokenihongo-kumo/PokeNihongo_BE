@@ -54,14 +54,12 @@ export const GetElementalTypeDetailResSchema = resSchema(ElementalTypeSchema)
 export const GetActiveElementalTypesResSchema = resSchema(z.array(ElementalTypeSchema))
 
 // Types
-export type ElementalTypeType = z.infer<typeof ElementalTypeSchema>
-export type CreateElementalTypeBodyType = z.infer<typeof CreateElementalTypeBodySchema>
-export type UpdateElementalTypeBodyType = z.infer<typeof UpdateElementalTypeBodySchema>
-export type GetElementalTypeParamsType = z.infer<typeof GetElementalTypeParamsSchema>
-export type GetElementalTypeDetailResType = z.infer<
-  typeof GetElementalTypeDetailResSchema
->
-export type DisplayNameType = z.infer<typeof DisplayNameSchema>
+export type ElementalType = z.infer<typeof ElementalTypeSchema>
+export type CreateElementalTypeBody = z.infer<typeof CreateElementalTypeBodySchema>
+export type UpdateElementalTypeBody = z.infer<typeof UpdateElementalTypeBodySchema>
+export type GetElementalTypeParams = z.infer<typeof GetElementalTypeParamsSchema>
+export type GetElementalTypeDetailRes = z.infer<typeof GetElementalTypeDetailResSchema>
+export type DisplayName = z.infer<typeof DisplayNameSchema>
 
 // Fields for query parsing
 type ElementalTypeFieldType = keyof z.infer<typeof ElementalTypeSchema>

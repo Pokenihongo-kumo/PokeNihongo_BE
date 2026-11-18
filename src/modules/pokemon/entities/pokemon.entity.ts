@@ -406,16 +406,16 @@ export const GetEvolutionOptionsResSchema = resSchema(
 )
 
 // Type exports
-export type PokemonType = z.infer<typeof PokemonSchema>
-export type CreatePokemonBodyType = z.infer<typeof CreatePokemonBodySchema>
-export type CreatePokemonFormDataType = z.infer<typeof CreatePokemonFormDataSchema>
-export type UpdatePokemonBodyType = z.infer<typeof UpdatePokemonBodySchema>
-export type UpdatePokemonFormDataType = z.infer<typeof UpdatePokemonFormDataSchema>
-export type GetPokemonParamsType = z.infer<typeof GetPokemonParamsSchema>
-export type GetPokemonDetailResType = z.infer<typeof GetPokemonDetailResSchema>
-export type GetPokemonWeaknessResType = z.infer<typeof GetPokemonWeaknessResSchema>
-export type AssignPokemonTypesBodyType = z.infer<typeof AssignPokemonTypesBodySchema>
-export type GetEvolutionOptionsResType = z.infer<typeof GetEvolutionOptionsResSchema>
+export type Pokemon = z.infer<typeof PokemonSchema>
+export type CreatePokemonBody = z.infer<typeof CreatePokemonBodySchema>
+export type CreatePokemonFormData = z.infer<typeof CreatePokemonFormDataSchema>
+export type UpdatePokemonBody = z.infer<typeof UpdatePokemonBodySchema>
+export type UpdatePokemonFormData = z.infer<typeof UpdatePokemonFormDataSchema>
+export type GetPokemonParams = z.infer<typeof GetPokemonParamsSchema>
+export type GetPokemonDetailRes = z.infer<typeof GetPokemonDetailResSchema>
+export type GetPokemonWeaknessRes = z.infer<typeof GetPokemonWeaknessResSchema>
+export type AssignPokemonTypesBody = z.infer<typeof AssignPokemonTypesBodySchema>
+export type GetEvolutionOptionsRes = z.infer<typeof GetEvolutionOptionsResSchema>
 
 // Field for query
 export type PokemonFieldType = keyof z.infer<typeof PokemonSchema>

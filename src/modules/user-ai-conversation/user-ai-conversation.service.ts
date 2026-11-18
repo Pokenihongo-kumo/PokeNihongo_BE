@@ -1,15 +1,15 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { UserAIConversationMessage as M } from '@/i18n/message-keys'
 import {
   InvalidUserAIConversationDataException,
   UserAIConversationNotFoundException
 } from '@/modules/user-ai-conversation/dto/user-ai-conversation.error'
 import {
   CreateUserAIConversationInput,
-  GetUserAIConversationListQueryType,
-  UpdateUserAIConversationBodyType
+  GetUserAIConversationListQuery,
+  UpdateUserAIConversationBody
 } from '@/modules/user-ai-conversation/entities/user-ai-conversation.entity'
 import { UserAIConversationRepo } from '@/modules/user-ai-conversation/user-ai-conversation.repo'
-import { I18nService } from '@/i18n/i18n.service'
-import { UserAIConversationMessage as M } from '@/i18n/message-keys'
 import { toPaginationMeta } from '@/shared/utils/pagination'
 import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
 import { HttpException, Injectable, Logger } from '@nestjs/common'
@@ -36,7 +36,7 @@ export class UserAIConversationService {
     }
   }
 
-  async findAll(query: GetUserAIConversationListQueryType, userId: number, lang = 'vi') {
+  async findAll(query: GetUserAIConversationListQuery, userId: number, lang = 'vi') {
     const { currentPage, pageSize, conversationId, role } = query
     const { items, total } = await this.userAIConversationRepository.findMany({
       currentPage,
@@ -77,7 +77,7 @@ export class UserAIConversationService {
   async updateOwned(
     id: number,
     userId: number,
-    body: UpdateUserAIConversationBodyType,
+    body: UpdateUserAIConversationBody,
     lang = 'vi'
   ) {
     await this.ownMessage(id, userId)
@@ -85,7 +85,7 @@ export class UserAIConversationService {
   }
 
   // The kaiwa gateway sets the audio of a message it wrote
-  async update(id: number, body: UpdateUserAIConversationBodyType, lang = 'vi') {
+  async update(id: number, body: UpdateUserAIConversationBody, lang = 'vi') {
     try {
       const row = await this.userAIConversationRepository.update(id, body)
       return {

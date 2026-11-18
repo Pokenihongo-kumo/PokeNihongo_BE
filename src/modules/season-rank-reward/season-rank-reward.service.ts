@@ -1,17 +1,17 @@
 import { I18nService } from '@/i18n/i18n.service'
 import { SeasonRankRewardMessage } from '@/i18n/message-keys'
+import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import {
   LeaderboardSeasonHasActiveException,
   LeaderboardSeasonHasOpenedException
 } from '../leaderboard-season/dto/leaderboard-season.error'
-import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
 import {
   MissingSeasonRankRewardOrderInvalidException,
   SeasonRankRewardNotFoundException,
@@ -19,9 +19,9 @@ import {
   SeasonRnakRewardOrderInvalidException
 } from './dto/season-rank-reward.error'
 import {
-  CreateSeasonRankRewardBodyType,
-  UpdateSeasonRankRewardBodyType,
-  UpdateWithListItemBodySchemaType
+  CreateSeasonRankRewardBody,
+  UpdateSeasonRankRewardBody,
+  UpdateWithListItemBody
 } from './entities/season-rank-reward.entity'
 import { SeasonRankRewardRepo } from './season-rank-reward.repo'
 
@@ -34,7 +34,7 @@ export class SeasonRankRewardService {
     private readonly i18nService: I18nService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.seasonRankRewardRepo.list(pagination)
     return {
       statusCode: 200,
@@ -58,7 +58,7 @@ export class SeasonRankRewardService {
   }
 
   async create(
-    { userId, data }: { userId: number; data: CreateSeasonRankRewardBodyType },
+    { userId, data }: { userId: number; data: CreateSeasonRankRewardBody },
     lang: string = 'vi'
   ) {
     try {
@@ -91,7 +91,7 @@ export class SeasonRankRewardService {
       userId
     }: {
       id: number
-      data: UpdateSeasonRankRewardBodyType
+      data: UpdateSeasonRankRewardBody
       userId?: number
     },
     lang: string = 'vi'
@@ -125,7 +125,7 @@ export class SeasonRankRewardService {
       data
     }: {
       updatedById: number
-      data: UpdateWithListItemBodySchemaType
+      data: UpdateWithListItemBody
     },
     lang: string = 'vi'
   ) {

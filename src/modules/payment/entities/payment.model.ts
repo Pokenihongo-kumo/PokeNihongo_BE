@@ -120,6 +120,6 @@ export class PayOSWebhookDto extends createZodDto(PayOSWebhookSchema) {}
 export class CreatePayOSPaymentDto extends createZodDto(CreatePayOSPaymentSchema) {}
 
 export class PaymentResponseDto extends createZodDto(PaymentResponseSchema) {}
-export type PaymentType = z.infer<typeof PaymentSchema>
+export type Payment = z.infer<typeof PaymentSchema>
 
-export type CreatePaymentType = z.infer<typeof CreatePaymentSchema>
+export type CreatePayment = z.infer<typeof CreatePaymentSchema>

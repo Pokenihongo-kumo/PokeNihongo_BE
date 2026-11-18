@@ -9,28 +9,28 @@ import {
 import { walletType } from '@/common/constants/wallet.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { GachaPurchaseMessage } from '@/i18n/message-keys'
+import { GachaBannerService } from '@/modules/gacha-banner/gacha-banner.service'
+import { GachaRollHistoryService } from '@/modules/gacha-roll-history/gacha-roll-history.service'
+import { UserGachaPityService } from '@/modules/user-gacha-pity/user-gacha-pity.service'
+import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
+import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
+import { WalletService } from '@/modules/wallet/wallet.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
-import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
-import { GachaBannerService } from '@/modules/gacha-banner/gacha-banner.service'
-import { GachaItemRateType } from '../gacha-item-rate/entities/gacha-item-rate.entity'
+import { GachaItemRate } from '../gacha-item-rate/entities/gacha-item-rate.entity'
 import { InvalidGachaBannerException } from '../gacha-item/dto/gacha-item.error'
-import { GachaItemType } from '../gacha-item/entities/gacha-item.entity'
-import { GachaRollHistoryService } from '@/modules/gacha-roll-history/gacha-roll-history.service'
-import { UserGachaPityService } from '@/modules/user-gacha-pity/user-gacha-pity.service'
+import { GachaItem } from '../gacha-item/entities/gacha-item.entity'
 import { UserPokemonService } from '../user-pokemon/user-pokemon.service'
-import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
-import { WalletService } from '@/modules/wallet/wallet.service'
 import {
   GachaPurchaseNotFoundException,
   NotEnoughBalanceException
 } from './dto/gacha-purchase.error'
-import { CreateGachaPurchaseBodyType } from './entities/gacha-purchase.entity'
+import { CreateGachaPurchaseBody } from './entities/gacha-purchase.entity'
 import { GachaPurchaseRepo } from './gacha-purchase.repo'
 
 @Injectable()
@@ -49,7 +49,7 @@ export class GachaPurchaseService {
     // private readonly pokemonRepo: PokemonRepo
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.gachaPurchaseRepo.list(pagination)
     return {
       statusCode: 200,
@@ -73,7 +73,7 @@ export class GachaPurchaseService {
   }
 
   async create(
-    { userId, data }: { userId: number; data: CreateGachaPurchaseBodyType },
+    { userId, data }: { userId: number; data: CreateGachaPurchaseBody },
     lang: string = 'vi'
   ) {
     try {
@@ -92,10 +92,10 @@ export class GachaPurchaseService {
 
       // Tách 2 mảng
       // 1 cái là list để random, 1 cái là tỉ lệ
-      const items: GachaItemType[] = gachaBanner.items.map(
+      const items: GachaItem[] = gachaBanner.items.map(
         ({ gachaItemRate, ...rest }) => rest
       )
-      const gachaItemRates: GachaItemRateType[] = gachaBanner.items.map(
+      const gachaItemRates: GachaItemRate[] = gachaBanner.items.map(
         ({ gachaItemRate }) => gachaItemRate
       )
       const rollCount = data.rollCount || 1

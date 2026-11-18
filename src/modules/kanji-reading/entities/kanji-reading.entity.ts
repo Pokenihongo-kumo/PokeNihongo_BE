@@ -103,15 +103,13 @@ export const KanjiReadingResSchema = resSchema(KanjiReadingResItemSchema)
 export const KanjiReadingListResSchema = paginatedResSchema(KanjiReadingResItemSchema)
 
 export type KanjiReading = z.infer<typeof KanjiReadingResItemSchema>
-export type CreateKanjiReadingBodyType = z.infer<typeof CreateKanjiReadingSchema>
-export type UpdateKanjiReadingBodyType = z.infer<typeof UpdateKanjiReadingSchema>
-export type GetKanjiReadingByIdParamsType = z.infer<
-  typeof GetKanjiReadingByIdParamsSchema
->
-export type GetKanjiReadingListQueryType = z.infer<typeof GetKanjiReadingListQuerySchema>
-export type GetKanjiReadingsByKanjiIdParamsType = z.infer<
+export type CreateKanjiReadingBody = z.infer<typeof CreateKanjiReadingSchema>
+export type UpdateKanjiReadingBody = z.infer<typeof UpdateKanjiReadingSchema>
+export type GetKanjiReadingByIdParams = z.infer<typeof GetKanjiReadingByIdParamsSchema>
+export type GetKanjiReadingListQuery = z.infer<typeof GetKanjiReadingListQuerySchema>
+export type GetKanjiReadingsByKanjiIdParams = z.infer<
   typeof GetKanjiReadingsByKanjiIdParamsSchema
 >
-export type GetKanjiReadingsByTypeParamsType = z.infer<
+export type GetKanjiReadingsByTypeParams = z.infer<
   typeof GetKanjiReadingsByTypeParamsSchema
 >

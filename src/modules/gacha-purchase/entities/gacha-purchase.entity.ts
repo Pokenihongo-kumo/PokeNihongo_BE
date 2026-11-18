@@ -62,11 +62,11 @@ export const GetGachaPurchaseListResSchema = resSchema(
 export const GetGachaPurchaseDetailResSchema = resSchema(GetGachaPurchaseDetailSchema)
 
 // Type exports
-export type GachaPurchaseType = z.infer<typeof GachaPurchaseSchema>
-export type CreateGachaPurchaseBodyType = z.infer<typeof CreateGachaPurchaseBodySchema>
-export type UpdateGachaPurchaseBodyType = z.infer<typeof UpdateGachaPurchaseBodySchema>
-export type GetGachaPurchaseParamsType = z.infer<typeof GetGachaPurchaseParamsSchema>
-export type GetGachaPurchaseDetailType = z.infer<typeof GetGachaPurchaseDetailSchema>
+export type GachaPurchase = z.infer<typeof GachaPurchaseSchema>
+export type CreateGachaPurchaseBody = z.infer<typeof CreateGachaPurchaseBodySchema>
+export type UpdateGachaPurchaseBody = z.infer<typeof UpdateGachaPurchaseBodySchema>
+export type GetGachaPurchaseParams = z.infer<typeof GetGachaPurchaseParamsSchema>
+export type GetGachaPurchaseDetail = z.infer<typeof GetGachaPurchaseDetailSchema>
 
 // Field for query
 export type GachaPurchaseFieldType = keyof z.infer<typeof GachaPurchaseSchema>

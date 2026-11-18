@@ -124,14 +124,14 @@ export const GetUserTestMyListQuerySchema = z
   .strict()
 
 // Types
-export type UserTestType = z.infer<typeof UserTestSchema>
-export type TestInfoType = z.infer<typeof TestInfoSchema>
-export type UserTestWithTestType = z.infer<typeof UserTestWithTestSchema>
-export type CreateUserTestBodyType = z.infer<typeof CreateUserTestBodySchema>
-export type UpdateUserTestBodyType = z.infer<typeof UpdateUserTestBodySchema>
-export type UserTestResType = z.infer<typeof UserTestResSchema>
-export type UserTestListResType = z.infer<typeof UserTestListResSchema>
-export type UserTestMyListResType = z.infer<typeof UserTestMyListResSchema>
-export type GetUserTestByIdParamsType = z.infer<typeof GetUserTestByIdParamsSchema>
-export type GetUserTestListQueryType = z.infer<typeof GetUserTestListQuerySchema>
-export type GetUserTestMyListQueryType = z.infer<typeof GetUserTestMyListQuerySchema>
+export type UserTest = z.infer<typeof UserTestSchema>
+export type TestInfo = z.infer<typeof TestInfoSchema>
+export type UserTestWithTest = z.infer<typeof UserTestWithTestSchema>
+export type CreateUserTestBody = z.infer<typeof CreateUserTestBodySchema>
+export type UpdateUserTestBody = z.infer<typeof UpdateUserTestBodySchema>
+export type UserTestRes = z.infer<typeof UserTestResSchema>
+export type UserTestListRes = z.infer<typeof UserTestListResSchema>
+export type UserTestMyListRes = z.infer<typeof UserTestMyListResSchema>
+export type GetUserTestByIdParams = z.infer<typeof GetUserTestByIdParamsSchema>
+export type GetUserTestListQuery = z.infer<typeof GetUserTestListQuerySchema>
+export type GetUserTestMyListQuery = z.infer<typeof GetUserTestMyListQuerySchema>

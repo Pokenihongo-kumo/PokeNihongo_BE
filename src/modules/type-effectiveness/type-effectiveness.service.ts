@@ -1,7 +1,7 @@
 import { I18nService } from '@/i18n/i18n.service'
 import { TypeEffectivenessMessage } from '@/i18n/message-keys'
 import { NotFoundRecordException } from '@/shared/error'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError,
@@ -10,8 +10,8 @@ import {
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { TypeEffectivenessAlreadyExistsException } from './dto/type-effectiveness.error'
 import {
-  CreateTypeEffectivenessBodyType,
-  UpdateTypeEffectivenessBodyType
+  CreateTypeEffectivenessBody,
+  UpdateTypeEffectivenessBody
 } from './entities/type-effectiveness.entity'
 import { TypeEffectivenessRepo } from './type-effectiveness.repo'
 
@@ -22,7 +22,7 @@ export class TypeEffectivenessService {
     private readonly i18nService: I18nService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.typeEffectivenessRepo.list(pagination)
     return {
       statusCode: HttpStatus.OK,
@@ -48,7 +48,7 @@ export class TypeEffectivenessService {
       data,
       createdById
     }: {
-      data: CreateTypeEffectivenessBodyType
+      data: CreateTypeEffectivenessBody
       createdById: number
     },
     lang: string = 'vi'
@@ -94,7 +94,7 @@ export class TypeEffectivenessService {
       updatedById
     }: {
       id: number
-      data: UpdateTypeEffectivenessBodyType
+      data: UpdateTypeEffectivenessBody
       updatedById: number
     },
     lang: string = 'vi'

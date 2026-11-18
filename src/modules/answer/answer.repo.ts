@@ -3,13 +3,13 @@ import { PrismaService } from '@/shared/services/prisma.service'
 import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
-import { GetAnswerListQueryType } from './entities/answer.entity'
+import { GetAnswerListQuery } from './entities/answer.entity'
 
 @Injectable()
 export class AnswerRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async findMany(params: GetAnswerListQueryType) {
+  async findMany(params: GetAnswerListQuery) {
     const {
       currentPage,
       pageSize,

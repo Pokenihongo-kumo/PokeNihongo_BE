@@ -130,18 +130,16 @@ export const TypeEffectivenessResponseSchema = TypeEffectivenessSchema.extend({
 })
 
 // Type exports
-export type TypeEffectivenessType = z.infer<typeof TypeEffectivenessSchema>
-export type CreateTypeEffectivenessBodyType = z.infer<
+export type TypeEffectiveness = z.infer<typeof TypeEffectivenessSchema>
+export type CreateTypeEffectivenessBody = z.infer<
   typeof CreateTypeEffectivenessBodySchema
 >
-export type UpdateTypeEffectivenessBodyType = z.infer<
+export type UpdateTypeEffectivenessBody = z.infer<
   typeof UpdateTypeEffectivenessBodySchema
 >
-export type CalculateMultiTypeBodyType = z.infer<typeof CalculateMultiTypeBodySchema>
-export type GetTypeEffectivenessParamsType = z.infer<
-  typeof GetTypeEffectivenessParamsSchema
->
-export type GetTypeEffectivenessDetailResType = z.infer<
+export type CalculateMultiTypeBody = z.infer<typeof CalculateMultiTypeBodySchema>
+export type GetTypeEffectivenessParams = z.infer<typeof GetTypeEffectivenessParamsSchema>
+export type GetTypeEffectivenessDetailRes = z.infer<
   typeof GetTypeEffectivenessDetailResSchema
 >
 //Field for query

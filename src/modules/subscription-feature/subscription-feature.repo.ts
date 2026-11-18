@@ -1,13 +1,13 @@
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { Prisma, PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
-  CreateSubscriptionFeatureBodyType,
-  SubscriptionFeatureType,
+  CreateSubscriptionFeatureBody,
+  SubscriptionFeature,
   USER_GACHA_PITY_FIELDS,
-  UpdateSubscriptionFeatureBodyType
+  UpdateSubscriptionFeatureBody
 } from './entities/subscription-feature.entity'
 
 @Injectable()
@@ -22,10 +22,10 @@ export class SubscriptionFeatureRepo {
       data
     }: {
       createdById: number
-      data: CreateSubscriptionFeatureBodyType
+      data: CreateSubscriptionFeatureBody
     },
     prismaTx?: PrismaClient
-  ): Promise<SubscriptionFeatureType> {
+  ): Promise<SubscriptionFeature> {
     const client = prismaTx || this.prismaService
     return client.subscriptionFeature.create({
       data: {
@@ -42,11 +42,11 @@ export class SubscriptionFeatureRepo {
       updatedById
     }: {
       id: number
-      data: UpdateSubscriptionFeatureBodyType
+      data: UpdateSubscriptionFeatureBody
       updatedById?: number
     },
     prismaTx?: PrismaClient
-  ): Promise<SubscriptionFeatureType> {
+  ): Promise<SubscriptionFeature> {
     const client = prismaTx || this.prismaService
     return client.subscriptionFeature.update({
       where: {
@@ -63,7 +63,7 @@ export class SubscriptionFeatureRepo {
     id: number,
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<SubscriptionFeatureType> {
+  ): Promise<SubscriptionFeature> {
     const client = prismaTx || this.prismaService
     return isHard
       ? client.subscriptionFeature.delete({
@@ -80,7 +80,7 @@ export class SubscriptionFeatureRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, USER_GACHA_PITY_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -115,7 +115,7 @@ export class SubscriptionFeatureRepo {
     }
   }
 
-  findById(id: number): Promise<SubscriptionFeatureType | null> {
+  findById(id: number): Promise<SubscriptionFeature | null> {
     return this.prismaService.subscriptionFeature.findUnique({
       where: {
         id,

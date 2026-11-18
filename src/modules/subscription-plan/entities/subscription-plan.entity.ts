@@ -91,16 +91,10 @@ export const GetSubscriptionPlanDetailResSchema = resSchema(
 )
 
 // Type exports
-export type SubscriptionPlanType = z.infer<typeof SubscriptionPlanSchema>
-export type CreateSubscriptionPlanBodyType = z.infer<
-  typeof CreateSubscriptionPlanBodySchema
->
-export type UpdateSubscriptionPlanBodyType = z.infer<
-  typeof UpdateSubscriptionPlanBodySchema
->
-export type GetSubscriptionPlanParamsType = z.infer<
-  typeof GetSubscriptionPlanParamsSchema
->
+export type SubscriptionPlan = z.infer<typeof SubscriptionPlanSchema>
+export type CreateSubscriptionPlanBody = z.infer<typeof CreateSubscriptionPlanBodySchema>
+export type UpdateSubscriptionPlanBody = z.infer<typeof UpdateSubscriptionPlanBodySchema>
+export type GetSubscriptionPlanParams = z.infer<typeof GetSubscriptionPlanParamsSchema>
 
 // Field for query
 export type SubscriptionPlanFieldType = keyof z.infer<typeof SubscriptionPlanSchema>

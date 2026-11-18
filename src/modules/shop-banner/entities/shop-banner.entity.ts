@@ -111,17 +111,13 @@ export const GetShopBannerDetailResSchema = resSchema(
 
 export const GetShopBannerByTodayResSchema = resSchema(GetShopBannerDetailByUserSchema)
 
-export type ShopBannerType = z.infer<typeof ShopBannerSchema>
-export type CreateShopBannerBodyInputType = z.infer<
-  typeof CreateShopBannerBodyInputSchema
->
-export type CreateShopBannerBodyType = z.infer<typeof CreateShopBannerBodySchema>
-export type UpdateShopBannerBodyInputType = z.infer<
-  typeof UpdateShopBannerBodyInputSchema
->
-export type UpdateShopBannerBodyType = z.infer<typeof UpdateShopBannerBodySchema>
-export type GetShopBannerParamsType = z.infer<typeof GetShopBannerParamsSchema>
-export type GetShopBannerDetailResType = z.infer<typeof GetShopBannerDetailResSchema>
+export type ShopBanner = z.infer<typeof ShopBannerSchema>
+export type CreateShopBannerBodyInput = z.infer<typeof CreateShopBannerBodyInputSchema>
+export type CreateShopBannerBody = z.infer<typeof CreateShopBannerBodySchema>
+export type UpdateShopBannerBodyInput = z.infer<typeof UpdateShopBannerBodyInputSchema>
+export type UpdateShopBannerBody = z.infer<typeof UpdateShopBannerBodySchema>
+export type GetShopBannerParams = z.infer<typeof GetShopBannerParamsSchema>
+export type GetShopBannerDetailRes = z.infer<typeof GetShopBannerDetailResSchema>
 
 type ShopBannerFieldType = keyof z.infer<typeof ShopBannerSchema>
 export const REWARD_FIELDS = [

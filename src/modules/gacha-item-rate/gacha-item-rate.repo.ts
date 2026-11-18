@@ -1,14 +1,14 @@
 import { GachaStarTypeType } from '@/common/constants/gacha.constant'
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
-  CreateGachaItemRateBodyType,
+  CreateGachaItemRateBody,
   GACHA_ITEM_RATE_FIELDS,
-  GachaItemRateType,
-  UpdateGachaItemRateBodyType
+  GachaItemRate,
+  UpdateGachaItemRateBody
 } from './entities/gacha-item-rate.entity'
 
 @Injectable()
@@ -23,10 +23,10 @@ export class GachaItemRateRepo {
       data
     }: {
       createdById?: number
-      data: CreateGachaItemRateBodyType
+      data: CreateGachaItemRateBody
     },
     prismaTx?: PrismaClient
-  ): Promise<GachaItemRateType> {
+  ): Promise<GachaItemRate> {
     const client = prismaTx || this.prismaService
     return client.gachaItemRate.create({
       data: {
@@ -43,11 +43,11 @@ export class GachaItemRateRepo {
       updatedById
     }: {
       id: number
-      data: UpdateGachaItemRateBodyType
+      data: UpdateGachaItemRateBody
       updatedById?: number
     },
     prismaTx?: PrismaClient
-  ): Promise<GachaItemRateType> {
+  ): Promise<GachaItemRate> {
     const client = prismaTx || this.prismaService
     return client.gachaItemRate.update({
       where: {
@@ -61,11 +61,7 @@ export class GachaItemRateRepo {
     })
   }
 
-  delete(
-    id: number,
-    isHard?: boolean,
-    prismaTx?: PrismaClient
-  ): Promise<GachaItemRateType> {
+  delete(id: number, isHard?: boolean, prismaTx?: PrismaClient): Promise<GachaItemRate> {
     const client = prismaTx || this.prismaService
     return isHard
       ? client.gachaItemRate.delete({
@@ -82,7 +78,7 @@ export class GachaItemRateRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, GACHA_ITEM_RATE_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -117,7 +113,7 @@ export class GachaItemRateRepo {
     }
   }
 
-  findById(id: number): Promise<GachaItemRateType | null> {
+  findById(id: number): Promise<GachaItemRate | null> {
     return this.prismaService.gachaItemRate.findUnique({
       where: {
         id,
@@ -126,7 +122,7 @@ export class GachaItemRateRepo {
     })
   }
 
-  getByType(starType: GachaStarTypeType): Promise<GachaItemRateType | null> {
+  getByType(starType: GachaStarTypeType): Promise<GachaItemRate | null> {
     return this.prismaService.gachaItemRate.findFirst({
       where: {
         starType,

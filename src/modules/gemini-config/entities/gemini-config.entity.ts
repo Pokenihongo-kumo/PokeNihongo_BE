@@ -41,11 +41,11 @@ export const GetParamsGeminiConfigSchema = z.object({
 export const GetGeminiConfigResSchema = resSchema(GeminiConfigSchema)
 
 //type
-export type GeminiConfigType = z.infer<typeof GeminiConfigSchema>
-export type CreateGeminiConfigBodyType = z.infer<typeof CreateGeminiConfigBodySchema>
-export type UpdateGeminiConfigBodyType = z.infer<typeof UpdateGeminiConfigBodySchema>
-export type GetParamsGeminiConfigType = z.infer<typeof GetParamsGeminiConfigSchema>
-export type GetGeminiConfigResType = z.infer<typeof GetGeminiConfigResSchema>
+export type GeminiConfig = z.infer<typeof GeminiConfigSchema>
+export type CreateGeminiConfigBody = z.infer<typeof CreateGeminiConfigBodySchema>
+export type UpdateGeminiConfigBody = z.infer<typeof UpdateGeminiConfigBodySchema>
+export type GetParamsGeminiConfig = z.infer<typeof GetParamsGeminiConfigSchema>
+export type GetGeminiConfigRes = z.infer<typeof GetGeminiConfigResSchema>
 
 //field
 type GeminiConfigFieldType = keyof z.infer<typeof GeminiConfigSchema>

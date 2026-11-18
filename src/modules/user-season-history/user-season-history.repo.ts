@@ -1,14 +1,14 @@
 import { RewardClaimStatus } from '@/common/constants/reward.constant'
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
-  CreateUserSeasonHistoryBodyType,
+  CreateUserSeasonHistoryBody,
   USER_SEASON_HISTORY_FIELDS,
-  UpdateUserSeasonHistoryBodyType,
-  UserSeasonHistoryType
+  UpdateUserSeasonHistoryBody,
+  UserSeasonHistory
 } from './entities/user-season-history.entity'
 
 @Injectable()
@@ -23,10 +23,10 @@ export class UserSeasonHistoryRepo {
       data
     }: {
       createdById: number
-      data: CreateUserSeasonHistoryBodyType
+      data: CreateUserSeasonHistoryBody
     },
     prismaTx?: PrismaClient
-  ): Promise<UserSeasonHistoryType> {
+  ): Promise<UserSeasonHistory> {
     const client = prismaTx || this.prismaService
     return client.userSeasonHistory.create({
       data: {
@@ -43,11 +43,11 @@ export class UserSeasonHistoryRepo {
       updatedById
     }: {
       id: number
-      data: UpdateUserSeasonHistoryBodyType
+      data: UpdateUserSeasonHistoryBody
       updatedById?: number
     },
     prismaTx?: PrismaClient
-  ): Promise<UserSeasonHistoryType> {
+  ): Promise<UserSeasonHistory> {
     const client = prismaTx || this.prismaService
     return client.userSeasonHistory.update({
       where: {
@@ -64,7 +64,7 @@ export class UserSeasonHistoryRepo {
     id: number,
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<UserSeasonHistoryType> {
+  ): Promise<UserSeasonHistory> {
     const client = prismaTx || this.prismaService
     return isHard
       ? client.userSeasonHistory.delete({
@@ -81,7 +81,7 @@ export class UserSeasonHistoryRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, USER_SEASON_HISTORY_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -116,7 +116,7 @@ export class UserSeasonHistoryRepo {
     }
   }
 
-  findById(id: number): Promise<UserSeasonHistoryType | null> {
+  findById(id: number): Promise<UserSeasonHistory | null> {
     return this.prismaService.userSeasonHistory.findUnique({
       where: {
         id,
@@ -125,7 +125,7 @@ export class UserSeasonHistoryRepo {
     })
   }
 
-  findSeasonNowByUserId(userId: number): Promise<UserSeasonHistoryType | null> {
+  findSeasonNowByUserId(userId: number): Promise<UserSeasonHistory | null> {
     return this.prismaService.userSeasonHistory.findFirst({
       where: {
         userId,
@@ -137,7 +137,7 @@ export class UserSeasonHistoryRepo {
   checkUserHasSeasonHistoryInSeason(
     userId: number,
     seasonId: number
-  ): Promise<UserSeasonHistoryType | null> {
+  ): Promise<UserSeasonHistory | null> {
     return this.prismaService.userSeasonHistory.findFirst({
       where: {
         userId,
@@ -199,7 +199,7 @@ export class UserSeasonHistoryRepo {
 
   async getInfoPreSeaonUserSeasonHistory(
     userId: number
-  ): Promise<UserSeasonHistoryType | null> {
+  ): Promise<UserSeasonHistory | null> {
     return this.prismaService.userSeasonHistory.findFirst({
       where: {
         userId,

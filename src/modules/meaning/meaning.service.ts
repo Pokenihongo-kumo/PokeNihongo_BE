@@ -14,11 +14,11 @@ import {
   MeaningWordTypeNotFoundException
 } from './dto/meaning.error'
 import {
-  CreateMeaningBodyType,
-  GetMeaningListQueryType,
-  MeaningType,
-  MeaningWithTranslationsType,
-  UpdateMeaningBodyType
+  CreateMeaningBody,
+  GetMeaningListQuery,
+  Meaning,
+  MeaningWithTranslations,
+  UpdateMeaningBody
 } from './entities/meaning.entity'
 import { MeaningRepo } from './meaning.repo'
 
@@ -35,7 +35,7 @@ export class MeaningService {
   ) {}
 
   //#region HTTP routes (envelope + translated message)
-  async findMany(params: GetMeaningListQueryType, lang: string = 'vi') {
+  async findMany(params: GetMeaningListQuery, lang: string = 'vi') {
     const result = await this.meaningRepository.findMany(params)
     return {
       statusCode: 200,
@@ -54,14 +54,14 @@ export class MeaningService {
     }
   }
 
-  async createMeaning(data: CreateMeaningBodyType, lang: string = 'vi') {
+  async createMeaning(data: CreateMeaningBody, lang: string = 'vi') {
     return {
       data: await this.create(data),
       message: this.i18nService.translate(MeaningMessage.CREATE_SUCCESS, lang)
     }
   }
 
-  async update(id: number, data: UpdateMeaningBodyType, lang: string = 'vi') {
+  async update(id: number, data: UpdateMeaningBody, lang: string = 'vi') {
     try {
       if (!(await this.meaningRepository.findById(id))) {
         throw new MeaningNotFoundException()
@@ -92,7 +92,7 @@ export class MeaningService {
   //#endregion
 
   //#region Used by vocabulary and lesson-content (plain data, unchanged shape)
-  async findByVocabularyId(vocabularyId: number): Promise<MeaningWithTranslationsType[]> {
+  async findByVocabularyId(vocabularyId: number): Promise<MeaningWithTranslations[]> {
     const meanings = await this.meaningRepository.findByVocabularyId(vocabularyId)
     return Promise.all(
       meanings.map(async (meaning) => ({
@@ -104,7 +104,7 @@ export class MeaningService {
   }
 
   // Keys are generated from the vocabulary id
-  async create(data: CreateMeaningBodyType): Promise<MeaningType> {
+  async create(data: CreateMeaningBody): Promise<Meaning> {
     try {
       return await this.meaningRepository.create({
         ...data,

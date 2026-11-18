@@ -15,11 +15,11 @@ import {
   LessonCategoryNotFoundException
 } from './dto/lesson-category.error'
 import {
-  CreateLessonCategoryBodyType,
-  GetLessonCategoryByIdParamsType,
-  GetLessonCategoryListQueryType,
-  LessonCategoryWithRelationsType,
-  UpdateLessonCategoryBodyType
+  CreateLessonCategoryBody,
+  GetLessonCategoryByIdParams,
+  GetLessonCategoryListQuery,
+  LessonCategoryWithRelations,
+  UpdateLessonCategoryBody
 } from './entities/lesson-category.entity'
 import { LessonCategoryRepo } from './lesson-category.repo'
 
@@ -40,10 +40,7 @@ export class LessonCategoryService {
     private readonly i18nService: I18nService
   ) {}
 
-  async getLessonCategoryList(
-    params: GetLessonCategoryListQueryType,
-    lang: string = 'vi'
-  ) {
+  async getLessonCategoryList(params: GetLessonCategoryListQuery, lang: string = 'vi') {
     const result = await this.lessonCategoryRepository.findMany(params)
     const languageId = await this.languagesService.getIdByCode(lang)
     const results = await Promise.all(
@@ -61,10 +58,7 @@ export class LessonCategoryService {
   }
 
   // Also used by LessonService to check that a category exists
-  async getLessonCategoryById(
-    params: GetLessonCategoryByIdParamsType,
-    lang: string = 'vi'
-  ) {
+  async getLessonCategoryById(params: GetLessonCategoryByIdParams, lang: string = 'vi') {
     try {
       const category = await this.lessonCategoryRepository.findById(params.id)
       if (!category) {
@@ -94,7 +88,7 @@ export class LessonCategoryService {
     }
   }
 
-  async createLessonCategory(data: CreateLessonCategoryBodyType, lang: string = 'vi') {
+  async createLessonCategory(data: CreateLessonCategoryBody, lang: string = 'vi') {
     try {
       // Auto-generate slug if not provided; append -1, -2... while taken
       let slug = data.slug || this.generateSlug(data.nameKey)
@@ -131,7 +125,7 @@ export class LessonCategoryService {
 
   async updateLessonCategory(
     id: number,
-    data: UpdateLessonCategoryBodyType,
+    data: UpdateLessonCategoryBody,
     lang: string = 'vi'
   ) {
     try {
@@ -190,7 +184,7 @@ export class LessonCategoryService {
   private async toView(
     category: LessonCategory,
     languageId: number | null
-  ): Promise<LessonCategoryWithRelationsType> {
+  ): Promise<LessonCategoryWithRelations> {
     let name = category.nameKey
     if (languageId) {
       try {

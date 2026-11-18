@@ -6,15 +6,15 @@ import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import {
   GachaItemRateAlreadyExistsException,
   GachaItemRateNotFoundException
 } from './dto/gacha-item-rate.error'
 import {
-  CreateGachaItemRateBodyType,
-  UpdateGachaItemRateBodyType
+  CreateGachaItemRateBody,
+  UpdateGachaItemRateBody
 } from './entities/gacha-item-rate.entity'
 import { GachaItemRateRepo } from './gacha-item-rate.repo'
 
@@ -26,7 +26,7 @@ export class GachaItemRateService {
     private readonly i18nService: I18nService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.gachaItemRateRepo.list(pagination)
     return {
       statusCode: 200,
@@ -50,7 +50,7 @@ export class GachaItemRateService {
   }
 
   async create(
-    { userId, data }: { userId: number; data: CreateGachaItemRateBodyType },
+    { userId, data }: { userId: number; data: CreateGachaItemRateBody },
     lang: string = 'vi'
   ) {
     try {
@@ -89,7 +89,7 @@ export class GachaItemRateService {
       userId
     }: {
       id: number
-      data: UpdateGachaItemRateBodyType
+      data: UpdateGachaItemRateBody
       userId?: number
     },
     lang: string = 'vi'

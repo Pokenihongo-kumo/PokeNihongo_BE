@@ -1,16 +1,16 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { AIConversationRoomMessage as M } from '@/i18n/message-keys'
+import { AIConversationRoomRepo } from '@/modules/ai-conversation-room/ai-conversation-room.repo'
 import {
-  AIConversationTakenException,
   AIConversationRoomNotFoundException,
+  AIConversationTakenException,
   InvalidAIConversationRoomDataException
 } from '@/modules/ai-conversation-room/dto/ai-conversation-room.error'
 import {
   CreateAIConversationRoomInput,
-  GetAIConversationRoomListQueryType,
+  GetAIConversationRoomListQuery,
   UpdateAIConversationRoomData
 } from '@/modules/ai-conversation-room/entities/ai-conversation-room.entity'
-import { AIConversationRoomRepo } from '@/modules/ai-conversation-room/ai-conversation-room.repo'
-import { I18nService } from '@/i18n/i18n.service'
-import { AIConversationRoomMessage as M } from '@/i18n/message-keys'
 import { toPaginationMeta } from '@/shared/utils/pagination'
 import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
 import { HttpException, Injectable, Logger } from '@nestjs/common'
@@ -44,7 +44,7 @@ export class AIConversationRoomService {
     }
   }
 
-  async findAll(query: GetAIConversationRoomListQueryType, userId: number, lang = 'vi') {
+  async findAll(query: GetAIConversationRoomListQuery, userId: number, lang = 'vi') {
     const { currentPage, pageSize, isArchived } = query
     const { items, total } = await this.aiConversationRoomRepository.findMany({
       currentPage,

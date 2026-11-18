@@ -78,17 +78,13 @@ export const GetDebuffRoundDetailResSchema = resSchema(
   })
 )
 
-export type DebuffRoundType = z.infer<typeof DebuffRoundSchema>
-export type CreateDebuffRoundBodyInputType = z.infer<
-  typeof CreateDebuffRoundBodyInputSchema
->
-export type CreateDebuffRoundBodyType = z.infer<typeof CreateDebuffRoundBodySchema>
-export type UpdateDebuffRoundBodyInputType = z.infer<
-  typeof UpdateDebuffRoundBodyInputSchema
->
-export type UpdateDebuffRoundBodyType = z.infer<typeof UpdateDebuffRoundBodySchema>
-export type GetDebuffRoundParamsType = z.infer<typeof GetDebuffRoundParamsSchema>
-export type GetDebuffRoundDetailResType = z.infer<typeof GetDebuffRoundDetailResSchema>
+export type DebuffRound = z.infer<typeof DebuffRoundSchema>
+export type CreateDebuffRoundBodyInput = z.infer<typeof CreateDebuffRoundBodyInputSchema>
+export type CreateDebuffRoundBody = z.infer<typeof CreateDebuffRoundBodySchema>
+export type UpdateDebuffRoundBodyInput = z.infer<typeof UpdateDebuffRoundBodyInputSchema>
+export type UpdateDebuffRoundBody = z.infer<typeof UpdateDebuffRoundBodySchema>
+export type GetDebuffRoundParams = z.infer<typeof GetDebuffRoundParamsSchema>
+export type GetDebuffRoundDetailRes = z.infer<typeof GetDebuffRoundDetailResSchema>
 
 type DebuffRoundFieldType = keyof z.infer<typeof DebuffRoundSchema>
 export const DEBUFF_FIELDS = [

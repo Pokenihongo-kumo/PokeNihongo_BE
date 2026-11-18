@@ -61,14 +61,14 @@ export const GetRoundQuestionsAnswerLogDetailResSchema = resSchema(
 )
 
 // Type exports
-export type RoundQuestionsAnswerLogType = z.infer<typeof RoundQuestionsAnswerLogSchema>
-export type CreateRoundQuestionsAnswerLogBodyType = z.infer<
+export type RoundQuestionsAnswerLog = z.infer<typeof RoundQuestionsAnswerLogSchema>
+export type CreateRoundQuestionsAnswerLogBody = z.infer<
   typeof CreateRoundQuestionsAnswerLogBodySchema
 >
-export type UpdateRoundQuestionsAnswerLogBodyType = z.infer<
+export type UpdateRoundQuestionsAnswerLogBody = z.infer<
   typeof UpdateRoundQuestionsAnswerLogBodySchema
 >
-export type GetRoundQuestionsAnswerLogParamsType = z.infer<
+export type GetRoundQuestionsAnswerLogParams = z.infer<
   typeof GetRoundQuestionsAnswerLogParamsSchema
 >
 

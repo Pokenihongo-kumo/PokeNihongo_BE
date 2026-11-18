@@ -1,11 +1,11 @@
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { I18nService } from 'src/i18n/i18n.service'
 import { PermissionMessage } from 'src/i18n/message-keys'
 import { PermissionAlreadyExistsException } from 'src/modules/permission/permission.error'
 import {
-  CreatePermissionBodyType,
-  UpdatePermissionBodyType
+  CreatePermissionBody,
+  UpdatePermissionBody
 } from 'src/modules/permission/permission.model'
 import { PermissionRepo } from 'src/modules/permission/permission.repo'
 import { NotFoundRecordException } from 'src/shared/error'
@@ -18,7 +18,7 @@ export class PermissionService {
     private i18nService: I18nService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string) {
+  async list(pagination: PaginationQuery, lang: string) {
     const data = await this.permissionRepo.list(pagination)
     return {
       data,
@@ -42,7 +42,7 @@ export class PermissionService {
       data,
       createdById
     }: {
-      data: CreatePermissionBodyType
+      data: CreatePermissionBody
       createdById: number
     },
     lang: string
@@ -71,7 +71,7 @@ export class PermissionService {
       updatedById
     }: {
       id: number
-      data: UpdatePermissionBodyType
+      data: UpdatePermissionBody
       updatedById: number
     },
     lang: string

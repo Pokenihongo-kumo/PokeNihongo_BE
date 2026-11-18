@@ -1,20 +1,20 @@
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import {
-  CreateRoleBodyType,
+  CreateRoleBody,
   ROLE_FIELDS,
-  RoleWithPermissionsType,
-  UpdateRoleBodyType
+  RoleWithPermissions,
+  UpdateRoleBody
 } from 'src/modules/role/role.model'
-import { RoleType } from 'src/shared/models/shared-role.model'
+import { Role } from 'src/shared/models/shared-role.model'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
 @Injectable()
 export class RoleRepo {
   constructor(private prismaService: PrismaService) {}
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, ROLE_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -43,7 +43,7 @@ export class RoleRepo {
     }
   }
 
-  findById(id: number): Promise<RoleWithPermissionsType | null> {
+  findById(id: number): Promise<RoleWithPermissions | null> {
     return this.prismaService.role.findUnique({
       where: {
         id,
@@ -67,8 +67,8 @@ export class RoleRepo {
     data
   }: {
     createdById: number | null
-    data: CreateRoleBodyType
-  }): Promise<RoleType> {
+    data: CreateRoleBody
+  }): Promise<Role> {
     return this.prismaService.role.create({
       data: {
         ...data,
@@ -84,8 +84,8 @@ export class RoleRepo {
   }: {
     id: number
     updatedById: number
-    data: UpdateRoleBodyType
-  }): Promise<RoleType> {
+    data: UpdateRoleBody
+  }): Promise<Role> {
     // Kiểm tra nếu có bất cứ permissionId nào mà đã soft delete thì không cho phép cập nhật
     if (Array.isArray(data.permissionIds) && data.permissionIds.length > 0) {
       const permissions = await this.prismaService.permission.findMany({
@@ -135,7 +135,7 @@ export class RoleRepo {
       deletedById: number
     },
     isHard?: boolean
-  ): Promise<RoleType> {
+  ): Promise<Role> {
     return isHard
       ? this.prismaService.role.delete({
           where: {

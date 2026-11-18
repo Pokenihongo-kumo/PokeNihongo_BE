@@ -102,10 +102,10 @@ export const GetGrammarListQuerySchema = z.object({
 export const GrammarListResSchema = paginatedResSchema(GrammarSchema).strict()
 
 // Type exports
-export type GrammarType = z.infer<typeof GrammarSchema>
-export type CreateGrammarBodyType = z.infer<typeof CreateGrammarBodySchema>
-export type UpdateGrammarBodyType = z.infer<typeof UpdateGrammarBodySchema>
-export type CreateGrammarBasicBodyType = z.infer<typeof CreateGrammarBasicBodySchema>
-export type GetGrammarByIdParamsType = z.infer<typeof GetGrammarByIdParamsSchema>
-export type GetGrammarListQueryType = z.infer<typeof GetGrammarListQuerySchema>
-export type GrammarListResType = z.infer<typeof GrammarListResSchema>
+export type Grammar = z.infer<typeof GrammarSchema>
+export type CreateGrammarBody = z.infer<typeof CreateGrammarBodySchema>
+export type UpdateGrammarBody = z.infer<typeof UpdateGrammarBodySchema>
+export type CreateGrammarBasicBody = z.infer<typeof CreateGrammarBasicBodySchema>
+export type GetGrammarByIdParams = z.infer<typeof GetGrammarByIdParamsSchema>
+export type GetGrammarListQuery = z.infer<typeof GetGrammarListQuerySchema>
+export type GrammarListRes = z.infer<typeof GrammarListResSchema>

@@ -4,10 +4,10 @@ import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
 import { Kanji_Reading, Prisma } from '@prisma/client'
 import {
-  CreateKanjiReadingBodyType,
-  GetKanjiReadingListQueryType,
+  CreateKanjiReadingBody,
+  GetKanjiReadingListQuery,
   KanjiReading,
-  UpdateKanjiReadingBodyType
+  UpdateKanjiReadingBody
 } from './entities/kanji-reading.entity'
 
 @Injectable()
@@ -16,7 +16,7 @@ export class KanjiReadingRepo {
 
   // `search` is accepted by the query schema but has never filtered anything
   async findMany(
-    params: GetKanjiReadingListQueryType
+    params: GetKanjiReadingListQuery
   ): Promise<{ data: KanjiReading[]; total: number }> {
     const {
       page,
@@ -63,7 +63,7 @@ export class KanjiReadingRepo {
     return readings.map((item) => this.toKanjiReading(item))
   }
 
-  async create(data: CreateKanjiReadingBodyType): Promise<KanjiReading> {
+  async create(data: CreateKanjiReadingBody): Promise<KanjiReading> {
     const reading = await this.prismaService.kanji_Reading.create({
       data: {
         kanjiId: data.kanjiId,
@@ -74,7 +74,7 @@ export class KanjiReadingRepo {
     return this.toKanjiReading(reading)
   }
 
-  async update(id: number, data: UpdateKanjiReadingBodyType): Promise<KanjiReading> {
+  async update(id: number, data: UpdateKanjiReadingBody): Promise<KanjiReading> {
     const reading = await this.prismaService.kanji_Reading.update({
       where: { id },
       data: { readingType: data.readingType, reading: data.reading }

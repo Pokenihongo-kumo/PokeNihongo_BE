@@ -1,15 +1,15 @@
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 
 import { parseQs } from '@/common/utils/qs-parser'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
+import { CreateTranslationBody } from '../translation/entities/translation.entity'
 import {
-  CreateDebuffRoundBodyType,
+  CreateDebuffRoundBody,
   DEBUFF_FIELDS,
-  DebuffRoundType,
-  UpdateDebuffRoundBodyType
+  DebuffRound,
+  UpdateDebuffRoundBody
 } from './entities/debuff-round.entity'
 
 @Injectable()
@@ -27,10 +27,10 @@ export class DebuffRoundRepo {
       data
     }: {
       createdById: number | null
-      data: CreateDebuffRoundBodyType
+      data: CreateDebuffRoundBody
     },
     prismaTx?: PrismaClient
-  ): Promise<DebuffRoundType> {
+  ): Promise<DebuffRound> {
     const client = prismaTx || this.prismaService
     return client.debuffRound.create({
       data: {
@@ -48,13 +48,13 @@ export class DebuffRoundRepo {
     }: {
       id: number
       updatedById?: number
-      data: UpdateDebuffRoundBodyType & {
-        nameTranslations: CreateTranslationBodyType[]
+      data: UpdateDebuffRoundBody & {
+        nameTranslations: CreateTranslationBody[]
         debuffRoundNameKey: string
       }
     },
     prismaTx?: PrismaClient
-  ): Promise<DebuffRoundType> {
+  ): Promise<DebuffRound> {
     const client = prismaTx || this.prismaService
     const { nameTranslations, debuffRoundNameKey, ...debuffRoundData } = data
 
@@ -102,7 +102,7 @@ export class DebuffRoundRepo {
     },
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<DebuffRoundType> {
+  ): Promise<DebuffRound> {
     const client = prismaTx || this.prismaService
     const result = isHard
       ? await this.prismaService.debuffRound.delete({
@@ -123,7 +123,7 @@ export class DebuffRoundRepo {
     return result
   }
 
-  async list(pagination: PaginationQueryType, langId?: number, isAdmin: boolean = false) {
+  async list(pagination: PaginationQuery, langId?: number, isAdmin: boolean = false) {
     const { where: rawWhere = {}, orderBy } = parseQs(pagination.qs, DEBUFF_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -200,7 +200,7 @@ export class DebuffRoundRepo {
       }
     }
   }
-  findById(id: number): Promise<DebuffRoundType | null> {
+  findById(id: number): Promise<DebuffRound | null> {
     return this.prismaService.debuffRound.findUnique({
       where: {
         id,
@@ -213,7 +213,7 @@ export class DebuffRoundRepo {
     id: number,
     isAllLang: boolean,
     langId: number
-  ): Promise<DebuffRoundType | null> {
+  ): Promise<DebuffRound | null> {
     return this.prismaService.debuffRound.findUnique({
       where: {
         id,

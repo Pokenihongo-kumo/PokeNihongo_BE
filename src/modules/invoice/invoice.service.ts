@@ -9,33 +9,33 @@ import {
   WalletTransactionType
 } from '@/common/constants/wallet-transaction.constant'
 import { walletType } from '@/common/constants/wallet.constant'
-import { PrismaClient } from '@prisma/client'
 import { I18nService } from '@/i18n/i18n.service'
 import { InvoiceMessage } from '@/i18n/message-keys'
+import { SubscriptionPlanService } from '@/modules/subscription-plan/subscription-plan.service'
+import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
+import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
+import { WalletService } from '@/modules/wallet/wallet.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { InjectQueue } from '@nestjs/bull'
 import { Injectable } from '@nestjs/common'
+import { PrismaClient } from '@prisma/client'
 import { Queue } from 'bull'
 import { SubscriptionPlanNotFoundException } from '../subscription-plan/dto/subscription-plan.error'
-import { SubscriptionPlanService } from '@/modules/subscription-plan/subscription-plan.service'
 import {
   UserHasSubscriptionWithStatusActiveException,
   UserHasSubscriptionWithStatusPendingPaymentException
 } from '../user-subscription/dto/user-subscription.error'
-import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
-import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
-import { WalletService } from '@/modules/wallet/wallet.service'
 import {
   InvoiceDiscountTooHighException,
   InvoiceNotEnoughPokeCoinsException,
   InvoiceNotFoundException
 } from './dto/invoice.error'
-import { CreateInvoiceBodyType, UpdateInvoiceBodyType } from './entities/invoice.entity'
+import { CreateInvoiceBody, UpdateInvoiceBody } from './entities/invoice.entity'
 import { InvoiceRepo } from './invoice.repo'
 
 @Injectable()
@@ -51,7 +51,7 @@ export class InvoiceService {
     private readonly walletTransactionService: WalletTransactionService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.invoiceRepo.list(pagination)
     return {
       statusCode: 200,
@@ -77,7 +77,7 @@ export class InvoiceService {
   // discount taken), committed before any payment link exists. POST /invoice
   // lives in the payment module, which opens the link next (B5: invoice no
   // longer calls payment).
-  async createPending({ userId, data }: { userId: number; data: CreateInvoiceBodyType }) {
+  async createPending({ userId, data }: { userId: number; data: CreateInvoiceBody }) {
     try {
       // check xem goi plan co active ko
       const isPlanExist = await this.subscriptionPlanService.getById(
@@ -229,7 +229,7 @@ export class InvoiceService {
       userId
     }: {
       id: number
-      data: UpdateInvoiceBodyType
+      data: UpdateInvoiceBody
       userId?: number
     },
     lang: string = 'vi'

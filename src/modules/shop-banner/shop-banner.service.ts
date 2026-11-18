@@ -2,6 +2,10 @@ import { RoleName } from '@/common/constants/role.constant'
 import { ShopBannerStatus } from '@/common/constants/shop-banner.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { ShopBannerMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { PokemonService } from '@/modules/pokemon/pokemon.service'
+import { TranslationService } from '@/modules/translation/translation.service'
+import { UserPokemonService } from '@/modules/user-pokemon/user-pokemon.service'
 import {
   LanguageNotExistToTranslateException,
   NotFoundRecordException
@@ -14,15 +18,11 @@ import {
   todayUTCWith0000,
   todayUTCWith0000ByDate
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { LanguagesService } from '@/modules/languages/languages.service'
-import { PokemonService } from '@/modules/pokemon/pokemon.service'
 import { ShopItemRepo } from '../shop-item/shop-item.repo'
 import { ShopPurchaseRepo } from '../shop-purchase/shop-purchase.repo'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
-import { TranslationService } from '@/modules/translation/translation.service'
-import { UserPokemonService } from '@/modules/user-pokemon/user-pokemon.service'
+import { CreateTranslationBody } from '../translation/entities/translation.entity'
 import {
   InvalidMinMaxShopBannerException,
   OnlyOneShopBannerActiveException,
@@ -30,10 +30,10 @@ import {
   ShopBannerInvalidDateRangeException
 } from './dto/shop-bannererror'
 import {
-  CreateShopBannerBodyInputType,
-  CreateShopBannerBodyType,
-  UpdateShopBannerBodyInputType,
-  UpdateShopBannerBodyType
+  CreateShopBannerBody,
+  CreateShopBannerBodyInput,
+  UpdateShopBannerBody,
+  UpdateShopBannerBodyInput
 } from './entities/shop-banner.entity'
 import { ShopBannerRepo } from './shop-banner.repo'
 
@@ -68,7 +68,7 @@ export class ShopBannerService {
     }))
   }
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi', roleName: string) {
+  async list(pagination: PaginationQuery, lang: string = 'vi', roleName: string) {
     const langId = await this.languagesService.getIdByCode(lang)
     const isAllLang = roleName === RoleName.Admin ? true : false
     const data = await this.shopBannerRepo.list(
@@ -122,7 +122,7 @@ export class ShopBannerService {
 
   async getListAllPokemonWithShopId(
     shopBannerId: number,
-    pagination: PaginationQueryType,
+    pagination: PaginationQuery,
     lang: string = 'vi'
   ) {
     // 1. Lấy tất cả pokemon với pagination
@@ -157,7 +157,7 @@ export class ShopBannerService {
   }
 
   async listwithDetail(
-    pagination: PaginationQueryType,
+    pagination: PaginationQuery,
     lang: string = 'vi',
     roleName?: string
   ) {
@@ -261,7 +261,7 @@ export class ShopBannerService {
       data,
       createdById
     }: {
-      data: CreateShopBannerBodyInputType
+      data: CreateShopBannerBodyInput
       createdById: number
     },
     lang: string = 'vi'
@@ -305,7 +305,7 @@ export class ShopBannerService {
         }
 
         // Convert data for create
-        const dataCreate: CreateShopBannerBodyType = {
+        const dataCreate: CreateShopBannerBody = {
           nameKey,
           startDate: startDateNormalized,
           endDate: endDateNormalized,
@@ -346,7 +346,7 @@ export class ShopBannerService {
         }
 
         // Create translation records (for validation only)
-        const translationRecords: CreateTranslationBodyType[] = data.nameTranslations.map(
+        const translationRecords: CreateTranslationBody[] = data.nameTranslations.map(
           (item) => ({
             languageId: langMap[item.key],
             key: fNameKey,
@@ -419,7 +419,7 @@ export class ShopBannerService {
       updatedById
     }: {
       id: number
-      data: UpdateShopBannerBodyInputType
+      data: UpdateShopBannerBodyInput
       updatedById: number
     },
     lang: string = 'vi'
@@ -443,7 +443,7 @@ export class ShopBannerService {
         if (!existingShopBanner) throw new NotFoundRecordException()
 
         // Prepare data for update
-        const dataUpdate: Partial<UpdateShopBannerBodyType> = {}
+        const dataUpdate: Partial<UpdateShopBannerBody> = {}
 
         // Normalize dates if provided
         const normalizedStart =
@@ -508,7 +508,7 @@ export class ShopBannerService {
             if (missingLangs.length > 0) throw new LanguageNotExistToTranslateException()
 
             // Create translation records for validation
-            const translationRecords: CreateTranslationBodyType[] = []
+            const translationRecords: CreateTranslationBody[] = []
             for (const t of data.nameTranslations) {
               translationRecords.push({
                 languageId: langMap[t.key],

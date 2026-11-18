@@ -2,9 +2,9 @@ import envConfig from '@/config/env.config'
 import { I18nService } from '@/i18n/i18n.service'
 import { AuthMessage } from '@/i18n/message-keys'
 import { AuthRepository } from '@/modules/auth/auth.repo'
+import { RoleService } from '@/modules/role/role.service'
 import { UserProgressService } from '@/modules/user-progress/user-progress.service'
 import { UserTestService } from '@/modules/user-test/user-test.service'
-import { RoleService } from '@/modules/role/role.service'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { createHash, randomBytes } from 'crypto'
 import { google } from 'googleapis'
@@ -17,7 +17,7 @@ import {
   GoogleRedirectNotAllowedException,
   GoogleUserInfoException
 } from './dto/auth.error'
-import { GoogleExchangeBodyType, GoogleLinkQueryType } from './entities/auth.entities'
+import { GoogleExchangeBody, GoogleLinkQuery } from './entities/auth.entities'
 import { TAKE } from './registration-token'
 
 const STATE_TTL_SECONDS = 10 * 60
@@ -73,7 +73,7 @@ export class GoogleService {
       .filter((uri): uri is string => Boolean(uri))
   }
 
-  async getAuthorizationUrl({ codeChallenge, redirectUri }: GoogleLinkQueryType) {
+  async getAuthorizationUrl({ codeChallenge, redirectUri }: GoogleLinkQuery) {
     const allowed = this.allowedRedirectUris()
     const target = redirectUri ?? allowed[0]
     if (!target || !allowed.includes(target))
@@ -139,7 +139,7 @@ export class GoogleService {
   }
 
   async exchange(
-    { code, codeVerifier }: GoogleExchangeBodyType,
+    { code, codeVerifier }: GoogleExchangeBody,
     userAgent: string,
     ip: string,
     lang: string = 'vi'

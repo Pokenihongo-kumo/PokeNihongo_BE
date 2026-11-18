@@ -2,6 +2,9 @@ import { BullAction, BullQueue } from '@/common/constants/bull-action.constant'
 import { MatchRoundNumber, MatchStatus } from '@/common/constants/match.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { MatchingSocketMessage, MatchParticipantMessage } from '@/i18n/message-keys'
+import { MatchRoundParticipantService } from '@/modules/match-round-participant/match-round-participant.service'
+import { MatchRoundService } from '@/modules/match-round/match-round.service'
+import { MatchService } from '@/modules/match/match.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   addTimeUTC,
@@ -9,21 +12,18 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { InjectQueue } from '@nestjs/bull'
 import { Injectable, Logger } from '@nestjs/common'
 import { Queue } from 'bull'
 import { MatchingGateway } from 'src/websockets/matching.gateway'
-import { MatchRoundParticipantService } from '@/modules/match-round-participant/match-round-participant.service'
-import { MatchRoundService } from '@/modules/match-round/match-round.service'
-import { MatchService } from '@/modules/match/match.service'
 import {
   MatchParticipantInvalidActionException,
   MatchParticipantNotFoundException
 } from './dto/match-participant.error'
 import {
-  CreateMatchParticipantBodyType,
-  UpdateMatchParticipantBodyType
+  CreateMatchParticipantBody,
+  UpdateMatchParticipantBody
 } from './entities/match-participant.entity'
 import { MatchParticipantRepo } from './match-participant.repo'
 
@@ -45,7 +45,7 @@ export class MatchParticipantService {
     private readonly matchingGateway: MatchingGateway
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.matchParticipantRepo.list(pagination)
     return {
       statusCode: 200,
@@ -69,7 +69,7 @@ export class MatchParticipantService {
   }
 
   async create(
-    { userId, data }: { userId: number; data: CreateMatchParticipantBodyType },
+    { userId, data }: { userId: number; data: CreateMatchParticipantBody },
     lang: string = 'vi'
   ) {
     try {
@@ -108,7 +108,7 @@ export class MatchParticipantService {
       userId
     }: {
       id: number
-      data: UpdateMatchParticipantBodyType
+      data: UpdateMatchParticipantBody
       userId?: number
     },
     lang: string = 'vi'

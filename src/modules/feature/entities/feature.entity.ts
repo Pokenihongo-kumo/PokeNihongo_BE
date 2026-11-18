@@ -78,13 +78,13 @@ export const GetFeatureDetailResSchema = resSchema(
   })
 )
 
-export type FeatureType = z.infer<typeof FeatureSchema>
-export type CreateFeatureBodyInputType = z.infer<typeof CreateFeatureBodyInputSchema>
-export type CreateFeatureBodyType = z.infer<typeof CreateFeatureBodySchema>
-export type UpdateFeatureBodyInputType = z.infer<typeof UpdateFeatureBodyInputSchema>
-export type UpdateFeatureBodyType = z.infer<typeof UpdateFeatureBodySchema>
-export type GetFeatureParamsType = z.infer<typeof GetFeatureParamsSchema>
-export type GetFeatureDetailResType = z.infer<typeof GetFeatureDetailResSchema>
+export type Feature = z.infer<typeof FeatureSchema>
+export type CreateFeatureBodyInput = z.infer<typeof CreateFeatureBodyInputSchema>
+export type CreateFeatureBody = z.infer<typeof CreateFeatureBodySchema>
+export type UpdateFeatureBodyInput = z.infer<typeof UpdateFeatureBodyInputSchema>
+export type UpdateFeatureBody = z.infer<typeof UpdateFeatureBodySchema>
+export type GetFeatureParams = z.infer<typeof GetFeatureParamsSchema>
+export type GetFeatureDetailRes = z.infer<typeof GetFeatureDetailResSchema>
 
 type FeatureFieldType = keyof z.infer<typeof FeatureSchema>
 export const LEADERBOARD_SEASON_FIELDS = [

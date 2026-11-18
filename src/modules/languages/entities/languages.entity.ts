@@ -108,11 +108,11 @@ export const LanguagesResSchema = resSchema(LanguagesSchema).strict()
 export const LanguagesListResSchema = paginatedResSchema(LanguagesSchema)
 
 // Type exports
-export type LanguagesType = z.infer<typeof LanguagesSchema>
-export type CreateLanguagesBodyType = z.infer<typeof CreateLanguagesSchema>
-export type UpdateLanguagesBodyType = z.infer<typeof UpdateLanguagesSchema>
-export type GetLanguagesByIdParamsType = z.infer<typeof GetLanguagesByIdParamsSchema>
-export type GetLanguagesListQueryType = z.infer<typeof GetLanguagesListQuerySchema>
-export type GetLanguagesByCodeParamsType = z.infer<typeof GetLanguagesByCodeParamsSchema>
-export type LanguagesResType = z.infer<typeof LanguagesResSchema>
-export type LanguagesListResType = z.infer<typeof LanguagesListResSchema>
+export type Languages = z.infer<typeof LanguagesSchema>
+export type CreateLanguagesBody = z.infer<typeof CreateLanguagesSchema>
+export type UpdateLanguagesBody = z.infer<typeof UpdateLanguagesSchema>
+export type GetLanguagesByIdParams = z.infer<typeof GetLanguagesByIdParamsSchema>
+export type GetLanguagesListQuery = z.infer<typeof GetLanguagesListQuerySchema>
+export type GetLanguagesByCodeParams = z.infer<typeof GetLanguagesByCodeParamsSchema>
+export type LanguagesRes = z.infer<typeof LanguagesResSchema>
+export type LanguagesListRes = z.infer<typeof LanguagesListResSchema>

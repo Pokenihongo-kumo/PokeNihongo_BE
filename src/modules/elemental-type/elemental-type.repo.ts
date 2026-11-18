@@ -1,13 +1,13 @@
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { toPaginationMeta, toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
 import { ElementalType } from '@prisma/client'
 import {
-  CreateElementalTypeBodyType,
+  CreateElementalTypeBody,
   ELEMENTAL_TYPE_FIELDS,
-  UpdateElementalTypeBodyType
+  UpdateElementalTypeBody
 } from './entities/elemental-type.entity'
 
 @Injectable()
@@ -19,7 +19,7 @@ export class ElementalTypeRepo {
     data
   }: {
     createdById: number | null
-    data: CreateElementalTypeBodyType
+    data: CreateElementalTypeBody
   }): Promise<ElementalType> {
     return this.prismaService.elementalType.create({
       data: {
@@ -36,7 +36,7 @@ export class ElementalTypeRepo {
   }: {
     id: number
     updatedById: number
-    data: UpdateElementalTypeBodyType
+    data: UpdateElementalTypeBody
   }): Promise<ElementalType> {
     return this.prismaService.elementalType.update({
       where: {
@@ -78,7 +78,7 @@ export class ElementalTypeRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, ELEMENTAL_TYPE_FIELDS)
 
     const { skip, take } = toSkipTake(pagination.currentPage, pagination.pageSize)

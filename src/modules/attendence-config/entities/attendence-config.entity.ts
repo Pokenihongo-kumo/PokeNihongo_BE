@@ -55,18 +55,12 @@ export const GetAttendanceConfigResSchema = resSchema(AttendanceConfigSchema)
 
 //type
 
-export type AttendanceConfigType = z.infer<typeof AttendanceConfigSchema>
-export type CreateAttendanceConfigBodyType = z.infer<
-  typeof CreateAttendanceConfigBodySchema
->
-export type UpdateAttendanceConfigBodyType = z.infer<
-  typeof UpdateAttendanceConfigBodySchema
->
+export type AttendanceConfig = z.infer<typeof AttendanceConfigSchema>
+export type CreateAttendanceConfigBody = z.infer<typeof CreateAttendanceConfigBodySchema>
+export type UpdateAttendanceConfigBody = z.infer<typeof UpdateAttendanceConfigBodySchema>
 
-export type GetParamsAttendanceConfigType = z.infer<
-  typeof GetParamsAttendanceConfigSchema
->
-export type GetAttendanceConfigResType = z.infer<typeof GetAttendanceConfigResSchema>
+export type GetParamsAttendanceConfig = z.infer<typeof GetParamsAttendanceConfigSchema>
+export type GetAttendanceConfigRes = z.infer<typeof GetAttendanceConfigResSchema>
 
 //field
 type AttendanceConfigFieldType = keyof z.infer<typeof AttendanceConfigSchema>

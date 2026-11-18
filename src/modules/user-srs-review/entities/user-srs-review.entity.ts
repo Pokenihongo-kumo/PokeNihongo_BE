@@ -21,7 +21,7 @@ export const UserSrsReviewSchema = z.object({
   updatedAt: z.date()
 })
 
-export type SrsContentType = z.infer<typeof SrsContentTypeEnum>
+export type SrsContent = z.infer<typeof SrsContentTypeEnum>
 export type UserSrsReview = z.infer<typeof UserSrsReviewSchema>
 
 // Request/Query types

@@ -1,7 +1,10 @@
 import { BullAction, BullQueue } from '@/common/constants/bull-action.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { RoundQuestionMessage } from '@/i18n/message-keys'
+import { MatchService } from '@/modules/match/match.service'
 import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
+import { RoundQuestionTimeoutProcessor } from '@/modules/round-question/round-question-timeout.processor'
+import { UserCoreService } from '@/modules/user/user-core.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   addTimeUTC,
@@ -11,10 +14,7 @@ import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
-import { MatchService } from '@/modules/match/match.service'
-import { UserCoreService } from '@/modules/user/user-core.service'
-import { RoundQuestionTimeoutProcessor } from '@/modules/round-question/round-question-timeout.processor'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { MatchingGateway } from '@/websockets/matching.gateway'
 import { InjectQueue } from '@nestjs/bull'
 import { forwardRef, Inject, Injectable } from '@nestjs/common'
@@ -24,9 +24,9 @@ import {
   RoundQuestionNotFoundException
 } from './dto/round-question.error'
 import {
-  AnswerQuestionBodyType,
-  CreateRoundQuestionBodyType,
-  UpdateRoundQuestionBodyType
+  AnswerQuestionBody,
+  CreateRoundQuestionBody,
+  UpdateRoundQuestionBody
 } from './entities/round-question.entity'
 import { RoundQuestionRepo } from './round-question.repo'
 
@@ -47,7 +47,7 @@ export class RoundQuestionService {
     private readonly roundQuestionProcessor: RoundQuestionTimeoutProcessor
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.roundQuestionRepo.list(pagination)
     return {
       statusCode: 200,
@@ -71,7 +71,7 @@ export class RoundQuestionService {
   }
 
   async create(
-    { userId, data }: { userId: number; data: CreateRoundQuestionBodyType },
+    { userId, data }: { userId: number; data: CreateRoundQuestionBody },
     lang: string = 'vi'
   ) {
     try {
@@ -104,7 +104,7 @@ export class RoundQuestionService {
       userId
     }: {
       id: number
-      data: UpdateRoundQuestionBodyType
+      data: UpdateRoundQuestionBody
       userId?: number
     },
     lang: string = 'vi'
@@ -186,7 +186,7 @@ export class RoundQuestionService {
       userId
     }: {
       id: number
-      data: AnswerQuestionBodyType
+      data: AnswerQuestionBody
       userId: number
     },
     lang: string = 'vi'

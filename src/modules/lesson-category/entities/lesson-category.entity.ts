@@ -57,15 +57,13 @@ export const GetLessonCategoryListQuerySchema = z.object({
 })
 
 // Type exports
-export type LessonCategoryType = z.infer<typeof LessonCategorySchema>
-export type LessonCategoryWithRelationsType = z.infer<
+export type LessonCategory = z.infer<typeof LessonCategorySchema>
+export type LessonCategoryWithRelations = z.infer<
   typeof LessonCategoryWithRelationsSchema
 >
-export type CreateLessonCategoryBodyType = z.infer<typeof CreateLessonCategoryBodySchema>
-export type UpdateLessonCategoryBodyType = z.infer<typeof UpdateLessonCategoryBodySchema>
-export type GetLessonCategoryByIdParamsType = z.infer<
+export type CreateLessonCategoryBody = z.infer<typeof CreateLessonCategoryBodySchema>
+export type UpdateLessonCategoryBody = z.infer<typeof UpdateLessonCategoryBodySchema>
+export type GetLessonCategoryByIdParams = z.infer<
   typeof GetLessonCategoryByIdParamsSchema
 >
-export type GetLessonCategoryListQueryType = z.infer<
-  typeof GetLessonCategoryListQuerySchema
->
+export type GetLessonCategoryListQuery = z.infer<typeof GetLessonCategoryListQuerySchema>

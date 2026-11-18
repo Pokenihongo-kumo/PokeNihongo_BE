@@ -92,9 +92,9 @@ export const GetExercisesListQuerySchema = z.object({
 })
 
 // Type exports
-export type ExercisesType = z.infer<typeof ExercisesSchema>
-export type RewardSummaryType = z.infer<typeof RewardSummarySchema>
-export type CreateExercisesBodyType = z.infer<typeof CreateExercisesBodySchema>
-export type UpdateExercisesBodyType = z.infer<typeof UpdateExercisesBodySchema>
-export type GetExercisesByIdParamsType = z.infer<typeof GetExercisesByIdParamsSchema>
-export type GetExercisesListQueryType = z.infer<typeof GetExercisesListQuerySchema>
+export type Exercises = z.infer<typeof ExercisesSchema>
+export type RewardSummary = z.infer<typeof RewardSummarySchema>
+export type CreateExercisesBody = z.infer<typeof CreateExercisesBodySchema>
+export type UpdateExercisesBody = z.infer<typeof UpdateExercisesBodySchema>
+export type GetExercisesByIdParams = z.infer<typeof GetExercisesByIdParamsSchema>
+export type GetExercisesListQuery = z.infer<typeof GetExercisesListQuerySchema>

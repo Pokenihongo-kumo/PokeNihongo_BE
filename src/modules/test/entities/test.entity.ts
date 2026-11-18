@@ -1,10 +1,10 @@
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { TestMessage as M } from '@/i18n/message-keys'
+import { paginatedResSchema } from '@/shared/utils/pagination'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
+import { TestStatus as PrismaTestStatus, TestSetStatus } from '@prisma/client'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
-import { TestSetStatus, TestStatus as PrismaTestStatus } from '@prisma/client'
-import { TestMessage as M } from '@/i18n/message-keys'
-import { checkIdSchema } from '@/common/utils/id.validation'
-import { paginatedResSchema } from '@/shared/utils/pagination'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
@@ -219,18 +219,12 @@ export const AddTestSetsToTestBodySchema = z.object({ testSetIds }).strict()
 export const RemoveTestSetsFromTestBodySchema = z.object({ testSetIds }).strict()
 
 // Types
-export type TestType = z.infer<typeof TestSchema>
-export type CreateTestWithMeaningsBodyType = z.infer<
-  typeof CreateTestWithMeaningsBodySchema
->
-export type UpdateTestWithMeaningsBodyType = z.infer<
-  typeof UpdateTestWithMeaningsBodySchema
->
-export type TestListResType = z.infer<typeof TestListResSchema>
-export type GetTestByIdParamsType = z.infer<typeof GetTestByIdParamsSchema>
-export type GetTestListQueryType = z.infer<typeof GetTestListQuerySchema>
-export type DeleteManyTestsBodyType = z.infer<typeof DeleteManyTestsBodySchema>
-export type AddTestSetsToTestBodyType = z.infer<typeof AddTestSetsToTestBodySchema>
-export type RemoveTestSetsFromTestBodyType = z.infer<
-  typeof RemoveTestSetsFromTestBodySchema
->
+export type Test = z.infer<typeof TestSchema>
+export type CreateTestWithMeaningsBody = z.infer<typeof CreateTestWithMeaningsBodySchema>
+export type UpdateTestWithMeaningsBody = z.infer<typeof UpdateTestWithMeaningsBodySchema>
+export type TestListRes = z.infer<typeof TestListResSchema>
+export type GetTestByIdParams = z.infer<typeof GetTestByIdParamsSchema>
+export type GetTestListQuery = z.infer<typeof GetTestListQuerySchema>
+export type DeleteManyTestsBody = z.infer<typeof DeleteManyTestsBodySchema>
+export type AddTestSetsToTestBody = z.infer<typeof AddTestSetsToTestBodySchema>
+export type RemoveTestSetsFromTestBody = z.infer<typeof RemoveTestSetsFromTestBodySchema>

@@ -1,28 +1,28 @@
 import { RarityPokemon, RarityPokemonType } from '@/common/constants/pokemon.constant'
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
-  AssignPokemonTypesBodyType,
-  CreatePokemonBodyType,
+  AssignPokemonTypesBody,
+  CreatePokemonBody,
   POKEMON_FIELDS,
-  PokemonType,
-  UpdatePokemonBodyType
+  Pokemon,
+  UpdatePokemonBody
 } from './entities/pokemon.entity'
 
-type PokemonWithRelations = PokemonType & {
+type PokemonWithRelations = Pokemon & {
   types?: Array<{
     id: number
     type_name: string
     display_name: any
     color_hex: string
   }>
-  nextPokemons?: Partial<PokemonType>[]
-  previousPokemons?: Partial<PokemonType>[]
+  nextPokemons?: Partial<Pokemon>[]
+  previousPokemons?: Partial<Pokemon>[]
 }
 
-type PokemonWithTypesOnly = PokemonType & {
+type PokemonWithTypesOnly = Pokemon & {
   types?: Array<{
     id: number
     type_name: string
@@ -31,7 +31,7 @@ type PokemonWithTypesOnly = PokemonType & {
   }>
 }
 
-type PokemonBasic = PokemonType
+type PokemonBasic = Pokemon
 
 @Injectable()
 export class PokemonRepo {
@@ -42,8 +42,8 @@ export class PokemonRepo {
     data
   }: {
     createdById: number | null
-    data: CreatePokemonBodyType
-  }): Promise<PokemonType> {
+    data: CreatePokemonBody
+  }): Promise<Pokemon> {
     const { typeIds, nextPokemonsId, ...pokemonData } = data
     return this.prismaService.pokemon.create({
       data: {
@@ -92,8 +92,8 @@ export class PokemonRepo {
   }: {
     id: number
     updatedById: number
-    data: UpdatePokemonBodyType
-  }): Promise<PokemonType> {
+    data: UpdatePokemonBody
+  }): Promise<Pokemon> {
     const { typeIds, nextPokemonsId, ...pokemonData } = data
     return this.prismaService.pokemon.update({
       where: {
@@ -150,7 +150,7 @@ export class PokemonRepo {
       deletedById: number
     },
     isHard?: boolean
-  ): Promise<PokemonType | null> {
+  ): Promise<Pokemon | null> {
     return isHard
       ? this.prismaService.pokemon.delete({
           where: {
@@ -169,7 +169,7 @@ export class PokemonRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(
       pagination.qs,
       POKEMON_FIELDS,
@@ -236,7 +236,7 @@ export class PokemonRepo {
     }
   }
 
-  async listWithNameNumImg(pagination: PaginationQueryType) {
+  async listWithNameNumImg(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(
       pagination.qs,
       POKEMON_FIELDS,
@@ -279,7 +279,7 @@ export class PokemonRepo {
   }
 
   async getPokemonListWithPokemonUser(
-    pagination: PaginationQueryType,
+    pagination: PaginationQuery,
     pageSizeOverride?: number
   ) {
     pagination.pageSize = pageSizeOverride ?? 1000 // Override pageSize to 1000 to get all Pokemons
@@ -380,7 +380,7 @@ export class PokemonRepo {
     return this.prismaService.pokemon.count()
   }
 
-  findByPokedexNumber(pokedex_number: number): Promise<PokemonType | null> {
+  findByPokedexNumber(pokedex_number: number): Promise<Pokemon | null> {
     return this.prismaService.pokemon.findFirst({
       where: {
         pokedex_number,
@@ -390,7 +390,7 @@ export class PokemonRepo {
   }
 
   // Assign types to Pokemon
-  async assignTypes(pokemonId: number, data: AssignPokemonTypesBodyType): Promise<void> {
+  async assignTypes(pokemonId: number, data: AssignPokemonTypesBody): Promise<void> {
     // First, disconnect all current types
     await this.prismaService.pokemon.update({
       where: { id: pokemonId },

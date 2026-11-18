@@ -121,14 +121,14 @@ export const GetAttendanceWithUserStreakResSchema = GetAttendanceResSchema.exten
 })
 
 //type
-export type AttendanceType = z.infer<typeof AttendanceSchema>
-export type CreateAttendanceBodyType = z.infer<typeof CreateAttendanceBodySchema>
-export type UpdateAttendanceBodyType = z.infer<typeof UpdateAttendanceBodySchema>
-export type GetParamsAttendanceType = z.infer<typeof GetParamsAttendanceSchema>
-export type GetParamsDateAttendanceType = z.infer<typeof GetParamsDateAttendanceSchema>
-export type GetAttendanceType = z.infer<typeof GetAttendanceSchema>
-export type GetAttendanceWithUserType = z.infer<typeof GetAttendanceWithUserSchema>
-export type GetAttendanceWithUserStreakType = z.infer<
+export type Attendance = z.infer<typeof AttendanceSchema>
+export type CreateAttendanceBody = z.infer<typeof CreateAttendanceBodySchema>
+export type UpdateAttendanceBody = z.infer<typeof UpdateAttendanceBodySchema>
+export type GetParamsAttendance = z.infer<typeof GetParamsAttendanceSchema>
+export type GetParamsDateAttendance = z.infer<typeof GetParamsDateAttendanceSchema>
+export type GetAttendance = z.infer<typeof GetAttendanceSchema>
+export type GetAttendanceWithUser = z.infer<typeof GetAttendanceWithUserSchema>
+export type GetAttendanceWithUserStreak = z.infer<
   typeof GetAttendanceWithUserStreakResSchema
 >
 

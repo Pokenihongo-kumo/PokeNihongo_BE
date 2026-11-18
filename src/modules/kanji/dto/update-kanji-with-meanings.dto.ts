@@ -212,12 +212,8 @@ export class UpdateKanjiWithMeaningsResponseSwaggerDTO {
 }
 
 // Type exports
-export type UpdateKanjiWithMeaningsBodyType = z.infer<
-  typeof UpdateKanjiWithMeaningsSchema
->
-export type UpdateKanjiWithMeaningsResponseType = z.infer<
+export type UpdateKanjiWithMeaningsBody = z.infer<typeof UpdateKanjiWithMeaningsSchema>
+export type UpdateKanjiWithMeaningsResponse = z.infer<
   typeof UpdateKanjiWithMeaningsResponseSchema
 >
-export type UpdateKanjiWithMeaningsResType = z.infer<
-  typeof UpdateKanjiWithMeaningsResSchema
->
+export type UpdateKanjiWithMeaningsRes = z.infer<typeof UpdateKanjiWithMeaningsResSchema>

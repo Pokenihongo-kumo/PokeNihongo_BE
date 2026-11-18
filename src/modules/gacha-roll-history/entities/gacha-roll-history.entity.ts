@@ -85,16 +85,10 @@ export const GetGachasRolHisWithPokemonSchema = GachaRollHistorySchema.extend({
 })
 
 // Type exports
-export type GachaRollHistoryType = z.infer<typeof GachaRollHistorySchema>
-export type CreateGachaRollHistoryBodyType = z.infer<
-  typeof CreateGachaRollHistoryBodySchema
->
-export type UpdateGachaRollHistoryBodyType = z.infer<
-  typeof UpdateGachaRollHistoryBodySchema
->
-export type GetGachaRollHistoryParamsType = z.infer<
-  typeof GetGachaRollHistoryParamsSchema
->
+export type GachaRollHistory = z.infer<typeof GachaRollHistorySchema>
+export type CreateGachaRollHistoryBody = z.infer<typeof CreateGachaRollHistoryBodySchema>
+export type UpdateGachaRollHistoryBody = z.infer<typeof UpdateGachaRollHistoryBodySchema>
+export type GetGachaRollHistoryParams = z.infer<typeof GetGachaRollHistoryParamsSchema>
 
 // Field for query
 export type GachaRollHistoryFieldType = keyof z.infer<typeof GachaRollHistorySchema>

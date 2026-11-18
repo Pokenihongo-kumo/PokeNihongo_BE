@@ -1,16 +1,8 @@
-import {
-  CreateTestSetQuestionBankBodyType,
-  UpdateTestSetQuestionBankBodyType,
-  CreateMultipleTestSetQuestionBankBodyType,
-  DeleteManyTestSetQuestionBankBodyType,
-  TestSetQuestionBankType
-} from './entities/testset-questionbank.entity'
-import { TestSetQuestionBankRepo } from './testset-questionbank.repo'
-import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
-import { TranslationHelperService } from '@/modules/translation/translation.helper.service'
 import { pickLabelFromComposite } from '@/common/utils/prase.utils'
 import { I18nService } from '@/i18n/i18n.service'
 import { TestSetQuestionBankMessage as M } from '@/i18n/message-keys'
+import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
+import { TranslationHelperService } from '@/modules/translation/translation.helper.service'
 import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
@@ -18,13 +10,21 @@ import {
 import { HttpException, Injectable, Logger } from '@nestjs/common'
 import { TestSetType } from '@prisma/client'
 import {
-  TestSetQuestionBankNotFoundException,
-  TestSetQuestionBankAlreadyExistsException,
   InvalidTestSetQuestionBankDataException,
-  TestSetQuestionBankRuleViolationException,
+  QuestionBankNotFoundException,
   TestSetNotFoundException,
-  QuestionBankNotFoundException
+  TestSetQuestionBankAlreadyExistsException,
+  TestSetQuestionBankNotFoundException,
+  TestSetQuestionBankRuleViolationException
 } from './dto/testset-questionbank.error'
+import {
+  CreateMultipleTestSetQuestionBankBody,
+  CreateTestSetQuestionBankBody,
+  DeleteManyTestSetQuestionBankBody,
+  TestSetQuestionBank,
+  UpdateTestSetQuestionBankBody
+} from './entities/testset-questionbank.entity'
+import { TestSetQuestionBankRepo } from './testset-questionbank.repo'
 
 type TestSetRule = NonNullable<
   Awaited<ReturnType<TestSetQuestionBankRepo['findTestSet']>>
@@ -44,7 +44,7 @@ export class TestSetQuestionBankService {
     private readonly i18nService: I18nService
   ) {}
 
-  async create(data: CreateTestSetQuestionBankBodyType, lang: string = 'vi') {
+  async create(data: CreateTestSetQuestionBankBody, lang: string = 'vi') {
     try {
       const testSet = await this.loadTestSet(data.testSetId)
       const created = await this.link(testSet, data.questionBankId)
@@ -59,14 +59,11 @@ export class TestSetQuestionBankService {
 
   // Each question is linked on its own; failures are reported, not thrown.
   // statusCode (201 all / 207 some / 400 none) is sent as the HTTP status
-  async createMultiple(
-    data: CreateMultipleTestSetQuestionBankBodyType,
-    lang: string = 'vi'
-  ) {
+  async createMultiple(data: CreateMultipleTestSetQuestionBankBody, lang: string = 'vi') {
     const testSet = await this.loadTestSet(data.testSetId).catch((error) => {
       throw this.toTestSetQuestionBankError(error)
     })
-    const created: TestSetQuestionBankType[] = []
+    const created: TestSetQuestionBank[] = []
     const failed: { questionBankId: number; reason: string }[] = []
     for (const questionBankId of data.questionBankIds) {
       try {
@@ -193,7 +190,7 @@ export class TestSetQuestionBankService {
     }
   }
 
-  async update(id: number, data: UpdateTestSetQuestionBankBodyType, lang: string = 'vi') {
+  async update(id: number, data: UpdateTestSetQuestionBankBody, lang: string = 'vi') {
     try {
       const existing = await this.testSetQuestionBankRepo.findById(id)
       if (!existing) throw new TestSetQuestionBankNotFoundException()
@@ -239,7 +236,7 @@ export class TestSetQuestionBankService {
     }
   }
 
-  async deleteMany(body: DeleteManyTestSetQuestionBankBodyType, lang: string = 'vi') {
+  async deleteMany(body: DeleteManyTestSetQuestionBankBody, lang: string = 'vi') {
     const result = await this.testSetQuestionBankRepo.deleteMany(body.ids)
     return {
       data: { deletedCount: result.count },
@@ -329,7 +326,7 @@ export class TestSetQuestionBankService {
   }
 
   // Full question banks (with answers), keyed by id
-  private async questionBanksOf(links: TestSetQuestionBankType[]) {
+  private async questionBanksOf(links: TestSetQuestionBank[]) {
     const results = await Promise.all(
       links.map((l) => this.questionBankService.findOne(l.questionBankId))
     )

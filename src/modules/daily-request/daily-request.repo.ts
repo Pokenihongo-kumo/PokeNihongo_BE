@@ -1,4 +1,4 @@
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 
 // conditionType was replaced by dailyRequestCategoryId (foreign key to DailyRequestCategory)
@@ -6,10 +6,10 @@ import { parseQs } from '@/common/utils/qs-parser'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
-  CreateDailyRequestBodyType,
+  CreateDailyRequestBody,
   DAILY_REQUEST_FIELDS,
-  DailyRequestType,
-  UpdateDailyRequestBodyType
+  DailyRequest,
+  UpdateDailyRequestBody
 } from './entities/daily-request.entity'
 
 export type WhereDailyRequestType = {
@@ -31,10 +31,10 @@ export class DailyRequestRepo {
       data
     }: {
       createdById: number | null
-      data: CreateDailyRequestBodyType
+      data: CreateDailyRequestBody
     },
     prismaTx?: PrismaClient
-  ): Promise<DailyRequestType> {
+  ): Promise<DailyRequest> {
     const client = prismaTx || this.prismaService
     return client.dailyRequest.create({
       data: {
@@ -52,10 +52,10 @@ export class DailyRequestRepo {
     }: {
       id: number
       updatedById?: number
-      data: UpdateDailyRequestBodyType
+      data: UpdateDailyRequestBody
     },
     prismaTx?: PrismaClient
-  ): Promise<DailyRequestType> {
+  ): Promise<DailyRequest> {
     const client = prismaTx || this.prismaService
     return client.dailyRequest.update({
       where: {
@@ -79,7 +79,7 @@ export class DailyRequestRepo {
     },
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<DailyRequestType> {
+  ): Promise<DailyRequest> {
     const client = prismaTx || this.prismaService
     return isHard
       ? this.prismaService.dailyRequest.delete({
@@ -99,7 +99,7 @@ export class DailyRequestRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType, langId: number) {
+  async list(pagination: PaginationQuery, langId: number) {
     // 1) Parse QS
     const { where: rawWhere = {}, orderBy } = parseQs(pagination.qs, DAILY_REQUEST_FIELDS)
 
@@ -197,7 +197,7 @@ export class DailyRequestRepo {
     }
   }
 
-  async getListwithAllLang(pagination: PaginationQueryType, langId?: number) {
+  async getListwithAllLang(pagination: PaginationQuery, langId?: number) {
     // 1) Parse QS
     const { where: rawWhere = {}, orderBy } = parseQs(pagination.qs, DAILY_REQUEST_FIELDS)
 
@@ -295,7 +295,7 @@ export class DailyRequestRepo {
     }
   }
 
-  findById(id: number): Promise<DailyRequestType | null> {
+  findById(id: number): Promise<DailyRequest | null> {
     return this.prismaService.dailyRequest.findUnique({
       where: {
         id,
@@ -311,7 +311,7 @@ export class DailyRequestRepo {
     })
   }
 
-  findByIdwithLangId(id: number, langId: number): Promise<DailyRequestType | null> {
+  findByIdwithLangId(id: number, langId: number): Promise<DailyRequest | null> {
     return this.prismaService.dailyRequest.findUnique({
       where: {
         id,
@@ -375,7 +375,7 @@ export class DailyRequestRepo {
       .then((dr) => !!dr?.isStreak)
   }
 
-  findByWhere(where: WhereDailyRequestType): Promise<DailyRequestType[]> {
+  findByWhere(where: WhereDailyRequestType): Promise<DailyRequest[]> {
     const prismaWhere: any = {
       deletedAt: null
     }
@@ -397,7 +397,7 @@ export class DailyRequestRepo {
   /**
    * Find daily requests by their `dailyRequestType` field (e.g. 'LOGIN', 'EXERCISE')
    */
-  findByType(type: string | string[]): Promise<DailyRequestType[]> {
+  findByType(type: string | string[]): Promise<DailyRequest[]> {
     return this.prismaService.dailyRequest.findMany({
       where: {
         deletedAt: null,

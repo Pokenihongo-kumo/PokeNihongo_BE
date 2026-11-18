@@ -1,6 +1,6 @@
 import {
-  LatestExerciseAttemptType,
-  UserExerciseAttemptType
+  LatestExerciseAttempt,
+  UserExerciseAttempt
 } from '@/modules/user-exercise-attempt/entities/user-exercise-attempt.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
@@ -63,7 +63,7 @@ export class UserExerciseAttemptRepo {
     }
   }
 
-  async findUnique(where: { id?: number }): Promise<UserExerciseAttemptType | null> {
+  async findUnique(where: { id?: number }): Promise<UserExerciseAttempt | null> {
     if (!where.id) return null
 
     const result = await this.prismaService.userExerciseAttempt.findUnique({
@@ -86,7 +86,7 @@ export class UserExerciseAttemptRepo {
   async create(data: {
     userId: number
     exerciseId: number
-  }): Promise<UserExerciseAttemptType> {
+  }): Promise<UserExerciseAttempt> {
     const result = await this.prismaService.userExerciseAttempt.create({
       data: {
         ...data,
@@ -102,7 +102,7 @@ export class UserExerciseAttemptRepo {
       status?: string
       time?: number
     }
-  ): Promise<UserExerciseAttemptType> {
+  ): Promise<UserExerciseAttempt> {
     const result = await this.prismaService.userExerciseAttempt.update({
       where,
       data: {
@@ -113,7 +113,7 @@ export class UserExerciseAttemptRepo {
     return this.transformUserExerciseAttempt(result)
   }
 
-  async delete(where: { id: number }): Promise<UserExerciseAttemptType> {
+  async delete(where: { id: number }): Promise<UserExerciseAttempt> {
     const result = await this.prismaService.userExerciseAttempt.delete({
       where
     })
@@ -124,9 +124,7 @@ export class UserExerciseAttemptRepo {
     return this.prismaService.userExerciseAttempt.count({ where })
   }
 
-  private transformUserExerciseAttempt(
-    userExerciseAttempt: any
-  ): UserExerciseAttemptType {
+  private transformUserExerciseAttempt(userExerciseAttempt: any): UserExerciseAttempt {
     return {
       id: userExerciseAttempt.id,
       userId: userExerciseAttempt.userId,
@@ -138,7 +136,7 @@ export class UserExerciseAttemptRepo {
     }
   }
 
-  async findById(id: number): Promise<UserExerciseAttemptType | null> {
+  async findById(id: number): Promise<UserExerciseAttempt | null> {
     const result = await this.prismaService.userExerciseAttempt.findUnique({
       where: { id },
       include: {
@@ -164,7 +162,7 @@ export class UserExerciseAttemptRepo {
   async findLatestByUserAndExercise(
     userId: number,
     exerciseId: number
-  ): Promise<UserExerciseAttemptType | null> {
+  ): Promise<UserExerciseAttempt | null> {
     const result = await this.prismaService.userExerciseAttempt.findFirst({
       where: { userId, exerciseId },
       orderBy: { createdAt: 'desc' }
@@ -185,7 +183,7 @@ export class UserExerciseAttemptRepo {
   async findLatestByPriority(
     userId: number,
     exerciseId: number
-  ): Promise<UserExerciseAttemptType | null> {
+  ): Promise<UserExerciseAttempt | null> {
     // Lấy tất cả attempts và sắp xếp theo updatedAt desc
     const allAttempts = await this.prismaService.userExerciseAttempt.findMany({
       where: { userId, exerciseId },
@@ -274,7 +272,7 @@ export class UserExerciseAttemptRepo {
   async findLatestByLessonAndUser(
     userId: number,
     lessonId: number
-  ): Promise<LatestExerciseAttemptType[]> {
+  ): Promise<LatestExerciseAttempt[]> {
     // Lấy tất cả exercise trong lesson
     const exercises = await this.prismaService.exercises.findMany({
       where: { lessonId },
@@ -346,7 +344,7 @@ export class UserExerciseAttemptRepo {
             }
           })
 
-          const obj: LatestExerciseAttemptType = {
+          const obj: LatestExerciseAttempt = {
             id: newAttempt.id,
             userId: newAttempt.userId,
             exerciseId: newAttempt.exerciseId,
@@ -359,7 +357,7 @@ export class UserExerciseAttemptRepo {
         }
 
         // 4. Trả về attempt đã tìm thấy
-        const obj: LatestExerciseAttemptType = {
+        const obj: LatestExerciseAttempt = {
           id: priorityAttempt.id,
           userId: priorityAttempt.userId,
           exerciseId: priorityAttempt.exerciseId,
@@ -374,7 +372,7 @@ export class UserExerciseAttemptRepo {
 
     // Lọc bỏ null values (không cần thiết nữa vì luôn tạo attempt mới)
     return latestAttempts.filter(
-      (attempt): attempt is LatestExerciseAttemptType => attempt !== null
+      (attempt): attempt is LatestExerciseAttempt => attempt !== null
     )
   }
 }

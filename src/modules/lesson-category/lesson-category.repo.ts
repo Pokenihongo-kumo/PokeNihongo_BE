@@ -3,9 +3,9 @@ import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
 import { LessonCategory, Prisma } from '@prisma/client'
 import {
-  CreateLessonCategoryBodyType,
-  GetLessonCategoryListQueryType,
-  UpdateLessonCategoryBodyType
+  CreateLessonCategoryBody,
+  GetLessonCategoryListQuery,
+  UpdateLessonCategoryBody
 } from './entities/lesson-category.entity'
 
 @Injectable()
@@ -13,7 +13,7 @@ export class LessonCategoryRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(
-    params: GetLessonCategoryListQueryType
+    params: GetLessonCategoryListQuery
   ): Promise<{ data: LessonCategory[]; total: number }> {
     const { page, limit, search } = params
 
@@ -48,14 +48,14 @@ export class LessonCategoryRepo {
 
   // Ids always come from the sequence (an `id` in the input is ignored, as before)
   create(
-    data: CreateLessonCategoryBodyType & { id?: number; slug: string }
+    data: CreateLessonCategoryBody & { id?: number; slug: string }
   ): Promise<LessonCategory> {
     return this.prismaService.lessonCategory.create({
       data: { nameKey: data.nameKey, slug: data.slug }
     })
   }
 
-  update(id: number, data: UpdateLessonCategoryBodyType): Promise<LessonCategory> {
+  update(id: number, data: UpdateLessonCategoryBody): Promise<LessonCategory> {
     return this.prismaService.lessonCategory.update({ where: { id }, data })
   }
 

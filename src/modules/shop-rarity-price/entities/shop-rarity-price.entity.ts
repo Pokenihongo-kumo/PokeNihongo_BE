@@ -57,14 +57,10 @@ export const GetShopRarityPriceDetailSchema = ShopRarityPriceSchema
 export const GetShopRarityPriceDetailResSchema = resSchema(GetShopRarityPriceDetailSchema)
 
 // Type exports
-export type ShopRarityPriceType = z.infer<typeof ShopRarityPriceSchema>
-export type CreateShopRarityPriceBodyType = z.infer<
-  typeof CreateShopRarityPriceBodySchema
->
-export type UpdateShopRarityPriceBodyType = z.infer<
-  typeof UpdateShopRarityPriceBodySchema
->
-export type GetShopRarityPriceParamsType = z.infer<typeof GetShopRarityPriceParamsSchema>
+export type ShopRarityPrice = z.infer<typeof ShopRarityPriceSchema>
+export type CreateShopRarityPriceBody = z.infer<typeof CreateShopRarityPriceBodySchema>
+export type UpdateShopRarityPriceBody = z.infer<typeof UpdateShopRarityPriceBodySchema>
+export type GetShopRarityPriceParams = z.infer<typeof GetShopRarityPriceParamsSchema>
 
 // Field for query
 export type ShopRarityPriceFieldType = keyof z.infer<typeof ShopRarityPriceSchema>

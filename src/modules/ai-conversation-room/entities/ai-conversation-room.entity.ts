@@ -82,13 +82,13 @@ export const GetAIConversationRoomByConversationParamsSchema = z
 
 export const AIConversationRoomResSchema = resSchema(AIConversationRoomSchema)
 
-export type AIConversationRoomType = z.infer<typeof AIConversationRoomSchema>
-export type CreateAIConversationRoomBodyType = z.infer<
+export type AIConversationRoom = z.infer<typeof AIConversationRoomSchema>
+export type CreateAIConversationRoomBody = z.infer<
   typeof CreateAIConversationRoomBodySchema
 >
-export type UpdateAIConversationRoomBodyType = z.infer<
+export type UpdateAIConversationRoomBody = z.infer<
   typeof UpdateAIConversationRoomBodySchema
 >
-export type GetAIConversationRoomListQueryType = z.infer<
+export type GetAIConversationRoomListQuery = z.infer<
   typeof GetAIConversationRoomListQuerySchema
 >

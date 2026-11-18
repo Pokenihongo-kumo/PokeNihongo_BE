@@ -6,12 +6,12 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { WalletTransactionAlreadyExistsException } from './dto/wallet-transaction.error'
 import {
-  CreateWalletTransactionBodyType,
-  UpdateWalletTransactionBodyType
+  CreateWalletTransactionBody,
+  UpdateWalletTransactionBody
 } from './entities/wallet-transaction.entity'
 import { WalletTransactionRepo } from './wallet-transaction.repo'
 
@@ -22,7 +22,7 @@ export class WalletTransactionService {
     private readonly i18nService: I18nService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.walletTransactionRepo.list(pagination)
     return {
       data,
@@ -46,7 +46,7 @@ export class WalletTransactionService {
       data,
       createdById
     }: {
-      data: CreateWalletTransactionBodyType
+      data: CreateWalletTransactionBody
       createdById: number
     },
     lang: string = 'vi'
@@ -82,7 +82,7 @@ export class WalletTransactionService {
       updatedById
     }: {
       id: number
-      data: UpdateWalletTransactionBodyType
+      data: UpdateWalletTransactionBody
       updatedById: number
     },
     lang: string = 'vi'

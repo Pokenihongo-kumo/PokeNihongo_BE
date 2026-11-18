@@ -4,10 +4,10 @@ import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
 import { Grammar, GrammarUsage, Prisma } from '@prisma/client'
 import {
-  CreateGrammarBasicBodyType,
-  CreateGrammarBodyType,
-  GetGrammarListQueryType,
-  UpdateGrammarBodyType
+  CreateGrammarBasicBody,
+  CreateGrammarBody,
+  GetGrammarListQuery,
+  UpdateGrammarBody
 } from './entities/grammar.entity'
 
 @Injectable()
@@ -15,7 +15,7 @@ export class GrammarRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(
-    params: GetGrammarListQueryType
+    params: GetGrammarListQuery
   ): Promise<{ data: Grammar[]; total: number }> {
     const {
       currentPage,
@@ -153,7 +153,7 @@ export class GrammarRepo {
     }
   }
 
-  create(data: CreateGrammarBasicBodyType): Promise<Grammar> {
+  create(data: CreateGrammarBasicBody): Promise<Grammar> {
     return this.prismaService.grammar.create({
       data: { structure: data.structure, level: data.level }
     })
@@ -164,7 +164,7 @@ export class GrammarRepo {
    * transaction (moved here from GrammarService, unchanged). The usage keys
    * embed the usage id, so the usage is created first and its keys updated.
    */
-  async createWithUsage(data: CreateGrammarBodyType): Promise<{
+  async createWithUsage(data: CreateGrammarBody): Promise<{
     grammar: Grammar
     grammarUsage: GrammarUsage | null
     translationsCreated: number
@@ -221,7 +221,7 @@ export class GrammarRepo {
     })
   }
 
-  async update(id: number, data: UpdateGrammarBodyType) {
+  async update(id: number, data: UpdateGrammarBody) {
     return this.prismaService.grammar.update({
       where: { id },
       data

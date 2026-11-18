@@ -370,14 +370,14 @@ export const GetUserPokemonByPokemonIdwithListOwnershipResSchema = resSchema(
 )
 
 // Type exports
-export type UserPokemonType = z.infer<typeof UserPokemonSchema>
-export type CreateUserPokemonBodyType = z.infer<typeof CreateUserPokemonBodySchema>
-export type UpdateUserPokemonBodyType = z.infer<typeof UpdateUserPokemonBodySchema>
-export type GetUserPokemonParamsType = z.infer<typeof GetUserPokemonParamsSchema>
-export type GetUserPokemonDetailResType = z.infer<typeof GetUserPokemonDetailResSchema>
-export type AddExpBodyType = z.infer<typeof AddExpBodySchema>
-export type EvolvePokemonBodyType = z.infer<typeof EvolvePokemonBodySchema>
-export type EvolvePokemonResType = z.infer<typeof EvolvePokemonResSchema>
+export type UserPokemon = z.infer<typeof UserPokemonSchema>
+export type CreateUserPokemonBody = z.infer<typeof CreateUserPokemonBodySchema>
+export type UpdateUserPokemonBody = z.infer<typeof UpdateUserPokemonBodySchema>
+export type GetUserPokemonParams = z.infer<typeof GetUserPokemonParamsSchema>
+export type GetUserPokemonDetailRes = z.infer<typeof GetUserPokemonDetailResSchema>
+export type AddExpBody = z.infer<typeof AddExpBodySchema>
+export type EvolvePokemonBody = z.infer<typeof EvolvePokemonBodySchema>
+export type EvolvePokemonRes = z.infer<typeof EvolvePokemonResSchema>
 
 // Field for query
 export type UserPokemonFieldType = keyof z.infer<typeof UserPokemonSchema>
