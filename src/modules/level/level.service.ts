@@ -13,7 +13,7 @@ import {
   ConflictTypeNextLevelException,
   LevelAlreadyExistsException
 } from './dto/level.error'
-import { CreateLevelBodyType, UpdateLevelBodyType } from './entities/level.entity'
+import { CreateLevelBody, UpdateLevelBody } from './dto/level.zod-dto'
 import { LevelRepo } from './level.repo'
 
 @Injectable()
@@ -49,7 +49,7 @@ export class LevelService {
       data,
       createdById
     }: {
-      data: CreateLevelBodyType
+      data: CreateLevelBody
       createdById: number
     },
     lang: string = 'vi'
@@ -86,7 +86,7 @@ export class LevelService {
       updatedById
     }: {
       id: number
-      data: UpdateLevelBodyType
+      data: UpdateLevelBody
       updatedById: number
     },
     lang: string = 'vi'

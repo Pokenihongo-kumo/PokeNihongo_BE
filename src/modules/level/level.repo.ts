@@ -5,12 +5,8 @@ import { PrismaService } from '@/shared/services/prisma.service'
 import { toPaginationMeta, toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
-import {
-  CreateLevelBodyType,
-  LEVEL_FIELDS,
-  LevelType,
-  UpdateLevelBodyType
-} from './entities/level.entity'
+import { CreateLevelBody, UpdateLevelBody } from './dto/level.zod-dto'
+import { LEVEL_FIELDS, Level } from './entities/level.entity'
 
 // Detail and list rows carry their reward and next level
 const WITH_RELATIONS = { reward: true, nextLevel: true } satisfies Prisma.LevelInclude
@@ -27,8 +23,8 @@ export class LevelRepo {
     data
   }: {
     createdById: number | null
-    data: CreateLevelBodyType
-  }): Promise<LevelType> {
+    data: CreateLevelBody
+  }): Promise<Level> {
     return this.prismaService.level.create({
       data: {
         ...data,
@@ -44,8 +40,8 @@ export class LevelRepo {
   }: {
     id: number
     updatedById: number
-    data: UpdateLevelBodyType
-  }): Promise<LevelType> {
+    data: UpdateLevelBody
+  }): Promise<Level> {
     return this.prismaService.level.update({
       where: {
         id,
@@ -67,7 +63,7 @@ export class LevelRepo {
       deletedById: number
     },
     isHard?: boolean
-  ): Promise<LevelType> {
+  ): Promise<Level> {
     return isHard
       ? this.prismaService.level.delete({
           where: {
@@ -127,7 +123,7 @@ export class LevelRepo {
   findByLevelAndType(
     levelNumber: number,
     levelType: LevelTypeType
-  ): Promise<LevelType | null> {
+  ): Promise<Level | null> {
     return this.prismaService.level.findFirst({
       where: {
         levelNumber,
@@ -137,7 +133,7 @@ export class LevelRepo {
     })
   }
 
-  getFirstLevelUser(): Promise<LevelType | null> {
+  getFirstLevelUser(): Promise<Level | null> {
     return this.prismaService.level.findFirst({
       where: {
         levelType: LEVEL_TYPE.USER,
@@ -151,7 +147,7 @@ export class LevelRepo {
   findNextLevelByNumber(
     levelNumber: number,
     levelType: LevelTypeType
-  ): Promise<LevelType | null> {
+  ): Promise<Level | null> {
     return this.prismaService.level.findFirst({
       where: {
         levelNumber: levelNumber + 1,
@@ -165,7 +161,7 @@ export class LevelRepo {
   findPrevLevelByNumber(
     levelNumber: number,
     levelType: LevelTypeType
-  ): Promise<LevelType | null> {
+  ): Promise<Level | null> {
     return this.prismaService.level.findFirst({
       where: {
         levelNumber: levelNumber - 1,
@@ -176,7 +172,7 @@ export class LevelRepo {
   }
 
   // Cập nhật nextLevelId cho một level
-  updateNextLevel(levelId: number, nextLevelId: number | null): Promise<LevelType> {
+  updateNextLevel(levelId: number, nextLevelId: number | null): Promise<Level> {
     return this.prismaService.level.update({
       where: { id: levelId },
       data: { nextLevelId }

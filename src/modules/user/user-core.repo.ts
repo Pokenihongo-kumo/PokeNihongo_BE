@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import { LevelType } from '@/modules/level/entities/level.entity'
+import { Level } from '@/modules/level/entities/level.entity'
 import { Injectable } from '@nestjs/common'
 import { PermissionType } from 'src/shared/models/shared-permission.model'
 import { RoleType } from 'src/shared/models/shared-role.model'
@@ -121,9 +121,7 @@ export class UserCoreRepo {
 
   findUniqueWithLevel(
     where: WhereUniqueUserType
-  ): Promise<
-    (UserType & { level: Pick<LevelType, 'id' | 'levelNumber'> | null }) | null
-  > {
+  ): Promise<(UserType & { level: Pick<Level, 'id' | 'levelNumber'> | null }) | null> {
     return this.prismaService.user.findFirst({
       where: {
         ...where,
