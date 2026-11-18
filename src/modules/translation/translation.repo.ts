@@ -381,4 +381,57 @@ export class TranslationRepo {
 
     return translations
   }
+
+  // ---- A vocabulary's meaning translations (optional tx) ----
+
+  // Translations under vocabulary.<id>.meaning.* in these languages
+  findVocabularyMeaningTranslations(
+    vocabularyId: number,
+    languageCodes: string[],
+    prismaTx?: PrismaClient
+  ) {
+    return (prismaTx ?? this.prismaService).translation.findMany({
+      where: {
+        key: {
+          startsWith: `vocabulary.${vocabularyId}.meaning.`
+        },
+        language: {
+          code: {
+            in: languageCodes
+          }
+        }
+      },
+      include: {
+        language: true
+      }
+    })
+  }
+
+  createManySkippingDuplicates(
+    rows: Prisma.TranslationCreateManyInput[],
+    prismaTx?: PrismaClient
+  ) {
+    return (prismaTx ?? this.prismaService).translation.createMany({
+      data: rows,
+      skipDuplicates: true // Tránh lỗi nếu translation đã tồn tại
+    })
+  }
+
+  // A meaning translation of this vocabulary with the same text
+  findVocabularyMeaningWithValue(
+    vocabularyId: number,
+    languageId: number,
+    value: string,
+    prismaTx?: PrismaClient
+  ) {
+    return (prismaTx ?? this.prismaService).translation.findFirst({
+      where: {
+        languageId,
+        value: value,
+        key: {
+          startsWith: `vocabulary.${vocabularyId}.meaning.`
+        }
+      }
+    })
+  }
 }

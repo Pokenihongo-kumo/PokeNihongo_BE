@@ -300,4 +300,24 @@ export class TranslationService {
   findByKeysAndLanguage(keys: string[], languageId: number) {
     return this.translationRepository.findByKeysAndLanguage(keys, languageId)
   }
+
+  // ---- For other modules: A vocabulary's meaning translations (optional tx) (B7) ----
+
+  findVocabularyMeaningTranslations(
+    ...args: Parameters<TranslationRepo['findVocabularyMeaningTranslations']>
+  ) {
+    return this.translationRepository.findVocabularyMeaningTranslations(...args)
+  }
+
+  createManySkippingDuplicates(
+    ...args: Parameters<TranslationRepo['createManySkippingDuplicates']>
+  ) {
+    return this.translationRepository.createManySkippingDuplicates(...args)
+  }
+
+  findVocabularyMeaningWithValue(
+    ...args: Parameters<TranslationRepo['findVocabularyMeaningWithValue']>
+  ) {
+    return this.translationRepository.findVocabularyMeaningWithValue(...args)
+  }
 }

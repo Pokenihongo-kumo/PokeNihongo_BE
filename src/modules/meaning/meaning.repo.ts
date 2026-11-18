@@ -1,7 +1,7 @@
 import { PrismaService } from '@/shared/services/prisma.service'
 import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
-import { Meaning, Prisma } from '@prisma/client'
+import { Meaning, Prisma, PrismaClient } from '@prisma/client'
 import {
   CreateMeaningServiceType,
   GetMeaningListQueryType,
@@ -95,5 +95,23 @@ export class MeaningRepo {
       createdAt: meaning.createdAt,
       updatedAt: meaning.updatedAt
     }
+  }
+
+  // ---- Meanings written while saving a vocabulary (optional tx) ----
+
+  countForVocabulary(vocabularyId: number, prismaTx?: PrismaClient) {
+    return (prismaTx ?? this.prismaService).meaning.count({
+      where: { vocabularyId }
+    })
+  }
+
+  findForVocabulary(vocabularyId: number, prismaTx?: PrismaClient) {
+    return (prismaTx ?? this.prismaService).meaning.findMany({
+      where: { vocabularyId }
+    })
+  }
+
+  createRow(data: Prisma.MeaningUncheckedCreateInput, prismaTx?: PrismaClient) {
+    return (prismaTx ?? this.prismaService).meaning.create({ data })
   }
 }

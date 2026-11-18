@@ -6,8 +6,8 @@
     "injectForwardRefFiles": 6,
     "sharedModuleBusinessRepos": 3,
     "sharedModuleBusinessProviders": 3,
-    "prismaOutsideRepoFiles": 14,
-    "prismaOutsideRepoCalls": 224
+    "prismaOutsideRepoFiles": 12,
+    "prismaOutsideRepoCalls": 166
   },
   "details": {
     "crossModuleRepoImports": [
@@ -123,8 +123,6 @@
       "modules/match-round/match-round.service.ts",
       "modules/match/match.service.ts",
       "modules/round-question/round-question.service.ts",
-      "modules/test/test.service.ts",
-      "modules/vocabulary/vocabulary.helper.service.ts",
       "shared/workers/match-participant-timeout.processor.ts",
       "shared/workers/match-round-participant-timeout.processor.ts",
       "shared/workers/round-question-timeout.processor.ts",

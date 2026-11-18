@@ -746,4 +746,22 @@ export class KanjiService {
     }
   }
   //#endregion
+
+  // ---- For other modules: Kanji found or created while saving a vocabulary (optional tx) (B7) ----
+
+  findIdByCharacter(...args: Parameters<KanjiRepo['findIdByCharacter']>) {
+    return this.kanjiRepository.findIdByCharacter(...args)
+  }
+
+  createWithMeaningKey(...args: Parameters<KanjiRepo['createWithMeaningKey']>) {
+    return this.kanjiRepository.createWithMeaningKey(...args)
+  }
+
+  setMeaningKey(...args: Parameters<KanjiRepo['setMeaningKey']>) {
+    return this.kanjiRepository.setMeaningKey(...args)
+  }
+
+  findRowByCharacter(...args: Parameters<KanjiRepo['findRowByCharacter']>) {
+    return this.kanjiRepository.findRowByCharacter(...args)
+  }
 }

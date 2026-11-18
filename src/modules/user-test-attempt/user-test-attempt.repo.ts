@@ -324,4 +324,27 @@ export class UserTestAttemptRepo {
       select: { id: true }
     })
   }
+
+  // ---- Restarting an attempt (TestService) ----
+
+  // The latest attempt, whatever its status
+  findLatestOfUserForTest(userId: number, testId: number) {
+    return this.prismaService.userTestAttempt.findFirst({
+      where: {
+        userId,
+        testId
+      },
+      orderBy: {
+        createdAt: 'desc' // Lấy attempt được tạo gần nhất
+      }
+    })
+  }
+
+  clearAnswerLogs(attemptId: number) {
+    return this.prismaService.userTestAnswerLog.deleteMany({
+      where: {
+        userTestAttemptId: attemptId
+      }
+    })
+  }
 }

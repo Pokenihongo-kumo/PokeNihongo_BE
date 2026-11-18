@@ -16,7 +16,6 @@ import {
   TestReferenceNotFoundException,
   TestRuleViolationException
 } from './dto/test.error'
-import { PrismaService } from '@/shared/services/prisma.service'
 import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { TestSetQuestionBankService } from '../testset-questionbank/testset-questionbank.service'
 import { UserTestAttemptRepo } from '../user-test-attempt/user-test-attempt.repo'
@@ -40,7 +39,6 @@ export class TestService {
 
   constructor(
     private readonly testRepo: TestRepo,
-    private readonly prisma: PrismaService,
     private readonly testSetQuestionBankService: TestSetQuestionBankService,
     private readonly userTestAttemptRepo: UserTestAttemptRepo,
     private readonly userTestRepo: UserTestRepo,
@@ -80,10 +78,7 @@ export class TestService {
   ) {
     try {
       if (data.testType === TestStatus.PLACEMENT_TEST_DONE) {
-        const existing = await this.prisma.test.findFirst({
-          where: { testType: TestStatus.PLACEMENT_TEST_DONE },
-          select: { id: true }
-        })
+        const existing = await this.testRepo.findPlacementDoneTestId()
         if (existing) throw new TestRuleViolationException(M.PLACEMENT_EXISTS)
       }
       const test = await this.testRepo.createWithMeanings(data, userId)
@@ -152,10 +147,7 @@ export class TestService {
   ) {
     try {
       const { ids } = data
-      const tests = await this.prisma.test.findMany({
-        where: { id: { in: ids } },
-        select: { id: true, creatorId: true }
-      })
+      const tests = await this.testRepo.findCreatorsOf(ids)
       const found = new Set(tests.map((t) => t.id))
       const missing = ids.filter((id) => !found.has(id))
       if (missing.length > 0) {
@@ -199,9 +191,7 @@ export class TestService {
       const test = await this.testRepo.findById(testId)
       if (!test) throw new TestNotFoundException()
 
-      const testSets = await this.prisma.testSet.findMany({
-        where: { id: { in: data.testSetIds } }
-      })
+      const testSets = await this.testRepo.findTestSetsByIds(data.testSetIds)
       if (testSets.length !== data.testSetIds.length) {
         const found = new Set(testSets.map((ts) => ts.id))
         throw new TestReferenceNotFoundException(M.TESTSETS_NOT_FOUND, {
@@ -217,13 +207,8 @@ export class TestService {
       }
 
       // Move the test sets out of the tests they belonged to
-      await this.prisma.testTestSet.deleteMany({
-        where: { testSetId: { in: data.testSetIds }, testId: { not: testId } }
-      })
-      await this.prisma.testTestSet.createMany({
-        data: data.testSetIds.map((testSetId) => ({ testId, testSetId })),
-        skipDuplicates: true
-      })
+      await this.testRepo.unlinkTestSetsFromOtherTests(data.testSetIds, testId)
+      await this.testRepo.linkTestSets(testId, data.testSetIds)
       return {
         statusCode: 200,
         data: { testId, addedTestSetIds: data.testSetIds, count: data.testSetIds.length },
@@ -241,19 +226,13 @@ export class TestService {
     lang: string = 'vi'
   ) {
     try {
-      const lesson = await this.prisma.lesson.findUnique({
-        where: { id: lessonId },
-        select: { id: true, testId: true }
-      })
+      const lesson = await this.testRepo.findLessonTestId(lessonId)
       if (!lesson) throw new TestNotFoundException(M.LESSON_NOT_FOUND, { id: lessonId })
       if (!lesson.testId) {
         throw new TestRuleViolationException(M.LESSON_HAS_NO_TEST, { id: lessonId })
       }
 
-      const existing = await this.prisma.testTestSet.findMany({
-        where: { testId: lesson.testId },
-        select: { testSetId: true }
-      })
+      const existing = await this.testRepo.findTestSetIdsOfTest(lesson.testId)
       const toRemove = existing
         .map((tts) => tts.testSetId)
         .filter((id) => !data.testSetIds.includes(id))
@@ -274,7 +253,7 @@ export class TestService {
     try {
       if (!(await this.testRepo.findById(testId))) throw new TestNotFoundException()
       const where = { testId, testSetId: { in: data.testSetIds } }
-      const { count } = await this.prisma.testTestSet.deleteMany({ where })
+      const { count } = await this.testRepo.deleteTestSetLinks(where)
       if (count === 0) throw new TestRuleViolationException(M.NO_TESTSET_TO_REMOVE)
       return {
         statusCode: 200,
@@ -297,10 +276,7 @@ export class TestService {
   // Changing to READING/LISTENING/SPEAKING_TEST: every test set must be of that type
   private async assertTestSetsFitType(testId: number, testType: string) {
     if (!SINGLE_TYPE_TESTS.includes(testType)) return
-    const links = await this.prisma.testTestSet.findMany({
-      where: { testId },
-      select: { testSet: { select: { id: true, testType: true } } }
-    })
+    const links = await this.testRepo.findTestSetTypesOfTest(testId)
     const invalid = links.filter((l) => l.testSet.testType !== testSetTypeOf(testType))
     if (invalid.length > 0) {
       throw new TestRuleViolationException(M.TYPE_CHANGE_INVALID_TESTSETS, {
@@ -322,10 +298,7 @@ export class TestService {
         types: invalid.map((ts) => ts.testType).join(', ')
       })
     }
-    const existing = await this.prisma.testTestSet.findMany({
-      where: { testId },
-      select: { testSetId: true, testSet: { select: { testType: true } } }
-    })
+    const existing = await this.testRepo.findTestSetIdsAndTypes(testId)
     const existingIds = existing.map((e) => e.testSetId)
     const added = testSets.filter(
       (ts) => testSetIds.includes(ts.id) && !existingIds.includes(ts.id)
@@ -371,9 +344,7 @@ export class TestService {
       })
     }
     if (testType === 'SPEAKING_TEST') {
-      const existing = await this.prisma.testTestSet.count({
-        where: { testId, testSet: { testType: 'SPEAKING' } }
-      })
+      const existing = await this.testRepo.countSpeakingTestSets(testId)
       const adding = testSets.filter((ts) => ts.testType === 'SPEAKING').length
       if (existing + adding > 1) {
         throw new TestRuleViolationException(M.SPEAKING_TOO_MANY, { existing, adding })
@@ -438,23 +409,7 @@ export class TestService {
       }
 
       // Lấy các TestSets của Test qua TestTestSet
-      const testTestSets = await this.prisma.testTestSet.findMany({
-        where: { testId },
-        include: {
-          testSet: {
-            include: {
-              creator: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true
-                }
-              }
-            }
-          }
-        },
-        orderBy: { createdAt: 'asc' }
-      })
+      const testTestSets = await this.testRepo.findTestSetsWithCreator(testId)
 
       // Lấy translations và questions + answers cho từng TestSet
       const testSetsWithDetails = await Promise.all(
@@ -478,18 +433,15 @@ export class TestService {
           }
 
           if (language) {
-            const languageRecord = await this.prisma.languages.findFirst({
-              where: { code: language }
-            })
+            const languageRecord = await this.testRepo.findLanguageByCode(language)
             if (languageRecord) {
               testSetTranslationWhere.languageId = languageRecord.id
             }
           }
 
-          const testSetTranslations = await this.prisma.translation.findMany({
-            where: testSetTranslationWhere,
-            include: { language: true }
-          })
+          const testSetTranslations = await this.testRepo.findTranslations(
+            testSetTranslationWhere
+          )
 
           let testSetName: any = testSet.name
           let testSetDescription: any = testSet.description
@@ -589,13 +541,7 @@ export class TestService {
       }
 
       // Lấy các TestSets của Test qua TestTestSet (không include creator cho user)
-      const testTestSets = await this.prisma.testTestSet.findMany({
-        where: { testId },
-        include: {
-          testSet: true
-        },
-        orderBy: { createdAt: 'asc' }
-      })
+      const testTestSets = await this.testRepo.findTestSetsOfTest(testId)
 
       // Lấy translations và questions + answers cho từng TestSet
       const testSetsWithDetails = await Promise.all(
@@ -619,18 +565,15 @@ export class TestService {
           }
 
           if (language) {
-            const languageRecord = await this.prisma.languages.findFirst({
-              where: { code: language }
-            })
+            const languageRecord = await this.testRepo.findLanguageByCode(language)
             if (languageRecord) {
               testSetTranslationWhere.languageId = languageRecord.id
             }
           }
 
-          const testSetTranslations = await this.prisma.translation.findMany({
-            where: testSetTranslationWhere,
-            include: { language: true }
-          })
+          const testSetTranslations = await this.testRepo.findTranslations(
+            testSetTranslationWhere
+          )
 
           let testSetName: any = testSet.name
           let testSetDescription: any = testSet.description
@@ -721,15 +664,7 @@ export class TestService {
       this.logger.log('Starting auto-add free testSets to PLACEMENT_TEST_DONE tests')
 
       // Tìm tất cả Test có type PLACEMENT_TEST_DONE
-      const placementTests = await this.prisma.test.findMany({
-        where: {
-          testType: 'PLACEMENT_TEST_DONE',
-          status: 'ACTIVE'
-        },
-        select: {
-          id: true
-        }
-      })
+      const placementTests = await this.testRepo.findActivePlacementDoneTestIds()
 
       if (placementTests.length === 0) {
         this.logger.warn('No PLACEMENT_TEST_DONE tests found')
@@ -744,18 +679,7 @@ export class TestService {
       }
 
       // Tìm tất cả TestSet có price = 0, status = ACTIVE, và testType là VOCABULARY, GRAMMAR, hoặc KANJI
-      const freeTestSets = await this.prisma.testSet.findMany({
-        where: {
-          price: 0,
-          status: 'ACTIVE',
-          testType: {
-            in: ['VOCABULARY', 'GRAMMAR', 'KANJI']
-          }
-        },
-        select: {
-          id: true
-        }
-      })
+      const freeTestSets = await this.testRepo.findFreeActiveLearningTestSetIds()
 
       if (freeTestSets.length === 0) {
         this.logger.warn('No free testSets found')
@@ -776,21 +700,13 @@ export class TestService {
         const testSetIds = freeTestSets.map((ts) => ts.id)
 
         // Lấy danh sách TestSet đã có trong Test này
-        const existingTestTestSets = await this.prisma.testTestSet.findMany({
-          where: { testId: test.id },
-          select: { testSetId: true }
-        })
+        const existingTestTestSets = await this.testRepo.findTestSetIdsOfTest(test.id)
 
         const existingTestSetIds = existingTestTestSets.map((tts: any) => tts.testSetId)
         const newTestSetIds = testSetIds.filter((id) => !existingTestSetIds.includes(id))
 
         if (newTestSetIds.length > 0) {
-          await this.prisma.testTestSet.createMany({
-            data: newTestSetIds.map((testSetId) => ({
-              testId: test.id,
-              testSetId: testSetId
-            }))
-          })
+          await this.testRepo.addTestSets(test.id, newTestSetIds)
 
           totalAdded += newTestSetIds.length
           this.logger.log(`Added ${newTestSetIds.length} testSets to Test ID ${test.id}`)
@@ -844,15 +760,10 @@ export class TestService {
       }
 
       // Lấy attempt được tạo gần nhất của userId và testId (không phân biệt status)
-      const latestAttempt = await this.prisma.userTestAttempt.findFirst({
-        where: {
-          userId,
-          testId
-        },
-        orderBy: {
-          createdAt: 'desc' // Lấy attempt được tạo gần nhất
-        }
-      })
+      const latestAttempt = await this.userTestAttemptRepo.findLatestOfUserForTest(
+        userId,
+        testId
+      )
 
       let userTestAttempt
 
@@ -864,11 +775,9 @@ export class TestService {
           `Found existing IN_PROGRESS UserTestAttempt with ID: ${latestAttempt.id} for user ${userId} and test ${testId}`
         )
 
-        const deletedLogsCount = await this.prisma.userTestAnswerLog.deleteMany({
-          where: {
-            userTestAttemptId: latestAttempt.id
-          }
-        })
+        const deletedLogsCount = await this.userTestAttemptRepo.clearAnswerLogs(
+          latestAttempt.id
+        )
         this.logger.log(
           `Deleted ${deletedLogsCount.count} UserTestAnswerLog for attempt ${latestAttempt.id}`
         )
@@ -905,10 +814,7 @@ export class TestService {
       }
 
       // Lấy các TestSets của Test
-      const testTestSets = await this.prisma.testTestSet.findMany({
-        where: { testId },
-        select: { testSetId: true }
-      })
+      const testTestSets = await this.testRepo.findTestSetIdsOfTest(testId)
 
       if (testTestSets.length === 0) {
         throw new TestRuleViolationException(M.NO_TESTSETS)
@@ -917,18 +823,7 @@ export class TestService {
       const testSetIds = testTestSets.map((tts: any) => tts.testSetId)
 
       // Lấy tất cả câu hỏi từ các TestSets, nhóm theo levelN
-      const allQuestions = await this.prisma.testSetQuestionBank.findMany({
-        where: {
-          testSetId: { in: testSetIds }
-        },
-        include: {
-          questionBank: {
-            include: {
-              answers: true
-            }
-          }
-        }
-      })
+      const allQuestions = await this.testRepo.findQuestionsOfTestSets(testSetIds)
 
       // Chỉ lấy các loại VOCABULARY, GRAMMAR, KANJI
       const filteredQuestions = allQuestions.filter((tsqb) =>
@@ -987,16 +882,12 @@ export class TestService {
           // Lấy translations cho question nếu có
           let questionTranslation = qb.questionJp
           if (qb.questionKey && language) {
-            const languageRecord = await this.prisma.languages.findFirst({
-              where: { code: language }
-            })
+            const languageRecord = await this.testRepo.findLanguageByCode(language)
             if (languageRecord) {
-              const translation = await this.prisma.translation.findFirst({
-                where: {
-                  key: qb.questionKey,
-                  languageId: languageRecord.id
-                }
-              })
+              const translation = await this.testRepo.findTranslationByKey(
+                qb.questionKey,
+                languageRecord.id
+              )
               if (translation) {
                 questionTranslation = translation.value
               }
@@ -1079,10 +970,7 @@ export class TestService {
       }
 
       // Lấy các TestSets của Test
-      const testTestSets = await this.prisma.testTestSet.findMany({
-        where: { testId },
-        select: { testSetId: true }
-      })
+      const testTestSets = await this.testRepo.findTestSetIdsOfTest(testId)
 
       if (testTestSets.length === 0) {
         throw new TestRuleViolationException(M.NO_TESTSETS)
@@ -1091,21 +979,10 @@ export class TestService {
       const testSetIds = testTestSets.map((tts: any) => tts.testSetId)
 
       // Lấy tất cả câu hỏi có levelN cụ thể
-      const allQuestions = await this.prisma.testSetQuestionBank.findMany({
-        where: {
-          testSetId: { in: testSetIds },
-          questionBank: {
-            levelN: levelN
-          }
-        },
-        include: {
-          questionBank: {
-            include: {
-              answers: true
-            }
-          }
-        }
-      })
+      const allQuestions = await this.testRepo.findQuestionsOfTestSetsAtLevel(
+        testSetIds,
+        levelN
+      )
 
       // Shuffle và lấy số lượng cần thiết
       const shuffleArray = <T>(array: T[]): T[] => {
@@ -1134,16 +1011,12 @@ export class TestService {
           // Lấy translations cho question nếu có
           let questionTranslation = qb.questionJp
           if (qb.questionKey && language) {
-            const languageRecord = await this.prisma.languages.findFirst({
-              where: { code: language }
-            })
+            const languageRecord = await this.testRepo.findLanguageByCode(language)
             if (languageRecord) {
-              const translation = await this.prisma.translation.findFirst({
-                where: {
-                  key: qb.questionKey,
-                  languageId: languageRecord.id
-                }
-              })
+              const translation = await this.testRepo.findTranslationByKey(
+                qb.questionKey,
+                languageRecord.id
+              )
               if (translation) {
                 questionTranslation = translation.value
               }
@@ -1156,16 +1029,12 @@ export class TestService {
               let answerTranslation = ans.answerJp
 
               if (ans.answerKey && language) {
-                const languageRecord = await this.prisma.languages.findFirst({
-                  where: { code: language }
-                })
+                const languageRecord = await this.testRepo.findLanguageByCode(language)
                 if (languageRecord) {
-                  const translation = await this.prisma.translation.findFirst({
-                    where: {
-                      key: ans.answerKey,
-                      languageId: languageRecord.id
-                    }
-                  })
+                  const translation = await this.testRepo.findTranslationByKey(
+                    ans.answerKey,
+                    languageRecord.id
+                  )
                   if (translation) {
                     answerTranslation = translation.value
                   }
@@ -1358,18 +1227,15 @@ export class TestService {
           }
 
           if (language) {
-            const languageRecord = await this.prisma.languages.findFirst({
-              where: { code: language }
-            })
+            const languageRecord = await this.testRepo.findLanguageByCode(language)
             if (languageRecord) {
               testSetTranslationWhere.languageId = languageRecord.id
             }
           }
 
-          const testSetTranslations = await this.prisma.translation.findMany({
-            where: testSetTranslationWhere,
-            include: { language: true }
-          })
+          const testSetTranslations = await this.testRepo.findTranslations(
+            testSetTranslationWhere
+          )
 
           let testSetName: any = testSet.name
           let testSetDescription: any = testSet.description

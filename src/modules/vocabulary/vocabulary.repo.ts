@@ -1,3 +1,4 @@
+import { Prisma, PrismaClient } from '@prisma/client'
 import { VocabularyType } from '@/modules/vocabulary/entities/vocabulary.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
@@ -6,6 +7,10 @@ import { VocabularySortField, VocabularySortOrder } from '@/common/enum/enum'
 @Injectable()
 export class VocabularyRepo {
   constructor(private readonly prismaService: PrismaService) {}
+
+  withTransaction<T>(callback: (prismaTx: PrismaClient) => Promise<T>): Promise<T> {
+    return this.prismaService.$transaction(callback)
+  }
 
   async findMany(params: {
     currentPage: number
@@ -449,5 +454,52 @@ export class VocabularyRepo {
           }
         : null
     }
+  }
+
+  // ---- Saving a vocabulary with its kanji links (VocabularyHelperService) ----
+
+  linkKanji(
+    vocabularyId: number,
+    kanjiId: number,
+    displayOrder: number,
+    prismaTx?: PrismaClient
+  ) {
+    return (prismaTx ?? this.prismaService).vocabulary_Kanji.upsert({
+      where: {
+        vocabularyId_kanjiId: {
+          vocabularyId,
+          kanjiId: kanjiId
+        }
+      },
+      create: {
+        vocabularyId,
+        kanjiId: kanjiId,
+        displayOrder: displayOrder // Thứ tự xuất hiện của Kanji
+      },
+      update: {
+        displayOrder: displayOrder // Cập nhật displayOrder nếu đã tồn tại
+      }
+    })
+  }
+
+  findRowById(vocabularyId: number, prismaTx?: PrismaClient) {
+    return (prismaTx ?? this.prismaService).vocabulary.findUnique({
+      where: { id: vocabularyId }
+    })
+  }
+
+  findIdByWordJp(wordJp: string) {
+    return this.prismaService.vocabulary.findFirst({
+      where: {
+        wordJp
+      },
+      select: {
+        id: true
+      }
+    })
+  }
+
+  createRow(data: Prisma.VocabularyUncheckedCreateInput, prismaTx?: PrismaClient) {
+    return (prismaTx ?? this.prismaService).vocabulary.create({ data })
   }
 }
