@@ -13,7 +13,7 @@ import {
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { PrismaService } from '@/shared/services/prisma.service'
-import { RoundQuestionTimeoutProcessor } from '@/shared/workers/round-question-timeout.processor'
+import { RoundQuestionTimeoutProcessor } from '@/modules/round-question/round-question-timeout.processor'
 import { MatchingGateway } from '@/websockets/matching.gateway'
 import { InjectQueue } from '@nestjs/bull'
 import { forwardRef, Inject, Injectable } from '@nestjs/common'

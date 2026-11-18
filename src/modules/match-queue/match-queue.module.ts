@@ -1,3 +1,4 @@
+import { HandleMatchmakingCronjob } from './handle-matchmaking.cronjob'
 import { UserCoreModule } from '@/modules/user/user-core.module'
 import { Module } from '@nestjs/common'
 import { WebsocketsModule } from 'src/websockets/websockets.module'
@@ -20,7 +21,8 @@ import { MatchQueueService } from './match-queue.service'
     WebsocketsModule
   ],
   controllers: [MatchQueueController],
-  providers: [MatchQueueService, MatchQueueRepo],
+  // the 5 s matchmaking cron runs the queue it lives with
+  providers: [MatchQueueService, MatchQueueRepo, HandleMatchmakingCronjob],
   exports: [MatchQueueService, MatchQueueRepo]
 })
 export class MatchQueueModule {}
