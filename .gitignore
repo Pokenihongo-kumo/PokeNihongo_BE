@@ -48,6 +48,7 @@ lerna-debug.log*
 google-credentials.json
 *.json
 !scripts/arch/module-deps.baseline.json
+!test/docs/openapi.snapshot.json
 !package.json
 !tsconfig.json
 !tsconfig.build.json
@@ -73,3 +74,4 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 
 .cursorrules
+test/docs/openapi.snapshot.actual.json

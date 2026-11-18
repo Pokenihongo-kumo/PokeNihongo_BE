@@ -666,7 +666,17 @@ Baseline `dev` @ `5ec0e64`: 5 dịch vụ ngoài (PayOS, mail, Gemini, Google Sp
 
 Baseline `dev` @ `84bba0d`: response schema nằm trong `entities/` ở 72 file (chỉ 8 file ở `dto/`), envelope viết tay ở 77 file, 8 file đặt tên schema là `XType`. Làm sau phase 3, trước giai đoạn 5; mỗi batch đối chiếu module mẫu level và các mẫu tham khảo trong plan.
 
-- [ ] S0 — Module mẫu level làm tay, review và chốt
+- [~] S0 — Module mẫu level làm tay, **chờ review** trước khi viết codemod.
+  - Gate mới: `test/docs/openapi-snapshot.e2e-spec.ts` chụp toàn bộ OpenAPI (409 path, 352 schema) vào `openapi.snapshot.json` và so dạng text, nên thứ tự field cũng tính. Đổi API thật thì chạy với `UPDATE_OPENAPI=1`.
+  - Thêm `resSchema()` ở `shared/utils/res-schema.ts`.
+  - `entities/level.entity.ts` chỉ còn `LevelSchema`, `LevelWithRelationsSchema` (trước viết inline trong detail res), type `Level`, `LEVEL_FIELDS`.
+  - `dto/level.zod-dto.ts` chứa params/body/res schema, type không hậu tố (`CreateLevelBody`, `GetLevelParams`) và class DTO; res dùng `resSchema`.
+  - Service/repo import type body từ `dto/`; `user-core.repo` dùng `Level`. Bỏ `GetLevelDetailResType` (không ai dùng).
+  - Unit 167/167, e2e 216/216, snapshot và OpenAPI không đổi.
+  - Cần chốt khi review:
+    - (1) List giữ `PaginationResponseSchema` chung. Dùng `paginatedResSchema(LevelWithRelationsSchema)` sẽ lọc mất `nextLevel.nextLevelId/rewardId` khỏi list, tức là đổi contract.
+    - (2) S-R3 bỏ hậu tố `Type` ở type suy ra, nên S2/S3 sẽ đổi tên khoảng 590 `export type XType = z.infer` cùng mọi nơi import. Con số này lớn hơn nhiều so với "8 file" trong bảng batch.
+    - (3) `resSchema` xếp field theo thứ tự `statusCode, message, data` (level trước đây là `statusCode, data, message`). Thứ tự key JSON của response create/update/detail đổi, nội dung giữ nguyên.
 - [ ] S1 — `resSchema()` thay envelope viết tay
 - [ ] S2 — Đổi tên `XType` → `XSchema`/`X`
 - [ ] S3 — Dời schema HTTP từ `entities/` sang `dto/` (codemod theo mẫu S0)
