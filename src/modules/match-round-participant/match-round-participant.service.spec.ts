@@ -16,6 +16,9 @@ function createService() {
     {} as any,
     i18nService as any,
     {} as any,
+    {} as any,
+    {} as any,
+    {} as any,
     matchingGateway as any,
     {} as any
   )

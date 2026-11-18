@@ -47,4 +47,10 @@ export class UserCoreService {
   setEloscore(...args: Parameters<UserCoreRepo['setEloscore']>) {
     return this.userCoreRepo.setEloscore(...args)
   }
+
+  // ---- For other modules: Elo of the players (battle question level) (B7) ----
+
+  findElos(...args: Parameters<UserCoreRepo['findElos']>) {
+    return this.userCoreRepo.findElos(...args)
+  }
 }

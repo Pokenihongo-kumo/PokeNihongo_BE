@@ -158,4 +158,13 @@ export class UserCoreRepo {
       data: { eloscore }
     })
   }
+
+  // ---- Elo of the players (battle question level) ----
+
+  findElos(ids: number[]) {
+    return this.prismaService.user.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, eloscore: true }
+    })
+  }
 }

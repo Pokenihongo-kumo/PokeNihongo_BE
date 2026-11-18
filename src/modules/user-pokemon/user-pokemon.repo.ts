@@ -535,4 +535,16 @@ export class UserPokemonRepo {
       }
     })
   }
+
+  // ---- Pick timeout: the player's pokemon ----
+
+  findPokemonIdsOfUser(userId: number) {
+    return this.prismaService.userPokemon.findMany({
+      where: { userId },
+      select: {
+        id: true,
+        pokemonId: true
+      }
+    })
+  }
 }

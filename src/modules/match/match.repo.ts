@@ -699,4 +699,57 @@ export class MatchRepo {
       }
     })
   }
+
+  // ---- The pick flow (match-round-participant) ----
+
+  findWithPlayers(id: number) {
+    return this.prismaService.match.findUnique({
+      where: { id },
+      include: { participants: { include: { user: true } } }
+    })
+  }
+
+  // ---- The pick timeout (match-round-participant) ----
+
+  findInProgressByParticipant(matchParticipantId: number) {
+    return this.prismaService.match.findFirst({
+      where: {
+        participants: {
+          some: { id: matchParticipantId }
+        },
+        status: 'IN_PROGRESS'
+      },
+      include: {
+        rounds: {
+          include: {
+            participants: {
+              select: {
+                selectedUserPokemonId: true,
+                selectedUserPokemon: {
+                  select: {
+                    pokemonId: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
+  }
+
+  findByRoundWithPlayers(matchRoundId: number) {
+    return this.prismaService.match.findFirst({
+      where: {
+        rounds: {
+          some: { id: matchRoundId }
+        }
+      },
+      include: {
+        participants: {
+          include: { user: true }
+        }
+      }
+    })
+  }
 }

@@ -384,4 +384,10 @@ export class DebuffRoundService {
       throw error
     }
   }
+
+  // ---- For other modules: Debuffs a round can draw (B7) ----
+
+  findLiveDebuffs(...args: Parameters<DebuffRoundRepo['findLiveDebuffs']>) {
+    return this.debuffRoundRepo.findLiveDebuffs(...args)
+  }
 }

@@ -342,4 +342,94 @@ export class MatchRoundRepo {
       }
     })
   }
+
+  // ---- Round rows for the pick flow (match-round-participant) ----
+
+  setRoundPending(id: number) {
+    return this.prismaService.matchRound.update({
+      where: { id },
+      data: { status: RoundStatus.PENDING }
+    })
+  }
+
+  findRoundsWithPicks(matchId: number) {
+    return this.prismaService.matchRound.findMany({
+      where: { matchId, deletedAt: null },
+      include: {
+        participants: {
+          include: {
+            selectedUserPokemon: { include: { pokemon: true } }
+          }
+        }
+      },
+      orderBy: { roundNumber: 'asc' }
+    })
+  }
+
+  findRoundsWithParticipants(matchId: number) {
+    return this.prismaService.matchRound.findMany({
+      where: { matchId, deletedAt: null },
+      include: { participants: true }
+    })
+  }
+
+  findRoundWithMatch(id: number) {
+    return this.prismaService.matchRound.findUnique({
+      where: { id },
+      include: { match: true }
+    })
+  }
+
+  // ---- Round rows for the pick timeout and round start ----
+
+  findMatchIdOfRound(id: number) {
+    return this.prismaService.matchRound.findUnique({
+      where: { id },
+      select: { matchId: true }
+    })
+  }
+
+  findLiveRoundsOfMatch(matchId: number) {
+    return this.prismaService.matchRound.findMany({
+      where: { matchId, deletedAt: null }
+    })
+  }
+
+  findRoundByNumberWithParticipants(
+    matchId: number,
+    roundNumber: Prisma.MatchRoundUncheckedCreateInput['roundNumber']
+  ) {
+    return this.prismaService.matchRound.findFirst({
+      where: {
+        matchId,
+        roundNumber,
+        deletedAt: null
+      },
+      include: {
+        participants: {
+          orderBy: {
+            orderSelected: 'asc'
+          }
+        }
+      }
+    })
+  }
+
+  findRoundStatus(id: number) {
+    return this.prismaService.matchRound.findUnique({
+      where: { id },
+      select: { status: true }
+    })
+  }
+
+  // IN_PROGRESS until endTimeRound (10 minutes from the start)
+  startRound(id: number, endTimeRound: Date) {
+    return this.prismaService.matchRound.update({
+      where: { id },
+      data: {
+        status: 'IN_PROGRESS',
+        endTimeRound: endTimeRound // 10 minutes
+      }
+    })
+  }
 }

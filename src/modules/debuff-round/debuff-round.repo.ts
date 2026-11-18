@@ -226,4 +226,13 @@ export class DebuffRoundRepo {
       }
     })
   }
+
+  // ---- Debuffs a round can draw ----
+
+  findLiveDebuffs() {
+    return this.prismaService.debuffRound.findMany({
+      where: { deletedAt: null },
+      take: 50
+    })
+  }
 }

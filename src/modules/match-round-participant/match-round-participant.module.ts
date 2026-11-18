@@ -1,3 +1,5 @@
+import { DebuffRoundModule } from '@/modules/debuff-round/debuff-round.module'
+import { UserCoreModule } from '@/modules/user/user-core.module'
 import { PokemonModule } from '@/modules/pokemon/pokemon.module'
 import { BullQueueModule } from '@/3rdService/bull/bull-queue.module'
 import { BullQueue } from '@/common/constants/bull-action.constant'
@@ -26,7 +28,9 @@ import { MatchRoundParticipantService } from './match-round-participant.service'
     UserPokemonModule,
     RoundQuestionModule,
     QuestionBankModule,
-    PokemonModule
+    PokemonModule,
+    UserCoreModule,
+    DebuffRoundModule
   ],
   controllers: [MatchRoundParticipantController],
   providers: [
