@@ -1,4 +1,4 @@
-import { TextToSpeechService } from '@/3rdService/speech/text-to-speech.service'
+import { TextToSpeechService } from '@/modules/speech/text-to-speech.service'
 import { AppModule } from '@/app.module'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { INestApplication, VersioningType } from '@nestjs/common'

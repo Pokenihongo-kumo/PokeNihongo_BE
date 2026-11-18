@@ -1,5 +1,5 @@
 import { AppModule } from '@/app.module'
-import { UploadService } from '@/3rdService/upload/upload.service'
+import { UploadService } from '@/modules/upload/upload.service'
 import { FileStorage } from '@/infrastructure/integrations/storage/file-storage.port'
 import {
   LocalFileStorage,

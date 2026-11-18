@@ -1,5 +1,5 @@
 import { AppModule } from '@/app.module'
-import { MailService } from '@/3rdService/mail/mail.service'
+import { MailService } from '@/modules/mail/mail.service'
 import { OtpService } from '@/modules/auth/otp.service'
 import envConfig from '@/config/env.config'
 import { CONSUME_IF_CODE, OtpPurpose, otpKey } from '@/modules/auth/otp-value'

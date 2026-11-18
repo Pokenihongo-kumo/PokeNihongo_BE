@@ -1,7 +1,7 @@
 import { config } from 'dotenv'
 import { existsSync } from 'fs'
 import { resolve } from 'path'
-import { parseRedisUrl } from '../src/3rdService/bull/queue-config'
+import { parseRedisUrl } from '../src/infrastructure/queue/queue-config'
 
 // Runs before every e2e test file, before the app modules are imported.
 // It loads .env.test and refuses to continue unless every target is a test one,

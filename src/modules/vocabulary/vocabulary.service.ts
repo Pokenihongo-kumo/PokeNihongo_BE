@@ -1,5 +1,5 @@
-import { TextToSpeechService } from '@/3rdService/speech/text-to-speech.service'
-import { UploadService } from '@/3rdService/upload/upload.service'
+import { TextToSpeechService } from '@/modules/speech/text-to-speech.service'
+import { UploadService } from '@/modules/upload/upload.service'
 import { hasJapaneseText } from '@/common/utils/japanese-text'
 import { I18nService } from '@/i18n/i18n.service'
 import { VocabularyMessage as M } from '@/i18n/message-keys'

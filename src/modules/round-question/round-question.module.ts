@@ -1,7 +1,7 @@
 import { MatchModule } from '@/modules/match/match.module'
 import { UserCoreModule } from '@/modules/user/user-core.module'
 import { QuestionBankModule } from '@/modules/question-bank/question-bank.module'
-import { BullQueueModule } from '@/3rdService/bull/bull-queue.module'
+import { BullQueueModule } from '@/infrastructure/queue/bull-queue.module'
 import { BullQueue } from '@/common/constants/bull-action.constant'
 import { RoundQuestionTimeoutProcessor } from '@/modules/round-question/round-question-timeout.processor'
 import { WebsocketsModule } from '@/websockets/websockets.module'

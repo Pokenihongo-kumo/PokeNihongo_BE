@@ -1,6 +1,6 @@
 import { AppModule } from '@/app.module'
-import { SpeechToTextService } from '@/3rdService/speech/speech-to-text.service'
-import { TextToSpeechService } from '@/3rdService/speech/text-to-speech.service'
+import { SpeechToTextService } from '@/modules/speech/speech-to-text.service'
+import { TextToSpeechService } from '@/modules/speech/text-to-speech.service'
 import { FAKE_TRANSCRIPT } from '@/infrastructure/integrations/speech/fake-speech.adapters'
 import { INestApplication } from '@nestjs/common'
 import { Test } from '@nestjs/testing'

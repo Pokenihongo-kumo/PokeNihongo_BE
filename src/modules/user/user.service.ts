@@ -1,4 +1,4 @@
-import { MailService } from '@/3rdService/mail/mail.service'
+import { MailService } from '@/modules/mail/mail.service'
 import { I18nService } from '@/i18n/i18n.service'
 import { AuthMessage, ENTITY_MESSAGE, UserMessage } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'

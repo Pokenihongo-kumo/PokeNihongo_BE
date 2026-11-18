@@ -2,8 +2,8 @@ import { Process, Processor } from '@nestjs/bull'
 import { Logger } from '@nestjs/common'
 import { Job } from 'bull'
 import { LlmClient } from '@/infrastructure/integrations/ai/llm-client.port'
-import { SpeechToTextService } from '@/3rdService/speech/speech-to-text.service'
-import { TextToSpeechService } from '@/3rdService/speech/text-to-speech.service'
+import { SpeechToTextService } from '@/modules/speech/speech-to-text.service'
+import { TextToSpeechService } from '@/modules/speech/text-to-speech.service'
 import { BullAction, BullQueue } from '@/common/constants/bull-action.constant'
 
 export interface KaiwaJobData {

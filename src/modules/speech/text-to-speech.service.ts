@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { TextToSpeech } from '@/infrastructure/integrations/speech/text-to-speech.port'
-import { UploadService } from '../upload/upload.service'
+import { UploadService } from '@/modules/upload/upload.service'
 
 export interface TextToSpeechResult {
   audioContent: Buffer

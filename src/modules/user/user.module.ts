@@ -1,6 +1,6 @@
 import { UserCoreModule } from '@/modules/user/user-core.module'
-import { BullQueueModule } from '@/3rdService/bull/bull-queue.module'
-import { MailModule } from '@/3rdService/mail/mail.module'
+import { BullQueueModule } from '@/infrastructure/queue/bull-queue.module'
+import { MailModule } from '@/modules/mail/mail.module'
 import { BullQueue } from '@/common/constants/bull-action.constant'
 import { LevelModule } from '@/modules/level/level.module'
 import { UserPokemonModule } from '@/modules/user-pokemon/user-pokemon.module'

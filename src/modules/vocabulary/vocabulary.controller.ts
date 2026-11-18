@@ -73,7 +73,7 @@ import {
   ApiConsumes
 } from '@nestjs/swagger'
 import { ZodSerializerDto } from 'nestjs-zod'
-import { CloudinaryMultiMulterConfig } from '@/3rdService/upload/cloudinary/multer.config'
+import { CloudinaryMultiMulterConfig } from '@/modules/upload/cloudinary/multer.config'
 import { VocabularyService } from './vocabulary.service'
 
 @ApiTags('Vocabulary')

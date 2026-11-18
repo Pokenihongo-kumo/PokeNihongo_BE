@@ -7,8 +7,8 @@ import { join } from 'path'
 
 export const templateDir =
   process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'Production'
-    ? join(process.cwd(), 'dist/3rdService/mail/templates')
-    : join(process.cwd(), 'src/3rdService/mail/templates')
+    ? join(process.cwd(), 'dist/infrastructure/integrations/mail/templates')
+    : join(process.cwd(), 'src/infrastructure/integrations/mail/templates')
 
 export function registerHandlebarsHelpers() {
   Handlebars.registerHelper('formatDate', (date: Date, format = 'DD/MM/YYYY') => {

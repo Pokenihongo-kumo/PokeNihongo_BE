@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common'
 import { QuestionBankController } from './question-bank.controller'
 import { QuestionBankRepo } from './question-bank.repo'
 import { QuestionBankService } from './question-bank.service'
-import { SpeechModule } from '@/3rdService/speech/speech.module'
-import { UploadModule } from '@/3rdService/upload/upload.module'
+import { SpeechModule } from '@/modules/speech/speech.module'
+import { UploadModule } from '@/modules/upload/upload.module'
 import { AnswerModule } from '@/modules/answer/answer.module'
 
 @Module({

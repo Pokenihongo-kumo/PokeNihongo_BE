@@ -1,4 +1,4 @@
-import { CloudinaryModule } from '@/3rdService/upload/cloudinary/cloudinary.module'
+import { CloudinaryModule } from '@/modules/upload/cloudinary/cloudinary.module'
 import envConfig from '@/config/env.config'
 import { Module } from '@nestjs/common'
 import { CloudinaryFileStorage } from './cloudinary-file-storage.adapter'

@@ -1,5 +1,5 @@
-import { BullQueueService } from '@/3rdService/bull/bull-queue.service'
-import { UploadService } from '@/3rdService/upload/upload.service'
+import { BullQueueService } from '@/infrastructure/queue/bull-queue.service'
+import { UploadService } from '@/modules/upload/upload.service'
 import { TypeOfVerificationCode } from '@/common/constants/auth.constant'
 import { BullQueue } from '@/common/constants/bull-action.constant'
 import { RoleName } from '@/common/constants/role.constant'

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common'
-import { UploadModule } from 'src/3rdService/upload/upload.module'
+import { UploadModule } from '@/modules/upload/upload.module'
 import { SharedModule } from 'src/shared/shared.module'
 import { TypeEffectivenessModule } from '../type-effectiveness/type-effectiveness.module'
 import { PokemonController } from './pokemon.controller'

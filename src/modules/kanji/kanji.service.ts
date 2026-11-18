@@ -1,4 +1,4 @@
-import { UploadService } from '@/3rdService/upload/upload.service'
+import { UploadService } from '@/modules/upload/upload.service'
 import { isKanjiCharacter } from '@/common/utils/japanese-text'
 import { I18nService } from '@/i18n/i18n.service'
 import { KanjiMessage as M } from '@/i18n/message-keys'
