@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { PrismaService } from '@/shared/services/prisma.service'
 import {
   GetHistoryListQueryType,
   GetAdminHistoryListQueryType,
@@ -19,7 +18,6 @@ export class UserHistoryService {
   private readonly logger = new Logger(UserHistoryService.name)
 
   constructor(
-    private readonly prisma: PrismaService,
     private readonly userHistoryRepository: UserHistoryRepo,
     private readonly i18nService: I18nService,
     private readonly translationService: TranslationService,
@@ -41,50 +39,22 @@ export class UserHistoryService {
       // Lấy userTestAttempts nếu type là TEST hoặc không filter
       const testAttempts =
         type === 'TEST' || !type
-          ? await this.prisma.userTestAttempt.findMany({
-              where: {
-                userId,
-                ...(status ? { status: status as TestAttemptStatus } : {})
-              },
-              include: {
-                test: true
-              },
-              orderBy: {
-                createdAt: 'desc'
-              }
-            })
+          ? await this.userHistoryRepository.findTestAttemptsOfUser(userId, status)
           : []
 
       // Lấy userExerciseAttempts nếu type là EXERCISE hoặc không filter
       const exerciseAttempts =
         type === 'EXERCISE' || !type
-          ? await this.prisma.userExerciseAttempt.findMany({
-              where: {
-                userId,
-                ...(status ? { status: status as ExerciseAttemptStatus } : {})
-              },
-              include: {
-                exercise: {
-                  include: {
-                    testSet: true
-                  }
-                }
-              },
-              orderBy: {
-                createdAt: 'desc'
-              }
-            })
+          ? await this.userHistoryRepository.findExerciseAttemptsOfUser(userId, status)
           : []
 
       // Map test attempts
       const testHistoryItems = await Promise.all(
         testAttempts.map(async (attempt: any) => {
           // Lấy answer logs để tính correct/incorrect
-          const answerLogs = await this.prisma.userTestAnswerLog.findMany({
-            where: {
-              userTestAttemptId: attempt.id
-            }
-          })
+          const answerLogs = await this.userHistoryRepository.findTestAnswerLogs(
+            attempt.id
+          )
 
           const correctAnswers = answerLogs.filter((log) => log.isCorrect).length
           const incorrectAnswers = answerLogs.filter((log) => !log.isCorrect).length
@@ -100,19 +70,15 @@ export class UserHistoryService {
             }
 
             if (language) {
-              const languageRecord = await this.prisma.languages.findFirst({
-                where: { code: language }
-              })
+              const languageRecord =
+                await this.userHistoryRepository.findLanguageByCode(language)
               if (languageRecord) {
                 translationWhere.languageId = languageRecord.id
               }
             }
 
-            const translations = await this.prisma.translation.findMany({
-              where: translationWhere,
-              include: { language: true },
-              take: 1
-            })
+            const translations =
+              await this.userHistoryRepository.findFirstTranslation(translationWhere)
 
             if (translations.length > 0) {
               const translation = translations.find((t) =>
@@ -147,11 +113,9 @@ export class UserHistoryService {
       const exerciseHistoryItems = await Promise.all(
         exerciseAttempts.map(async (attempt: any) => {
           // Lấy answer logs để tính correct/incorrect
-          const answerLogs = await this.prisma.userAnswerLog.findMany({
-            where: {
-              userExerciseAttemptId: attempt.id
-            }
-          })
+          const answerLogs = await this.userHistoryRepository.findExerciseAnswerLogs(
+            attempt.id
+          )
 
           const correctAnswers = answerLogs.filter((log) => log.isCorrect).length
           const incorrectAnswers = answerLogs.filter((log) => !log.isCorrect).length
@@ -167,20 +131,15 @@ export class UserHistoryService {
             }
 
             if (language) {
-              const languageRecord = await this.prisma.languages.findFirst({
-                where: { code: language }
-              })
+              const languageRecord =
+                await this.userHistoryRepository.findLanguageByCode(language)
               if (languageRecord) {
                 translationWhere.languageId = languageRecord.id
               }
             }
 
-            const testSetTranslations = await this.prisma.translation.findMany({
-              where: translationWhere,
-              include: {
-                language: true
-              }
-            })
+            const testSetTranslations =
+              await this.userHistoryRepository.findTranslations(translationWhere)
 
             if (testSetTranslations.length > 0) {
               const translation = testSetTranslations.find((t) =>
@@ -285,56 +244,24 @@ export class UserHistoryService {
       // Lấy userTestAttempts nếu type là TEST hoặc không filter
       const testAttempts =
         type === 'TEST' || !type
-          ? await this.prisma.userTestAttempt.findMany({
-              where: testAttemptWhere,
-              include: {
-                test: true,
-                user: {
-                  select: {
-                    id: true,
-                    email: true
-                  }
-                }
-              },
-              orderBy: {
-                createdAt: 'desc'
-              }
-            })
+          ? await this.userHistoryRepository.findTestAttemptsWithUser(testAttemptWhere)
           : []
 
       // Lấy userExerciseAttempts nếu type là EXERCISE hoặc không filter
       const exerciseAttempts =
         type === 'EXERCISE' || !type
-          ? await this.prisma.userExerciseAttempt.findMany({
-              where: exerciseAttemptWhere,
-              include: {
-                exercise: {
-                  include: {
-                    testSet: true
-                  }
-                },
-                user: {
-                  select: {
-                    id: true,
-                    email: true
-                  }
-                }
-              },
-              orderBy: {
-                createdAt: 'desc'
-              }
-            })
+          ? await this.userHistoryRepository.findExerciseAttemptsWithUser(
+              exerciseAttemptWhere
+            )
           : []
 
       // Map test attempts
       const testHistoryItems = await Promise.all(
         testAttempts.map(async (attempt: any) => {
           // Lấy answer logs để tính correct/incorrect
-          const answerLogs = await this.prisma.userTestAnswerLog.findMany({
-            where: {
-              userTestAttemptId: attempt.id
-            }
-          })
+          const answerLogs = await this.userHistoryRepository.findTestAnswerLogs(
+            attempt.id
+          )
 
           const correctAnswers = answerLogs.filter((log) => log.isCorrect).length
           const incorrectAnswers = answerLogs.filter((log) => !log.isCorrect).length
@@ -349,19 +276,15 @@ export class UserHistoryService {
             }
 
             if (language) {
-              const languageRecord = await this.prisma.languages.findFirst({
-                where: { code: language }
-              })
+              const languageRecord =
+                await this.userHistoryRepository.findLanguageByCode(language)
               if (languageRecord) {
                 translationWhere.languageId = languageRecord.id
               }
             }
 
-            const translations = await this.prisma.translation.findMany({
-              where: translationWhere,
-              include: { language: true },
-              take: 1
-            })
+            const translations =
+              await this.userHistoryRepository.findFirstTranslation(translationWhere)
 
             if (translations.length > 0) {
               const translation = translations.find((t) =>
@@ -401,11 +324,9 @@ export class UserHistoryService {
       const exerciseHistoryItems = await Promise.all(
         exerciseAttempts.map(async (attempt: any) => {
           // Lấy answer logs để tính correct/incorrect
-          const answerLogs = await this.prisma.userAnswerLog.findMany({
-            where: {
-              userExerciseAttemptId: attempt.id
-            }
-          })
+          const answerLogs = await this.userHistoryRepository.findExerciseAnswerLogs(
+            attempt.id
+          )
 
           const correctAnswers = answerLogs.filter((log) => log.isCorrect).length
           const incorrectAnswers = answerLogs.filter((log) => !log.isCorrect).length
@@ -420,20 +341,15 @@ export class UserHistoryService {
             }
 
             if (language) {
-              const languageRecord = await this.prisma.languages.findFirst({
-                where: { code: language }
-              })
+              const languageRecord =
+                await this.userHistoryRepository.findLanguageByCode(language)
               if (languageRecord) {
                 translationWhere.languageId = languageRecord.id
               }
             }
 
-            const testSetTranslations = await this.prisma.translation.findMany({
-              where: translationWhere,
-              include: {
-                language: true
-              }
-            })
+            const testSetTranslations =
+              await this.userHistoryRepository.findTranslations(translationWhere)
 
             if (testSetTranslations.length > 0) {
               const translation = testSetTranslations.find((t) =>
@@ -760,11 +676,9 @@ export class UserHistoryService {
 
       const results = await Promise.all(
         paginatedAttempts.map(async (attempt: any) => {
-          const answerLogs = await this.prisma.userAnswerLog.findMany({
-            where: {
-              userExerciseAttemptId: attempt.id
-            }
-          })
+          const answerLogs = await this.userHistoryRepository.findExerciseAnswerLogs(
+            attempt.id
+          )
 
           const correctAnswers = answerLogs.filter((log) => log.isCorrect).length
           const incorrectAnswers = answerLogs.filter((log) => !log.isCorrect).length
@@ -905,11 +819,9 @@ export class UserHistoryService {
 
       const results = await Promise.all(
         paginatedAttempts.map(async (attempt: any) => {
-          const answerLogs = await this.prisma.userTestAnswerLog.findMany({
-            where: {
-              userTestAttemptId: attempt.id
-            }
-          })
+          const answerLogs = await this.userHistoryRepository.findTestAnswerLogs(
+            attempt.id
+          )
 
           const correctAnswers = answerLogs.filter((log) => log.isCorrect).length
           const incorrectAnswers = answerLogs.filter((log) => !log.isCorrect).length

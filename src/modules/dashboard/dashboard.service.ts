@@ -1,7 +1,6 @@
 import { RoleName } from '@/common/constants/role.constant'
 import { convertEloToRank } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
-import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
 import { DashboardSeasonNotFoundException } from './dto/dashboard.error'
 import { LanguagesService } from '@/modules/languages/languages.service'
@@ -11,8 +10,7 @@ import { DashboardRepo } from './dashboard.repo'
 export class DashboardService {
   constructor(
     private dashboardRepo: DashboardRepo,
-    private readonly languagesService: LanguagesService,
-    private readonly prisma: PrismaService
+    private readonly languagesService: LanguagesService
   ) {}
 
   /**
@@ -208,37 +206,15 @@ export class DashboardService {
    * Leaderboard Season Overview - Tổng quan giải đấu
    */
   async getLeaderboardSeasonOverview(lang: string = 'vi') {
-    const totalSeasons = await this.prisma.leaderboardSeason.count({
-      where: { deletedAt: null }
-    })
+    const totalSeasons = await this.dashboardRepo.countSeasons()
 
-    const activeSeasons = await this.prisma.leaderboardSeason.count({
-      where: { status: 'ACTIVE', deletedAt: null }
-    })
+    const activeSeasons = await this.dashboardRepo.countActiveSeasons()
 
-    const currentSeason = await this.prisma.leaderboardSeason.findFirst({
-      where: { status: 'ACTIVE', deletedAt: null },
-      include: {
-        userHistories: {
-          where: { user: { role: { name: RoleName.Learner }, deletedAt: null } },
-          select: { userId: true }
-        }
-      },
-      orderBy: { startDate: 'desc' }
-    })
+    const currentSeason = await this.dashboardRepo.findLatestActiveSeasonWithLearners()
 
     const currentParticipants = currentSeason?.userHistories.length || 0
 
-    const previousSeason = await this.prisma.leaderboardSeason.findFirst({
-      where: { status: 'EXPIRED', deletedAt: null },
-      include: {
-        userHistories: {
-          where: { user: { role: { name: RoleName.Learner }, deletedAt: null } },
-          select: { userId: true }
-        }
-      },
-      orderBy: { endDate: 'desc' }
-    })
+    const previousSeason = await this.dashboardRepo.findLatestExpiredSeasonWithLearners()
 
     const previousParticipants = previousSeason?.userHistories.length || 0
     let participationChangeRate = 0
@@ -350,63 +326,16 @@ export class DashboardService {
     const skip = (page - 1) * pageSize
 
     // Lấy danh sách mùa ACTIVE + EXPIRED
-    const seasons = await this.prisma.leaderboardSeason.findMany({
-      where: {
-        status: { in: ['ACTIVE', 'EXPIRED'] },
-        deletedAt: null
-      },
-      include: {
-        nameTranslations: {
-          include: { language: { select: { code: true } } }
-        },
-        userHistories: {
-          where: {
-            user: {
-              role: { name: RoleName.Learner },
-              deletedAt: null
-            }
-          },
-          select: {
-            id: true,
-            userId: true,
-            finalElo: true,
-            finalRank: true,
-            createdAt: true,
-            user: { select: { eloscore: true } }
-          }
-        },
-        matches: {
-          select: {
-            id: true,
-            status: true,
-            winnerId: true,
-            createdAt: true,
-            participants: {
-              select: { userId: true }
-            }
-          }
-        }
-      },
-      orderBy: { startDate: 'desc' },
+    const seasons = await this.dashboardRepo.findStartedSeasonsWithLearners(
       skip,
-      take: pageSize
-    })
+      pageSize
+    )
 
     // Tính tổng số mùa (cho pagination)
-    const totalCount = await this.prisma.leaderboardSeason.count({
-      where: {
-        status: { in: ['ACTIVE', 'EXPIRED'] },
-        deletedAt: null
-      }
-    })
+    const totalCount = await this.dashboardRepo.countStartedSeasons()
 
     // Tính tổng user Learner trong hệ thống
-    const totalUsers = await this.prisma.user.count({
-      where: {
-        role: { name: RoleName.Learner },
-        deletedAt: null
-      }
-    })
+    const totalUsers = await this.dashboardRepo.countLearners()
 
     // Tính streak cho tất cả learner (reuse logic từ getStreakRetention)
     const streakByUser = await this.dashboardRepo.calculateUserStreaks()
@@ -591,37 +520,7 @@ export class DashboardService {
     lang: string = 'vi',
     period: string = 'month'
   ) {
-    const season = await this.prisma.leaderboardSeason.findUnique({
-      where: { id: seasonId, deletedAt: null },
-      include: {
-        nameTranslations: {
-          include: { language: { select: { code: true } } }
-        },
-        userHistories: {
-          where: {
-            user: {
-              role: { name: RoleName.Learner },
-              deletedAt: null
-            }
-          },
-          select: {
-            id: true,
-            userId: true,
-            createdAt: true,
-            finalElo: true,
-            finalRank: true,
-            user: { select: { eloscore: true } }
-          }
-        },
-        matches: {
-          include: {
-            participants: {
-              select: { userId: true }
-            }
-          }
-        }
-      }
-    })
+    const season = await this.dashboardRepo.findSeasonDetail(seasonId)
 
     if (!season) {
       throw new DashboardSeasonNotFoundException()
@@ -640,12 +539,7 @@ export class DashboardService {
       season.nameTranslations.find((t) => t.language.code === lang)?.value || ''
 
     // Tính tổng user Learner trong hệ thống
-    const totalUsers = await this.prisma.user.count({
-      where: {
-        role: { name: RoleName.Learner },
-        deletedAt: null
-      }
-    })
+    const totalUsers = await this.dashboardRepo.countLearnersForSeason()
 
     // Tính streak cho tất cả learner
     const streakByUser = await this.dashboardRepo.calculateUserStreaks()

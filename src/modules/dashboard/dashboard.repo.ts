@@ -1629,4 +1629,149 @@ export class DashboardRepo {
       items
     }
   }
+
+  // ---- Season and learner statistics (read model, R4: read only) ----
+
+  countSeasons() {
+    return this.prismaService.leaderboardSeason.count({
+      where: { deletedAt: null }
+    })
+  }
+
+  countActiveSeasons() {
+    return this.prismaService.leaderboardSeason.count({
+      where: { status: 'ACTIVE', deletedAt: null }
+    })
+  }
+
+  findLatestActiveSeasonWithLearners() {
+    return this.prismaService.leaderboardSeason.findFirst({
+      where: { status: 'ACTIVE', deletedAt: null },
+      include: {
+        userHistories: {
+          where: { user: { role: { name: RoleName.Learner }, deletedAt: null } },
+          select: { userId: true }
+        }
+      },
+      orderBy: { startDate: 'desc' }
+    })
+  }
+
+  findLatestExpiredSeasonWithLearners() {
+    return this.prismaService.leaderboardSeason.findFirst({
+      where: { status: 'EXPIRED', deletedAt: null },
+      include: {
+        userHistories: {
+          where: { user: { role: { name: RoleName.Learner }, deletedAt: null } },
+          select: { userId: true }
+        }
+      },
+      orderBy: { endDate: 'desc' }
+    })
+  }
+
+  findStartedSeasonsWithLearners(skip: number, pageSize: number) {
+    return this.prismaService.leaderboardSeason.findMany({
+      where: {
+        status: { in: ['ACTIVE', 'EXPIRED'] },
+        deletedAt: null
+      },
+      include: {
+        nameTranslations: {
+          include: { language: { select: { code: true } } }
+        },
+        userHistories: {
+          where: {
+            user: {
+              role: { name: RoleName.Learner },
+              deletedAt: null
+            }
+          },
+          select: {
+            id: true,
+            userId: true,
+            finalElo: true,
+            finalRank: true,
+            createdAt: true,
+            user: { select: { eloscore: true } }
+          }
+        },
+        matches: {
+          select: {
+            id: true,
+            status: true,
+            winnerId: true,
+            createdAt: true,
+            participants: {
+              select: { userId: true }
+            }
+          }
+        }
+      },
+      orderBy: { startDate: 'desc' },
+      skip,
+      take: pageSize
+    })
+  }
+
+  countStartedSeasons() {
+    return this.prismaService.leaderboardSeason.count({
+      where: {
+        status: { in: ['ACTIVE', 'EXPIRED'] },
+        deletedAt: null
+      }
+    })
+  }
+
+  countLearners() {
+    return this.prismaService.user.count({
+      where: {
+        role: { name: RoleName.Learner },
+        deletedAt: null
+      }
+    })
+  }
+
+  findSeasonDetail(seasonId: number) {
+    return this.prismaService.leaderboardSeason.findUnique({
+      where: { id: seasonId, deletedAt: null },
+      include: {
+        nameTranslations: {
+          include: { language: { select: { code: true } } }
+        },
+        userHistories: {
+          where: {
+            user: {
+              role: { name: RoleName.Learner },
+              deletedAt: null
+            }
+          },
+          select: {
+            id: true,
+            userId: true,
+            createdAt: true,
+            finalElo: true,
+            finalRank: true,
+            user: { select: { eloscore: true } }
+          }
+        },
+        matches: {
+          include: {
+            participants: {
+              select: { userId: true }
+            }
+          }
+        }
+      }
+    })
+  }
+
+  countLearnersForSeason() {
+    return this.prismaService.user.count({
+      where: {
+        role: { name: RoleName.Learner },
+        deletedAt: null
+      }
+    })
+  }
 }

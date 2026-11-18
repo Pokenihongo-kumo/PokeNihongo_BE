@@ -255,4 +255,73 @@ export class UserTestAttemptRepo {
       select: { testSetId: true }
     })
   }
+
+  // ---- Lookups and attempt state used by UserTestAttemptService ----
+
+  findTestWithTestSetIds(testId: number) {
+    return this.prismaService.test.findUnique({
+      where: { id: testId },
+      include: {
+        testTestSets: {
+          select: {
+            testSet: {
+              select: { id: true }
+            }
+          }
+        }
+      }
+    })
+  }
+
+  findLatestInProgress(userId: number, testId: number) {
+    return this.prismaService.userTestAttempt.findFirst({
+      where: {
+        userId,
+        testId,
+        status: 'IN_PROGRESS'
+      },
+      orderBy: {
+        createdAt: 'desc' // Lấy attempt được tạo gần nhất
+      }
+    })
+  }
+
+  markAbandoned(id: number) {
+    return this.prismaService.userTestAttempt.update({
+      where: { id: id },
+      data: { status: 'ABANDONED' }
+    })
+  }
+
+  touch(id: number, now: Date) {
+    return this.prismaService.userTestAttempt.update({
+      where: { id: id },
+      data: { updatedAt: now }
+    })
+  }
+
+  findQuestionsWithAnswers(questionBankIds: number[]) {
+    return this.prismaService.questionBank.findMany({
+      where: {
+        id: { in: questionBankIds }
+      },
+      include: {
+        answers: true
+      }
+    })
+  }
+
+  findLessonRewardForTest(testId: number) {
+    return this.prismaService.lesson.findFirst({
+      where: { testId: testId },
+      select: { id: true, rewardId: true }
+    })
+  }
+
+  findLessonIdForTest(testId: number) {
+    return this.prismaService.lesson.findFirst({
+      where: { testId: testId },
+      select: { id: true }
+    })
+  }
 }

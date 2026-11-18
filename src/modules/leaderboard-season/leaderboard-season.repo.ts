@@ -2,7 +2,7 @@ import { PaginationQueryType } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 
 import { parseQs } from '@/common/utils/qs-parser'
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import { SeasonRankRewardType } from '../season-rank-reward/entities/season-rank-reward.entity'
 import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
@@ -372,6 +372,110 @@ export class LeaderboardSeasonRepo {
             }
           }
         }
+      }
+    })
+  }
+
+  // ---- Rankings (read model, R4: read only) ----
+
+  findLatestByEndDate() {
+    return this.prismaService.leaderboardSeason.findFirst({
+      where: { deletedAt: null },
+      orderBy: { endDate: 'desc' }
+    })
+  }
+
+  countRankedUsers(whereUsers: Prisma.UserWhereInput) {
+    return this.prismaService.user.count({ where: whereUsers })
+  }
+
+  pageRankedUsers(whereUsers: Prisma.UserWhereInput, skip: number, take: number) {
+    return this.prismaService.user.findMany({
+      where: whereUsers,
+      orderBy: [{ eloscore: 'desc' }, { name: 'asc' }],
+      skip,
+      take,
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+        eloscore: true
+      }
+    })
+  }
+
+  findRankedUser(userId: number) {
+    return this.prismaService.user.findUnique({
+      where: { id: userId, deletedAt: null },
+      select: { id: true, name: true, avatar: true, eloscore: true }
+    })
+  }
+
+  // Users ahead of this one (higher elo, or same elo and lower id)
+  countUsersRankedAbove(
+    myUser: { id: number; eloscore: number },
+    eloFilter: { gte?: number; lte?: number } | undefined
+  ) {
+    return this.prismaService.user.count({
+      where: {
+        deletedAt: null,
+        ...(eloFilter ? { eloscore: eloFilter } : {}),
+        OR: [
+          { eloscore: { gt: myUser.eloscore } },
+          {
+            eloscore: myUser.eloscore,
+            id: { lt: myUser.id }
+          }
+        ]
+      }
+    })
+  }
+
+  countSeasonHistories(whereTop: Prisma.UserSeasonHistoryWhereInput) {
+    return this.prismaService.userSeasonHistory.count({ where: whereTop })
+  }
+
+  pageSeasonHistories(
+    whereTop: Prisma.UserSeasonHistoryWhereInput,
+    skip: number,
+    take: number
+  ) {
+    return this.prismaService.userSeasonHistory.findMany({
+      where: whereTop,
+      orderBy: [{ finalElo: 'desc' }, { userId: 'asc' }],
+      skip,
+      take,
+      include: {
+        user: { select: { id: true, name: true, avatar: true } }
+      }
+    })
+  }
+
+  findSeasonHistory(seasonId: number, userId: number) {
+    return this.prismaService.userSeasonHistory.findFirst({
+      where: { seasonId, userId, deletedAt: null },
+      include: { user: { select: { id: true, name: true, avatar: true } } }
+    })
+  }
+
+  // Histories ahead of this one (higher final elo, or same and lower user id)
+  countHistoriesRankedAbove(
+    seasonId: number,
+    myHist: { finalElo: number; userId: number },
+    eloFilter: { gte?: number; lte?: number } | undefined
+  ) {
+    return this.prismaService.userSeasonHistory.count({
+      where: {
+        seasonId,
+        deletedAt: null,
+        ...(eloFilter ? { finalElo: eloFilter } : {}),
+        OR: [
+          { finalElo: { gt: myHist.finalElo } },
+          {
+            finalElo: myHist.finalElo,
+            userId: { lt: myHist.userId }
+          }
+        ]
       }
     })
   }
