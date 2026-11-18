@@ -79,11 +79,11 @@ src/modules/<feature>/
   <feature>.repo.ts                 # class XRepo
   dto/<feature>.zod-dto.ts          # class XDTO extends createZodDto
   dto/<feature>.error.ts
-  entities/<feature>.entity.ts      # Zod schema và inferred types theo nền hiện tại
+  entities/<feature>.entity.ts      # hình dạng dữ liệu (schema HTTP ở dto/, giai đoạn 7)
   ...                              # tách use case/mapper khi có trách nhiệm thực
 ```
 
-- Giữ hậu tố `DTO` in hoa, `.repo.ts`, thư mục `dto/` và `entities/`. Chuẩn đích chọn singular `.entity.ts`; rename `.entities.ts` theo từng module trong commit mechanical, không đổi mọi file ngay đầu. Bố cục schema/DTO đích (schema HTTP ở `dto/`) xem [schema-dto-layout-plan.md](docs/standardization/schema-dto-layout-plan.md), áp dụng ở giai đoạn 7.
+- Giữ hậu tố `DTO` in hoa, `.repo.ts`, thư mục `dto/` và `entities/`. Chuẩn đích chọn singular `.entity.ts`; rename `.entities.ts` theo từng module trong commit mechanical, không đổi mọi file ngay đầu. Bố cục schema/DTO (schema HTTP ở `dto/`, tên `XSchema`/`X`/`XDTO`, envelope bằng `resSchema`) theo [schema-dto-layout-plan.md](docs/standardization/schema-dto-layout-plan.md), đã áp dụng toàn src ở giai đoạn 7; chi tiết ở mục 2 của [backend-convention.md](docs/standardization/backend-convention.md).
 - Không bắt cả repo chuyển sang `.repository.ts`, `schemas/`, `<operation>.dto.ts` hoặc `Dto`.
 - Với schema/DTO quá lớn, được tách file theo use case trong cùng thư mục; không tách một lớp một file chỉ để đủ cấu trúc.
 - Hợp nhất DTO Zod/Swagger trùng ý nghĩa. DTO metadata cho file/multipart có thể giữ riêng và phải có lý do; không ép tất cả response thành JSON.
@@ -666,21 +666,24 @@ Baseline `dev` @ `5ec0e64`: 5 dịch vụ ngoài (PayOS, mail, Gemini, Google Sp
 
 Baseline `dev` @ `84bba0d`: response schema nằm trong `entities/` ở 72 file (chỉ 8 file ở `dto/`), envelope viết tay ở 77 file, 8 file đặt tên schema là `XType`. Làm sau phase 3, trước giai đoạn 5; mỗi batch đối chiếu module mẫu level và các mẫu tham khảo trong plan.
 
-- [~] S0 — Module mẫu level làm tay, **chờ review** trước khi viết codemod.
+- [x] S0 — Module mẫu level làm tay; mẫu được chốt ngày 2026-11-18 theo cả 3 điểm bên dưới.
   - Gate mới: `test/docs/openapi-snapshot.e2e-spec.ts` chụp toàn bộ OpenAPI (409 path, 352 schema) vào `openapi.snapshot.json` và so dạng text, nên thứ tự field cũng tính. Đổi API thật thì chạy với `UPDATE_OPENAPI=1`.
   - Thêm `resSchema()` ở `shared/utils/res-schema.ts`.
   - `entities/level.entity.ts` chỉ còn `LevelSchema`, `LevelWithRelationsSchema` (trước viết inline trong detail res), type `Level`, `LEVEL_FIELDS`.
   - `dto/level.zod-dto.ts` chứa params/body/res schema, type không hậu tố (`CreateLevelBody`, `GetLevelParams`) và class DTO; res dùng `resSchema`.
   - Service/repo import type body từ `dto/`; `user-core.repo` dùng `Level`. Bỏ `GetLevelDetailResType` (không ai dùng).
   - Unit 167/167, e2e 216/216, snapshot và OpenAPI không đổi.
-  - Cần chốt khi review:
+  - Đã chốt khi review:
     - (1) List giữ `PaginationResponseSchema` chung. Dùng `paginatedResSchema(LevelWithRelationsSchema)` sẽ lọc mất `nextLevel.nextLevelId/rewardId` khỏi list, tức là đổi contract.
     - (2) S-R3 bỏ hậu tố `Type` ở type suy ra, nên S2/S3 sẽ đổi tên khoảng 590 `export type XType = z.infer` cùng mọi nơi import. Con số này lớn hơn nhiều so với "8 file" trong bảng batch.
     - (3) `resSchema` xếp field theo thứ tự `statusCode, message, data` (level trước đây là `statusCode, data, message`). Thứ tự key JSON của response create/update/detail đổi, nội dung giữ nguyên.
-- [ ] S1 — `resSchema()` thay envelope viết tay
-- [ ] S2 — Đổi tên `XType` → `XSchema`/`X`
-- [ ] S3 — Dời schema HTTP từ `entities/` sang `dto/` (codemod theo mẫu S0)
-- [ ] S4 — Cập nhật convention, thêm chỉ số chặn tái phát vào `arch:deps`
+- [x] S1 — `resSchema()` thay envelope viết tay. Codemod `scripts/codemods/s1-res-schema.mjs` (TypeScript AST) chỉ thay chỗ khớp đúng `{ statusCode: z.number(), message: z.string(), data }` (thứ tự key bất kỳ): 206 envelope trong 80 file; `data: { results: z.array(X), pagination }` (cả pagination viết tay) → `paginatedResSchema(X)`. Giữ nguyên 2 chỗ có `statusCode` optional/default (`GetMatchRoundDetailForUserResponseSchema`, `PaginationResponseSchema`). OpenAPI không đổi (schema response không vào tài liệu).
+- [x] S2 — Đổi tên `XType` → `XSchema`/`X`. `scripts/codemods/rename-schema-symbols.mjs --mode s2` (language service, phân biệt chỗ dùng giá trị và type): 50 hằng trong 8 file, 30 file sửa.
+- [x] S3 — chia 2 commit:
+  - S3a: `--mode s3a`: 588 type `z.infer` bỏ hậu tố (`CreateLessonBodyType` → `CreateLessonBody`, `XSchemaType` → `X`), 258 file. Type đặt theo schema giữ tên (`WordType` của `WordTypeSchema`). 9 repo import type dòng Prisma trùng tên → alias `PrismaX` (`--mode alias-prisma`).
+  - S3b: `scripts/codemods/s3b-move-http-schemas.mjs` dùng refactor "Move to file" của TypeScript nên mọi import đi theo. Schema HTTP của 78 entity sang `dto/<feature>.zod-dto.ts` (24 file dto mới), kèm type, helper chỉ chúng dùng và thứ dựng trên chúng. Mỗi dto xếp schema, type, DTO; giá trị khai báo trước khi dùng. `dashboard.entity.ts` chỉ có schema HTTP nên đã xóa. `DailyRequest`/`UserDailyRequest` là tên nghiệp vụ nên ở lại `entities/`. Lỗi refactor của TypeScript với `import { date } from 'zod'` → `z.date()` (cùng hàm).
+  - Mỗi batch: typecheck 0, unit 167/167, e2e 216/216, 132 snapshot và OpenAPI không đổi, lint 31 lỗi cũ không tăng.
+- [x] S4 — `backend-convention.md` mục 1–2 và mục 3 plan chính theo bố cục mới. `arch:deps` thêm `httpSchemasInEntities` (0) và `handWrittenEnvelopes` (2 ngoại lệ trên), baseline đã khóa. Giai đoạn 7 xong; `@ZodResponse` (D-SD1) vẫn để cùng giai đoạn 5.
 
 ### Baseline (2026-11-02, trước mọi thay đổi)
 

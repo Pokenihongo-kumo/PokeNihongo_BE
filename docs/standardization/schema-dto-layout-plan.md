@@ -1,6 +1,6 @@
 # Plan bố cục schema và DTO
 
-Trạng thái: **design-approved** (hướng tổ chức và đặt tên chốt 2026-11-17; `@ZodResponse` là quyết định riêng ở mục 6). Viết từ code `dev` @ `84bba0d`, chỉ đọc code. Thuộc giai đoạn 7 của [BACKEND_STANDARDIZATION_PLAN.md](../../BACKEND_STANDARDIZATION_PLAN.md), thay cho dòng "giữ `entities/` cho mọi schema" trong mục 3 của plan chính và mục 1–2 của [backend-convention.md](backend-convention.md) sau khi hoàn tất. Không đổi route, response contract hay OpenAPI.
+Trạng thái: **done** (S0–S4 trên `dev` 2026-11-18; tiến độ ở tracker giai đoạn 7). Trước đó: **design-approved** (hướng tổ chức và đặt tên chốt 2026-11-17; `@ZodResponse` là quyết định riêng ở mục 6). Viết từ code `dev` @ `84bba0d`, chỉ đọc code. Thuộc giai đoạn 7 của [BACKEND_STANDARDIZATION_PLAN.md](../../BACKEND_STANDARDIZATION_PLAN.md), thay cho dòng "giữ `entities/` cho mọi schema" trong mục 3 của plan chính và mục 1–2 của [backend-convention.md](backend-convention.md) sau khi hoàn tất. Không đổi route, response contract hay OpenAPI.
 
 ## 1. Vấn đề
 

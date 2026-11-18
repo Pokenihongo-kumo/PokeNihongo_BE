@@ -12,6 +12,9 @@
 //   sharedModuleBusinessProviders  non-infrastructure services/gateways it exports
 //   prismaOutsideRepoFiles   files other than repos calling Prisma directly (R5)
 //   prismaOutsideRepoCalls   those calls (regex matches; relative measure only)
+//   httpSchemasInEntities    request/response schemas exported from entities/
+//                            (schema-dto-layout plan S-R2: they belong in dto/)
+//   handWrittenEnvelopes     `statusCode: z.` outside resSchema/paginatedResSchema (S-R4)
 //
 // Owner of a file: src/modules/<name>/... -> modules/<name>; any other file ->
 // its top folder under src (shared, cronjobs, websockets, 3rdService, ...).
@@ -43,6 +46,15 @@ const SHARED_INFRA = new Set([
 
 const PRISMA_CALL =
   /\b(?:this\.)?(?:prisma|prismaService|prismaTx|tx)\s*\.\s*(?:\$(?:transaction|queryRaw\w*|executeRaw\w*)|[a-z]\w*\s*\.\s*(?:findMany|findFirst|findFirstOrThrow|findUnique|findUniqueOrThrow|create|createMany|update|updateMany|upsert|delete|deleteMany|count|aggregate|groupBy)\b)/g
+
+// S-R2: names of HTTP schemas (as in scripts/codemods/s3b-move-http-schemas.mjs)
+const HTTP_SCHEMA = [
+  /(Body|Query|Params?|Res|Response|Request)(Schema)?$/,
+  /^(Create|Update|Upsert)\w*Schema$/,
+  /^Get(Params|Query)\w*Schema$/
+]
+const DOMAIN_NAME = /^(User)?DailyRequest(Schema)?$/
+const ENVELOPE_HELPERS = new Set(['shared/utils/res-schema.ts', 'shared/utils/pagination.ts'])
 
 const toPosix = (p) => p.split(sep).join('/')
 
@@ -141,7 +153,9 @@ export function measure() {
     injectForwardRefFiles: [],
     sharedModuleBusinessRepos: [],
     sharedModuleBusinessProviders: [],
-    prismaOutsideRepoFiles: []
+    prismaOutsideRepoFiles: [],
+    httpSchemasInEntities: [],
+    handWrittenEnvelopes: []
   }
   let prismaOutsideRepoCalls = 0
 
@@ -180,6 +194,17 @@ export function measure() {
         if (/(Repo|Repository)$/.test(name)) details.sharedModuleBusinessRepos.push(name)
         else details.sharedModuleBusinessProviders.push(name)
       }
+    }
+
+    if (/^modules\/[^/]+\/entities\//.test(rel)) {
+      for (const [, name] of text.matchAll(/^export const (\w+)/gm)) {
+        if (!DOMAIN_NAME.test(name) && HTTP_SCHEMA.some((r) => r.test(name)))
+          details.httpSchemasInEntities.push(`${rel} ${name}`)
+      }
+    }
+    if (!ENVELOPE_HELPERS.has(rel)) {
+      const n = text.match(/\bstatusCode\s*:\s*z\./g)?.length ?? 0
+      for (let i = 0; i < n; i++) details.handWrittenEnvelopes.push(rel)
     }
 
     const isRepoFile = isRepoPath(rel)
