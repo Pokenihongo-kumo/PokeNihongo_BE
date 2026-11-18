@@ -40,7 +40,6 @@ import { PokemonModule } from './modules/pokemon/pokemon.module'
 
 import { HandleGachaBannerCronjob } from './cronjobs/handle-gacha-banner.cronjob'
 import { HandleLeaderboardSeasonCronjob } from './cronjobs/handle-leaderboard-season.cronjob'
-import { HandleMatchmakingCronjob } from './cronjobs/handle-matchmaking.cronjob'
 import { HandleShopBannerCronjob } from './cronjobs/handle-shop-banner.cronjob'
 import { AIConversationRoomModule } from './modules/ai-conversation-room/ai-conversation-room.module'
 import { DashboardModule } from './modules/dashboard/dashboard.module'
@@ -212,7 +211,6 @@ import { WebsocketsModule } from './websockets/websockets.module'
     HandleShopBannerCronjob,
     HandleGachaBannerCronjob,
     HandleLeaderboardSeasonCronjob,
-    HandleMatchmakingCronjob, // Cronjob chạy mỗi 5s để xử lý matchmaking
     {
       provide: APP_PIPE,
       useClass: CustomZodValidationPipe

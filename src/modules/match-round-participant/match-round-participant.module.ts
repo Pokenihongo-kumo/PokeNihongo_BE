@@ -1,7 +1,7 @@
 import { PokemonModule } from '@/modules/pokemon/pokemon.module'
 import { BullQueueModule } from '@/3rdService/bull/bull-queue.module'
 import { BullQueue } from '@/common/constants/bull-action.constant'
-import { MatchRoundParticipantTimeoutProcessor } from '@/shared/workers/match-round-participant-timeout.processor'
+import { MatchRoundParticipantTimeoutProcessor } from '@/modules/match-round-participant/match-round-participant-timeout.processor'
 import { WebsocketsModule } from '@/websockets/websockets.module'
 import { Module } from '@nestjs/common'
 import { MatchRoundModule } from '../match-round/match-round.module'

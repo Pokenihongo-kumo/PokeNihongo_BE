@@ -70,11 +70,11 @@
     ],
     "injectForwardRefFiles": [
       "modules/gacha-item/gacha-item.service.ts",
+      "modules/match-round-participant/match-round-participant-timeout.processor.ts",
       "modules/round-question/round-question.service.ts",
       "modules/shop-item/shop-item.service.ts",
       "modules/shop-purchase/shop-purchase.service.ts",
-      "modules/shop-rarity-price/shop-rarity-price.service.ts",
-      "shared/workers/match-round-participant-timeout.processor.ts"
+      "modules/shop-rarity-price/shop-rarity-price.service.ts"
     ],
     "sharedModuleBusinessRepos": [
       "SharedNotificationRepo"
@@ -87,15 +87,15 @@
     "prismaOutsideRepoFiles": [
       "common/guards/access-token.guard.ts",
       "cronjobs/handle-leaderboard-season.cronjob.ts",
+      "modules/match-participant/match-participant-timeout.processor.ts",
       "modules/match-participant/match-participant.service.ts",
       "modules/match-queue/match-queue.service.ts",
+      "modules/match-round-participant/match-round-participant-timeout.processor.ts",
       "modules/match-round-participant/match-round-participant.service.ts",
       "modules/match-round/match-round.service.ts",
       "modules/match/match.service.ts",
+      "modules/round-question/round-question-timeout.processor.ts",
       "modules/round-question/round-question.service.ts",
-      "shared/workers/match-participant-timeout.processor.ts",
-      "shared/workers/match-round-participant-timeout.processor.ts",
-      "shared/workers/round-question-timeout.processor.ts",
       "websockets/user.gateway.ts"
     ]
   }

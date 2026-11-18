@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Cron } from '@nestjs/schedule'
-import { MatchQueueService } from 'src/modules/match-queue/match-queue.service'
+import { MatchQueueService } from './match-queue.service'
 
 @Injectable()
 export class HandleMatchmakingCronjob {

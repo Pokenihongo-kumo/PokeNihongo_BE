@@ -21,7 +21,7 @@ import {
 } from '@nestjs/bull'
 import { forwardRef, Inject, Logger, OnModuleInit } from '@nestjs/common'
 import { Job, Queue } from 'bull'
-import { RoundQuestionTimeoutProcessor } from './round-question-timeout.processor'
+import { RoundQuestionTimeoutProcessor } from '@/modules/round-question/round-question-timeout.processor'
 
 const TIME_CHOOSE_POKEMON_MS = 5000
 const TIME_LIMIT_ANSWER_QUESTION_MS = 5000

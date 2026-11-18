@@ -1,6 +1,6 @@
 import { BullQueueModule } from '@/3rdService/bull/bull-queue.module'
 import { BullQueue } from '@/common/constants/bull-action.constant'
-import { MatchParticipantTimeoutProcessor } from '@/shared/workers/match-participant-timeout.processor'
+import { MatchParticipantTimeoutProcessor } from '@/modules/match-participant/match-participant-timeout.processor'
 import { WebsocketsModule } from '@/websockets/websockets.module'
 import { forwardRef, Module } from '@nestjs/common'
 import { MatchRoundParticipantModule } from '../match-round-participant/match-round-participant.module'
