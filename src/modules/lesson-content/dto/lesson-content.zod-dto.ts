@@ -1,27 +1,27 @@
 import { createZodDto } from 'nestjs-zod'
 import {
-  CreateLessonContentBodyType,
-  UpdateLessonContentBodyType,
-  GetLessonContentByIdParamsType,
-  GetLessonContentListQueryType,
+  CreateLessonContentBodySchema,
+  GetLessonContentByIdParamsSchema,
+  GetLessonContentListQuerySchema,
+  LessonContentFullResSchema,
   LessonContentListResSchema,
-  UpdateLessonContentOrder,
-  LessonContentFullResSchema
+  UpdateLessonContentBodySchema,
+  UpdateLessonContentOrder
 } from '../entities/lesson-content.entities'
 
 // Lesson Content DTOs
 export class CreateLessonContentBodyDTO extends createZodDto(
-  CreateLessonContentBodyType
+  CreateLessonContentBodySchema
 ) {}
 export class UpdateLessonContentBodyDTO extends createZodDto(
-  UpdateLessonContentBodyType
+  UpdateLessonContentBodySchema
 ) {}
 export class updateLessonContentOrder extends createZodDto(UpdateLessonContentOrder) {}
 export class GetLessonContentByIdParamsDTO extends createZodDto(
-  GetLessonContentByIdParamsType
+  GetLessonContentByIdParamsSchema
 ) {}
 export class GetLessonContentListQueryDTO extends createZodDto(
-  GetLessonContentListQueryType
+  GetLessonContentListQuerySchema
 ) {}
 export class LessonContentListResDTO extends createZodDto(LessonContentListResSchema) {}
 export class LessonContentFullResDTO extends createZodDto(LessonContentFullResSchema) {}

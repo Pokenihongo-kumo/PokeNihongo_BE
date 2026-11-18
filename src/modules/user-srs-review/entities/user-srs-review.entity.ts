@@ -1,13 +1,13 @@
-import { z } from 'zod'
-import { SrsReviewMessage as M } from '@/i18n/message-keys'
 import { checkIdSchema } from '@/common/utils/id.validation'
+import { SrsReviewMessage as M } from '@/i18n/message-keys'
+import { z } from 'zod'
 
 export const SrsContentTypeEnum = z.enum(
   ['VOCABULARY', 'GRAMMAR', 'KANJI', 'TEST', 'EXERCISE'],
   { errorMap: () => ({ message: M.INVALID_CONTENT_TYPE }) }
 )
 
-export const UserSrsReviewType = z.object({
+export const UserSrsReviewSchema = z.object({
   id: z.number().int(),
   userId: z.number().int(),
   contentType: SrsContentTypeEnum,
@@ -22,10 +22,10 @@ export const UserSrsReviewType = z.object({
 })
 
 export type SrsContentType = z.infer<typeof SrsContentTypeEnum>
-export type UserSrsReview = z.infer<typeof UserSrsReviewType>
+export type UserSrsReview = z.infer<typeof UserSrsReviewSchema>
 
 // Request/Query types
-export const UpsertSrsReviewBodyType = z.object({
+export const UpsertSrsReviewBodySchema = z.object({
   contentType: SrsContentTypeEnum,
   contentId: z
     .number({
@@ -36,15 +36,15 @@ export const UpsertSrsReviewBodyType = z.object({
     .positive(M.INVALID_CONTENT_ID),
   message: z.string().optional()
 })
-export type UpsertSrsReviewBody = z.infer<typeof UpsertSrsReviewBodyType>
+export type UpsertSrsReviewBody = z.infer<typeof UpsertSrsReviewBodySchema>
 
-export const ReviewActionBodyType = z.object({
+export const ReviewActionBodySchema = z.object({
   result: z.enum(['correct', 'incorrect']),
   message: z.string().optional()
 })
-export type ReviewActionBody = z.infer<typeof ReviewActionBodyType>
+export type ReviewActionBody = z.infer<typeof ReviewActionBodySchema>
 
-export const ListSrsQueryType = z.object({
+export const ListSrsQuerySchema = z.object({
   type: SrsContentTypeEnum.optional(),
   // A query value is a string: z.boolean() refused "true" and "false"
   dueOnly: z
@@ -52,14 +52,14 @@ export const ListSrsQueryType = z.object({
     .transform((v) => v === 'true')
     .optional()
 })
-export type ListSrsQuery = z.infer<typeof ListSrsQueryType>
+export type ListSrsQuery = z.infer<typeof ListSrsQuerySchema>
 
-export const ListSrsTodayQueryType = z.object({
+export const ListSrsTodayQuerySchema = z.object({
   currentPage: checkIdSchema(M.INVALID_PAGE).optional(),
   pageSize: checkIdSchema(M.INVALID_PAGE_SIZE).max(200, M.INVALID_PAGE_SIZE).optional()
 })
-export type ListSrsTodayQuery = z.infer<typeof ListSrsTodayQueryType>
+export type ListSrsTodayQuery = z.infer<typeof ListSrsTodayQuerySchema>
 
-export const SrsReviewIdParamsType = z.object({
+export const SrsReviewIdParamsSchema = z.object({
   id: checkIdSchema(M.INVALID_ID)
 })

@@ -1,11 +1,13 @@
-import { HttpException, Injectable, Logger } from '@nestjs/common'
-import { ExercisesRepo } from './exercises.repo'
+import { I18nService } from '@/i18n/i18n.service'
+import { ExercisesMessage as M } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { TranslationService } from '@/modules/translation/translation.service'
+import { toPaginationMeta } from '@/shared/utils/pagination'
 import {
-  CreateExercisesBodyType,
-  UpdateExercisesBodyType,
-  GetExercisesListQueryType,
-  ExercisesType
-} from './entities/exercises.entity'
+  isNotFoundPrismaError,
+  isUniqueConstraintPrismaError
+} from '@/shared/utils/prisma-errors'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
 import {
   ExerciseRuleViolationException,
   ExerciseTypePerLessonExistsException,
@@ -16,15 +18,13 @@ import {
   TestSetAlreadyHasExerciseException,
   TestSetNotFoundException
 } from './dto/exercises.error'
-import { LanguagesService } from '@/modules/languages/languages.service'
-import { TranslationService } from '@/modules/translation/translation.service'
-import { I18nService } from '@/i18n/i18n.service'
-import { ExercisesMessage as M } from '@/i18n/message-keys'
-import { toPaginationMeta } from '@/shared/utils/pagination'
 import {
-  isNotFoundPrismaError,
-  isUniqueConstraintPrismaError
-} from '@/shared/utils/prisma-errors'
+  CreateExercisesBodyType,
+  ExercisesType,
+  GetExercisesListQueryType,
+  UpdateExercisesBodyType
+} from './entities/exercises.entity'
+import { ExercisesRepo } from './exercises.repo'
 
 // A lesson has at most one exercise of each type: VOCABULARY, GRAMMAR, KANJI
 const MAX_EXERCISES_PER_LESSON = 3

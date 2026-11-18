@@ -3,7 +3,7 @@ import { LessonCategoryMessage } from '@/i18n/message-keys'
 import { z } from 'zod'
 
 // Lesson Category Entity Types
-export const LessonCategoryType = z.object({
+export const LessonCategorySchema = z.object({
   id: z.number(),
   nameKey: z.string(),
   slug: z.string(),
@@ -12,7 +12,7 @@ export const LessonCategoryType = z.object({
 })
 
 // What reads return: the name translated for the request language
-export const LessonCategoryWithRelationsType = z.object({
+export const LessonCategoryWithRelationsSchema = z.object({
   id: z.number(),
   slug: z.string(),
   name: z.string(), // Translated name
@@ -21,7 +21,7 @@ export const LessonCategoryWithRelationsType = z.object({
 })
 
 // Request/Response Types
-export const CreateLessonCategoryBodyType = z.object({
+export const CreateLessonCategoryBodySchema = z.object({
   nameKey: z
     .string()
     .min(1, LessonCategoryMessage.NAME_KEY_REQUIRED)
@@ -33,7 +33,7 @@ export const CreateLessonCategoryBodyType = z.object({
     .optional()
 })
 
-export const UpdateLessonCategoryBodyType = z.object({
+export const UpdateLessonCategoryBodySchema = z.object({
   nameKey: z
     .string()
     .min(1, LessonCategoryMessage.NAME_KEY_REQUIRED)
@@ -46,26 +46,26 @@ export const UpdateLessonCategoryBodyType = z.object({
     .optional()
 })
 
-export const GetLessonCategoryByIdParamsType = z.object({
+export const GetLessonCategoryByIdParamsSchema = z.object({
   id: checkIdSchema(LessonCategoryMessage.INVALID_ID)
 })
 
-export const GetLessonCategoryListQueryType = z.object({
+export const GetLessonCategoryListQuerySchema = z.object({
   page: z.string().transform(Number).default('1'),
   limit: z.string().transform(Number).default('10'),
   search: z.string().optional()
 })
 
 // Type exports
-export type LessonCategoryType = z.infer<typeof LessonCategoryType>
+export type LessonCategoryType = z.infer<typeof LessonCategorySchema>
 export type LessonCategoryWithRelationsType = z.infer<
-  typeof LessonCategoryWithRelationsType
+  typeof LessonCategoryWithRelationsSchema
 >
-export type CreateLessonCategoryBodyType = z.infer<typeof CreateLessonCategoryBodyType>
-export type UpdateLessonCategoryBodyType = z.infer<typeof UpdateLessonCategoryBodyType>
+export type CreateLessonCategoryBodyType = z.infer<typeof CreateLessonCategoryBodySchema>
+export type UpdateLessonCategoryBodyType = z.infer<typeof UpdateLessonCategoryBodySchema>
 export type GetLessonCategoryByIdParamsType = z.infer<
-  typeof GetLessonCategoryByIdParamsType
+  typeof GetLessonCategoryByIdParamsSchema
 >
 export type GetLessonCategoryListQueryType = z.infer<
-  typeof GetLessonCategoryListQueryType
+  typeof GetLessonCategoryListQuerySchema
 >

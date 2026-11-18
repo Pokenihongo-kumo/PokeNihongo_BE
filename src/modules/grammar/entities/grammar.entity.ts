@@ -10,7 +10,7 @@ extendZodWithOpenApi(z)
 patchNestJsSwagger()
 
 // Grammar Entity Types
-export const GrammarType = z.object({
+export const GrammarSchema = z.object({
   id: z.number(),
   structure: z.string(),
   level: z.string(),
@@ -19,7 +19,7 @@ export const GrammarType = z.object({
 })
 
 // Request/Response Types
-export const CreateGrammarBodyType = z.object({
+export const CreateGrammarBodySchema = z.object({
   structure: z
     .string()
     .min(1, GrammarMessage.STRUCTURE_REQUIRED)
@@ -60,7 +60,7 @@ export const CreateGrammarBodyType = z.object({
     .optional()
 })
 
-export const UpdateGrammarBodyType = z.object({
+export const UpdateGrammarBodySchema = z.object({
   structure: z
     .string()
     .min(1, GrammarMessage.STRUCTURE_REQUIRED)
@@ -73,7 +73,7 @@ export const UpdateGrammarBodyType = z.object({
     .optional()
 })
 
-export const CreateGrammarBasicBodyType = z.object({
+export const CreateGrammarBasicBodySchema = z.object({
   structure: z
     .string()
     .min(1, GrammarMessage.STRUCTURE_REQUIRED)
@@ -84,11 +84,11 @@ export const CreateGrammarBasicBodyType = z.object({
     .max(10, GrammarMessage.LEVEL_TOO_LONG)
 })
 
-export const GetGrammarByIdParamsType = z.object({
+export const GetGrammarByIdParamsSchema = z.object({
   id: checkIdSchema(GrammarMessage.INVALID_ID)
 })
 
-export const GetGrammarListQueryType = z.object({
+export const GetGrammarListQuerySchema = z.object({
   currentPage: z.string().transform(Number).default('1'),
   pageSize: z.string().transform(Number).default('10'),
   level: z.string().optional(),
@@ -99,13 +99,13 @@ export const GetGrammarListQueryType = z.object({
 })
 
 // Response schemas
-export const GrammarListResSchema = paginatedResSchema(GrammarType).strict()
+export const GrammarListResSchema = paginatedResSchema(GrammarSchema).strict()
 
 // Type exports
-export type GrammarType = z.infer<typeof GrammarType>
-export type CreateGrammarBodyType = z.infer<typeof CreateGrammarBodyType>
-export type UpdateGrammarBodyType = z.infer<typeof UpdateGrammarBodyType>
-export type CreateGrammarBasicBodyType = z.infer<typeof CreateGrammarBasicBodyType>
-export type GetGrammarByIdParamsType = z.infer<typeof GetGrammarByIdParamsType>
-export type GetGrammarListQueryType = z.infer<typeof GetGrammarListQueryType>
+export type GrammarType = z.infer<typeof GrammarSchema>
+export type CreateGrammarBodyType = z.infer<typeof CreateGrammarBodySchema>
+export type UpdateGrammarBodyType = z.infer<typeof UpdateGrammarBodySchema>
+export type CreateGrammarBasicBodyType = z.infer<typeof CreateGrammarBasicBodySchema>
+export type GetGrammarByIdParamsType = z.infer<typeof GetGrammarByIdParamsSchema>
+export type GetGrammarListQueryType = z.infer<typeof GetGrammarListQuerySchema>
 export type GrammarListResType = z.infer<typeof GrammarListResSchema>

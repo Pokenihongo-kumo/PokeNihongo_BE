@@ -5,7 +5,7 @@ import { LessonContentsType as PrismaLessonContentType } from '@prisma/client'
 import { z } from 'zod'
 
 // Lesson Content Entity Types
-export const LessonContentType = z.object({
+export const LessonContentSchema = z.object({
   id: z.number(),
   lessonId: z.number(),
   contentId: z.number(),
@@ -15,7 +15,7 @@ export const LessonContentType = z.object({
   updatedAt: z.date()
 })
 
-export const LessonContentWithRelationsType = LessonContentType.extend({
+export const LessonContentWithRelationsSchema = LessonContentSchema.extend({
   lesson: z
     .object({
       id: z.number(),
@@ -26,19 +26,19 @@ export const LessonContentWithRelationsType = LessonContentType.extend({
 })
 
 // Request/Response Types
-export const CreateLessonContentBodyType = z.object({
+export const CreateLessonContentBodySchema = z.object({
   lessonId: z.number(),
   contentId: z.number(),
   contentType: z.nativeEnum(PrismaLessonContentType)
 })
 
-export const CreateMutiLessonContentBodyType = z.object({
+export const CreateMutiLessonContentBodySchema = z.object({
   lessonId: z.number(),
   contentId: z.number().array(),
   contentType: z.nativeEnum(PrismaLessonContentType)
 })
 
-export const UpdateLessonContentBodyType = z.object({
+export const UpdateLessonContentBodySchema = z.object({
   contentType: z.string().min(1).max(50).optional(),
   contentOrder: z.number().min(0).optional()
 })
@@ -48,11 +48,11 @@ export const UpdateLessonContentOrder = z.object({
   lessonContentId: z.number().array()
 })
 
-export const GetLessonContentByIdParamsType = z.object({
+export const GetLessonContentByIdParamsSchema = z.object({
   id: z.string().transform(Number)
 })
 
-export const GetLessonContentListQueryType = z.object({
+export const GetLessonContentListQuerySchema = z.object({
   page: z.string().transform(Number).default('1'),
   limit: z.string().transform(Number).default('10'),
   lessonId: z.string().transform(Number).optional(),
@@ -65,7 +65,7 @@ export const GetLessonContentListQueryType = z.object({
 })
 
 // Response schemas
-export const LessonContentListResSchema = paginatedResSchema(LessonContentType).strict()
+export const LessonContentListResSchema = paginatedResSchema(LessonContentSchema).strict()
 
 // Schema for grouped lesson content with translations
 export const VocabularyContentSchema = z.object({
@@ -191,20 +191,22 @@ export const GroupedLessonContentSchema = z.object({
 export const LessonContentFullResSchema = resSchema(GroupedLessonContentSchema).strict()
 
 // Type exports
-export type LessonContentType = z.infer<typeof LessonContentType>
+export type LessonContentType = z.infer<typeof LessonContentSchema>
 export type LessonContentWithRelationsType = z.infer<
-  typeof LessonContentWithRelationsType
+  typeof LessonContentWithRelationsSchema
 >
-export type CreateLessonContentBodyType = z.infer<typeof CreateLessonContentBodyType>
+export type CreateLessonContentBodyType = z.infer<typeof CreateLessonContentBodySchema>
 export type CreateMutiLessonContentBodyType = z.infer<
-  typeof CreateMutiLessonContentBodyType
+  typeof CreateMutiLessonContentBodySchema
 >
-export type UpdateLessonContentBodyType = z.infer<typeof UpdateLessonContentBodyType>
+export type UpdateLessonContentBodyType = z.infer<typeof UpdateLessonContentBodySchema>
 export type UpdateLessonContentOrder = z.infer<typeof UpdateLessonContentOrder>
 export type GetLessonContentByIdParamsType = z.infer<
-  typeof GetLessonContentByIdParamsType
+  typeof GetLessonContentByIdParamsSchema
 >
-export type GetLessonContentListQueryType = z.infer<typeof GetLessonContentListQueryType>
+export type GetLessonContentListQueryType = z.infer<
+  typeof GetLessonContentListQuerySchema
+>
 export type LessonContentListResType = z.infer<typeof LessonContentListResSchema>
 
 // New types for grouped content

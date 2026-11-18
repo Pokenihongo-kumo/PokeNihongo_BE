@@ -1,9 +1,9 @@
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { ExercisesMessage as M } from '@/i18n/message-keys'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
+import { LessonContentsType } from '@prisma/client'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
-import { LessonContentsType } from '@prisma/client'
-import { ExercisesMessage as M } from '@/i18n/message-keys'
-import { checkIdSchema } from '@/common/utils/id.validation'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
@@ -25,7 +25,7 @@ const RewardSummarySchema = z.object({
 })
 
 // Exercises Entity Types
-export const ExercisesType = z.object({
+export const ExercisesSchema = z.object({
   id: z.number(),
   exerciseType: z.nativeEnum(LessonContentsType),
   isBlocked: z.boolean(),
@@ -38,7 +38,7 @@ export const ExercisesType = z.object({
 })
 
 // The exercise type, lesson and test set rules are checked by the service
-export const CreateExercisesBodyType = z
+export const CreateExercisesBodySchema = z
   .object({
     exerciseType,
     isBlocked: z.boolean({ invalid_type_error: M.INVALID_IS_BLOCKED }).default(false),
@@ -48,7 +48,7 @@ export const CreateExercisesBodyType = z
   })
   .strict()
 
-export const UpdateExercisesBodyType = z
+export const UpdateExercisesBodySchema = z
   .object({
     exerciseType: exerciseType.optional(),
     isBlocked: z.boolean({ invalid_type_error: M.INVALID_IS_BLOCKED }).optional(),
@@ -58,15 +58,15 @@ export const UpdateExercisesBodyType = z
   })
   .strict()
 
-export const GetExercisesByIdParamsType = z.object({
+export const GetExercisesByIdParamsSchema = z.object({
   id: checkIdSchema(M.INVALID_ID)
 })
 
-export const GetExercisesByLessonParamsType = z.object({
+export const GetExercisesByLessonParamsSchema = z.object({
   lessonId: checkIdSchema(M.INVALID_LESSON_ID)
 })
 
-export const GetExercisesListQueryType = z.object({
+export const GetExercisesListQuerySchema = z.object({
   currentPage: checkIdSchema(M.INVALID_PAGE).default(1),
   pageSize: checkIdSchema(M.INVALID_PAGE_SIZE).default(10),
   exerciseType: exerciseType.optional(),
@@ -92,9 +92,9 @@ export const GetExercisesListQueryType = z.object({
 })
 
 // Type exports
-export type ExercisesType = z.infer<typeof ExercisesType>
+export type ExercisesType = z.infer<typeof ExercisesSchema>
 export type RewardSummaryType = z.infer<typeof RewardSummarySchema>
-export type CreateExercisesBodyType = z.infer<typeof CreateExercisesBodyType>
-export type UpdateExercisesBodyType = z.infer<typeof UpdateExercisesBodyType>
-export type GetExercisesByIdParamsType = z.infer<typeof GetExercisesByIdParamsType>
-export type GetExercisesListQueryType = z.infer<typeof GetExercisesListQueryType>
+export type CreateExercisesBodyType = z.infer<typeof CreateExercisesBodySchema>
+export type UpdateExercisesBodyType = z.infer<typeof UpdateExercisesBodySchema>
+export type GetExercisesByIdParamsType = z.infer<typeof GetExercisesByIdParamsSchema>
+export type GetExercisesListQueryType = z.infer<typeof GetExercisesListQuerySchema>

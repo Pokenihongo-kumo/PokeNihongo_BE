@@ -1,15 +1,15 @@
-import { extendZodWithOpenApi } from '@anatine/zod-openapi'
-import { patchNestJsSwagger } from 'nestjs-zod'
-import { z } from 'zod'
 import { GrammarUsageSortField, SortOrder } from '@/common/enum/enum'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { GrammarUsageMessage } from '@/i18n/message-keys'
+import { extendZodWithOpenApi } from '@anatine/zod-openapi'
+import { patchNestJsSwagger } from 'nestjs-zod'
+import { z } from 'zod'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
 
 // Grammar Usage Entity Types
-export const GrammarUsageType = z.object({
+export const GrammarUsageSchema = z.object({
   id: z.number(),
   grammarId: z.number(),
   explanationKey: z.string(),
@@ -19,7 +19,7 @@ export const GrammarUsageType = z.object({
   updatedAt: z.date()
 })
 
-export const GrammarUsageWithGrammarType = GrammarUsageType.extend({
+export const GrammarUsageWithGrammarSchema = GrammarUsageSchema.extend({
   grammar: z
     .object({
       id: z.number(),
@@ -30,24 +30,24 @@ export const GrammarUsageWithGrammarType = GrammarUsageType.extend({
 })
 
 // Request/Response Types
-export const CreateGrammarUsageBodyType = z.object({
+export const CreateGrammarUsageBodySchema = z.object({
   grammarId: z.number(),
   explanationKey: z.string().min(1).max(200),
   exampleSentenceJp: z.string().min(1).max(1000),
   exampleSentenceKey: z.string().min(1).max(200)
 })
 
-export const UpdateGrammarUsageBodyType = z.object({
+export const UpdateGrammarUsageBodySchema = z.object({
   explanationKey: z.string().min(1).max(200).optional(),
   exampleSentenceJp: z.string().min(1).max(1000).optional(),
   exampleSentenceKey: z.string().min(1).max(200).optional()
 })
 
-export const GetGrammarUsageByIdParamsType = z.object({
+export const GetGrammarUsageByIdParamsSchema = z.object({
   id: checkIdSchema(GrammarUsageMessage.INVALID_ID)
 })
 
-export const GetGrammarUsageListQueryType = z.object({
+export const GetGrammarUsageListQuerySchema = z.object({
   page: z.string().transform(Number).default('1'),
   limit: z.string().transform(Number).default('10'),
   grammarId: z.string().transform(Number).optional(),
@@ -59,9 +59,11 @@ export const GetGrammarUsageListQueryType = z.object({
 })
 
 // Type exports
-export type GrammarUsageType = z.infer<typeof GrammarUsageType>
-export type GrammarUsageWithGrammarType = z.infer<typeof GrammarUsageWithGrammarType>
-export type CreateGrammarUsageBodyType = z.infer<typeof CreateGrammarUsageBodyType>
-export type UpdateGrammarUsageBodyType = z.infer<typeof UpdateGrammarUsageBodyType>
-export type GetGrammarUsageByIdParamsType = z.infer<typeof GetGrammarUsageByIdParamsType>
-export type GetGrammarUsageListQueryType = z.infer<typeof GetGrammarUsageListQueryType>
+export type GrammarUsageType = z.infer<typeof GrammarUsageSchema>
+export type GrammarUsageWithGrammarType = z.infer<typeof GrammarUsageWithGrammarSchema>
+export type CreateGrammarUsageBodyType = z.infer<typeof CreateGrammarUsageBodySchema>
+export type UpdateGrammarUsageBodyType = z.infer<typeof UpdateGrammarUsageBodySchema>
+export type GetGrammarUsageByIdParamsType = z.infer<
+  typeof GetGrammarUsageByIdParamsSchema
+>
+export type GetGrammarUsageListQueryType = z.infer<typeof GetGrammarUsageListQuerySchema>

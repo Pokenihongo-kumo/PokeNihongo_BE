@@ -1,9 +1,12 @@
-import { HttpException, Injectable, Logger } from '@nestjs/common'
+import { I18nService } from '@/i18n/i18n.service'
+import { LessonMessage as M } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { toPaginationMeta } from '@/shared/utils/pagination'
 import {
-  CreateLessonBodyType,
-  UpdateLessonBodyType,
-  GetLessonListQueryType
-} from './entities/lesson.entity'
+  isNotFoundPrismaError,
+  isUniqueConstraintPrismaError
+} from '@/shared/utils/prisma-errors'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
 import {
   InvalidLessonDataException,
   LessonAlreadyExistsException,
@@ -12,15 +15,12 @@ import {
   LessonRewardNotFoundException,
   LessonTestNotFoundException
 } from './dto/lesson.error'
-import { LessonRepo } from './lesson.repo'
-import { LanguagesService } from '@/modules/languages/languages.service'
-import { I18nService } from '@/i18n/i18n.service'
-import { LessonMessage as M } from '@/i18n/message-keys'
-import { toPaginationMeta } from '@/shared/utils/pagination'
 import {
-  isNotFoundPrismaError,
-  isUniqueConstraintPrismaError
-} from '@/shared/utils/prisma-errors'
+  CreateLessonBodyType,
+  GetLessonListQueryType,
+  UpdateLessonBodyType
+} from './entities/lesson.entity'
+import { LessonRepo } from './lesson.repo'
 
 type Title = string | { language: string; value: string }[]
 
