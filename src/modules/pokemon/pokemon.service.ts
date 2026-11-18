@@ -10,7 +10,7 @@ import {
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
-import { UploadService } from 'src/3rdService/upload/upload.service'
+import { UploadService } from '@/modules/upload/upload.service'
 import {
   PokemonAlreadyExistsException,
   PokemonNotFoundException

@@ -1,5 +1,5 @@
 import { RoleModule } from '@/modules/role/role.module'
-import { BullQueueModule } from '@/3rdService/bull/bull-queue.module'
+import { BullQueueModule } from '@/infrastructure/queue/bull-queue.module'
 import { AccessTokenGuard } from '@/common/guards/access-token.guard'
 import { APIKeyGuard } from '@/common/guards/api-key.guard'
 import { AuthenticationGuard } from '@/common/guards/authentication.guard'

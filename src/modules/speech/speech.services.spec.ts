@@ -1,4 +1,4 @@
-import { UploadService } from '@/3rdService/upload/upload.service'
+import { UploadService } from '@/modules/upload/upload.service'
 import { SpeechToText } from '@/infrastructure/integrations/speech/speech-to-text.port'
 import { TextToSpeech } from '@/infrastructure/integrations/speech/text-to-speech.port'
 import { SpeechToTextService } from './speech-to-text.service'

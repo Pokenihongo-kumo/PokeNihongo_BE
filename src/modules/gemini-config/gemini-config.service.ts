@@ -1,4 +1,4 @@
-import { GEMINI_PRESETS, getPresetByKey } from '@/3rdService/gemini/config/gemini-presets'
+import { GEMINI_PRESETS, getPresetByKey } from '@/modules/gemini/config/gemini-presets'
 import { I18nService } from '@/i18n/i18n.service'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { PaginationQuery } from '@/shared/models/request.model'

@@ -4,8 +4,8 @@ import { TestSetController } from './testset.controller'
 import { TestSetService } from './testset.service'
 import { TestSetRepo } from './testset.repo'
 import { QuestionBankModule } from '../question-bank/question-bank.module'
-import { UploadModule } from '@/3rdService/upload/upload.module'
-import { SpeechModule } from '@/3rdService/speech/speech.module'
+import { UploadModule } from '@/modules/upload/upload.module'
+import { SpeechModule } from '@/modules/speech/speech.module'
 
 @Module({
   imports: [ConfigModule, SpeechModule, UploadModule, QuestionBankModule],

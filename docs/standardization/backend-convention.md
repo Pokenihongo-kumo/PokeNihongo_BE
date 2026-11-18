@@ -149,3 +149,5 @@ Kiểm tra: `npm run arch:deps` đo các chỉ số trong `scripts/arch/module-d
 ## 10. Dịch vụ ngoài (port và driver)
 
 Mọi dịch vụ trả phí nằm sau một port trong `src/infrastructure/integrations/` (mail, storage, speech, LLM, payment), mỗi port có adapter thật và adapter giả, chọn bằng biến `*_DRIVER` (bảng trong README). Service gọi port, không gọi SDK; SDK chỉ nằm trong adapter. App không khởi động với adapter giả khi `NODE_ENV=production`. Test và demo không cần key dùng adapter giả (`.env.test` đặt cả năm driver ở giá trị giả); kết quả với adapter giả không chứng minh gì về nhà cung cấp thật.
+
+Hạ tầng không phải nhà cung cấp (Bull: `src/infrastructure/queue`, Redis: `src/infrastructure/redis`) không có port. Không còn thư mục `3rdService/`: route và nghiệp vụ dùng dịch vụ ngoài (mail, speech, upload, gemini) là module trong `src/modules/`.

@@ -1,4 +1,4 @@
-import { DEFAULT_GEMINI_MODELS } from '@/3rdService/gemini/config/gemini-default-configs'
+import { DEFAULT_GEMINI_MODELS } from '@/modules/gemini/config/gemini-default-configs'
 import { parseQs, parseQs as parseQsGeneric } from '@/common/utils/qs-parser'
 import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'

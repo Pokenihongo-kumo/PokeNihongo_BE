@@ -1,4 +1,4 @@
-import { MailService } from '@/3rdService/mail/mail.service'
+import { MailService } from '@/modules/mail/mail.service'
 import { addTimeUTC } from '@/shared/helpers'
 import { Injectable, Logger } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'

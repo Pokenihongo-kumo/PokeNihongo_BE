@@ -1,7 +1,7 @@
 import { BullModule } from '@nestjs/bull'
 import { DynamicModule, Module } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { RedisModule } from '../redis/redis.module'
+import { RedisModule } from '@/infrastructure/redis/redis.module'
 import { BullQueueService } from './bull-queue.service'
 import { assertTestQueueIsolation, parseRedisUrl } from './queue-config'
 

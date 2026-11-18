@@ -3,7 +3,7 @@
 export interface MailMessageInput {
   to: string
   subject: string
-  // file name in src/3rdService/mail/templates, without .hbs
+  // file name in src/infrastructure/integrations/mail/templates, without .hbs
   template: string
   context: Record<string, unknown>
 }

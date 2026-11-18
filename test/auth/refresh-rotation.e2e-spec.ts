@@ -1,5 +1,5 @@
 import { AppModule } from '@/app.module'
-import { MailService } from '@/3rdService/mail/mail.service'
+import { MailService } from '@/modules/mail/mail.service'
 import { AuthRepository } from '@/modules/auth/auth.repo'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { INestApplication, VersioningType } from '@nestjs/common'

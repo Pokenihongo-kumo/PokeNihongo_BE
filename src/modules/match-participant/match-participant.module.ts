@@ -1,4 +1,4 @@
-import { BullQueueModule } from '@/3rdService/bull/bull-queue.module'
+import { BullQueueModule } from '@/infrastructure/queue/bull-queue.module'
 import { BullQueue } from '@/common/constants/bull-action.constant'
 import { MatchParticipantTimeoutProcessor } from '@/modules/match-participant/match-participant-timeout.processor'
 import { WebsocketsModule } from '@/websockets/websockets.module'

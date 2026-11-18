@@ -3,7 +3,7 @@ import { UserSubscriptionModule } from '@/modules/user-subscription/user-subscri
 import { RoleModule } from '@/modules/role/role.module'
 import { UserCoreModule } from '@/modules/user/user-core.module'
 import { MailSenderModule } from '@/infrastructure/integrations/mail/mail-sender.module'
-import { UploadModule } from '@/3rdService/upload/upload.module'
+import { UploadModule } from '@/modules/upload/upload.module'
 import { AuthRepository } from '@/modules/auth/auth.repo'
 import { UserProgressModule } from '@/modules/user-progress/user-progress.module'
 import { UserTestModule } from '@/modules/user-test/user-test.module'

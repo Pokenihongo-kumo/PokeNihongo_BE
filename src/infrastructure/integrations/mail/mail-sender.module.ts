@@ -1,5 +1,5 @@
 import envConfig from '@/config/env.config'
-import { MailModule as MailerConfigModule } from '@/3rdService/mail/mailer/mail.module'
+import { MailModule as MailerConfigModule } from '@/infrastructure/integrations/mail/mailer/mail.module'
 import { Module } from '@nestjs/common'
 import { LogMailAdapter } from './log-mail.adapter'
 import { MailSender } from './mail-sender.port'

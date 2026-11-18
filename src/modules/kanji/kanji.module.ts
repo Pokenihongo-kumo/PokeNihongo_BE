@@ -4,7 +4,7 @@ import { KanjiService } from './kanji.service'
 import { KanjiRepo } from './kanji.repo'
 import { SharedModule } from '@/shared/shared.module'
 import { KanjiReadingModule } from '@/modules/kanji-reading/kanji-reading.module'
-import { UploadModule } from '@/3rdService/upload/upload.module'
+import { UploadModule } from '@/modules/upload/upload.module'
 
 @Module({
   imports: [SharedModule, KanjiReadingModule, UploadModule],

@@ -1,6 +1,6 @@
-import { SpeechToTextService } from '@/3rdService/speech/speech-to-text.service'
-import { TextToSpeechService } from '@/3rdService/speech/text-to-speech.service'
-import { UploadService } from '@/3rdService/upload/upload.service'
+import { SpeechToTextService } from '@/modules/speech/speech-to-text.service'
+import { TextToSpeechService } from '@/modules/speech/text-to-speech.service'
+import { UploadService } from '@/modules/upload/upload.service'
 import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common'
 import {

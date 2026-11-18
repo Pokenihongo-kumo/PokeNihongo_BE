@@ -1,4 +1,4 @@
-import { TextToSpeechService } from '@/3rdService/speech/text-to-speech.service'
+import { TextToSpeechService } from '@/modules/speech/text-to-speech.service'
 import { I18nService } from '@/i18n/i18n.service'
 import { TestSetMessage as M } from '@/i18n/message-keys'
 import { toPaginationMeta } from '@/shared/utils/pagination'

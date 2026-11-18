@@ -17,7 +17,7 @@
 //   handWrittenEnvelopes     `statusCode: z.` outside resSchema/paginatedResSchema (S-R4)
 //
 // Owner of a file: src/modules/<name>/... -> modules/<name>; any other file ->
-// its top folder under src (shared, cronjobs, websockets, 3rdService, ...).
+// its top folder under src (shared, cronjobs, websockets, infrastructure, ...).
 //
 // Usage:
 //   node scripts/arch/module-deps.mjs            check against the baseline
@@ -54,7 +54,10 @@ const HTTP_SCHEMA = [
   /^Get(Params|Query)\w*Schema$/
 ]
 const DOMAIN_NAME = /^(User)?DailyRequest(Schema)?$/
-const ENVELOPE_HELPERS = new Set(['shared/utils/res-schema.ts', 'shared/utils/pagination.ts'])
+const ENVELOPE_HELPERS = new Set([
+  'shared/utils/res-schema.ts',
+  'shared/utils/pagination.ts'
+])
 
 const toPosix = (p) => p.split(sep).join('/')
 

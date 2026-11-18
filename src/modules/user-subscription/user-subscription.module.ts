@@ -1,4 +1,4 @@
-import { MailModule } from '@/3rdService/mail/mail.module'
+import { MailModule } from '@/modules/mail/mail.module'
 import { LanguagesModule } from '@/modules/languages/languages.module'
 import { Module } from '@nestjs/common'
 import { SubscriptionPlanModule } from '../subscription-plan/subscription-plan.module'

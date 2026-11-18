@@ -9,7 +9,7 @@ import envConfig from '@/config/env.config'
 import { PaymentGateway } from '@/infrastructure/integrations/payment/payment-gateway.port'
 import { UserCoreService } from '@/modules/user/user-core.service'
 
-import { MailService } from '@/3rdService/mail/mail.service'
+import { MailService } from '@/modules/mail/mail.service'
 import { BullAction, BullQueue } from '@/common/constants/bull-action.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { InvoiceMessage, PaymentMessage, SendMailMessage } from '@/i18n/message-keys'

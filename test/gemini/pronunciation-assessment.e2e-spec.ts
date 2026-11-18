@@ -1,5 +1,5 @@
 import { LlmClient } from '@/infrastructure/integrations/ai/llm-client.port'
-import { PRONUNCIATION_SYSTEM_INSTRUCTION } from '@/3rdService/gemini/dto/pronunciation-assessment.dto'
+import { PRONUNCIATION_SYSTEM_INSTRUCTION } from '@/modules/gemini/dto/pronunciation-assessment.dto'
 import { AppModule } from '@/app.module'
 import { INestApplication, VersioningType } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
