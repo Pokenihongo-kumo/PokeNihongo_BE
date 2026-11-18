@@ -1,3 +1,4 @@
+import { UserSubscriptionModule } from '@/modules/user-subscription/user-subscription.module'
 import { LlmModule } from '@/infrastructure/integrations/ai/llm.module'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
@@ -14,6 +15,7 @@ import { RedisModule } from '../redis/redis.module'
 
 @Module({
   imports: [
+    UserSubscriptionModule,
     LlmModule,
     ConfigModule.forFeature(geminiConfig),
     GeminiConfigModule,

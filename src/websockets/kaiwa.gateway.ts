@@ -32,7 +32,7 @@ import {
   DEFAULT_KAIWA_SYSTEM_PROMPT
 } from '@/common/constants/promt.constant'
 import { UserCoreService } from '@/modules/user/user-core.service'
-import { SharedUserSubscriptionService } from '@/shared/services/user-subscription.service'
+import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
 import { exec } from 'child_process'
 import { promisify } from 'util'
 import { tmpdir } from 'os'
@@ -98,7 +98,7 @@ export class KaiwaGateway implements OnGatewayDisconnect {
     private readonly geminiConfigRepo: GeminiConfigRepo,
     private readonly configService: ConfigService,
     private readonly userCoreService: UserCoreService,
-    private readonly sharedUserSubscriptionService: SharedUserSubscriptionService,
+    private readonly sharedUserSubscriptionService: UserSubscriptionService,
     private readonly llm: LlmClient
   ) {}
 

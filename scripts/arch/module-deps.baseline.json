@@ -5,9 +5,9 @@
     "forwardRefModuleFiles": 9,
     "injectForwardRefFiles": 6,
     "sharedModuleBusinessRepos": 0,
-    "sharedModuleBusinessProviders": 1,
-    "prismaOutsideRepoFiles": 2,
-    "prismaOutsideRepoCalls": 28
+    "sharedModuleBusinessProviders": 0,
+    "prismaOutsideRepoFiles": 1,
+    "prismaOutsideRepoCalls": 27
   },
   "details": {
     "crossModuleRepoImports": [
@@ -76,11 +76,8 @@
       "modules/shop-rarity-price/shop-rarity-price.service.ts"
     ],
     "sharedModuleBusinessRepos": [],
-    "sharedModuleBusinessProviders": [
-      "SharedUserSubscriptionService"
-    ],
+    "sharedModuleBusinessProviders": [],
     "prismaOutsideRepoFiles": [
-      "common/guards/access-token.guard.ts",
       "cronjobs/handle-leaderboard-season.cronjob.ts"
     ]
   }

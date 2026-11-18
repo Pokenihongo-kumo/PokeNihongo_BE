@@ -29,7 +29,7 @@ import {
 } from '@/i18n/message-keys'
 import { UserCoreService } from '@/modules/user/user-core.service'
 import { NotificationService } from '@/modules/notification/notification.service'
-import { SharedUserSubscriptionService } from '@/shared/services/user-subscription.service'
+import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
 import { AttendenceConfigRepo } from '../attendence-config/attendence-config.repo'
 import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
 import { WalletService } from '@/modules/wallet/wallet.service'
@@ -51,7 +51,7 @@ export class AttendanceService {
     private readonly userDailyRequestService: UserDailyRequestService,
     private readonly walletService: WalletService,
     private readonly walletTransactionService: WalletTransactionService,
-    private readonly userSubService: SharedUserSubscriptionService,
+    private readonly userSubService: UserSubscriptionService,
     private readonly sharedNotificationService: NotificationService
   ) {}
 

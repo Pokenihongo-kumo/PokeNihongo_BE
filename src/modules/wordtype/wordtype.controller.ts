@@ -35,12 +35,11 @@ import {
   WordTypeListResDTO
 } from './dto/wordtype.dto'
 import { AuthenticationGuard } from '@/common/guards/authentication.guard'
-import { AccessTokenGuard } from '@/common/guards/access-token.guard'
 import { PaginationResponseSchema } from '@/shared/models/response.model'
 
 @ApiTags('WordType')
 @Controller('wordtype')
-@UseGuards(AuthenticationGuard, AccessTokenGuard)
+@UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class WordTypeController {
   constructor(private readonly wordTypeService: WordTypeService) {}

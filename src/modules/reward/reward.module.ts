@@ -1,3 +1,4 @@
+import { UserSubscriptionModule } from '@/modules/user-subscription/user-subscription.module'
 import { NotificationModule } from '@/modules/notification/notification.module'
 import { SharedModule } from '@/shared/shared.module'
 import { Module, forwardRef } from '@nestjs/common'
@@ -15,6 +16,7 @@ import { RewardService } from './reward.service'
 
 @Module({
   imports: [
+    UserSubscriptionModule,
     NotificationModule,
     SharedModule,
     LanguagesModule,

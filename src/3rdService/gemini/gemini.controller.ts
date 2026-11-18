@@ -32,7 +32,7 @@ import {
 } from './dto/gemini.dto'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
-import { SharedUserSubscriptionService } from '@/shared/services/user-subscription.service'
+import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
 import { FeatureKey } from '@/common/constants/subscription.constant'
 import {
   PRONUNCIATION_AUDIO_MAX_BYTES,
@@ -47,7 +47,7 @@ import {
 export class GeminiController {
   constructor(
     private readonly geminiService: GeminiService,
-    private readonly userSubscriptionService: SharedUserSubscriptionService
+    private readonly userSubscriptionService: UserSubscriptionService
   ) {}
 
   @Post('recommendations')

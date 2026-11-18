@@ -1,3 +1,4 @@
+import { UserSubscriptionModule } from '@/modules/user-subscription/user-subscription.module'
 import { NotificationModule } from '@/modules/notification/notification.module'
 import { UserCoreModule } from '@/modules/user/user-core.module'
 import { Module } from '@nestjs/common'
@@ -13,6 +14,7 @@ import { AttendanceRepo } from './attendence.repo'
 
 @Module({
   imports: [
+    UserSubscriptionModule,
     NotificationModule,
     UserCoreModule,
     AttendenceConfigModule,

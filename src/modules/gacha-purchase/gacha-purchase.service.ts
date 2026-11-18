@@ -15,7 +15,7 @@ import {
   isNotFoundPrismaError
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
-import { SharedUserSubscriptionService } from '@/shared/services/user-subscription.service'
+import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
 import { Injectable } from '@nestjs/common'
 import { GachaBannerRepo } from '../gacha-banner/gacha-banner.repo'
 import { GachaItemRateType } from '../gacha-item-rate/entities/gacha-item-rate.entity'
@@ -45,7 +45,7 @@ export class GachaPurchaseService {
     private readonly walletService: WalletService,
     private readonly walletTransactionService: WalletTransactionService,
     private readonly userPokemonService: UserPokemonService,
-    private readonly userSubService: SharedUserSubscriptionService
+    private readonly userSubService: UserSubscriptionService
     // private readonly pokemonRepo: PokemonRepo
   ) {}
 
