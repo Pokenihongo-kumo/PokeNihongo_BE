@@ -227,6 +227,10 @@ export class UserSeasonHistoryService {
   async getUserHisByUserId(userId: number, lang: string = 'vi') {
     const userSeasonHistory =
       await this.userSeasonHistoryRepo.findSeasonNowByUserId(userId)
+    // not joined yet: a 404 (the serializer used to turn null into a 500)
+    if (!userSeasonHistory) {
+      throw new UserSeasonHistoryNotFoundException()
+    }
     return {
       statusCode: 200,
       data: userSeasonHistory,

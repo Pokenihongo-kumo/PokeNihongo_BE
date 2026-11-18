@@ -56,19 +56,19 @@ exports[`Battle batch 7a contract (e2e) errors 1`] = `
   "rankRewardsMissingSeason": {
     "en": {
       "body": {
-        "error": "CONFLICT",
-        "message": "There is already an active leaderboard season",
-        "statusCode": 409,
+        "error": "NOT_FOUND",
+        "message": "Record not found",
+        "statusCode": 404,
       },
-      "httpStatus": 409,
+      "httpStatus": 404,
     },
     "vi": {
       "body": {
-        "error": "CONFLICT",
-        "message": "Mùa giải bảng xếp hạng đang hoạt động",
-        "statusCode": 409,
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bản ghi",
+        "statusCode": 404,
       },
-      "httpStatus": 409,
+      "httpStatus": 404,
     },
   },
   "seasonBadId": {
@@ -316,28 +316,28 @@ exports[`Battle batch 7a contract (e2e) mobile, no season running: reward-now, j
   },
   "myHistory": {
     "body": {
-      "error": "INTERNAL_SERVER_ERROR",
-      "message": "Internal Server Error",
-      "statusCode": 500,
+      "error": "NOT_FOUND",
+      "message": "Không tìm thấy lịch sử mùa giải người dùng",
+      "statusCode": 404,
     },
-    "httpStatus": 500,
+    "httpStatus": 404,
   },
   "rewardNow": {
     "en": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "An error occurred",
-        "statusCode": 500,
+        "error": "CONFLICT",
+        "message": "Leaderboard season has not started yet",
+        "statusCode": 409,
       },
-      "httpStatus": 500,
+      "httpStatus": 409,
     },
     "vi": {
       "body": {
-        "error": "INTERNAL_SERVER_ERROR",
-        "message": "Đã xảy ra lỗi",
-        "statusCode": 500,
+        "error": "CONFLICT",
+        "message": "Mùa giải bảng xếp hạng chưa bắt đầu",
+        "statusCode": 409,
       },
-      "httpStatus": 500,
+      "httpStatus": 409,
     },
   },
 }
@@ -374,7 +374,7 @@ exports[`Battle batch 7a contract (e2e) mobile: a past season's rank list and re
     "en": {
       "body": {
         "error": "CONFLICT",
-        "message": "Không thể nhận phần thưởng cho mùa giải này",
+        "message": "You cannot claim rewards for this season",
         "statusCode": 409,
       },
       "httpStatus": 409,
@@ -392,7 +392,7 @@ exports[`Battle batch 7a contract (e2e) mobile: a past season's rank list and re
     "en": {
       "body": {
         "error": "CONFLICT",
-        "message": "Không thể nhận phần thưởng cho mùa giải này",
+        "message": "You cannot claim rewards for this season",
         "statusCode": 409,
       },
       "httpStatus": 409,

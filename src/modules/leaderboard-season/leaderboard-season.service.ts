@@ -22,7 +22,8 @@ import {
   LeaderboardSeasonAlreadyExistsException,
   LeaderboardSeasonHasActiveException,
   LeaderboardSeasonHasInvalidToActiveException,
-  LeaderboardSeasonHasOpenedException
+  LeaderboardSeasonHasOpenedException,
+  NotStartedLeaderboardSeasonException
 } from './dto/leaderboard-season.error'
 import {
   CreateLeaderboardSeasonBodyInputType,
@@ -699,6 +700,10 @@ export class LeaderboardSeasonService {
         langId,
         isAdmin
       )
+    // no season running: say so (reading its translations used to be a 500)
+    if (!inforLeaderboardWithRewards) {
+      throw new NotStartedLeaderboardSeasonException()
+    }
     const nameTranslations = await this.convertTranslationsToLangCodes(
       (inforLeaderboardWithRewards as any).nameTranslations || []
     )
