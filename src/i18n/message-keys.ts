@@ -1272,7 +1272,8 @@ export const MatchRoundParticipantMessage = {
   NOT_FOUND: 'match_round_participant.NOT_FOUND',
   ALREADY_EXISTS: 'match_round_participant.ALREADY_EXISTS',
 
-  INVALID_DATA: 'match_round_participant.INVALID_DATA'
+  INVALID_DATA: 'match_round_participant.INVALID_DATA',
+  NOT_YOUR_TURN: 'match_round_participant.NOT_YOUR_TURN'
 } as const
 
 export const DebuffRoundMessage = {

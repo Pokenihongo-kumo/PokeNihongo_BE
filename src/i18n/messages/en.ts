@@ -1239,7 +1239,8 @@ export const enMessages = {
     GET_LIST_SUCCESS: 'Match round participant list retrieved successfully',
     NOT_FOUND: 'Match round participant not found',
     ALREADY_EXISTS: 'Match round participant already exists',
-    INVALID_DATA: 'Invalid match round participant data'
+    INVALID_DATA: 'Invalid match round participant data',
+    NOT_YOUR_TURN: 'It is not your turn to choose a Pokémon yet'
   },
   debuff_round: {
     CREATE_SUCCESS: 'Debuff round created successfully',

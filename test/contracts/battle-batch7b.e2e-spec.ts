@@ -49,9 +49,28 @@ describe('Battle batch 7b contract (e2e)', () => {
       .set('Accept-Language', lang)
   const as = (who: 'a' | 'b', lang = 'vi') =>
     anon(lang).auth(tokens[who], { type: 'bearer' })
+  // A pick deadline is set only on the player whose turn it is, and lists
+  // put either player first (pick order is random): those keys read
+  // "date|null" so the snapshot does not depend on who picks first
+  const TURN_KEYS = new Set(['endTimeSelected', 'selectionEndTime'])
+  const turnNeutral = (value: unknown): unknown => {
+    if (Array.isArray(value)) return value.map(turnNeutral)
+    if (value && typeof value === 'object') {
+      return Object.fromEntries(
+        Object.entries(value).map(([k, v]) => [
+          k,
+          TURN_KEYS.has(k) && (v === null || typeof v === 'string')
+            ? 'date|null'
+            : turnNeutral(v)
+        ])
+      )
+    }
+    return value
+  }
+  const shapeOf = (value: unknown) => responseShape(turnNeutral(value))
   // Some messages carry a number (ids, the required level/pokemon): digits become N
   const capture = (res: request.Response) => {
-    const body = responseShape(res.body) as Record<string, unknown>
+    const body = shapeOf(res.body) as Record<string, unknown>
     if (typeof body?.message === 'string') {
       body.message = body.message.replace(/[0-9]+/g, 'N')
     }
@@ -160,7 +179,7 @@ describe('Battle batch 7b contract (e2e)', () => {
           events.push({
             event,
             room: room.replace(/[0-9]+/g, 'N'),
-            payload: responseShape(payload)
+            payload: shapeOf(payload)
           })
       })
     } as never
@@ -348,8 +367,7 @@ describe('Battle batch 7b contract (e2e)', () => {
     }).toMatchSnapshot()
   })
 
-  // Out of turn answers "time's up" (and sends that player a selection-expired
-  // event): recorded as is, see tracker
+  // Out of turn used to take the pick (no turn check): now NOT_YOUR_TURN
   it("round one picks in turn: out of turn, not owned, first, second (round two's first picker is timed next)", async () => {
     const matchId = await latestMatch()
     const roundOne = await prisma.matchRound.findFirstOrThrow({
@@ -390,8 +408,9 @@ describe('Battle batch 7b contract (e2e)', () => {
     await endMatch(matchId)
   })
 
-  // No ownership check on PUT /match-participant/:id: recorded as is, see tracker
-  it("a player can answer for the other's place", async () => {
+  // PUT /match-participant/:id had no ownership check: another player's place
+  // now answers like a missing one
+  it("a player cannot answer for the other's place", async () => {
     const matchId = await pairUp()
     takeEvents()
     await takeJobs()

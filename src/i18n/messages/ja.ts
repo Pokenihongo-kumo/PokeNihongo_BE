@@ -1209,7 +1209,8 @@ export const jaMessages = {
     GET_LIST_SUCCESS: 'マッチラウンド参加者リストの取得に成功しました',
     NOT_FOUND: 'マッチラウンド参加者が見つかりません',
     ALREADY_EXISTS: 'マッチラウンド参加者は既に存在します',
-    INVALID_DATA: '無効なマッチラウンド参加者データです'
+    INVALID_DATA: '無効なマッチラウンド参加者データです',
+    NOT_YOUR_TURN: 'まだあなたがポケモンを選ぶ番ではありません'
   },
   debuff_round: {
     CREATE_SUCCESS: 'デバフラウンドの作成に成功しました',

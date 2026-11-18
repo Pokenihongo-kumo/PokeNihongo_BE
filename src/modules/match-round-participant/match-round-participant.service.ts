@@ -26,6 +26,7 @@ import { QuestionBankRepo } from '../question-bank/question-bank.repo'
 import { UserPokemonRepo } from '../user-pokemon/user-pokemon.repo'
 import {
   MatchRoundParticipantNotFoundException,
+  NotYourTurnToPickException,
   PokemonSelectionExpiredException
 } from './dto/match-round-participant.error'
 import {
@@ -214,6 +215,11 @@ export class MatchRoundParticipantService {
         )
 
         throw new PokemonSelectionExpiredException()
+      }
+
+      // Out of turn (any round of the match): the pick used to be taken
+      if (existMatchRoundParticipant.endTimeSelected === null) {
+        throw new NotYourTurnToPickException()
       }
 
       // Tìm userPokemon dựa vào pokemonId và userId
