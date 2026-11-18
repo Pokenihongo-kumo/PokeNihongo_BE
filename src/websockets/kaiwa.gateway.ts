@@ -22,7 +22,7 @@ import { UserAIConversationService } from '@/modules/user-ai-conversation/user-a
 import { AIConversationRoomService } from '@/modules/ai-conversation-room/ai-conversation-room.service'
 import { I18nService } from '@/i18n/i18n.service'
 import { UploadService } from '@/3rdService/upload/upload.service'
-import { GeminiConfigRepo } from '@/modules/gemini-config/gemini-config.repo'
+import { GeminiConfigService } from '@/modules/gemini-config/gemini-config.service'
 import { GeminiConfigType } from '@prisma/client'
 import {
   getRoomTitlePrompt,
@@ -95,7 +95,7 @@ export class KaiwaGateway implements OnGatewayDisconnect {
     private readonly aiConversationRoomService: AIConversationRoomService,
     private readonly i18nService: I18nService,
     private readonly uploadService: UploadService,
-    private readonly geminiConfigRepo: GeminiConfigRepo,
+    private readonly geminiConfigService: GeminiConfigService,
     private readonly configService: ConfigService,
     private readonly userCoreService: UserCoreService,
     private readonly sharedUserSubscriptionService: UserSubscriptionService,
@@ -143,7 +143,7 @@ export class KaiwaGateway implements OnGatewayDisconnect {
    */
   private async getGeminiConfigForService(serviceType: GeminiConfigType): Promise<any> {
     try {
-      const svcCfg = await this.geminiConfigRepo.getDefaultConfigForService(
+      const svcCfg = await this.geminiConfigService.getDefaultConfigForService(
         serviceType as any
       )
 

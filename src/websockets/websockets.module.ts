@@ -4,7 +4,7 @@ import { UserCoreModule } from '@/modules/user/user-core.module'
 import { BullQueueModule } from '@/3rdService/bull/bull-queue.module'
 import { SpeechModule } from '@/3rdService/speech/speech.module'
 import { UploadModule } from '@/3rdService/upload/upload.module'
-import { Module, forwardRef } from '@nestjs/common'
+import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { InitializerGateway } from './initializer.gateway'
 
@@ -46,7 +46,7 @@ import { KaiwaGateway } from './kaiwa.gateway'
     SpeechModule, // Cần cho SpeechToTextService và TextToSpeechService
     UserAIConversationModule, // Cần để lưu conversation vào database
     AIConversationRoomModule, // Cần để quản lý phòng hội thoại
-    forwardRef(() => GeminiConfigModule) // Cần để lấy Gemini config từ DB (forwardRef để tránh circular dependency)
+    GeminiConfigModule // Gemini config from the DB (GeminiConfigService); no cycle
     // MatchRoundModule
   ],
   providers: [

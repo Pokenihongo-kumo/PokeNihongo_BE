@@ -18,7 +18,6 @@ import { QuestionBankService } from '@/modules/question-bank/question-bank.servi
 import { UserAnswerLogService } from '@/modules/user-answer-log/user-answer-log.service'
 import { UserProgressService } from '@/modules/user-progress/user-progress.service'
 import { ExercisesService } from '@/modules/exercises/exercises.service'
-import { ExercisesRepo } from '@/modules/exercises/exercises.repo'
 import { UserCoreService } from '@/modules/user/user-core.service'
 import { HttpException, Injectable, Logger } from '@nestjs/common'
 import { MessageResDTO } from '@/shared/dtos/response.dto'
@@ -42,7 +41,6 @@ export class UserExerciseAttemptService {
     private readonly userAnswerLogService: UserAnswerLogService,
     private readonly userProgressService: UserProgressService,
     private readonly exercisesService: ExercisesService,
-    private readonly exercisesRepository: ExercisesRepo,
     private readonly userCoreService: UserCoreService,
     private readonly translationHelper: TranslationHelperService,
     private readonly i18nService: I18nService,
@@ -85,7 +83,7 @@ export class UserExerciseAttemptService {
       const user = await this.userCoreService.findUnique({ id: userId })
       const userLevelJLPT = user?.levelJLPT ?? null
       const lessonLevelJlpt =
-        await this.exercisesRepository.getLessonLevelJlpt(targetLessonId)
+        await this.exercisesService.getLessonLevelJlpt(targetLessonId)
       const shouldSkipBlocking =
         userLevelJLPT !== null &&
         lessonLevelJlpt !== null &&
@@ -956,4 +954,13 @@ export class UserExerciseAttemptService {
     }
   }
   //#endregion
+
+  // ---- For other modules (module-boundary plan B8) ----
+  // Same arguments and results as the repo methods.
+
+  findCompletedExercisesByLesson(
+    ...args: Parameters<UserExerciseAttemptRepo['findCompletedExercisesByLesson']>
+  ) {
+    return this.userExerciseAttemptRepository.findCompletedExercisesByLesson(...args)
+  }
 }

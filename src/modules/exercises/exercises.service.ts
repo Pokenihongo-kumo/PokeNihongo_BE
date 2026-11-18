@@ -266,4 +266,11 @@ export class ExercisesService {
     return new InvalidExercisesDataException()
   }
   //#endregion
+
+  // ---- For other modules (module-boundary plan B8) ----
+  // Same arguments and results as the repo methods.
+
+  getLessonLevelJlpt(...args: Parameters<ExercisesRepo['getLessonLevelJlpt']>) {
+    return this.exercisesRepo.getLessonLevelJlpt(...args)
+  }
 }

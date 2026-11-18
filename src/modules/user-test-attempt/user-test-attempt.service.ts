@@ -11,7 +11,7 @@ import { TestService } from '@/modules/test/test.service'
 import { TestSetQuestionBankService } from '@/modules/testset-questionbank/testset-questionbank.service'
 import { TestSetService } from '@/modules/testset/testset.service'
 import { TranslationHelperService } from '@/modules/translation/translation.helper.service'
-import { UserProgressRepo } from '@/modules/user-progress/user-progress.repo'
+import { UserProgressService } from '@/modules/user-progress/user-progress.service'
 import { UserTestAnswerLogService } from '@/modules/user-test-answer-log/user-test-answer-log.service'
 import {
   AttemptNotOwnedException,
@@ -30,12 +30,12 @@ import {
   UpdateUserTestAttemptBodyType
 } from '@/modules/user-test-attempt/entities/user-test-attempt.entity'
 import { UserTestAttemptRepo } from '@/modules/user-test-attempt/user-test-attempt.repo'
-import { UserTestRepo } from '@/modules/user-test/user-test.repo'
-import { UserRepo } from '@/modules/user/user.repo'
+import { UserTestService } from '@/modules/user-test/user-test.service'
+import { UserService } from '@/modules/user/user.service'
 import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { HttpException, Injectable, Logger } from '@nestjs/common'
 import { ProgressStatus, UserRewardSourceType } from '@prisma/client'
-import { LessonRepo } from '../lesson/lesson.repo'
+import { LessonService } from '@/modules/lesson/lesson.service'
 import { RewardService } from '../reward/reward.service'
 import { REQUIRED_ANSWERS_FOR_LESSON_REVIEW } from './dto/variable'
 
@@ -45,7 +45,7 @@ export class UserTestAttemptService {
 
   constructor(
     private readonly userTestAttemptRepository: UserTestAttemptRepo,
-    private readonly userTestRepository: UserTestRepo,
+    private readonly userTestService: UserTestService,
     private readonly questionBankService: QuestionBankService,
     private readonly userTestAnswerLogService: UserTestAnswerLogService,
     private readonly testService: TestService,
@@ -54,11 +54,11 @@ export class UserTestAttemptService {
     private readonly testSetQuestionBankService: TestSetQuestionBankService,
     private readonly translationHelper: TranslationHelperService,
     private readonly i18nService: I18nService,
-    private readonly userRepo: UserRepo,
+    private readonly userService: UserService,
     private readonly levelService: LevelService,
-    private readonly userProgressRepository: UserProgressRepo,
+    private readonly userProgressService: UserProgressService,
     private readonly rewardService: RewardService,
-    private readonly lessonRepository: LessonRepo
+    private readonly lessonService: LessonService
   ) {}
 
   async create(userId: number, testId: number, lang: string = 'vi') {
@@ -397,7 +397,7 @@ export class UserTestAttemptService {
         // Cập nhật UserProgress dựa trên kết quả
         if (newStatus === 'COMPLETED') {
           // Lấy lessonId từ testId
-          const lessonId = await this.lessonRepository.findByTestId(attempt.testId)
+          const lessonId = await this.lessonService.findByTestId(attempt.testId)
           // Nếu hoàn thành (score >= 80%), trao phần thưởng từ lesson trước khi update status
           // (cần check status trước khi update để biết có phải lần đầu hoàn thành không)
           rewardResults = await this.grantTestRewards(
@@ -661,7 +661,7 @@ export class UserTestAttemptService {
       const normalizedLang = (languageCode || '').toLowerCase().split('-')[0] || 'vi'
 
       // Kiểm tra và giảm limit của UserTest
-      const userTest = await this.userTestRepository.findByUserAndTest(userId, testId)
+      const userTest = await this.userTestService.findByUserAndTest(userId, testId)
       if (!userTest) {
         throw new UserTestNotFoundException()
       }
@@ -697,7 +697,7 @@ export class UserTestAttemptService {
           await this.userTestAttemptRepository.markAbandoned(inProgressAttempt.id)
 
           // Giảm limit và tạo attempt mới
-          await this.userTestRepository.decrementLimit(userId, testId)
+          await this.userTestService.decrementLimit(userId, testId)
           const createAttempt = await this.create(userId, testId, languageCode)
           attempt = createAttempt.data as any
           userTestAttemptId = attempt.id
@@ -723,7 +723,7 @@ export class UserTestAttemptService {
         )
 
         // Giảm limit trước khi cho phép làm bài (chỉ khi tạo mới)
-        await this.userTestRepository.decrementLimit(userId, testId)
+        await this.userTestService.decrementLimit(userId, testId)
 
         const createAttempt = await this.create(userId, testId, languageCode)
         attempt = createAttempt.data as any
@@ -1635,7 +1635,7 @@ export class UserTestAttemptService {
       }
       // else {
       //     // 12. Cập nhật levelId của User
-      //     // await this.userRepo.update({
+      //     // await this.userService.updateUserRow({
       //     //     id: userId,
       //     //     updatedById: userId,
       //     //     data: { levelId: level.id }
@@ -1730,7 +1730,7 @@ export class UserTestAttemptService {
       }
 
       // 2. Kiểm tra xem đã hoàn thành lesson này trước đó chưa
-      const userProgress = await this.userProgressRepository.findByUserAndLesson(
+      const userProgress = await this.userProgressService.getByUserAndLesson(
         userId,
         lesson.id
       )
@@ -1793,7 +1793,7 @@ export class UserTestAttemptService {
       }
 
       // Tìm UserProgress của user và lesson đó
-      const userProgress = await this.userProgressRepository.findByUserAndLesson(
+      const userProgress = await this.userProgressService.getByUserAndLesson(
         userId,
         lesson.id
       )
@@ -1812,7 +1812,7 @@ export class UserTestAttemptService {
         )
         // Chỉ update testId nếu chưa có
         if (!userProgress.testId) {
-          await this.userProgressRepository.update(
+          await this.userProgressService.updateProgressRow(
             { id: userProgress.id },
             { testId: testId }
           )
@@ -1825,7 +1825,7 @@ export class UserTestAttemptService {
 
       // Update UserProgress với testId, status COMPLETED và progressPercentage 100%
       // Vì đã hoàn thành LESSON_REVIEW test nên coi như đã hoàn thành lesson
-      await this.userProgressRepository.update(
+      await this.userProgressService.updateProgressRow(
         { id: userProgress.id },
         {
           testId: testId,
@@ -1837,10 +1837,10 @@ export class UserTestAttemptService {
       )
 
       // Cập nhật UserProgress cho lesson tiếp theo
-      const nextLessonId = await this.userProgressRepository.getNextLessonId(lesson.id)
+      const nextLessonId = await this.userProgressService.getNextLessonId(lesson.id)
       if (nextLessonId) {
         // Kiểm tra status hiện tại của lesson tiếp theo
-        const nextLessonProgress = await this.userProgressRepository.findByUserAndLesson(
+        const nextLessonProgress = await this.userProgressService.getByUserAndLesson(
           userId,
           nextLessonId
         )
@@ -1852,7 +1852,7 @@ export class UserTestAttemptService {
         ) {
           // Sử dụng upsert để tự động tạo hoặc update UserProgress cho lesson tiếp theo
           // Upsert sẽ tự động lấy testId từ lesson nếu chưa có
-          await this.userProgressRepository.upsert(userId, nextLessonId, {
+          await this.userProgressService.upsert(userId, nextLessonId, {
             status: ProgressStatus.IN_PROGRESS,
             progressPercentage: 0
           })
@@ -1898,7 +1898,7 @@ export class UserTestAttemptService {
       }
 
       // Tìm UserProgress của user và lesson đó
-      const userProgress = await this.userProgressRepository.findByUserAndLesson(
+      const userProgress = await this.userProgressService.getByUserAndLesson(
         userId,
         lesson.id
       )
@@ -1920,7 +1920,7 @@ export class UserTestAttemptService {
 
       // Update UserProgress với testId, status TESTING_LAST_FAILED
       // User cần làm lại LESSON_REVIEW test
-      await this.userProgressRepository.update(
+      await this.userProgressService.updateProgressRow(
         { id: userProgress.id },
         {
           testId: testId,

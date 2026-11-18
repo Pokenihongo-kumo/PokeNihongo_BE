@@ -17,12 +17,12 @@ import {
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
 import { Injectable } from '@nestjs/common'
-import { GachaBannerRepo } from '../gacha-banner/gacha-banner.repo'
+import { GachaBannerService } from '@/modules/gacha-banner/gacha-banner.service'
 import { GachaItemRateType } from '../gacha-item-rate/entities/gacha-item-rate.entity'
 import { InvalidGachaBannerException } from '../gacha-item/dto/gacha-item.error'
 import { GachaItemType } from '../gacha-item/entities/gacha-item.entity'
-import { GachaRollHistoryRepo } from '../gacha-roll-history/gacha-roll-history.repo'
-import { UserGachaPityRepo } from '../user-gacha-pity/user-gacha-pity.repo'
+import { GachaRollHistoryService } from '@/modules/gacha-roll-history/gacha-roll-history.service'
+import { UserGachaPityService } from '@/modules/user-gacha-pity/user-gacha-pity.service'
 import { UserPokemonService } from '../user-pokemon/user-pokemon.service'
 import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
 import { WalletService } from '@/modules/wallet/wallet.service'
@@ -38,10 +38,10 @@ export class GachaPurchaseService {
   constructor(
     private gachaPurchaseRepo: GachaPurchaseRepo,
     private readonly i18nService: I18nService,
-    private readonly gachaBannerRepo: GachaBannerRepo,
+    private readonly gachaBannerService: GachaBannerService,
     // private readonly gachaItemRepo: GachaItemRepo,
-    private readonly gachaRollHistoryRepo: GachaRollHistoryRepo,
-    private readonly userGachaPityRepo: UserGachaPityRepo,
+    private readonly gachaRollHistoryService: GachaRollHistoryService,
+    private readonly userGachaPityService: UserGachaPityService,
     private readonly walletService: WalletService,
     private readonly walletTransactionService: WalletTransactionService,
     private readonly userPokemonService: UserPokemonService,
@@ -79,7 +79,7 @@ export class GachaPurchaseService {
     try {
       //tìm ra gachabanner và pity user
 
-      const gachaBanner = await this.gachaBannerRepo.findByIdWithItemWithitemRate(
+      const gachaBanner = await this.gachaBannerService.findByIdWithItemWithitemRate(
         data.bannerId
       )
       if (
@@ -181,12 +181,12 @@ export class GachaPurchaseService {
         // user count pity one after another (it used to be read before the
         // transaction, and a concurrent purchase overwrote the count)
         const userPity =
-          (await this.userGachaPityRepo.findStatusByUserId(
+          (await this.userGachaPityService.findStatusByUserId(
             userId,
             GachaPityType.PENDING,
             prismaTx
           )) ??
-          (await this.userGachaPityRepo.create(
+          (await this.userGachaPityService.createPity(
             {
               createdById: userId,
               data: { userId, status: GachaPityType.PENDING, pityCount: 0 }
@@ -350,7 +350,7 @@ export class GachaPurchaseService {
         // 9. Create GachaRollHistory for each roll
         for (let i = 0; i < rollResults.length; i++) {
           const roll = rollResults[i]
-          await this.gachaRollHistoryRepo.create(
+          await this.gachaRollHistoryService.createRollHistory(
             {
               createdById: userId,
               data: {
@@ -372,9 +372,9 @@ export class GachaPurchaseService {
         // (for simplicity, just update the last one)
         if (gachaRollHistoryToCreate.length > 0) {
           for (const pityAction of gachaRollHistoryToCreate) {
-            await this.userGachaPityRepo.update(pityAction.updatePity, prismaTx)
+            await this.userGachaPityService.updatePity(pityAction.updatePity, prismaTx)
             if (pityAction.createNewPity) {
-              const newPityObj = await this.userGachaPityRepo.create(
+              const newPityObj = await this.userGachaPityService.createPity(
                 {
                   createdById: userId,
                   data: {

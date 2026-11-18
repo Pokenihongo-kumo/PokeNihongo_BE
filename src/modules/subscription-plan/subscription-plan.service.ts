@@ -290,4 +290,23 @@ export class SubscriptionPlanService {
       message: this.i18nService.translate(SubscriptionPlanMessage.GET_LIST_SUCCESS, lang)
     }
   }
+
+  // ---- For other modules (module-boundary plan B8) ----
+  // Same arguments and results as the repo methods.
+
+  getById(...args: Parameters<SubscriptionPlanRepo['getById']>) {
+    return this.subscriptionPlanRepo.getById(...args)
+  }
+
+  getUserActivePlanIds(
+    ...args: Parameters<SubscriptionPlanRepo['getUserActivePlanIds']>
+  ) {
+    return this.subscriptionPlanRepo.getUserActivePlanIds(...args)
+  }
+
+  getSubscriptionPurchaseCounts(
+    ...args: Parameters<SubscriptionPlanRepo['getSubscriptionPurchaseCounts']>
+  ) {
+    return this.subscriptionPlanRepo.getSubscriptionPurchaseCounts(...args)
+  }
 }

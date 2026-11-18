@@ -27,7 +27,6 @@ function createService() {
     exercisesService as any,
     {} as any,
     {} as any,
-    {} as any,
     i18nService as any,
     rewardService as any
   )

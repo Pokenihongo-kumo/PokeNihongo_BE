@@ -156,4 +156,11 @@ export class GrammarService {
     if (isNotFoundPrismaError(error)) return new GrammarNotFoundException()
     return new InvalidGrammarDataException()
   }
+
+  // ---- For other modules (module-boundary plan B8) ----
+  // Same arguments and results as the repo methods.
+
+  findById(...args: Parameters<GrammarRepo['findById']>) {
+    return this.grammarRepository.findById(...args)
+  }
 }

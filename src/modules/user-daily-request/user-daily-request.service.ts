@@ -12,7 +12,7 @@ import {
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { HttpStatus, Injectable, Logger } from '@nestjs/common'
-import { DailyRequestRepo } from '../daily-request/daily-request.repo'
+import { DailyRequestService } from '@/modules/daily-request/daily-request.service'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { TranslationService } from '@/modules/translation/translation.service'
 import { UserDailyRequestAlreadyExistsException } from './dto/user-daily-request.error'
@@ -29,7 +29,7 @@ export class UserDailyRequestService {
   constructor(
     private userDailyRequestRepo: UserDailyRequestRepo,
     private readonly i18nService: I18nService,
-    private readonly dailyReqRepo: DailyRequestRepo,
+    private readonly dailyRequestService: DailyRequestService,
     private readonly languagesService: LanguagesService,
     private readonly translationService: TranslationService,
     private readonly userService: UserService
@@ -68,7 +68,7 @@ export class UserDailyRequestService {
     try {
       let progress = 0
       //check xem dailyRequestId nay type la streak ha ? Neu la trick thi cap nhap progress
-      const isDailyStreack = await this.dailyReqRepo.checkDailyRequestIsStreak(
+      const isDailyStreack = await this.dailyRequestService.checkDailyRequestIsStreak(
         data.dailyRequestId
       )
       if (isDailyStreack) {
@@ -122,7 +122,7 @@ export class UserDailyRequestService {
       if (!isUserdailyReq) {
         throw new NotFoundRecordException()
       }
-      const dailyConditionValue = await this.dailyReqRepo.findById(
+      const dailyConditionValue = await this.dailyRequestService.getById(
         isUserdailyReq.dailyRequestId
       )
 
@@ -203,7 +203,7 @@ export class UserDailyRequestService {
         throw new NotFoundRecordException()
       }
       // 1. Lấy tất cả daily requests đang active
-      const activeDailyRequests = await this.dailyReqRepo.list(
+      const activeDailyRequests = await this.dailyRequestService.listRows(
         {
           currentPage: 1,
           pageSize: 1000,
@@ -230,7 +230,7 @@ export class UserDailyRequestService {
         try {
           let progress = 0
           // Check nếu là streak type thì tính progress
-          const isStreak = await this.dailyReqRepo.checkDailyRequestIsStreak(
+          const isStreak = await this.dailyRequestService.checkDailyRequestIsStreak(
             dailyRequest.id
           )
           if (isStreak) {
@@ -286,7 +286,7 @@ export class UserDailyRequestService {
       }
 
       // Lấy thông tin daily request để biết conditionValue
-      const dailyRequest = await this.dailyReqRepo.findById(
+      const dailyRequest = await this.dailyRequestService.getById(
         userDailyRequest.dailyRequestId
       )
       if (!dailyRequest) {
@@ -327,7 +327,7 @@ export class UserDailyRequestService {
       }
 
       // Lấy thông tin daily request để biết conditionValue
-      const dailyRequest = await this.dailyReqRepo.findById(
+      const dailyRequest = await this.dailyRequestService.getById(
         userDailyRequest.dailyRequestId
       )
       if (!dailyRequest) {
@@ -366,7 +366,9 @@ export class UserDailyRequestService {
     progressAdd: number
   }) {
     const today = todayUTCWith0000()
-    const dailyRequests = await this.dailyReqRepo.findByType(dailyRequestType as any)
+    const dailyRequests = await this.dailyRequestService.findByType(
+      dailyRequestType as any
+    )
 
     const rewardsToGive: Array<{
       id: number

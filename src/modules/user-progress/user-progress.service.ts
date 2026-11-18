@@ -639,4 +639,21 @@ export class UserProgressService {
       }))
     }
   }
+
+  // ---- For other modules (module-boundary plan B8) ----
+  // Same arguments and results as the repo methods.
+
+  // The repo's findByUserAndLesson (the service's own findByUserAndLesson answers the HTTP route)
+  getByUserAndLesson(...args: Parameters<UserProgressRepo['findByUserAndLesson']>) {
+    return this.userProgressRepository.findByUserAndLesson(...args)
+  }
+
+  // The repo's update (the service's own update answers the HTTP route)
+  updateProgressRow(...args: Parameters<UserProgressRepo['update']>) {
+    return this.userProgressRepository.update(...args)
+  }
+
+  upsert(...args: Parameters<UserProgressRepo['upsert']>) {
+    return this.userProgressRepository.upsert(...args)
+  }
 }

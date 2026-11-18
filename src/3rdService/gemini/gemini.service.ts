@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config'
 import { LlmClient } from '@/infrastructure/integrations/ai/llm-client.port'
 import { PrismaService } from '@/shared/services/prisma.service'
 // import { GeminiConfigType } from '@prisma/client' // Will be available after migration
-import { GeminiConfigRepo } from '@/modules/gemini-config/gemini-config.repo'
+import { GeminiConfigService } from '@/modules/gemini-config/gemini-config.service'
 import { TextToSpeechService } from '../speech/text-to-speech.service'
 import { SpeechToTextService } from '../speech/speech-to-text.service'
 import { UploadService } from '../upload/upload.service'
@@ -34,7 +34,7 @@ export class GeminiService {
   constructor(
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
-    private readonly geminiConfigRepo: GeminiConfigRepo,
+    private readonly geminiConfigService: GeminiConfigService,
     private readonly textToSpeechService: TextToSpeechService,
     private readonly speechToTextService: SpeechToTextService,
     private readonly uploadService: UploadService,
@@ -201,7 +201,7 @@ export class GeminiService {
       const cacheKey = `rec:${userId}:${limit}:${today}`
 
       // Lấy config default theo mapping service ↔ config
-      const svcCfg = await this.geminiConfigRepo.getDefaultConfigForService(
+      const svcCfg = await this.geminiConfigService.getDefaultConfigForService(
         GeminiConfigType.PERSONALIZED_RECOMMENDATIONS as any
       )
 

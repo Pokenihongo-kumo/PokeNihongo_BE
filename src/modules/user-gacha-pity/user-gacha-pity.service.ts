@@ -191,4 +191,21 @@ export class UserGachaPityService {
       message: this.i18nService.translate(UserGachaPityMessage.GET_LIST_SUCCESS, lang)
     }
   }
+
+  // ---- For other modules (module-boundary plan B8) ----
+  // Same arguments and results as the repo methods.
+
+  findStatusByUserId(...args: Parameters<UserGachaPityRepo['findStatusByUserId']>) {
+    return this.userGachaPityRepo.findStatusByUserId(...args)
+  }
+
+  // The repo's create (the service's own create answers the HTTP route)
+  createPity(...args: Parameters<UserGachaPityRepo['create']>) {
+    return this.userGachaPityRepo.create(...args)
+  }
+
+  // The repo's update (the service's own update answers the HTTP route)
+  updatePity(...args: Parameters<UserGachaPityRepo['update']>) {
+    return this.userGachaPityRepo.update(...args)
+  }
 }

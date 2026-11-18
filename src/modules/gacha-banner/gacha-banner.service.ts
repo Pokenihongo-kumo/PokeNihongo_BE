@@ -717,4 +717,13 @@ export class GachaBannerService {
   disablePrecreate(...args: Parameters<GachaBannerRepo['disablePrecreate']>) {
     return this.gachaBannerRepo.disablePrecreate(...args)
   }
+
+  // ---- For other modules (module-boundary plan B8) ----
+  // Same arguments and results as the repo methods.
+
+  findByIdWithItemWithitemRate(
+    ...args: Parameters<GachaBannerRepo['findByIdWithItemWithitemRate']>
+  ) {
+    return this.gachaBannerRepo.findByIdWithItemWithitemRate(...args)
+  }
 }

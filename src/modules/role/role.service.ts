@@ -3,7 +3,7 @@ import { PaginationQueryType } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { I18nService } from 'src/i18n/i18n.service'
 import { RoleMessage } from 'src/i18n/message-keys'
-import { PermissionRepo } from 'src/modules/permission/permission.repo'
+import { PermissionService } from '@/modules/permission/permission.service'
 import {
   ProhibitedActionOnBaseRoleException,
   RoleAlreadyExistsException
@@ -18,7 +18,7 @@ import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared
 export class RoleService {
   constructor(
     private roleRepo: RoleRepo,
-    private permissionRepo: PermissionRepo,
+    private permissionService: PermissionService,
     private i18nService: I18nService,
     private roleCoreRepo: RoleCoreRepo
   ) {}
@@ -38,7 +38,7 @@ export class RoleService {
     }
 
     // 1) Fetch permissions with pagination/filter from query
-    const permissionsResult = await this.permissionRepo.list(query)
+    const permissionsResult = await this.permissionService.listPermissionRows(query)
     const permissions = permissionsResult.results
 
     // 2) Build a set of permission identifiers that this role has

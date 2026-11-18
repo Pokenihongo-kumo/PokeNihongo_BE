@@ -30,7 +30,7 @@ import {
 import { UserCoreService } from '@/modules/user/user-core.service'
 import { NotificationService } from '@/modules/notification/notification.service'
 import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
-import { AttendenceConfigRepo } from '../attendence-config/attendence-config.repo'
+import { AttendenceConfigService } from '@/modules/attendence-config/attendence-config.service'
 import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
 import { WalletService } from '@/modules/wallet/wallet.service'
 import { AttendanceRepo } from './attendence.repo'
@@ -45,7 +45,7 @@ type AttendanceWithDayOfWeekType = AttendanceType & { dayOfWeek: WeekDayType }
 export class AttendanceService {
   constructor(
     private attendanceRepo: AttendanceRepo,
-    private attendanceConfigRepo: AttendenceConfigRepo,
+    private attendenceConfigService: AttendenceConfigService,
     private userCoreService: UserCoreService,
     private readonly i18nService: I18nService,
     private readonly userDailyRequestService: UserDailyRequestService,
@@ -131,7 +131,7 @@ export class AttendanceService {
 
       const getWeekDate = getWeekDay(date)
       const attendenceConfig =
-        await this.attendanceConfigRepo.findByDateOfWeek(getWeekDate)
+        await this.attendenceConfigService.findByDateOfWeek(getWeekDate)
 
       if (!attendenceConfig) {
         throw new NotFoundRecordException()

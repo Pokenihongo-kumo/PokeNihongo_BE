@@ -438,4 +438,12 @@ export class AchievementGroupService {
       throw error
     }
   }
+
+  // ---- For other modules (module-boundary plan B8) ----
+  // Same arguments and results as the repo methods.
+
+  // The repo's list (the service's own list answers the HTTP route)
+  listGroupRows(...args: Parameters<AchievementGroupRepo['list']>) {
+    return this.achievementGroupRepo.list(...args)
+  }
 }

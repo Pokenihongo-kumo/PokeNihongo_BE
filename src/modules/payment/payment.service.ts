@@ -24,7 +24,7 @@ import { Queue } from 'bull'
 import { CreateInvoiceBodyType } from '../invoice/entities/invoice.entity'
 import { InvoiceService } from '../invoice/invoice.service'
 import { SubscriptionPlanNotFoundException } from '../subscription-plan/dto/subscription-plan.error'
-import { SubscriptionPlanRepo } from '../subscription-plan/subscription-plan.repo'
+import { SubscriptionPlanService } from '@/modules/subscription-plan/subscription-plan.service'
 import { UserSubscriptionService } from '../user-subscription/user-subscription.service'
 import {
   ErrorPaymentToPayException,
@@ -41,7 +41,7 @@ export class PaymentService {
 
   constructor(
     private readonly paymentRepo: PaymentRepo,
-    private readonly subscriptionPlanRepo: SubscriptionPlanRepo,
+    private readonly subscriptionPlanService: SubscriptionPlanService,
     private readonly userSubscriptionSer: UserSubscriptionService,
     private readonly paymentGateway: PaymentGateway,
     private readonly userCoreService: UserCoreService,
@@ -101,7 +101,7 @@ export class PaymentService {
       }
 
       // 2. Lấy subscription plan
-      const plan = await this.subscriptionPlanRepo.getById(invoice.subscriptionPlanId)
+      const plan = await this.subscriptionPlanService.getById(invoice.subscriptionPlanId)
       if (!plan) {
         throw new SubscriptionPlanNotFoundException()
       }
@@ -366,7 +366,7 @@ export class PaymentService {
 
       const invoice = await this.invoiceService.getById(payment.invoiceId)
       const plan = invoice
-        ? await this.subscriptionPlanRepo.getById(invoice.subscriptionPlanId)
+        ? await this.subscriptionPlanService.getById(invoice.subscriptionPlanId)
         : null
       return {
         success: true,
