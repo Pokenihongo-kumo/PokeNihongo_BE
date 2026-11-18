@@ -2,7 +2,7 @@ import { RewardClaimStatus } from '@/common/constants/reward.constant'
 import { parseQs } from '@/common/utils/qs-parser'
 import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
   CreateUserSeasonHistoryBody,
@@ -12,6 +12,13 @@ import {
   USER_SEASON_HISTORY_FIELDS,
   UserSeasonHistory
 } from './entities/user-season-history.entity'
+
+// Rank rewards given to everyone in the season (no position), with at least one reward
+const COMMON_SEASON_REWARD_WHERE = {
+  order: null,
+  deletedAt: null,
+  rewards: { some: {} }
+} satisfies Prisma.SeasonRankRewardWhereInput
 
 @Injectable()
 export class UserSeasonHistoryRepo {
@@ -161,7 +168,11 @@ export class UserSeasonHistoryRepo {
         deletedAt: null,
         rewardsClaimed: RewardClaimStatus.CLAIMED,
         finalElo: { not: null }, // Must be finalized
-        seasonRankRewardId: { not: null } // Must have reward assigned
+        // Something to claim: a rank reward, or a season reward for everyone (order null)
+        OR: [
+          { seasonRankRewardId: { not: null } },
+          { season: { seasonRankRewards: { some: COMMON_SEASON_REWARD_WHERE } } }
+        ]
       },
       orderBy: {
         season: { endDate: 'desc' } // Most recent season first
@@ -169,7 +180,11 @@ export class UserSeasonHistoryRepo {
       include: {
         season: {
           include: {
-            nameTranslations: true
+            nameTranslations: true,
+            seasonRankRewards: {
+              where: COMMON_SEASON_REWARD_WHERE,
+              include: { rewards: { include: { nameTranslations: true } } }
+            }
           }
         },
         seasonRankReward: {
