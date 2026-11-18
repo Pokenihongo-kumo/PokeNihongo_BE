@@ -1,3 +1,4 @@
+import { NotificationModule } from '@/modules/notification/notification.module'
 import { UserCoreModule } from '@/modules/user/user-core.module'
 import { Module } from '@nestjs/common'
 import { AttendenceConfigModule } from '../attendence-config/attendence-config.module'
@@ -12,6 +13,7 @@ import { AttendanceRepo } from './attendence.repo'
 
 @Module({
   imports: [
+    NotificationModule,
     UserCoreModule,
     AttendenceConfigModule,
     LanguagesModule,

@@ -9,15 +9,18 @@ import {
 } from '@/modules/notification/entities/notification.entity'
 import { UserGateway } from '@/websockets/user.gateway'
 import { Injectable } from '@nestjs/common'
-import { NotFoundRecordException } from '../error'
-import { isForeignKeyConstraintPrismaError, isNotFoundPrismaError } from '../helpers'
-import { PaginationQueryType } from '../models/request.model'
-import { SharedNotificationRepo } from '../repositories/shared-notification.repo'
+import { NotFoundRecordException } from '@/shared/error'
+import {
+  isForeignKeyConstraintPrismaError,
+  isNotFoundPrismaError
+} from '@/shared/helpers'
+import { PaginationQueryType } from '@/shared/models/request.model'
+import { NotificationRepo } from './notification.repo'
 
 @Injectable()
-export class SharedNotificationService {
+export class NotificationService {
   constructor(
-    private notificationRepo: SharedNotificationRepo,
+    private notificationRepo: NotificationRepo,
     private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
     private readonly userGateway: UserGateway

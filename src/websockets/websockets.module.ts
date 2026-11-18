@@ -8,6 +8,7 @@ import { ConfigModule } from '@nestjs/config'
 import { InitializerGateway } from './initializer.gateway'
 
 import { MatchingGateway } from './matching.gateway'
+import { UserGateway } from './user.gateway'
 import { SocketServerService } from './socket-server.service'
 import { WebsocketsService } from './websockets.service'
 
@@ -51,9 +52,16 @@ import { KaiwaGateway } from './kaiwa.gateway'
     SocketServerService,
     InitializerGateway,
     MatchingGateway,
+    UserGateway,
     KaiwaGateway,
     KaiwaProcessor // Processor để xử lý background jobs (optional, có thể dùng sau)
   ],
-  exports: [WebsocketsService, SocketServerService, MatchingGateway, KaiwaGateway]
+  exports: [
+    WebsocketsService,
+    SocketServerService,
+    MatchingGateway,
+    UserGateway,
+    KaiwaGateway
+  ]
 })
 export class WebsocketsModule {}

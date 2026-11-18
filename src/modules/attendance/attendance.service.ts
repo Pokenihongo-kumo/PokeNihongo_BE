@@ -28,7 +28,7 @@ import {
   NotificationMessage
 } from '@/i18n/message-keys'
 import { UserCoreService } from '@/modules/user/user-core.service'
-import { SharedNotificationService } from '@/shared/services/shared-notification.service'
+import { NotificationService } from '@/modules/notification/notification.service'
 import { SharedUserSubscriptionService } from '@/shared/services/user-subscription.service'
 import { AttendenceConfigRepo } from '../attendence-config/attendence-config.repo'
 import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
@@ -52,7 +52,7 @@ export class AttendanceService {
     private readonly walletService: WalletService,
     private readonly walletTransactionService: WalletTransactionService,
     private readonly userSubService: SharedUserSubscriptionService,
-    private readonly sharedNotificationService: SharedNotificationService
+    private readonly sharedNotificationService: NotificationService
   ) {}
 
   async list(pagination: PaginationQueryType, lang: string = 'vi') {

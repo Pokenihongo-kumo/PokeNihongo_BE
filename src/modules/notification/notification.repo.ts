@@ -8,10 +8,10 @@ import {
   NotificationType,
   USER_SEASON_HISTORY_FIELDS,
   UpdateNotificationBodyType
-} from '../../modules/notification/entities/notification.entity'
+} from './entities/notification.entity'
 
 @Injectable()
-export class SharedNotificationRepo {
+export class NotificationRepo {
   constructor(private prismaService: PrismaService) {}
   async withTransaction<T>(callback: (prismaTx: PrismaClient) => Promise<T>): Promise<T> {
     return this.prismaService.$transaction(callback)

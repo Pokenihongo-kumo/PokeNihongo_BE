@@ -2,12 +2,12 @@
   "metrics": {
     "crossModuleRepoImports": 41,
     "moduleForeignRepoProviders": 1,
-    "forwardRefModuleFiles": 10,
+    "forwardRefModuleFiles": 9,
     "injectForwardRefFiles": 6,
-    "sharedModuleBusinessRepos": 1,
-    "sharedModuleBusinessProviders": 3,
-    "prismaOutsideRepoFiles": 3,
-    "prismaOutsideRepoCalls": 32
+    "sharedModuleBusinessRepos": 0,
+    "sharedModuleBusinessProviders": 1,
+    "prismaOutsideRepoFiles": 2,
+    "prismaOutsideRepoCalls": 28
   },
   "details": {
     "crossModuleRepoImports": [
@@ -65,7 +65,6 @@
       "modules/shop-purchase/shop-purchase.module.ts",
       "modules/shop-rarity-price/shop-rarity-price.module.ts",
       "modules/user-reward-history/user-reward-history.module.ts",
-      "shared/shared.module.ts",
       "websockets/websockets.module.ts"
     ],
     "injectForwardRefFiles": [
@@ -76,18 +75,13 @@
       "modules/shop-purchase/shop-purchase.service.ts",
       "modules/shop-rarity-price/shop-rarity-price.service.ts"
     ],
-    "sharedModuleBusinessRepos": [
-      "SharedNotificationRepo"
-    ],
+    "sharedModuleBusinessRepos": [],
     "sharedModuleBusinessProviders": [
-      "SharedNotificationService",
-      "SharedUserSubscriptionService",
-      "UserGateway"
+      "SharedUserSubscriptionService"
     ],
     "prismaOutsideRepoFiles": [
       "common/guards/access-token.guard.ts",
-      "cronjobs/handle-leaderboard-season.cronjob.ts",
-      "websockets/user.gateway.ts"
+      "cronjobs/handle-leaderboard-season.cronjob.ts"
     ]
   }
 }

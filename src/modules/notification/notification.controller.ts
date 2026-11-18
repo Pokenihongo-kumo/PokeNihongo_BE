@@ -2,7 +2,7 @@ import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
 import { MessageResDTO, PaginationResponseDTO } from '@/shared/dtos/response.dto'
-import { SharedNotificationService } from '@/shared/services/shared-notification.service'
+import { NotificationService } from '@/modules/notification/notification.service'
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common'
 import { ZodSerializerDto } from 'nestjs-zod'
 import {
@@ -18,7 +18,7 @@ import {
 
 @Controller('notification')
 export class NotificationController {
-  constructor(private readonly notificationService: SharedNotificationService) {}
+  constructor(private readonly notificationService: NotificationService) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseDTO)

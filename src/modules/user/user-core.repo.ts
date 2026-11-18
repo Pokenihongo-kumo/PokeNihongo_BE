@@ -167,4 +167,38 @@ export class UserCoreRepo {
       select: { id: true, eloscore: true }
     })
   }
+
+  // ---- Device presence on the /user socket (UserGateway) ----
+
+  // Connected: this device of the user is active now
+  markDeviceActive(deviceId: number, userId: number) {
+    return this.prismaService.device.updateMany({
+      where: { id: deviceId, userId },
+      data: { isActive: true, lastActive: new Date() }
+    })
+  }
+
+  // Connected without a known device: all of the user's devices
+  markUserDevicesActive(userId: number) {
+    return this.prismaService.device.updateMany({
+      where: { userId },
+      data: { isActive: true, lastActive: new Date() }
+    })
+  }
+
+  // Disconnected: last seen now (stays active)
+  touchActiveDevice(deviceId: number, userId: number) {
+    return this.prismaService.device.updateMany({
+      where: { id: deviceId, userId, isActive: true },
+      data: { lastActive: new Date() }
+    })
+  }
+
+  // Disconnected without a known device
+  touchActiveUserDevices(userId: number) {
+    return this.prismaService.device.updateMany({
+      where: { userId, isActive: true },
+      data: { lastActive: new Date() }
+    })
+  }
 }
