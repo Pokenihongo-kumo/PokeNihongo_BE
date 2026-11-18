@@ -1,0 +1,598 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Battle batch 7a contract (e2e) errors 1`] = `
+{
+  "claimBadId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "claimMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "User season history not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy lịch sử mùa giải người dùng",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "rankListWithoutLogin": {
+    "httpStatus": 401,
+  },
+  "rankRewardsMissingSeason": {
+    "en": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "There is already an active leaderboard season",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+    "vi": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Mùa giải bảng xếp hạng đang hoạt động",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+  },
+  "seasonBadId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid leaderboard season data",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Dữ liệu mùa giải bảng xếp hạng không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "seasonCreateEmpty": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "This field is required",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Trường này là bắt buộc",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "seasonDeleteMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Record not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bản ghi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "seasonMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Record not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bản ghi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+}
+`;
+
+exports[`Battle batch 7a contract (e2e) mobile, a season running: reward-now, join, my history, rank list 1`] = `
+{
+  "join": {
+    "body": {
+      "data": {
+        "preSeasonInfo": "null",
+        "seasonNowInfo": {
+          "endDate": "string",
+          "nameTranslation": "null",
+          "newElo": "number",
+          "newRank": "string",
+          "seasonId": "number",
+          "startDate": "string",
+        },
+      },
+      "message": "Tạo lịch sử mùa giải người dùng thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "myHistory": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "deletedAt": "null",
+        "finalElo": "null",
+        "finalRank": "string",
+        "id": "number",
+        "rewardsClaimed": "string",
+        "seasonId": "number",
+        "seasonRankRewardId": "null",
+        "updatedAt": "string",
+        "userId": "number",
+      },
+      "message": "Lấy danh sách lịch sử mùa giải người dùng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "rankList": {
+    "body": {
+      "data": {
+        "me": {
+          "avatar": "null",
+          "finalElo": "number",
+          "finalRank": "string",
+          "name": "string",
+          "position": "number",
+          "userId": "number",
+        },
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "avatar": "null",
+            "finalElo": "number",
+            "finalRank": "string",
+            "name": "string",
+            "position": "number",
+            "userId": "number",
+          },
+        ],
+      },
+      "message": "Lấy danh sách mùa giải bảng xếp hạng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "rankListN5": {
+    "body": {
+      "data": {
+        "me": {
+          "avatar": "null",
+          "finalElo": "number",
+          "finalRank": "string",
+          "name": "string",
+          "position": "number",
+          "userId": "number",
+        },
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "avatar": "null",
+            "finalElo": "number",
+            "finalRank": "string",
+            "name": "string",
+            "position": "number",
+            "userId": "number",
+          },
+        ],
+      },
+      "message": "Lấy danh sách mùa giải bảng xếp hạng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "rewardNow": {
+    "body": {
+      "data": {
+        "endDate": "string",
+        "id": "number",
+        "nameTranslation": "null",
+        "nameTranslations": [],
+        "seasonRankRewards": [],
+        "startDate": "string",
+        "status": "string",
+      },
+      "message": "Lấy danh sách mùa giải bảng xếp hạng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Battle batch 7a contract (e2e) mobile, no season running: reward-now, join, my history 1`] = `
+{
+  "join": {
+    "en": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Leaderboard season has not started yet",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+    "vi": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Mùa giải bảng xếp hạng chưa bắt đầu",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+  },
+  "myHistory": {
+    "body": {
+      "error": "INTERNAL_SERVER_ERROR",
+      "message": "Internal Server Error",
+      "statusCode": 500,
+    },
+    "httpStatus": 500,
+  },
+  "rewardNow": {
+    "en": {
+      "body": {
+        "error": "INTERNAL_SERVER_ERROR",
+        "message": "An error occurred",
+        "statusCode": 500,
+      },
+      "httpStatus": 500,
+    },
+    "vi": {
+      "body": {
+        "error": "INTERNAL_SERVER_ERROR",
+        "message": "Đã xảy ra lỗi",
+        "statusCode": 500,
+      },
+      "httpStatus": 500,
+    },
+  },
+}
+`;
+
+exports[`Battle batch 7a contract (e2e) mobile: a past season's rank list and reward claim (once) 1`] = `
+{
+  "claim": {
+    "body": {
+      "data": {
+        "levelRewards": [],
+        "levelsGained": "number",
+        "pokeCoins": "null",
+        "pokemons": [],
+        "sparkles": {
+          "balance": "number",
+          "createdAt": "string",
+          "createdById": "null",
+          "deletedAt": "null",
+          "deletedById": "null",
+          "id": "number",
+          "type": "string",
+          "updatedAt": "string",
+          "updatedById": "null",
+          "userId": "number",
+        },
+      },
+      "message": "Nhận phần thưởng mùa giải thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "claimAgain": {
+    "en": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Không thể nhận phần thưởng cho mùa giải này",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+    "vi": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Không thể nhận phần thưởng cho mùa giải này",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+  },
+  "claimNotFinalized": {
+    "en": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Không thể nhận phần thưởng cho mùa giải này",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+    "vi": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Không thể nhận phần thưởng cho mùa giải này",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+  },
+  "rankList": {
+    "body": {
+      "data": {
+        "me": {
+          "avatar": "null",
+          "finalElo": "number",
+          "finalRank": "string",
+          "name": "string",
+          "position": "number",
+          "userId": "number",
+        },
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "avatar": "null",
+            "finalElo": "number",
+            "finalRank": "string",
+            "name": "string",
+            "position": "number",
+            "userId": "number",
+          },
+        ],
+      },
+      "message": "Lấy danh sách mùa giải bảng xếp hạng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Battle batch 7a contract (e2e) web: season create, list, read, update, rank rewards, delete 1`] = `
+{
+  "created": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "createdById": "number",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "enablePrecreate": "boolean",
+        "endDate": "string",
+        "hasOpened": "boolean",
+        "id": "number",
+        "isRandomItemAgain": "boolean",
+        "nameKey": "string",
+        "precreateBeforeEndDays": "number",
+        "startDate": "string",
+        "status": "string",
+        "updatedAt": "string",
+        "updatedById": "null",
+      },
+      "message": "Tạo mùa giải bảng xếp hạng thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "deleted": {
+    "body": {
+      "data": "null",
+      "message": "Xóa mùa giải bảng xếp hạng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "list": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "createdAt": "string",
+            "createdById": "number",
+            "deletedAt": "null",
+            "deletedById": "null",
+            "enablePrecreate": "boolean",
+            "endDate": "string",
+            "hasOpened": "boolean",
+            "id": "number",
+            "isRandomItemAgain": "boolean",
+            "nameKey": "string",
+            "nameTranslation": "string",
+            "nameTranslations": [
+              {
+                "key": "string",
+                "value": "string",
+              },
+            ],
+            "precreateBeforeEndDays": "number",
+            "startDate": "string",
+            "status": "string",
+            "updatedAt": "string",
+            "updatedById": "null",
+          },
+        ],
+      },
+      "message": "Lấy danh sách mùa giải bảng xếp hạng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "one": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "createdById": "number",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "enablePrecreate": "boolean",
+        "endDate": "string",
+        "hasOpened": "boolean",
+        "id": "number",
+        "isRandomItemAgain": "boolean",
+        "nameKey": "string",
+        "nameTranslation": "string",
+        "nameTranslations": [
+          {
+            "key": "string",
+            "value": "string",
+          },
+        ],
+        "precreateBeforeEndDays": "number",
+        "seasonRankRewards": [],
+        "startDate": "string",
+        "status": "string",
+        "updatedAt": "string",
+        "updatedById": "null",
+      },
+      "message": "Lấy thông tin mùa giải bảng xếp hạng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "rankRewards": {
+    "body": {
+      "data": [
+        {
+          "createdAt": "string",
+          "createdById": "number",
+          "deletedAt": "null",
+          "deletedById": "null",
+          "id": "number",
+          "order": "number",
+          "rankName": "string",
+          "seasonId": "number",
+          "updatedAt": "string",
+          "updatedById": "number",
+        },
+      ],
+      "message": "Cập nhật phần thưởng xếp hạng mùa giải thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "updated": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "createdById": "number",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "enablePrecreate": "boolean",
+        "endDate": "string",
+        "hasOpened": "boolean",
+        "id": "number",
+        "isRandomItemAgain": "boolean",
+        "nameKey": "string",
+        "precreateBeforeEndDays": "number",
+        "startDate": "string",
+        "status": "string",
+        "updatedAt": "string",
+        "updatedById": "number",
+      },
+      "message": "Cập nhật mùa giải bảng xếp hạng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
