@@ -216,7 +216,11 @@ export class HandleLeaderboardSeasonCronjob {
 
     const userHistories = season.userHistories || []
     if (userHistories.length === 0) {
-      this.logger.log(`[FinalizeSeason] Season ${seasonId} has no participants`)
+      // Elo is reset at every season end, with or without participants
+      const totalUsers = await this.userCoreService.lowerEloOfAllUsers(1000)
+      this.logger.log(
+        `[FinalizeSeason] Season ${seasonId} has no participants; elo reset for ${totalUsers} users`
+      )
       return
     }
 
