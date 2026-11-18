@@ -154,7 +154,7 @@ exports[`User progress batch 5a contract (e2e) attendance week before, check in,
     "en": {
       "body": {
         "error": "CONFLICT",
-        "message": "Bạn đã điểm danh hôm nay",
+        "message": "You have already checked in today",
         "statusCode": 409,
       },
       "httpStatus": 409,

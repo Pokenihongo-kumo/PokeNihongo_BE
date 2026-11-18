@@ -18,7 +18,10 @@ import { MatchingGateway } from '@/websockets/matching.gateway'
 import { InjectQueue } from '@nestjs/bull'
 import { forwardRef, Inject, Injectable } from '@nestjs/common'
 import { Queue } from 'bull'
-import { RoundQuestionNotFoundException } from './dto/round-question.error'
+import {
+  RoundQuestionAlreadyAnsweredException,
+  RoundQuestionNotFoundException
+} from './dto/round-question.error'
 import {
   AnswerQuestionBodyType,
   CreateRoundQuestionBodyType,
@@ -191,11 +194,23 @@ export class RoundQuestionService {
       where: { id },
       include: {
         questionBank: { include: { answers: true } },
-        debuff: true
+        debuff: true,
+        matchRoundParticipant: {
+          select: { matchParticipant: { select: { userId: true } } }
+        },
+        roundQuestionsAnswerLogs: { select: { id: true }, take: 1 }
       }
     })
 
     if (!roundQuestion) throw new RoundQuestionNotFoundException()
+    // Only the player's own question (the opponent's could be answered), and
+    // once: checked before any timer or log is touched
+    if (roundQuestion.matchRoundParticipant.matchParticipant.userId !== userId) {
+      throw new RoundQuestionNotFoundException()
+    }
+    if (roundQuestion.roundQuestionsAnswerLogs.length > 0) {
+      throw new RoundQuestionAlreadyAnsweredException()
+    }
 
     // ✅ CRITICAL: Clear setTimeout FIRST (processor might be about to fire)
     this.roundQuestionProcessor.clearQuestionTimeout(
@@ -533,7 +548,7 @@ export class RoundQuestionService {
     return {
       statusCode: 200,
       data: roundQuestion,
-      message: this.i18nService.translate(RoundQuestionMessage.GET_LIST_SUCCESS, lang)
+      message: this.i18nService.translate(RoundQuestionMessage.ANSWER_SUCCESS, lang)
     }
   }
 
@@ -755,7 +770,7 @@ export class RoundQuestionService {
       userId1,
       userId2,
       nextRoundNumber,
-      5000
+      5 // seconds (the START_ROUND job below waits 5000 ms); 5000 read as 5000 s
     )
 
     await this.matchRoundParticipantTimeoutQueue.add(

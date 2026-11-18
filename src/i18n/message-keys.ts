@@ -1309,7 +1309,9 @@ export const RoundQuestionMessage = {
   GET_LIST_SUCCESS: 'round_question.GET_LIST_SUCCESS',
   NOT_FOUND: 'round_question.NOT_FOUND',
   ALREADY_EXISTS: 'round_question.ALREADY_EXISTS',
-  INVALID_DATA: 'round_question.INVALID_DATA'
+  INVALID_DATA: 'round_question.INVALID_DATA',
+  ANSWER_SUCCESS: 'round_question.ANSWER_SUCCESS',
+  ALREADY_ANSWERED: 'round_question.ALREADY_ANSWERED'
 } as const
 
 export const RoundQuestionsAnswerLogMessage = {
@@ -1472,7 +1474,7 @@ export const NotificationMessage = {
   NOTI_DAILY_REQUEST: 'notification.NOTI_DAILY_REQUEST',
   NOTI_LEVEL_UP: 'notification.NOTI_LEVEL_UP',
   NOTI_LESSON: 'notification.NOTI_LESSON',
-  NOTI_EXCERCISE: 'notification.NOTI_EXERCISE',
+  NOTI_EXCERCISE: 'notification.NOTI_EXCERCISE',
   NOTI_REWARD: 'notification.NOTI_REWARD',
   NOTI_SYSTEM: 'notification.NOTI_SYSTEM',
   NOTI_OTHER: 'notification.NOTI_OTHER',
@@ -1501,8 +1503,9 @@ export const MatchingSocketMessage = {
   HAVE_PLAYER_CANCELLED: 'matching_socket.HAVE_PLAYER_CANCELLED',
   MATCH_READY_START: 'matching_socket.MATCH_READY_START',
   ALL_ACCEPT_MATCH: 'matching_socket.ALL_ACCEPT_MATCH',
-  OPPONENT_COMMPLETED_ANSWER: 'matching_socket.OPPONENT_COMMIT_ANSWER',
-  WAITING_OPPONENT_COMMPLETED_ANSWER: 'matching_socket.WAITING_OPPONENT_COMMIT_ANSWER',
+  OPPONENT_COMMPLETED_ANSWER: 'matching_socket.OPPONENT_COMMPLETED_ANSWER',
+  WAITING_OPPONENT_COMMPLETED_ANSWER:
+    'matching_socket.WAITING_OPPONENT_COMMPLETED_ANSWER',
   ROUND: 'matching_socket.ROUND',
   WILL_START_IN: 'matching_socket.WILL_START_IN',
   SECONDS: 'matching_socket.SECONDS',

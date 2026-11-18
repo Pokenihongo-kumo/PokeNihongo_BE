@@ -913,6 +913,7 @@ export const viMessages = {
     USER_ALREADY_ATTENDED_TODAY: 'Người dùng đã điểm danh hôm nay'
   },
   achievement: {
+    INVALID_DATA: 'Dữ liệu thành tựu không hợp lệ',
     CREATE_SUCCESS: 'Tạo thành tích thành công',
     UPDATE_SUCCESS: 'Cập nhật thành tích thành công',
     DELETE_SUCCESS: 'Xóa thành tích thành công',
@@ -942,6 +943,7 @@ export const viMessages = {
     INVALID_DAY_OF_WEEK: 'Ngày trong tuần không hợp lệ'
   },
   attendance: {
+    INVALID_DATA: 'Dữ liệu điểm danh không hợp lệ',
     CREATE_SUCCESS: 'Điểm danh thành công',
     UPDATE_SUCCESS: 'Cập nhật điểm danh thành công',
     DELETE_SUCCESS: 'Xóa điểm danh thành công',
@@ -1039,6 +1041,7 @@ export const viMessages = {
     INVALID_DATA: 'Dữ liệu tỉ lệ vật phẩm gacha không hợp lệ'
   },
   gacha_item: {
+    GET_DETAIL_SUCCESS: 'Lấy chi tiết vật phẩm gacha thành công',
     CREATE_SUCCESS: 'Tạo vật phẩm gacha thành công',
     UPDATE_SUCCESS: 'Cập nhật vật phẩm gacha thành công',
     DELETE_SUCCESS: 'Xóa vật phẩm gacha thành công',
@@ -1071,6 +1074,7 @@ export const viMessages = {
     INVALID_DATA: 'Dữ liệu giá theo độ hiếm không hợp lệ'
   },
   user_gacha_pity: {
+    DELETE_SUCCESS: 'Xóa pity gacha của người dùng thành công',
     CREATE_SUCCESS: 'Tạo hệ thống gacha pity cho người dùng thành công',
     UPDATE_SUCCESS: 'Cập nhật hệ thống gacha pity cho người dùng thành công',
     GET_SUCCESS: 'Lấy thông tin hệ thống gacha pity cho người dùng thành công',
@@ -1267,6 +1271,7 @@ export const viMessages = {
     INVALID_DATA: 'Dữ liệu debuff vòng đấu không hợp lệ'
   },
   user_season_history: {
+    DELETE_SUCCESS: 'Xóa lịch sử mùa giải người dùng thành công',
     CREATE_SUCCESS: 'Tạo lịch sử mùa giải người dùng thành công',
     UPDATE_SUCCESS: 'Cập nhật lịch sử mùa giải người dùng thành công',
     GET_SUCCESS: 'Lấy thông tin lịch sử mùa giải người dùng thành công',
@@ -1278,6 +1283,8 @@ export const viMessages = {
     GET_REWARD_SUCCESS: 'Nhận phần thưởng mùa giải thành công'
   },
   round_question: {
+    ANSWER_SUCCESS: 'Đã ghi nhận câu trả lời',
+    ALREADY_ANSWERED: 'Câu hỏi này đã được trả lời',
     CREATE_SUCCESS: 'Tạo câu hỏi vòng đấu thành công',
     UPDATE_SUCCESS: 'Cập nhật câu hỏi vòng đấu thành công',
     DELETE_SUCCESS: 'Xóa câu hỏi vòng đấu thành công',
@@ -1288,6 +1295,7 @@ export const viMessages = {
     INVALID_DATA: 'Dữ liệu câu hỏi vòng đấu không hợp lệ'
   },
   round_questions_answer_log: {
+    DELETE_SUCCESS: 'Xóa nhật ký trả lời câu hỏi vòng đấu thành công',
     CREATE_SUCCESS: 'Tạo nhật ký câu trả lời câu hỏi vòng đấu thành công',
     UPDATE_SUCCESS: 'Cập nhật nhật ký câu trả lời câu hỏi vòng đấu thành công',
     GET_SUCCESS: 'Lấy thông tin nhật ký câu trả lời câu hỏi vòng đấu thành công',
@@ -1325,6 +1333,7 @@ export const viMessages = {
     NOT_JOIN_NEW_SEASON: ' Bạn chưa tham gia mùa giải mới'
   },
   user_reward_history: {
+    DELETE_SUCCESS: 'Xóa lịch sử phần thưởng người dùng thành công',
     CREATE_SUCCESS: 'Tạo lịch sử phần thưởng người dùng thành công',
     UPDATE_SUCCESS: 'Cập nhật lịch sử phần thưởng người dùng thành công',
     GET_SUCCESS: 'Lấy thông tin lịch sử phần thưởng người dùng thành công',
@@ -1334,6 +1343,8 @@ export const viMessages = {
     INVALID_DATA: 'Dữ liệu lịch sử phần thưởng người dùng không hợp lệ'
   },
   user_achievement: {
+    DELETE_SUCCESS: 'Xóa thành tựu người dùng thành công',
+    GET_REWARD_SUCCESS: 'Nhận phần thưởng thành tựu thành công',
     CREATE_SUCCESS: 'Tạo thành tích người dùng thành công',
     UPDATE_SUCCESS: 'Cập nhật thành tích người dùng thành công',
     GET_SUCCESS: 'Lấy thông tin thành tích người dùng thành công',
@@ -1419,6 +1430,7 @@ export const viMessages = {
     NOT_ENOUGH_POKE_COINS: 'Không đủ PokeCoin để giảm giá'
   },
   payment: {
+    DELETE_SUCCESS: 'Xóa thanh toán thành công',
     CREATE_SUCCESS: 'Tạo giao dịch thanh toán thành công',
     UPDATE_SUCCESS: 'Cập nhật giao dịch thanh toán thành công',
 
