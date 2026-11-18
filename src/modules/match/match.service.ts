@@ -526,4 +526,22 @@ export class MatchService {
   completeWithWinnerFull(...args: Parameters<MatchRepo['completeWithWinnerFull']>) {
     return this.matchRepo.completeWithWinnerFull(...args)
   }
+
+  // ---- For other modules: The pick flow (match-round-participant) (B7) ----
+
+  findWithPlayers(...args: Parameters<MatchRepo['findWithPlayers']>) {
+    return this.matchRepo.findWithPlayers(...args)
+  }
+
+  // ---- For other modules: The pick timeout (match-round-participant) (B7) ----
+
+  findInProgressByParticipant(
+    ...args: Parameters<MatchRepo['findInProgressByParticipant']>
+  ) {
+    return this.matchRepo.findInProgressByParticipant(...args)
+  }
+
+  findByRoundWithPlayers(...args: Parameters<MatchRepo['findByRoundWithPlayers']>) {
+    return this.matchRepo.findByRoundWithPlayers(...args)
+  }
 }

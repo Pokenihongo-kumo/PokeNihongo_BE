@@ -999,4 +999,38 @@ export class RoundQuestionService {
   ) {
     return this.roundQuestionRepo.findByMatchRoundParticipantId(...args)
   }
+
+  // ---- For other modules: Questions made for a round (match-round-participant) (B7) ----
+
+  createQuestionRow(...args: Parameters<RoundQuestionRepo['createQuestionRow']>) {
+    return this.roundQuestionRepo.createQuestionRow(...args)
+  }
+
+  findQuestionsOfParticipant(
+    ...args: Parameters<RoundQuestionRepo['findQuestionsOfParticipant']>
+  ) {
+    return this.roundQuestionRepo.findQuestionsOfParticipant(...args)
+  }
+
+  setDebuffAndPoints(...args: Parameters<RoundQuestionRepo['setDebuffAndPoints']>) {
+    return this.roundQuestionRepo.setDebuffAndPoints(...args)
+  }
+
+  setDebuff(...args: Parameters<RoundQuestionRepo['setDebuff']>) {
+    return this.roundQuestionRepo.setDebuff(...args)
+  }
+
+  // ---- For other modules: Questions for the pick timeout and round start (B7) ----
+
+  countForParticipants(...args: Parameters<RoundQuestionRepo['countForParticipants']>) {
+    return this.roundQuestionRepo.countForParticipants(...args)
+  }
+
+  findFirstQuestion(...args: Parameters<RoundQuestionRepo['findFirstQuestion']>) {
+    return this.roundQuestionRepo.findFirstQuestion(...args)
+  }
+
+  setQuestionEndTime(...args: Parameters<RoundQuestionRepo['setQuestionEndTime']>) {
+    return this.roundQuestionRepo.setQuestionEndTime(...args)
+  }
 }

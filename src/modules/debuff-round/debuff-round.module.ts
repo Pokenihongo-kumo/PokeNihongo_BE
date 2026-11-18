@@ -8,6 +8,7 @@ import { DebuffRoundService } from './debuff-round.service'
 @Module({
   imports: [LanguagesModule, TranslationModule],
   controllers: [DebuffRoundController],
-  providers: [DebuffRoundService, DebuffRoundRepo]
+  providers: [DebuffRoundService, DebuffRoundRepo],
+  exports: [DebuffRoundService]
 })
 export class DebuffRoundModule {}

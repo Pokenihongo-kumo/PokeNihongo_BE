@@ -783,4 +783,10 @@ export class UserPokemonService {
   countPokemonByUser(...args: Parameters<UserPokemonRepo['countPokemonByUser']>) {
     return this.userPokemonRepo.countPokemonByUser(...args)
   }
+
+  // ---- For other modules: Pick timeout: the player's pokemon (B7) ----
+
+  findPokemonIdsOfUser(...args: Parameters<UserPokemonRepo['findPokemonIdsOfUser']>) {
+    return this.userPokemonRepo.findPokemonIdsOfUser(...args)
+  }
 }

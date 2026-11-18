@@ -18,7 +18,10 @@ import { PaginationQueryType } from '@/shared/models/request.model'
 import { InjectQueue } from '@nestjs/bull'
 import { Injectable, Logger } from '@nestjs/common'
 import { Queue } from 'bull'
-import { PrismaService } from 'src/shared/services/prisma.service'
+import { DebuffRoundService } from '@/modules/debuff-round/debuff-round.service'
+import { MatchService } from '@/modules/match/match.service'
+import { RoundQuestionService } from '@/modules/round-question/round-question.service'
+import { UserCoreService } from '@/modules/user/user-core.service'
 import { MatchingGateway } from 'src/websockets/matching.gateway'
 import { MatchRoundService } from '@/modules/match-round/match-round.service'
 import { PokemonService } from '@/modules/pokemon/pokemon.service'
@@ -50,7 +53,10 @@ export class MatchRoundParticipantService {
     private readonly questionBankService: QuestionBankService,
     private readonly pokemonService: PokemonService,
     private readonly i18nService: I18nService,
-    private readonly prismaService: PrismaService,
+    private readonly matchService: MatchService,
+    private readonly userCoreService: UserCoreService,
+    private readonly roundQuestionService: RoundQuestionService,
+    private readonly debuffRoundService: DebuffRoundService,
     private readonly matchingGateway: MatchingGateway,
     @InjectQueue(BullQueue.MATCH_ROUND_PARTICIPANT_TIMEOUT)
     private readonly matchRoundParticipantTimeoutQueue: Queue
@@ -272,10 +278,8 @@ export class MatchRoundParticipantService {
 
       // ✅ CRITICAL FIX: Re-fetch participants from DB to ensure accurate allSelected check
       // Do NOT rely on stale in-memory data from existMatchRound.participants
-      const freshParticipants = await this.prismaService.matchRoundParticipant.findMany({
-        where: { matchRoundId, deletedAt: null },
-        orderBy: { orderSelected: 'asc' }
-      })
+      const freshParticipants =
+        await this.matchRoundParticipantRepo.findLiveInRoundOrdered(matchRoundId)
 
       const allSelectedNow = freshParticipants.every(
         (p) => p.selectedUserPokemonId !== null
@@ -295,14 +299,8 @@ export class MatchRoundParticipantService {
           `[MatchRoundParticipant] All participants selected manually in round ${matchRoundId}. Updating statuses then generating questions.`
         )
         // Update round & participants to PENDING trước khi notify
-        await this.prismaService.matchRound.update({
-          where: { id: matchRoundId },
-          data: { status: RoundStatus.PENDING }
-        })
-        await this.prismaService.matchRoundParticipant.updateMany({
-          where: { matchRoundId },
-          data: { status: RoundStatus.PENDING }
-        })
+        await this.matchRoundService.setRoundPending(matchRoundId)
+        await this.matchRoundParticipantRepo.setRoundParticipantsPending(matchRoundId)
       } else if (nextParticipant) {
         // Nếu chưa all selected và có nextParticipant -> Set time cho participant tiếp theo
         await this.matchRoundParticipantRepo.update({
@@ -328,21 +326,10 @@ export class MatchRoundParticipantService {
       }
 
       // Fetch data và gửi socket 1 lần duy nhất SAU khi tất cả hàm chạy xong
-      const match: any = await this.prismaService.match.findUnique({
-        where: { id: existMatchRound.match.id },
-        include: { participants: { include: { user: true } } }
-      })
-      const rounds: any[] = await this.prismaService.matchRound.findMany({
-        where: { matchId: existMatchRound.match.id, deletedAt: null },
-        include: {
-          participants: {
-            include: {
-              selectedUserPokemon: { include: { pokemon: true } }
-            }
-          }
-        },
-        orderBy: { roundNumber: 'asc' }
-      })
+      const match: any = await this.matchService.findWithPlayers(existMatchRound.match.id)
+      const rounds: any[] = await this.matchRoundService.findRoundsWithPicks(
+        existMatchRound.match.id
+      )
 
       const matchFormatted = {
         id: match.id,
@@ -407,10 +394,9 @@ export class MatchRoundParticipantService {
 
         // CRITICAL: Only check allPending when BOTH users have selected
         // This prevents premature round starting when only one user selected
-        const allRounds = await this.prismaService.matchRound.findMany({
-          where: { matchId: existMatchRound.match.id, deletedAt: null },
-          include: { participants: true }
-        })
+        const allRounds = await this.matchRoundService.findRoundsWithParticipants(
+          existMatchRound.match.id
+        )
         const allPending = allRounds.every((r) => r.status === RoundStatus.PENDING)
 
         this.logger.log(
@@ -442,11 +428,7 @@ export class MatchRoundParticipantService {
               }
 
               const roundOneParticipants =
-                await this.prismaService.matchRoundParticipant.findMany({
-                  where: { matchRoundId: roundOne.id, deletedAt: null },
-                  include: { matchParticipant: { include: { user: true } } },
-                  orderBy: { orderSelected: 'asc' }
-                })
+                await this.matchRoundParticipantRepo.findInRoundWithUsers(roundOne.id)
               if (roundOneParticipants.length === 2) {
                 const userId1 = roundOneParticipants[0].matchParticipant.userId
                 const userId2 = roundOneParticipants[1].matchParticipant.userId
@@ -524,12 +506,7 @@ export class MatchRoundParticipantService {
   private async moveToNextRound(currentMatchRound: any): Promise<void> {
     try {
       // Cập nhật status của round hiện tại thành PENDING
-      await this.prismaService.matchRound.update({
-        where: { id: currentMatchRound.id },
-        data: {
-          status: RoundStatus.PENDING
-        }
-      })
+      await this.matchRoundService.setRoundPending(currentMatchRound.id)
 
       const nextRoundMap = {
         [MatchRoundNumber.ONE]: MatchRoundNumber.TWO,
@@ -617,10 +594,7 @@ export class MatchRoundParticipantService {
       const participants = matchRoundWithParticipants.match.participants
 
       // Lấy user ELO cho mỗi participant qua bảng user
-      const users = await this.prismaService.user.findMany({
-        where: { id: { in: participants.map((p) => p.userId) } },
-        select: { id: true, eloscore: true }
-      })
+      const users = await this.userCoreService.findElos(participants.map((p) => p.userId))
       const eloMap = new Map(users.map((u) => [u.id, u.eloscore || 0]))
 
       const participantElos = participants.map((p) => eloMap.get(p.userId) || 0)
@@ -701,37 +675,30 @@ export class MatchRoundParticipantService {
       for (const participantId of matchRoundParticipantIds) {
         let orderNumber = 1
         for (const q of combined) {
-          await this.prismaService.roundQuestion.create({
-            data: {
-              matchRoundParticipantId: participantId,
-              questionBankId: q.id,
-              timeLimitMs: TIME_LIMIT_ANSWER_QUESTION_MS,
-              basePoints: 100,
-              orderNumber: orderNumber
-            }
+          await this.roundQuestionService.createQuestionRow({
+            matchRoundParticipantId: participantId,
+            questionBankId: q.id,
+            timeLimitMs: TIME_LIMIT_ANSWER_QUESTION_MS,
+            basePoints: 100,
+            orderNumber: orderNumber
           })
           orderNumber++
         }
       }
 
-      await this.prismaService.matchRoundParticipant.updateMany({
-        where: { id: { in: matchRoundParticipantIds } },
-        data: { questionsTotal: combined.length }
-      })
+      await this.matchRoundParticipantRepo.setQuestionsTotal(
+        matchRoundParticipantIds,
+        combined.length
+      )
 
       // Debuff logic: xác định pokemon bị debuff -> participant chứa pokemon đó
-      const selectedPokemons = await this.prismaService.matchRoundParticipant.findMany({
-        where: { matchRoundId: roundId, deletedAt: null },
-        select: { id: true, selectedUserPokemon: { select: { pokemonId: true } } }
-      })
+      const selectedPokemons =
+        await this.matchRoundParticipantRepo.findPicksInRound(roundId)
       if (selectedPokemons.length === 2) {
         const [p1, p2] = selectedPokemons
         if (p1.selectedUserPokemon?.pokemonId && p2.selectedUserPokemon?.pokemonId) {
           try {
-            const debuffResult = await this.prismaService.debuffRound.findMany({
-              where: { deletedAt: null },
-              take: 50
-            })
+            const debuffResult = await this.debuffRoundService.findLiveDebuffs()
             const debuffRow = debuffResult.length
               ? debuffResult[Math.floor(Math.random() * debuffResult.length)]
               : null
@@ -763,21 +730,20 @@ export class MatchRoundParticipantService {
             if (debuffRow && debuffedParticipantId) {
               // Persist debuff assignment on the participant (so later includes expose participant.debuff)
               try {
-                await this.prismaService.matchRoundParticipant.update({
-                  where: { id: debuffedParticipantId },
-                  data: { debuffId: debuffRow.id, questionsTotal: QUESTIONS_PER_ROUND }
-                })
+                await this.matchRoundParticipantRepo.assignDebuff(
+                  debuffedParticipantId,
+                  debuffRow.id,
+                  QUESTIONS_PER_ROUND
+                )
               } catch (assignErr) {
                 this.logger.warn(
                   `[MatchRoundParticipant] Failed to assign debuffId=${debuffRow.id} to participant ${debuffedParticipantId}: ${assignErr.message}`
                 )
               }
-              const questionsOfDebuffed = await this.prismaService.roundQuestion.findMany(
-                {
-                  where: { matchRoundParticipantId: debuffedParticipantId },
-                  orderBy: { orderNumber: 'asc' }
-                }
-              )
+              const questionsOfDebuffed =
+                await this.roundQuestionService.findQuestionsOfParticipant(
+                  debuffedParticipantId
+                )
               if (questionsOfDebuffed.length > 0) {
                 if (debuffRow.typeDebuff === 'ADD_QUESTION') {
                   // Thêm valueDebuff câu hỏi rank cao hơn 1 bậc nếu có
@@ -790,28 +756,22 @@ export class MatchRoundParticipantService {
                     )
                     let nextOrder = questionsOfDebuffed.length + 1
                     for (const extra of extraPool) {
-                      await this.prismaService.roundQuestion.create({
-                        data: {
-                          matchRoundParticipantId: debuffedParticipantId,
-                          questionBankId: extra.id,
-                          timeLimitMs: TIME_LIMIT_ANSWER_QUESTION_MS,
-                          basePoints: 0,
-                          orderNumber: nextOrder++,
-                          debuffId: debuffRow.id
-                        }
+                      await this.roundQuestionService.createQuestionRow({
+                        matchRoundParticipantId: debuffedParticipantId,
+                        questionBankId: extra.id,
+                        timeLimitMs: TIME_LIMIT_ANSWER_QUESTION_MS,
+                        basePoints: 0,
+                        orderNumber: nextOrder++,
+                        debuffId: debuffRow.id
                       })
                     }
                   }
                   // ✅ CRITICAL FIX: Update questionsTotal to reflect additional questions added by debuff
                   const debuffValueDebuff = debuffRow.valueDebuff || 1
-                  await this.prismaService.matchRoundParticipant.update({
-                    where: { id: debuffedParticipantId },
-                    data: {
-                      questionsTotal: {
-                        increment: debuffValueDebuff
-                      }
-                    }
-                  })
+                  await this.matchRoundParticipantRepo.addQuestionsTotal(
+                    debuffedParticipantId,
+                    debuffValueDebuff
+                  )
                   this.logger.log(
                     `[MatchRoundParticipant] Updated questionsTotal for participant ${debuffedParticipantId}: +${debuffValueDebuff} extra questions from ADD_QUESTION debuff`
                   )
@@ -820,27 +780,17 @@ export class MatchRoundParticipantService {
                     questionsOfDebuffed[
                       Math.floor(Math.random() * questionsOfDebuffed.length)
                     ]
-                  await this.prismaService.roundQuestion.update({
-                    where: { id: target.id },
-                    data: {
-                      debuffId: debuffRow.id,
-                      basePoints: Math.max(
-                        10,
-                        target.basePoints - (debuffRow.valueDebuff || 0)
-                      )
-                    }
-                  })
+                  await this.roundQuestionService.setDebuffAndPoints(
+                    target.id,
+                    debuffRow.id,
+                    Math.max(10, target.basePoints - (debuffRow.valueDebuff || 0))
+                  )
                 } else if (debuffRow.typeDebuff === 'DISCOMFORT_VISION') {
                   const target =
                     questionsOfDebuffed[
                       Math.floor(Math.random() * questionsOfDebuffed.length)
                     ]
-                  await this.prismaService.roundQuestion.update({
-                    where: { id: target.id },
-                    data: {
-                      debuffId: debuffRow.id // Không đổi timeLimitMs
-                    }
-                  })
+                  await this.roundQuestionService.setDebuff(target.id, debuffRow.id)
                 }
               }
             }
@@ -853,24 +803,15 @@ export class MatchRoundParticipantService {
       }
 
       // Cập nhật status round participant về PENDING nếu chưa
-      await this.prismaService.matchRoundParticipant.updateMany({
-        where: { matchRoundId: roundId, deletedAt: null },
-        data: { status: RoundStatus.PENDING }
-      })
-      await this.prismaService.matchRound.update({
-        where: { id: roundId },
-        data: { status: RoundStatus.PENDING }
-      })
+      await this.matchRoundParticipantRepo.setLiveRoundParticipantsPending(roundId)
+      await this.matchRoundService.setRoundPending(roundId)
 
       this.logger.log(
         `[MatchRoundParticipant] Round ${roundId} completed - Updated status to PENDING for round and all participants`
       )
 
       // Kiểm tra nếu tất cả rounds của match đều PENDING -> start Round ONE
-      const allRounds = await this.prismaService.matchRound.findMany({
-        where: { matchId, deletedAt: null },
-        include: { participants: true }
-      })
+      const allRounds = await this.matchRoundService.findRoundsWithParticipants(matchId)
       const allPending = allRounds.every((r) => r.status === RoundStatus.PENDING)
 
       this.logger.log(
@@ -890,13 +831,7 @@ export class MatchRoundParticipantService {
 
           // Schedule Round ONE start after 5s thay vì start ngay lập tức
           const roundOneParticipants =
-            await this.prismaService.matchRoundParticipant.findMany({
-              where: { matchRoundId: roundOne.id, deletedAt: null },
-              include: {
-                matchParticipant: { include: { user: true } }
-              },
-              orderBy: { orderSelected: 'asc' }
-            })
+            await this.matchRoundParticipantRepo.findInRoundWithUsers(roundOne.id)
           if (roundOneParticipants.length === 2) {
             const userId1 = roundOneParticipants[0].matchParticipant.userId
             const userId2 = roundOneParticipants[1].matchParticipant.userId
@@ -928,10 +863,7 @@ export class MatchRoundParticipantService {
         this.logger.log(
           `[MatchRoundParticipant] Not all rounds PENDING yet, moving to next round after ${roundId}`
         )
-        const currentRound = await this.prismaService.matchRound.findUnique({
-          where: { id: roundId },
-          include: { match: true }
-        })
+        const currentRound = await this.matchRoundService.findRoundWithMatch(roundId)
         if (currentRound) {
           this.logger.log(
             `[MatchRoundParticipant] Calling moveToNextRound for round ${currentRound.roundNumber} of match ${matchId}`

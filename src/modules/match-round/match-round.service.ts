@@ -442,4 +442,48 @@ export class MatchRoundService {
   createParticipants(...args: Parameters<MatchRoundRepo['createParticipants']>) {
     return this.matchRoundRepo.createParticipants(...args)
   }
+
+  // ---- For other modules: Round rows for the pick flow (match-round-participant) (B7) ----
+
+  setRoundPending(...args: Parameters<MatchRoundRepo['setRoundPending']>) {
+    return this.matchRoundRepo.setRoundPending(...args)
+  }
+
+  findRoundsWithPicks(...args: Parameters<MatchRoundRepo['findRoundsWithPicks']>) {
+    return this.matchRoundRepo.findRoundsWithPicks(...args)
+  }
+
+  findRoundsWithParticipants(
+    ...args: Parameters<MatchRoundRepo['findRoundsWithParticipants']>
+  ) {
+    return this.matchRoundRepo.findRoundsWithParticipants(...args)
+  }
+
+  findRoundWithMatch(...args: Parameters<MatchRoundRepo['findRoundWithMatch']>) {
+    return this.matchRoundRepo.findRoundWithMatch(...args)
+  }
+
+  // ---- For other modules: Round rows for the pick timeout and round start (B7) ----
+
+  findMatchIdOfRound(...args: Parameters<MatchRoundRepo['findMatchIdOfRound']>) {
+    return this.matchRoundRepo.findMatchIdOfRound(...args)
+  }
+
+  findLiveRoundsOfMatch(...args: Parameters<MatchRoundRepo['findLiveRoundsOfMatch']>) {
+    return this.matchRoundRepo.findLiveRoundsOfMatch(...args)
+  }
+
+  findRoundByNumberWithParticipants(
+    ...args: Parameters<MatchRoundRepo['findRoundByNumberWithParticipants']>
+  ) {
+    return this.matchRoundRepo.findRoundByNumberWithParticipants(...args)
+  }
+
+  findRoundStatus(...args: Parameters<MatchRoundRepo['findRoundStatus']>) {
+    return this.matchRoundRepo.findRoundStatus(...args)
+  }
+
+  startRound(...args: Parameters<MatchRoundRepo['startRound']>) {
+    return this.matchRoundRepo.startRound(...args)
+  }
 }

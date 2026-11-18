@@ -1,7 +1,7 @@
 import { parseQs } from '@/common/utils/qs-parser'
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
   CreateRoundQuestionBodyType,
@@ -388,6 +388,54 @@ export class RoundQuestionRepo {
   findWithAnswers(roundQuestionId: number) {
     return this.prismaService.roundQuestion.findUnique({
       where: { id: roundQuestionId },
+      include: {
+        questionBank: {
+          include: {
+            answers: true
+          }
+        },
+        debuff: true
+      }
+    })
+  }
+
+  // ---- Questions made for a round (match-round-participant) ----
+
+  createQuestionRow(data: Prisma.RoundQuestionUncheckedCreateInput) {
+    return this.prismaService.roundQuestion.create({ data })
+  }
+
+  findQuestionsOfParticipant(participantId: number) {
+    return this.prismaService.roundQuestion.findMany({
+      where: { matchRoundParticipantId: participantId },
+      orderBy: { orderNumber: 'asc' }
+    })
+  }
+
+  setDebuffAndPoints(id: number, debuffId: number, basePoints: number) {
+    return this.prismaService.roundQuestion.update({
+      where: { id },
+      data: { debuffId, basePoints }
+    })
+  }
+
+  setDebuff(id: number, debuffId: number) {
+    return this.prismaService.roundQuestion.update({ where: { id }, data: { debuffId } })
+  }
+
+  // ---- Questions for the pick timeout and round start ----
+
+  countForParticipants(ids: number[]) {
+    return this.prismaService.roundQuestion.count({
+      where: { matchRoundParticipantId: { in: ids } }
+    })
+  }
+
+  // The first question, with answers and debuff
+  findFirstQuestion(participantId: number) {
+    return this.prismaService.roundQuestion.findFirst({
+      where: { matchRoundParticipantId: participantId },
+      orderBy: { orderNumber: 'asc' },
       include: {
         questionBank: {
           include: {
