@@ -88,6 +88,7 @@ import { UserPokemonModule } from './modules/user-pokemon/user-pokemon.module'
 import { UserProgressModule } from './modules/user-progress/user-progress.module'
 import { UserRewardHistoryModule } from './modules/user-reward-history/user-reward-history.module'
 import { UserSeasonHistoryModule } from './modules/user-season-history/user-season-history.module'
+import { UserCoreModule } from './modules/user/user-core.module'
 import { SrsReviewModule } from './modules/user-srs-review/user-srs-review.module'
 import { UserSubscriptionModule } from './modules/user-subscription/user-subscription.module'
 import { UserTestAnswerLogModule } from './modules/user-test-answer-log/user-test-answer-log.module'
@@ -188,6 +189,7 @@ import { WebsocketsModule } from './websockets/websockets.module'
     DebuffRoundModule,
     SrsReviewModule,
     UserSeasonHistoryModule,
+    UserCoreModule, // season cronjob (elo reset)
     UserAIConversationModule,
     AIConversationRoomModule,
     RoundQuestionModule,

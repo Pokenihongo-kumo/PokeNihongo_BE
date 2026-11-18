@@ -199,4 +199,22 @@ export class UserCoreRepo {
       data: { lastActive: new Date() }
     })
   }
+
+  // Season end: every user not deleted loses `by` elo (not below 0), one transaction.
+  // Returns how many users were updated.
+  async lowerEloOfAllUsers(by: number): Promise<number> {
+    const allUsers = await this.prismaService.user.findMany({
+      where: { deletedAt: null },
+      select: { id: true, eloscore: true }
+    })
+    await this.prismaService.$transaction(
+      allUsers.map((u) =>
+        this.prismaService.user.update({
+          where: { id: u.id },
+          data: { eloscore: Math.max(0, (u.eloscore || 0) - by) }
+        })
+      )
+    )
+    return allUsers.length
+  }
 }

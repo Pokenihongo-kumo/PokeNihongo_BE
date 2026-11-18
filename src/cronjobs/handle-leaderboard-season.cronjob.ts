@@ -1,17 +1,25 @@
-import { RewardClaimStatus, RewardTarget } from '@/common/constants/reward.constant'
 import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
+import { RewardService } from '@/modules/reward/reward.service'
+import { SeasonRankRewardService } from '@/modules/season-rank-reward/season-rank-reward.service'
+import { UserCoreService } from '@/modules/user/user-core.service'
+import { UserSeasonHistoryService } from '@/modules/user-season-history/user-season-history.service'
 import { addDaysUTC0000, convertEloToRank, todayUTCWith0000 } from '@/shared/helpers'
-import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable, Logger } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
-import { LeaderboardStatus } from '@prisma/client'
+import { LeaderboardStatus, RankName, RewardTarget } from '@prisma/client'
+
+// Rewards a re-randomized rank reward is drawn from
+const RANDOM_REWARD_TARGETS: RewardTarget[] = [RewardTarget.EXP, RewardTarget.SPARKLES]
 
 @Injectable()
 export class HandleLeaderboardSeasonCronjob {
   private readonly logger = new Logger(HandleLeaderboardSeasonCronjob.name)
   constructor(
-    private prisma: PrismaService,
-    private leaderboardSeasonService: LeaderboardSeasonService
+    private readonly leaderboardSeasonService: LeaderboardSeasonService,
+    private readonly seasonRankRewardService: SeasonRankRewardService,
+    private readonly userSeasonHistoryService: UserSeasonHistoryService,
+    private readonly userCoreService: UserCoreService,
+    private readonly rewardService: RewardService
   ) {}
 
   // Run daily at 00:00 UTC to expire/activate seasons
@@ -22,10 +30,7 @@ export class HandleLeaderboardSeasonCronjob {
 
     try {
       // 1) Find ACTIVE seasons that ended before today and finalize them
-      const seasonsToExpire = await this.prisma.leaderboardSeason.findMany({
-        where: { status: 'ACTIVE', endDate: { lte: now }, deletedAt: null },
-        select: { id: true }
-      })
+      const seasonsToExpire = await this.leaderboardSeasonService.findEndedActiveIds(now)
       this.logger.log(
         `[LeaderboardSeason Cron] Found ${seasonsToExpire.length} season(s) to finalize`
       )
@@ -35,10 +40,7 @@ export class HandleLeaderboardSeasonCronjob {
           await this.finalizeSeason(s.id)
           // Precreate the next season right after finalizing this one
           await this.precreateNextSeasonFromTemplate(s.id)
-          await this.prisma.leaderboardSeason.update({
-            where: { id: s.id },
-            data: { status: 'EXPIRED' }
-          })
+          await this.leaderboardSeasonService.setStatus(s.id, 'EXPIRED')
           this.logger.log(`[LeaderboardSeason Cron] Finalized and expired season ${s.id}`)
         } catch (err) {
           this.logger.error(
@@ -50,12 +52,7 @@ export class HandleLeaderboardSeasonCronjob {
 
       // 2) Find PREVIEW seasons valid for today
       // Query all PREVIEW seasons and filter in code (simpler than complex Prisma OR with nulls)
-      const allPreview = await this.prisma.leaderboardSeason.findMany({
-        where: {
-          status: 'PREVIEW',
-          deletedAt: null
-        }
-      })
+      const allPreview = await this.leaderboardSeasonService.findAllPreview()
 
       // Filter: (startDate null OR startDate <= now) AND (endDate null OR endDate >= now)
       const candidatesRaw = allPreview.filter((s) => {
@@ -73,15 +70,10 @@ export class HandleLeaderboardSeasonCronjob {
       })
 
       if (candidates.length > 0) {
-        const activeCount = await this.prisma.leaderboardSeason.count({
-          where: { status: 'ACTIVE', deletedAt: null }
-        })
+        const activeCount = await this.leaderboardSeasonService.countActive()
         if (activeCount === 0) {
           const toActivate = candidates[0]
-          await this.prisma.leaderboardSeason.update({
-            where: { id: toActivate.id },
-            data: { status: 'ACTIVE', hasOpened: true }
-          })
+          await this.leaderboardSeasonService.activate(toActivate.id)
           this.logger.log(
             `[LeaderboardSeason Cron] Activated season ID=${toActivate.id}, nameKey=${toActivate.nameKey}`
           )
@@ -108,13 +100,7 @@ export class HandleLeaderboardSeasonCronjob {
     this.logger.log(`[LeaderboardSeason Precreate] Running at ${now.toISOString()}`)
 
     try {
-      const activeSeasons = await this.prisma.leaderboardSeason.findMany({
-        where: { status: 'ACTIVE', enablePrecreate: true, deletedAt: null },
-        include: {
-          nameTranslations: true,
-          seasonRankRewards: { include: { rewards: { select: { id: true } } } }
-        }
-      })
+      const activeSeasons = await this.leaderboardSeasonService.findActiveForPrecreate()
 
       for (const season of activeSeasons) {
         try {
@@ -138,9 +124,8 @@ export class HandleLeaderboardSeasonCronjob {
 
           // Avoid duplicate precreate by checking a nameKey with ".next" prefix
           const nextKeyPrefix = `${season.nameKey}.next`
-          const existingNext = await this.prisma.leaderboardSeason.findFirst({
-            where: { nameKey: { startsWith: nextKeyPrefix }, deletedAt: null }
-          })
+          const existingNext =
+            await this.leaderboardSeasonService.findFirstByNameKeyPrefix(nextKeyPrefix)
           if (existingNext) {
             this.logger.log(
               `[LeaderboardSeason Precreate] Season ${season.id} already has next (${existingNext.id}), skipping`
@@ -157,17 +142,15 @@ export class HandleLeaderboardSeasonCronjob {
           const timestamp = Date.now()
 
           // Create new season in PREVIEW
-          const created = await this.prisma.leaderboardSeason.create({
-            data: {
-              nameKey: `leaderboardSeason.name.temp.${timestamp}`,
-              startDate: newStartDate,
-              endDate: newEndDate,
-              status: 'PREVIEW' as LeaderboardStatus,
-              enablePrecreate: season.enablePrecreate,
-              precreateBeforeEndDays: season.precreateBeforeEndDays,
-              isRandomItemAgain: season.isRandomItemAgain,
-              createdById: season.createdById ?? undefined
-            }
+          const created = await this.leaderboardSeasonService.createSeason({
+            nameKey: `leaderboardSeason.name.temp.${timestamp}`,
+            startDate: newStartDate,
+            endDate: newEndDate,
+            status: 'PREVIEW' as LeaderboardStatus,
+            enablePrecreate: season.enablePrecreate,
+            precreateBeforeEndDays: season.precreateBeforeEndDays,
+            isRandomItemAgain: season.isRandomItemAgain,
+            createdById: season.createdById ?? undefined
           })
 
           const finalNameKey = `leaderboardSeason.name.${created.id}`
@@ -177,13 +160,11 @@ export class HandleLeaderboardSeasonCronjob {
             create: { languageId: t.languageId, key: finalNameKey, value: t.value }
           }))
 
-          await this.prisma.leaderboardSeason.update({
-            where: { id: created.id },
-            data: {
-              nameKey: finalNameKey,
-              ...(upserts.length ? { nameTranslations: { upsert: upserts as any } } : {})
-            }
-          })
+          await this.leaderboardSeasonService.setNameKeyWithTranslations(
+            created.id,
+            finalNameKey,
+            upserts
+          )
 
           // Clone SeasonRankRewards from current season
           await this.cloneSeasonRankRewards(
@@ -194,10 +175,7 @@ export class HandleLeaderboardSeasonCronjob {
           )
 
           // Disable precreate on current season to avoid multiple next creations
-          await this.prisma.leaderboardSeason.update({
-            where: { id: season.id },
-            data: { enablePrecreate: false, precreateBeforeEndDays: 999 }
-          })
+          await this.leaderboardSeasonService.disablePrecreate(season.id)
 
           this.logger.log(
             `[LeaderboardSeason Precreate] Created next season ${created.id} (${finalNameKey}) and disabled precreate on current ${season.id}`
@@ -243,10 +221,7 @@ export class HandleLeaderboardSeasonCronjob {
     }
 
     // 2) Load SeasonRankRewards with reward ids for mapping
-    const srrList = await this.prisma.seasonRankReward.findMany({
-      where: { seasonId, deletedAt: null },
-      include: { rewards: { select: { id: true } } }
-    })
+    const srrList = await this.seasonRankRewardService.findBySeasonWithRewardIds(seasonId)
 
     // Separate null-order rewards (for all users) from ranked rewards
     const commonRewards = srrList.filter((srr) => srr.order === null)
@@ -275,13 +250,12 @@ export class HandleLeaderboardSeasonCronjob {
     })
 
     // 4) Persist finalElo/finalRank on UserSeasonHistory
-    await this.prisma.$transaction(
-      participants.map((p) =>
-        this.prisma.userSeasonHistory.update({
-          where: { id: p.ushId },
-          data: { finalElo: p.finalElo, finalRank: p.finalRank }
-        })
-      )
+    await this.userSeasonHistoryService.setFinalResults(
+      participants.map((p) => ({
+        id: p.ushId,
+        finalElo: p.finalElo,
+        finalRank: p.finalRank
+      }))
     )
 
     // 5) Rank within each rank group by elo desc and determine order
@@ -323,39 +297,21 @@ export class HandleLeaderboardSeasonCronjob {
     }
 
     // 6) Update USH with seasonRankRewardId and mark rewardsClaimed as CLAIMED
-    const ushUpdates = rankAssignments.map((ra) =>
-      this.prisma.userSeasonHistory.update({
-        where: { id: ra.ushId },
-        data: {
-          seasonRankRewardId: ra.seasonRankRewardId ?? null,
-          rewardsClaimed: RewardClaimStatus.CLAIMED
-        }
-      })
+    await this.userSeasonHistoryService.setRankRewardsClaimed(
+      rankAssignments.map((ra) => ({
+        id: ra.ushId,
+        seasonRankRewardId: ra.seasonRankRewardId ?? null
+      }))
     )
-    await this.prisma.$transaction(ushUpdates)
 
     // Note: We only link to SeasonRankReward and mark CLAIMED. Actual delivery of rewards
     // (EXP/Coins/Sparkles/Pokemon) can be handled elsewhere by a worker if needed.
 
     // 7) Reset eloscore for ALL users in the system (not just participants): new = max(0, old - 1000)
-    const allUsers = await this.prisma.user.findMany({
-      where: { deletedAt: null },
-      select: { id: true, eloscore: true }
-    })
+    const totalUsers = await this.userCoreService.lowerEloOfAllUsers(1000)
 
     this.logger.log(
-      `[FinalizeSeason] Resetting elo for ${allUsers.length} total users (${participants.length} were participants)`
-    )
-
-    const userUpdateTx = allUsers.map((u) => {
-      const current = u.eloscore || 0
-      const next = Math.max(0, current - 1000)
-      return this.prisma.user.update({ where: { id: u.id }, data: { eloscore: next } })
-    })
-    await this.prisma.$transaction(userUpdateTx)
-
-    this.logger.log(
-      `[FinalizeSeason] Season ${seasonId} finalized: totalUsers=${allUsers.length}, participants=${participants.length}, rewardsAssigned=${rankAssignments.filter((a) => a.seasonRankRewardId).length}`
+      `[FinalizeSeason] Season ${seasonId} finalized: totalUsers=${totalUsers}, participants=${participants.length}, rewardsAssigned=${rankAssignments.filter((a) => a.seasonRankRewardId).length}`
     )
   }
 
@@ -367,7 +323,11 @@ export class HandleLeaderboardSeasonCronjob {
   private async cloneSeasonRankRewards(
     sourceSeasonId: number,
     targetSeasonId: number,
-    seasonRankRewards: any[],
+    seasonRankRewards: {
+      rankName: RankName
+      order: number | null
+      rewards: { id: number }[]
+    }[],
     isRandomItemAgain: boolean
   ) {
     if (!seasonRankRewards || seasonRankRewards.length === 0) {
@@ -380,13 +340,7 @@ export class HandleLeaderboardSeasonCronjob {
     // Prepare reward pool if randomization is needed
     let rewardPool: { id: number }[] = []
     if (isRandomItemAgain) {
-      rewardPool = await this.prisma.reward.findMany({
-        where: {
-          deletedAt: null,
-          rewardTarget: { in: [RewardTarget.EXP as any, RewardTarget.SPARKLES as any] }
-        },
-        select: { id: true }
-      })
+      rewardPool = await this.rewardService.findIdsByTargets(RANDOM_REWARD_TARGETS)
     }
 
     // Clone each SeasonRankReward
@@ -394,7 +348,7 @@ export class HandleLeaderboardSeasonCronjob {
       let rewardIds: number[] = []
       if (!isRandomItemAgain) {
         // Clone same rewards
-        rewardIds = (item.rewards || []).map((r: any) => r.id)
+        rewardIds = (item.rewards || []).map((r) => r.id)
       } else {
         // Random pick based on previous count; ensure at least 1 if pool not empty
         const count = Math.max(1, (item.rewards || []).length || 1)
@@ -406,15 +360,11 @@ export class HandleLeaderboardSeasonCronjob {
         }
       }
 
-      await this.prisma.seasonRankReward.create({
-        data: {
-          seasonId: targetSeasonId,
-          rankName: item.rankName,
-          order: item.order,
-          ...(rewardIds.length
-            ? { rewards: { connect: rewardIds.map((rid) => ({ id: rid })) } }
-            : {})
-        }
+      await this.seasonRankRewardService.createForSeason({
+        seasonId: targetSeasonId,
+        rankName: item.rankName,
+        order: item.order,
+        rewardIds
       })
     }
 
@@ -432,13 +382,8 @@ export class HandleLeaderboardSeasonCronjob {
    *   - if true: re-randomize rewards from pool (EXP, SPARKLES) keeping same structure counts
    */
   private async precreateNextSeasonFromTemplate(templateSeasonId: number) {
-    const template = await this.prisma.leaderboardSeason.findUnique({
-      where: { id: templateSeasonId, deletedAt: null },
-      include: {
-        nameTranslations: true,
-        seasonRankRewards: { include: { rewards: { select: { id: true } } } }
-      }
-    })
+    const template =
+      await this.leaderboardSeasonService.findTemplateForPrecreate(templateSeasonId)
     if (!template) return
 
     if (!template.enablePrecreate) {
@@ -462,9 +407,7 @@ export class HandleLeaderboardSeasonCronjob {
     const newStartDate = template.endDate
     const newEndDate = addDaysUTC0000(template.endDate, durationDays)
 
-    const exists = await this.prisma.leaderboardSeason.findFirst({
-      where: { startDate: newStartDate, status: 'PREVIEW', deletedAt: null }
-    })
+    const exists = await this.leaderboardSeasonService.findPreviewStartingAt(newStartDate)
     if (exists) {
       this.logger.log(
         `[PrecreateNext] Already has PREVIEW season starting ${newStartDate.toISOString()} (id=${exists.id}), skip`
@@ -475,30 +418,25 @@ export class HandleLeaderboardSeasonCronjob {
     // Prepare reward pool if randomization is needed
     let rewardPool: { id: number }[] = []
     if (template.isRandomItemAgain) {
-      rewardPool = await this.prisma.reward.findMany({
-        where: {
-          deletedAt: null,
-          rewardTarget: { in: [RewardTarget.EXP as any, RewardTarget.SPARKLES as any] }
-        },
-        select: { id: true }
-      })
+      rewardPool = await this.rewardService.findIdsByTargets(RANDOM_REWARD_TARGETS)
     }
 
     // Transaction: create season, set nameKey + translations, create seasonRankRewards
-    await this.prisma.$transaction(async (tx) => {
+    await this.leaderboardSeasonService.withTransaction(async (tx) => {
       const timestamp = Date.now()
-      const created = await tx.leaderboardSeason.create({
-        data: {
+      const created = await this.leaderboardSeasonService.createSeason(
+        {
           nameKey: `leaderboardSeason.name.temp.${timestamp}`,
           startDate: newStartDate,
           endDate: newEndDate,
-          status: 'PREVIEW' as any,
+          status: 'PREVIEW',
           enablePrecreate: template.enablePrecreate,
           precreateBeforeEndDays: template.precreateBeforeEndDays,
           isRandomItemAgain: template.isRandomItemAgain,
           createdById: template.createdById ?? undefined
-        }
-      })
+        },
+        tx
+      )
 
       const finalNameKey = `leaderboardSeason.name.${created.id}`
       const upserts = template.nameTranslations.map((t) => ({
@@ -507,13 +445,12 @@ export class HandleLeaderboardSeasonCronjob {
         create: { languageId: t.languageId, key: finalNameKey, value: t.value }
       }))
 
-      await tx.leaderboardSeason.update({
-        where: { id: created.id },
-        data: {
-          nameKey: finalNameKey,
-          ...(upserts.length ? { nameTranslations: { upsert: upserts as any } } : {})
-        }
-      })
+      await this.leaderboardSeasonService.setNameKeyWithTranslations(
+        created.id,
+        finalNameKey,
+        upserts,
+        tx
+      )
 
       // Create SeasonRankRewards for new season
       for (const item of template.seasonRankRewards) {
@@ -536,16 +473,10 @@ export class HandleLeaderboardSeasonCronjob {
           }
         }
 
-        await tx.seasonRankReward.create({
-          data: {
-            seasonId: created.id,
-            rankName: item.rankName as any,
-            order: item.order,
-            ...(rewardIds.length
-              ? { rewards: { connect: rewardIds.map((rid) => ({ id: rid })) } }
-              : {})
-          }
-        })
+        await this.seasonRankRewardService.createForSeason(
+          { seasonId: created.id, rankName: item.rankName, order: item.order, rewardIds },
+          tx
+        )
       }
 
       this.logger.log(

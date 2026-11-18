@@ -1105,4 +1105,10 @@ export class RewardService {
       message: 'Convert rewards successfully'
     }
   }
+
+  // ---- Season cronjob ----
+
+  findIdsByTargets(...args: Parameters<RewardRepo['findIdsByTargets']>) {
+    return this.rewardRepo.findIdsByTargets(...args)
+  }
 }

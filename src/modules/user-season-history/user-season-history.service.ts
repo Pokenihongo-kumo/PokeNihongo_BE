@@ -310,4 +310,16 @@ export class UserSeasonHistoryService {
       throw error
     }
   }
+
+  // ---- Season cronjob ----
+
+  setFinalResults(...args: Parameters<UserSeasonHistoryRepo['setFinalResults']>) {
+    return this.userSeasonHistoryRepo.setFinalResults(...args)
+  }
+
+  setRankRewardsClaimed(
+    ...args: Parameters<UserSeasonHistoryRepo['setRankRewardsClaimed']>
+  ) {
+    return this.userSeasonHistoryRepo.setRankRewardsClaimed(...args)
+  }
 }

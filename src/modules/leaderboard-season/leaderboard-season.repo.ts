@@ -2,7 +2,7 @@ import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 
 import { parseQs } from '@/common/utils/qs-parser'
-import { Prisma, PrismaClient } from '@prisma/client'
+import { LeaderboardStatus, Prisma, PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import { SeasonRankReward } from '../season-rank-reward/entities/season-rank-reward.entity'
 import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
@@ -19,6 +19,11 @@ import {
 type LeaderboardSeasonPrismaType = Omit<LeaderboardSeason, 'nameKey'> & {
   name: string
 }
+
+const SEASON_TEMPLATE_INCLUDE = {
+  nameTranslations: true,
+  seasonRankRewards: { include: { rewards: { select: { id: true } } } }
+} satisfies Prisma.LeaderboardSeasonInclude
 
 @Injectable()
 export class LeaderboardSeasonRepo {
@@ -479,6 +484,100 @@ export class LeaderboardSeasonRepo {
           }
         ]
       }
+    })
+  }
+
+  // ---- Season cronjob (src/cronjobs/handle-leaderboard-season.cronjob.ts) ----
+
+  findEndedActiveIds(now: Date) {
+    return this.prismaService.leaderboardSeason.findMany({
+      where: { status: 'ACTIVE', endDate: { lte: now }, deletedAt: null },
+      select: { id: true }
+    })
+  }
+
+  setStatus(id: number, status: LeaderboardStatus) {
+    return this.prismaService.leaderboardSeason.update({
+      where: { id },
+      data: { status }
+    })
+  }
+
+  findAllPreview() {
+    return this.prismaService.leaderboardSeason.findMany({
+      where: { status: 'PREVIEW', deletedAt: null }
+    })
+  }
+
+  countActive() {
+    return this.prismaService.leaderboardSeason.count({
+      where: { status: 'ACTIVE', deletedAt: null }
+    })
+  }
+
+  activate(id: number) {
+    return this.prismaService.leaderboardSeason.update({
+      where: { id },
+      data: { status: 'ACTIVE', hasOpened: true }
+    })
+  }
+
+  // With what a next season copies: name translations and rank rewards (reward ids)
+  findActiveForPrecreate() {
+    return this.prismaService.leaderboardSeason.findMany({
+      where: { status: 'ACTIVE', enablePrecreate: true, deletedAt: null },
+      include: SEASON_TEMPLATE_INCLUDE
+    })
+  }
+
+  findTemplateForPrecreate(id: number) {
+    return this.prismaService.leaderboardSeason.findUnique({
+      where: { id, deletedAt: null },
+      include: SEASON_TEMPLATE_INCLUDE
+    })
+  }
+
+  findFirstByNameKeyPrefix(prefix: string) {
+    return this.prismaService.leaderboardSeason.findFirst({
+      where: { nameKey: { startsWith: prefix }, deletedAt: null }
+    })
+  }
+
+  findPreviewStartingAt(startDate: Date) {
+    return this.prismaService.leaderboardSeason.findFirst({
+      where: { startDate, status: 'PREVIEW', deletedAt: null }
+    })
+  }
+
+  createSeason(
+    data: Prisma.LeaderboardSeasonUncheckedCreateInput,
+    prismaTx?: PrismaClient
+  ) {
+    const client = prismaTx || this.prismaService
+    return client.leaderboardSeason.create({ data })
+  }
+
+  // Final nameKey of a season made under a temporary one, with its translations
+  setNameKeyWithTranslations(
+    id: number,
+    nameKey: string,
+    upserts: Prisma.TranslationUpsertWithWhereUniqueWithoutLeaderboardSeasonInput[],
+    prismaTx?: PrismaClient
+  ) {
+    const client = prismaTx || this.prismaService
+    return client.leaderboardSeason.update({
+      where: { id },
+      data: {
+        nameKey,
+        ...(upserts.length ? { nameTranslations: { upsert: upserts } } : {})
+      }
+    })
+  }
+
+  disablePrecreate(id: number) {
+    return this.prismaService.leaderboardSeason.update({
+      where: { id },
+      data: { enablePrecreate: false, precreateBeforeEndDays: 999 }
     })
   }
 }

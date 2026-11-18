@@ -1,7 +1,7 @@
 import { parseQs } from '@/common/utils/qs-parser'
 import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, RankName } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
   CreateSeasonRankRewardBody,
@@ -175,6 +175,38 @@ export class SeasonRankRewardRepo {
     return prismaTx.seasonRankReward.findMany({
       where: { seasonId },
       orderBy: [{ rankName: 'asc' }, { order: 'asc' }]
+    })
+  }
+
+  // ---- Season cronjob ----
+
+  findBySeasonWithRewardIds(seasonId: number) {
+    return this.prismaService.seasonRankReward.findMany({
+      where: { seasonId, deletedAt: null },
+      include: { rewards: { select: { id: true } } }
+    })
+  }
+
+  // A rank reward of a new season, linked to rewardIds (none: no link)
+  createForSeason(
+    data: {
+      seasonId: number
+      rankName: RankName
+      order: number | null
+      rewardIds: number[]
+    },
+    prismaTx?: PrismaClient
+  ) {
+    const client = prismaTx || this.prismaService
+    return client.seasonRankReward.create({
+      data: {
+        seasonId: data.seasonId,
+        rankName: data.rankName,
+        order: data.order,
+        ...(data.rewardIds.length
+          ? { rewards: { connect: data.rewardIds.map((rid) => ({ id: rid })) } }
+          : {})
+      }
     })
   }
 }
