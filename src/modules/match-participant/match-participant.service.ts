@@ -283,12 +283,11 @@ export class MatchParticipantService {
           const roundNumber = roundNumbers[roundIndex]
 
           // Tạo match-round
-          const createdMatchRound = await prismaTx.matchRound.create({
-            data: {
-              matchId,
-              roundNumber
-            }
-          })
+          const createdMatchRound = await this.matchRoundService.createRoundRow(
+            matchId,
+            roundNumber,
+            prismaTx
+          )
 
           this.logger.debug(
             `[MatchParticipant] Created match-round ${createdMatchRound.id} for round ${roundNumber}`
@@ -344,9 +343,10 @@ export class MatchParticipantService {
             endTimeSelected: participant.endTimeSelected
           }))
 
-          await prismaTx.matchRoundParticipant.createMany({
-            data: matchRoundParticipantsData
-          })
+          await this.matchRoundService.createParticipants(
+            matchRoundParticipantsData,
+            prismaTx
+          )
 
           this.logger.debug(
             `[MatchParticipant] Created ${matchRoundParticipantsData.length} participants for round ${roundNumber}`

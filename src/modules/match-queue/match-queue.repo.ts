@@ -48,4 +48,11 @@ export class MatchQueueRepo {
       }
     }) as unknown as Promise<MatchQueueType[]>
   }
+
+  // ---- Matchmaking run (in its transaction) ----
+
+  // A paired user leaves the queue
+  removeQueuedUser(userId: number, prismaTx: PrismaClient) {
+    return prismaTx.matchQueue.delete({ where: { userId } })
+  }
 }

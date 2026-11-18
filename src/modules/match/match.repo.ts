@@ -380,4 +380,72 @@ export class MatchRepo {
       ? true
       : false
   }
+
+  // GET /match/tracking: the user's latest IN_PROGRESS match, else the latest
+  // PENDING one, with everything the tracking screen shows
+  async findCurrentMatchForUser(userId: number) {
+    const includeForMatch = {
+      participants: {
+        include: {
+          user: { select: { id: true, name: true, avatar: true, eloscore: true } }
+        }
+      },
+      rounds: {
+        include: {
+          participants: {
+            include: {
+              matchParticipant: {
+                include: {
+                  user: { select: { id: true, name: true, avatar: true } }
+                }
+              },
+              selectedUserPokemon: { include: { pokemon: true } },
+              debuff: true,
+              roundQuestions: {
+                include: {
+                  debuff: true,
+                  roundQuestionsAnswerLogs: true,
+                  questionBank: { include: { answers: true } }
+                },
+                orderBy: { orderNumber: 'asc' }
+              }
+            }
+          }
+        },
+        orderBy: { id: 'asc' } // Ensure rounds are sorted by id (creation order)
+      }
+    } as const
+
+    const matchInProgress = await this.prismaService.match.findFirst({
+      where: {
+        deletedAt: null,
+        status: 'IN_PROGRESS',
+        participants: { some: { userId } }
+      },
+      orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],
+      include: includeForMatch as any
+    })
+
+    const matchPending = !matchInProgress
+      ? await this.prismaService.match.findFirst({
+          where: {
+            deletedAt: null,
+            status: 'PENDING',
+            participants: { some: { userId } }
+          },
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+          include: includeForMatch as any
+        })
+      : null
+
+    return matchInProgress ?? matchPending
+  }
+
+  // Status only, by id (the acceptance timeout decides the match)
+  setStatus(id: number, status: MatchStatusType, prismaTx: PrismaClient) {
+    return prismaTx.match.update({
+      where: { id },
+      data: { status }
+    })
+  }
 }

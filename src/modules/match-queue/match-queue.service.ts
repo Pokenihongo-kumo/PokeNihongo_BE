@@ -224,8 +224,8 @@ export class MatchQueueService implements OnModuleInit {
 
         // 4. Xóa 2 users khỏi MatchQueue (DB)
         await Promise.all([
-          prismaTx.matchQueue.delete({ where: { userId: userId1 } }),
-          prismaTx.matchQueue.delete({ where: { userId: userId2 } })
+          this.matchQueueRepo.removeQueuedUser(userId1, prismaTx),
+          this.matchQueueRepo.removeQueuedUser(userId2, prismaTx)
         ])
 
         this.logger.log(
