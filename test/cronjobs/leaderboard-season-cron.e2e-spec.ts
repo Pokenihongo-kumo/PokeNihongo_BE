@@ -1,6 +1,7 @@
 import { AppModule } from '@/app.module'
 import { HandleLeaderboardSeasonCronjob } from '@/cronjobs/handle-leaderboard-season.cronjob'
 import { UserSeasonHistoryService } from '@/modules/user-season-history/user-season-history.service'
+import { UserService } from '@/modules/user/user.service'
 import { addDaysUTC0000, todayUTCWith0000 } from '@/shared/helpers'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { INestApplication } from '@nestjs/common'
@@ -29,6 +30,7 @@ describe('Leaderboard season cronjob (e2e)', () => {
   let prisma: PrismaService
   let cron: HandleLeaderboardSeasonCronjob
   let histories: UserSeasonHistoryService
+  let userService: UserService
   let roleId: number
   let levelId: number
   let seasonIdBefore = 0
@@ -134,6 +136,7 @@ describe('Leaderboard season cronjob (e2e)', () => {
     prisma = app.get(PrismaService)
     cron = app.get(HandleLeaderboardSeasonCronjob)
     histories = app.get(UserSeasonHistoryService)
+    userService = app.get(UserService)
     for (const [code, name] of [
       ['vi', 'Tiếng Việt'],
       ['en', 'English']
@@ -487,7 +490,33 @@ describe('Leaderboard season cronjob (e2e)', () => {
       })
     }
 
+    // the season that follows (the season-ended screen needs one running)
+    await season('after-claim', {
+      status: 'PREVIEW',
+      startDate: today(),
+      endDate: addDaysUTC0000(today(), 7)
+    })
+
     await cron.handleLeaderboardSeasonStatus()
+
+    // GET /user/stats/season (mobile season-ended screen): it claims only when
+    // the list is not empty, so it shows what claiming gives
+    const shown = async (userId: number) => {
+      const res = await userService.getInfoBattleWithUser(userId, 'vi')
+      const data = res.data as {
+        hasUnclaimedReward?: boolean
+        rewards?: { id: number }[]
+      }
+      return {
+        hasUnclaimedReward: data?.hasUnclaimedReward,
+        rewards: data?.rewards?.map((r) => r.id)
+      }
+    }
+    expect({ first: await shown(first.id), second: await shown(second.id) }).toEqual({
+      first: { hasUnclaimedReward: true, rewards: [rank.id, common.id] },
+      // fix: a player with only the season reward for everyone used to get no data
+      second: { hasUnclaimedReward: true, rewards: [common.id] }
+    })
 
     const historyOf = (userId: number) =>
       prisma.userSeasonHistory.findUniqueOrThrow({
