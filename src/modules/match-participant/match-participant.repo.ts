@@ -132,4 +132,30 @@ export class MatchParticipantRepo {
       }
     })
   }
+
+  // ---- Acceptance timeout (MatchParticipantTimeoutProcessor, one transaction) ----
+
+  // Locks the match's live participants (FOR UPDATE) so two timeouts or a
+  // late answer cannot decide the match twice
+  lockByMatch(matchId: number, prismaTx: PrismaClient) {
+    return prismaTx.$queryRaw<Array<{ id: number; hasAccepted: boolean | null }>>`
+      SELECT id, "hasAccepted"
+      FROM "MatchParticipant"
+      WHERE "matchId" = ${matchId} AND "deletedAt" IS NULL
+      FOR UPDATE
+    `
+  }
+
+  markDeclined(id: number, prismaTx: PrismaClient) {
+    return prismaTx.matchParticipant.update({
+      where: { id },
+      data: { hasAccepted: false }
+    })
+  }
+
+  findLiveByMatch(matchId: number, prismaTx: PrismaClient) {
+    return prismaTx.matchParticipant.findMany({
+      where: { matchId, deletedAt: null }
+    })
+  }
 }

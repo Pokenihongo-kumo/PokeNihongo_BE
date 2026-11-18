@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common'
 
 import { MatchRoundNumberType, RoundStatus } from '@/common/constants/match.constant'
 import { parseQs } from '@/common/utils/qs-parser'
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import { MatchRoundParticipantType } from '../match-round-participant/entities/match-round-participant.entity'
 import {
@@ -312,5 +312,34 @@ export class MatchRoundRepo {
     prismaTx: PrismaClient
   ): Promise<{ count: number }> {
     return prismaTx.matchRoundParticipant.createMany({ data })
+  }
+
+  // ---- A match's three rounds, made when both players accept (in their transaction) ----
+
+  createRoundRow(
+    matchId: number,
+    roundNumber: Prisma.MatchRoundUncheckedCreateInput['roundNumber'],
+    prismaTx: PrismaClient
+  ) {
+    return prismaTx.matchRound.create({
+      data: {
+        matchId,
+        roundNumber
+      }
+    })
+  }
+
+  // ---- POST /match-round (in its transaction) ----
+
+  // The round participants just created, in pick order
+  findParticipantsOfRound(matchRoundId: number, prismaTx: PrismaClient) {
+    return prismaTx.matchRoundParticipant.findMany({
+      where: {
+        matchRoundId
+      },
+      orderBy: {
+        orderSelected: 'asc'
+      }
+    })
   }
 }

@@ -1,7 +1,8 @@
 import { BullAction, BullQueue } from '@/common/constants/bull-action.constant'
 import { MatchStatus, MatchStatusType } from '@/common/constants/match.constant'
 import { MatchingSocketMessage } from '@/i18n/message-keys'
-import { PrismaService } from '@/shared/services/prisma.service'
+import { MatchService } from '@/modules/match/match.service'
+import { MatchParticipantRepo } from './match-participant.repo'
 import {
   InjectQueue,
   OnQueueActive,
@@ -26,7 +27,8 @@ export class MatchParticipantTimeoutProcessor {
   private readonly logger = new Logger(MatchParticipantTimeoutProcessor.name)
 
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly matchParticipantRepo: MatchParticipantRepo,
+    private readonly matchService: MatchService,
     private readonly matchingGateway: MatchingGateway,
     @InjectQueue(BullQueue.MATCH_PARTICIPANT_TIMEOUT)
     private readonly matchParticipantTimeoutQueue: Queue
@@ -73,16 +75,12 @@ export class MatchParticipantTimeoutProcessor {
         `[MatchParticipant Timeout] (jobId=${job.id}) start for participant=${matchParticipantId}, user=${userId}, match=${matchId}, delayMs=${job.opts.delay}`
       )
 
-      await this.prisma.$transaction(async (tx) => {
+      await this.matchParticipantRepo.withTransaction(async (tx) => {
         // 1. Lock all participants of this match to prevent race conditions
-        const lockedParticipants = await tx.$queryRaw<
-          Array<{ id: number; hasAccepted: boolean | null }>
-        >`
-          SELECT id, "hasAccepted"
-          FROM "MatchParticipant"
-          WHERE "matchId" = ${matchId} AND "deletedAt" IS NULL
-          FOR UPDATE
-        `
+        const lockedParticipants = await this.matchParticipantRepo.lockByMatch(
+          matchId,
+          tx
+        )
 
         this.logger.debug(
           `[MatchParticipant Timeout] (jobId=${job.id}) Locked participants: ${lockedParticipants
@@ -103,10 +101,7 @@ export class MatchParticipantTimeoutProcessor {
         // 3. Nếu hasAccepted vẫn null, set thành false
         let wasUpdated = false
         if (participant.hasAccepted === null) {
-          await tx.matchParticipant.update({
-            where: { id: matchParticipantId },
-            data: { hasAccepted: false }
-          })
+          await this.matchParticipantRepo.markDeclined(matchParticipantId, tx)
 
           this.logger.log(
             `[MatchParticipant Timeout] Set hasAccepted = false for participant ${matchParticipantId}`
@@ -115,9 +110,7 @@ export class MatchParticipantTimeoutProcessor {
         }
 
         // 4. Lấy lại tất cả participants sau khi update
-        let allParticipants = await tx.matchParticipant.findMany({
-          where: { matchId, deletedAt: null }
-        })
+        let allParticipants = await this.matchParticipantRepo.findLiveByMatch(matchId, tx)
 
         this.logger.debug(
           `[MatchParticipant Timeout] (jobId=${job.id}) Snapshot participants${wasUpdated ? ' (after update)' : ''}: ${allParticipants
@@ -142,18 +135,16 @@ export class MatchParticipantTimeoutProcessor {
             const exists = jobs.some((j) => j.data?.matchParticipantId === missingP.id)
 
             if (!exists) {
-              await tx.matchParticipant.update({
-                where: { id: missingP.id },
-                data: { hasAccepted: false }
-              })
+              await this.matchParticipantRepo.markDeclined(missingP.id, tx)
               this.logger.warn(
                 `[MatchParticipant Timeout] (jobId=${job.id}) Peer job missing; auto-set hasAccepted=false for participant ${missingP.id}`
               )
 
               // Refresh state
-              const refreshed = await tx.matchParticipant.findMany({
-                where: { matchId, deletedAt: null }
-              })
+              const refreshed = await this.matchParticipantRepo.findLiveByMatch(
+                matchId,
+                tx
+              )
               allParticipants = refreshed // Update reference
               allAnswered = refreshed.every((p) => p.hasAccepted !== null)
 
@@ -193,10 +184,7 @@ export class MatchParticipantTimeoutProcessor {
 
         // 6. Update match status
         if (newStatus) {
-          await tx.match.update({
-            where: { id: matchId },
-            data: { status: newStatus as MatchStatusType }
-          })
+          await this.matchService.setStatus(matchId, newStatus as MatchStatusType, tx)
 
           this.logger.log(
             `[MatchParticipant Timeout] (jobId=${job.id}) Updated match ${matchId} status to ${newStatus}`

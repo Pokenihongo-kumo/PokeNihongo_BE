@@ -8,7 +8,6 @@ import {
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
-import { PrismaService } from '@/shared/services/prisma.service'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
@@ -27,7 +26,6 @@ export class MatchService {
     private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
     private readonly leaderboardSeasonService: LeaderboardSeasonService,
-    private readonly prismaService: PrismaService,
     private readonly questionBankService: QuestionBankService
   ) {}
 
@@ -181,61 +179,7 @@ export class MatchService {
 
   async getTrackingMatch(userId: number, lang: string = 'vi') {
     // 1) Auto-find the user's active match by status (prefer IN_PROGRESS, then PENDING)
-    const includeForMatch = {
-      participants: {
-        include: {
-          user: { select: { id: true, name: true, avatar: true, eloscore: true } }
-        }
-      },
-      rounds: {
-        include: {
-          participants: {
-            include: {
-              matchParticipant: {
-                include: {
-                  user: { select: { id: true, name: true, avatar: true } }
-                }
-              },
-              selectedUserPokemon: { include: { pokemon: true } },
-              debuff: true,
-              roundQuestions: {
-                include: {
-                  debuff: true,
-                  roundQuestionsAnswerLogs: true,
-                  questionBank: { include: { answers: true } }
-                },
-                orderBy: { orderNumber: 'asc' }
-              }
-            }
-          }
-        },
-        orderBy: { id: 'asc' } // Ensure rounds are sorted by id (creation order)
-      }
-    } as const
-
-    const matchInProgress = await this.prismaService.match.findFirst({
-      where: {
-        deletedAt: null,
-        status: 'IN_PROGRESS',
-        participants: { some: { userId } }
-      },
-      orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],
-      include: includeForMatch as any
-    })
-
-    const matchPending = !matchInProgress
-      ? await this.prismaService.match.findFirst({
-          where: {
-            deletedAt: null,
-            status: 'PENDING',
-            participants: { some: { userId } }
-          },
-          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-          include: includeForMatch as any
-        })
-      : null
-
-    const match: any = matchInProgress ?? matchPending
+    const match: any = await this.matchRepo.findCurrentMatchForUser(userId)
 
     if (!match) {
       return {
@@ -553,5 +497,9 @@ export class MatchService {
 
   getMatchesHistoryByUser(...args: Parameters<MatchRepo['getMatchesHistoryByUser']>) {
     return this.matchRepo.getMatchesHistoryByUser(...args)
+  }
+
+  setStatus(...args: Parameters<MatchRepo['setStatus']>) {
+    return this.matchRepo.setStatus(...args)
   }
 }

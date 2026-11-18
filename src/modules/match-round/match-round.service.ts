@@ -293,14 +293,10 @@ export class MatchRoundService {
         await this.matchRoundRepo.createParticipants(matchRoundParticipantsData, prismaTx)
 
         // Lấy danh sách match-round-participant vừa tạo để có ID
-        const createdParticipants = await prismaTx.matchRoundParticipant.findMany({
-          where: {
-            matchRoundId: createdMatchRound.id
-          },
-          orderBy: {
-            orderSelected: 'asc'
-          }
-        })
+        const createdParticipants = await this.matchRoundRepo.findParticipantsOfRound(
+          createdMatchRound.id,
+          prismaTx
+        )
 
         // Tạo Bull job cho participant đầu tiên (có endTimeSelected)
         const firstParticipant = createdParticipants.find(
@@ -435,5 +431,15 @@ export class MatchRoundService {
     ...args: Parameters<MatchRoundRepo['findByIdWithMatchAndParticipants']>
   ) {
     return this.matchRoundRepo.findByIdWithMatchAndParticipants(...args)
+  }
+
+  // ---- For other modules: A match's three rounds, made when both players accept (in their transaction) (B7) ----
+
+  createRoundRow(...args: Parameters<MatchRoundRepo['createRoundRow']>) {
+    return this.matchRoundRepo.createRoundRow(...args)
+  }
+
+  createParticipants(...args: Parameters<MatchRoundRepo['createParticipants']>) {
+    return this.matchRoundRepo.createParticipants(...args)
   }
 }
