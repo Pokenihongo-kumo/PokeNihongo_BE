@@ -169,6 +169,36 @@ export class TypeEffectivenessRepo {
     })
   }
 
+  // ---- For other modules (pokemon, user-pokemon: weaknesses on screens) ----
+
+  // Super effective (> 1) against any of these defenders, deleted rows
+  // included (as the pokemon list has always read them), with the attacker
+  findWeaknessesForDefenders(defenderIds: number[]) {
+    return this.prismaService.typeEffectiveness.findMany({
+      where: {
+        defenderId: { in: defenderIds },
+        multiplier: { gt: 1 }
+      },
+      include: { attacker: TYPE_SELECT }
+    })
+  }
+
+  // Every live row against these defenders, with the attacker
+  findForDefenders(defenderIds: number[]) {
+    return this.prismaService.typeEffectiveness.findMany({
+      where: { defenderId: { in: defenderIds }, deletedAt: null },
+      include: { attacker: TYPE_SELECT }
+    })
+  }
+
+  // Same rows as findForDefenders, with the defender too
+  findForDefendersWithTypes(defenderIds: number[]) {
+    return this.prismaService.typeEffectiveness.findMany({
+      where: { defenderId: { in: defenderIds }, deletedAt: null },
+      include: WITH_TYPES
+    })
+  }
+
   // type_name for each id in order (repeats kept, deleted/unknown ids skipped),
   // in one query instead of one per id
   async findActiveTypeNames(ids: number[]): Promise<string[]> {

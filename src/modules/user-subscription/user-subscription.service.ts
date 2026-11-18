@@ -380,4 +380,8 @@ export class UserSubscriptionService {
   ) {
     return this.userSubscriptionRepo.findActiveByUserIdWithfeatureKey(...args)
   }
+
+  failPendingPayment(...args: Parameters<UserSubscriptionRepo['failPendingPayment']>) {
+    return this.userSubscriptionRepo.failPendingPayment(...args)
+  }
 }

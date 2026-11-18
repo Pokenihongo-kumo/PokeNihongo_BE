@@ -11,6 +11,11 @@ import {
 export class SpeakingRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  // The question the attempt answers (existence check before upload)
+  findQuestionBank(id: number) {
+    return this.prisma.questionBank.findUnique({ where: { id } })
+  }
+
   async create(
     _data: CreateUserSpeakingAttemptType & { userId: number }
   ): Promise<UserSpeakingAttemptType> {

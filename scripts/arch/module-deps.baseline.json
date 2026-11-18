@@ -6,8 +6,8 @@
     "injectForwardRefFiles": 6,
     "sharedModuleBusinessRepos": 3,
     "sharedModuleBusinessProviders": 3,
-    "prismaOutsideRepoFiles": 34,
-    "prismaOutsideRepoCalls": 328
+    "prismaOutsideRepoFiles": 26,
+    "prismaOutsideRepoCalls": 309
   },
   "details": {
     "crossModuleRepoImports": [
@@ -119,35 +119,27 @@
       "cronjobs/handle-gacha-banner.cronjob.ts",
       "cronjobs/handle-leaderboard-season.cronjob.ts",
       "cronjobs/handle-shop-banner.cronjob.ts",
-      "cronjobs/handle-user-subscription.cronjob.ts",
       "modules/dashboard/dashboard.service.ts",
       "modules/gacha-item/gacha-item.service.ts",
       "modules/gacha-purchase/gacha-purchase.service.ts",
-      "modules/invoice/cancel-pending-invoice.ts",
       "modules/leaderboard-season/leaderboard-season.service.ts",
       "modules/match-participant/match-participant.service.ts",
       "modules/match-queue/match-queue.service.ts",
       "modules/match-round-participant/match-round-participant.service.ts",
       "modules/match-round/match-round.service.ts",
       "modules/match/match.service.ts",
-      "modules/pokemon/pokemon.service.ts",
       "modules/round-question/round-question.service.ts",
       "modules/season-rank-reward/season-rank-reward.service.ts",
-      "modules/speaking/speaking.service.ts",
       "modules/subscription-feature/subscription-feature.service.ts",
       "modules/test/test.service.ts",
       "modules/user-achievement/user-achievement.service.ts",
       "modules/user-history/user-history.service.ts",
-      "modules/user-pokemon/user-pokemon.service.ts",
       "modules/user-srs-review/user-srs-review.service.ts",
       "modules/user-test-attempt/user-test-attempt.service.ts",
-      "modules/user-test/user-test.service.ts",
       "modules/vocabulary/vocabulary.helper.service.ts",
-      "shared/workers/invoice-expiration.processor.ts",
       "shared/workers/match-participant-timeout.processor.ts",
       "shared/workers/match-round-participant-timeout.processor.ts",
       "shared/workers/round-question-timeout.processor.ts",
-      "shared/workers/user-deletion.processor.ts",
       "websockets/user.gateway.ts"
     ]
   }

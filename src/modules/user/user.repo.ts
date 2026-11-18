@@ -156,4 +156,12 @@ export class UserRepo {
       }
     })
   }
+
+  // The deletion job: hard delete only while still inactive (reactivated or
+  // already deleted users are kept)
+  deleteIfStillInactive(userId: number) {
+    return this.prismaService.user.deleteMany({
+      where: { id: userId, status: 'INACTIVE', deletedAt: null }
+    })
+  }
 }

@@ -3,6 +3,7 @@ import { SubscriptionPlanModule } from '../subscription-plan/subscription-plan.m
 import { UserSubscriptionModule } from '../user-subscription/user-subscription.module'
 import { WalletTransactionModule } from '../wallet-transaction/wallet-transaction.module'
 import { WalletModule } from '../wallet/wallet.module'
+import { InvoiceExpirationProcessor } from './invoice-expiration.processor'
 import { InvoiceController } from './invoice.controller'
 import { InvoiceRepo } from './invoice.repo'
 import { InvoiceService } from './invoice.service'
@@ -17,7 +18,7 @@ import { InvoiceService } from './invoice.service'
     WalletTransactionModule
   ],
   controllers: [InvoiceController],
-  providers: [InvoiceService, InvoiceRepo],
+  providers: [InvoiceService, InvoiceRepo, InvoiceExpirationProcessor],
   exports: [InvoiceService, InvoiceRepo]
 })
 export class InvoiceModule {}

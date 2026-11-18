@@ -250,4 +250,17 @@ export class WalletRepo {
     if (count === 0) return null
     return client.wallet.findUnique({ where: { id: wallet.id } })
   }
+
+  // Adds to the user's wallet of this type, creating it with that balance when
+  // missing (a refund lands even if the wallet was never created)
+  creditOrCreate(
+    { userId, type, amount }: { userId: number; type: WalletTypeType; amount: number },
+    prismaTx: PrismaClient
+  ) {
+    return prismaTx.wallet.upsert({
+      where: { userId_type: { userId, type } },
+      create: { userId, type, balance: amount },
+      update: { balance: { increment: amount } }
+    })
+  }
 }

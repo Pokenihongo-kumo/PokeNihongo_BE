@@ -411,14 +411,17 @@ export class PaymentService {
     )
   }
 
-  // PayOS says the order was cancelled/expired/failed: close it if it is still
-  // pending; the invoice only if no other link paid it (see the repo)
+  // PayOS says the order was cancelled/expired/failed. In one transaction:
+  // the payment is closed if still PENDING, then its invoice is cancelled
+  // (subscription PAYMENT_FAILED, PokeCoin discount given back) only while
+  // still PENDING. An invoice another link paid (or is paying:
+  // markInvoicePaidOnce holds its row) is left alone.
   private async closeCancelledPayment(
     payment: PaymentType,
     payosStatus: 'CANCELLED' | 'EXPIRED' | 'FAILED',
     lang: string
   ) {
-    await this.paymentRepo.closePendingPayment(payment.id, payment.invoiceId, {
+    const data = {
       status: payosStatus,
       failureReason: this.i18nService.translate(
         payosStatus === 'FAILED'
@@ -426,6 +429,11 @@ export class PaymentService {
           : PaymentMessage.PAY_CANCELLED,
         lang
       )
+    }
+    await this.paymentRepo.withTransaction(async (tx) => {
+      if (await this.paymentRepo.closeIfPending(payment.id, data, tx)) {
+        await this.invoiceService.cancelPending(payment.invoiceId, tx)
+      }
     })
   }
 

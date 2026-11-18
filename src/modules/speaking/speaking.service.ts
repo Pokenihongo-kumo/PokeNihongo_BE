@@ -17,7 +17,6 @@ import {
   SPEAKING_MESSAGE
 } from './dto/speaking.error'
 import { MessageResDTO } from '@/shared/dtos/response.dto'
-import { PrismaService } from '@/shared/services/prisma.service'
 import { SpeechToTextService } from '@/3rdService/speech/speech-to-text.service'
 import { TextToSpeechService } from '@/3rdService/speech/text-to-speech.service'
 import { UploadService } from '@/3rdService/upload/upload.service'
@@ -28,7 +27,6 @@ export class SpeakingService {
 
   constructor(
     private readonly speakingRepo: SpeakingRepository,
-    private readonly prisma: PrismaService,
     private readonly speechToTextService: SpeechToTextService,
     private readonly textToSpeechService: TextToSpeechService,
     private readonly uploadService: UploadService
@@ -178,9 +176,7 @@ export class SpeakingService {
       }
 
       // Kiểm tra QuestionBank tồn tại
-      const questionBank = await this.prisma.questionBank.findUnique({
-        where: { id: questionBankId }
-      })
+      const questionBank = await this.speakingRepo.findQuestionBank(questionBankId)
 
       if (!questionBank) {
         throw QuestionBankNotFoundException

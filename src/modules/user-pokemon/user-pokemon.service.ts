@@ -10,7 +10,7 @@ import { PaginationQueryType } from '@/shared/models/request.model'
 import { UserCoreService } from '@/modules/user/user-core.service'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
-import { PrismaService } from 'src/shared/services/prisma.service'
+import { TypeEffectivenessService } from '@/modules/type-effectiveness/type-effectiveness.service'
 import { LevelService } from '@/modules/level/level.service'
 import { MatchRepo } from '../match/match.repo'
 import { PokemonService } from '@/modules/pokemon/pokemon.service'
@@ -37,7 +37,7 @@ export class UserPokemonService {
     private levelService: LevelService,
     private readonly userCoreService: UserCoreService,
     private readonly i18nService: I18nService,
-    private prismaService: PrismaService
+    private readonly typeEffectivenessService: TypeEffectivenessService
   ) {}
 
   async list(pagination: PaginationQueryType, userId: number, lang: string = 'vi') {
@@ -133,7 +133,7 @@ export class UserPokemonService {
 
   async getUserPokemonStats(userId: number, lang: string = 'vi') {
     const userPokemons = await this.userPokemonRepo.getByUserId(userId)
-    const totalPokemons = await this.prismaService.pokemon.count()
+    const totalPokemons = await this.pokemonService.countAll()
     const userPokemonsCount = userPokemons.length
     const ownershipPercentage =
       totalPokemons > 0 ? Math.round((userPokemonsCount / totalPokemons) * 100) : 0
@@ -219,26 +219,10 @@ export class UserPokemonService {
       })
 
       // Batch load all type effectiveness data once
-      const allTypeEffectiveness = await this.prismaService.typeEffectiveness.findMany({
-        where: {
-          defenderId: {
-            in: Array.from(allTypeIds)
-          },
-          multiplier: {
-            gt: 1 // Only get super effective (weaknesses)
-          }
-        },
-        include: {
-          attacker: {
-            select: {
-              id: true,
-              type_name: true,
-              display_name: true,
-              color_hex: true
-            }
-          }
-        }
-      })
+      const allTypeEffectiveness =
+        await this.typeEffectivenessService.findWeaknessesForDefenders(
+          Array.from(allTypeIds)
+        )
 
       // Create lookup map for faster access
       const effectivenessMap = new Map<number, any[]>()
@@ -304,24 +288,8 @@ export class UserPokemonService {
 
     const typeIds = pokemonTypes.map((type) => type.id)
 
-    const typeEffectiveness = await this.prismaService.typeEffectiveness.findMany({
-      where: {
-        defenderId: {
-          in: typeIds
-        },
-        deletedAt: null
-      },
-      include: {
-        attacker: {
-          select: {
-            id: true,
-            type_name: true,
-            display_name: true,
-            color_hex: true
-          }
-        }
-      }
-    })
+    const typeEffectiveness =
+      await this.typeEffectivenessService.findForDefenders(typeIds)
 
     const weaknessMap = new Map<
       number,

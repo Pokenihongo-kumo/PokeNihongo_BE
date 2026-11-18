@@ -375,6 +375,11 @@ export class PokemonRepo {
     })
   }
 
+  // Every pokemon row, deleted ones included (the collection screen's total)
+  countAll(): Promise<number> {
+    return this.prismaService.pokemon.count()
+  }
+
   findByPokedexNumber(pokedex_number: number): Promise<PokemonType | null> {
     return this.prismaService.pokemon.findFirst({
       where: {

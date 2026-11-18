@@ -42,7 +42,6 @@ import { HandleGachaBannerCronjob } from './cronjobs/handle-gacha-banner.cronjob
 import { HandleLeaderboardSeasonCronjob } from './cronjobs/handle-leaderboard-season.cronjob'
 import { HandleMatchmakingCronjob } from './cronjobs/handle-matchmaking.cronjob'
 import { HandleShopBannerCronjob } from './cronjobs/handle-shop-banner.cronjob'
-import { HandleUserSubscriptionCronjob } from './cronjobs/handle-user-subscription.cronjob'
 import { AIConversationRoomModule } from './modules/ai-conversation-room/ai-conversation-room.module'
 import { DashboardModule } from './modules/dashboard/dashboard.module'
 import { DebuffRoundModule } from './modules/debuff-round/debuff-round.module'
@@ -211,7 +210,6 @@ import { WebsocketsModule } from './websockets/websockets.module'
   controllers: [],
   providers: [
     HandleShopBannerCronjob,
-    HandleUserSubscriptionCronjob, // Cronjob chạy mỗi giờ để cancel subscription hết hạn
     HandleGachaBannerCronjob,
     HandleLeaderboardSeasonCronjob,
     HandleMatchmakingCronjob, // Cronjob chạy mỗi 5s để xử lý matchmaking

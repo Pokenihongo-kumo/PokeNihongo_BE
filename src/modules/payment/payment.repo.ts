@@ -1,10 +1,9 @@
 import { InvoiceStatus } from '@/common/constants/invoice.constant'
 import { UserSubscriptionStatus } from '@/common/constants/subscription.constant'
 import { addTimeUTC, isUniqueConstraintPrismaError } from '@/shared/helpers'
-import { cancelPendingInvoice } from '@/modules/invoice/cancel-pending-invoice'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
-import { Prisma } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 import { CreatePaymentType, PaymentType } from './entities/payment.model'
 
 @Injectable()
@@ -122,27 +121,21 @@ export class PaymentRepo {
     })
   }
 
-  /**
-   * PayOS closed a payment link. In one transaction: the payment moves
-   * PENDING -> CANCELLED/FAILED/EXPIRED (never from PAID); its invoice is
-   * cancelled (subscription PAYMENT_FAILED, PokeCoin discount given back) only
-   * while still PENDING. An invoice another link paid (or is paying:
-   * markInvoicePaidOnce holds its row) is left alone.
-   * Returns false when the payment was not pending (nothing changed).
-   */
-  async closePendingPayment(
+  withTransaction<T>(callback: (prismaTx: PrismaClient) => Promise<T>): Promise<T> {
+    return this.prisma.$transaction(callback)
+  }
+
+  // PENDING -> CANCELLED/FAILED/EXPIRED (never from PAID); false when the
+  // payment was not pending (nothing changed)
+  async closeIfPending(
     id: number,
-    invoiceId: number,
-    data: { status: 'CANCELLED' | 'FAILED' | 'EXPIRED'; failureReason: string }
+    data: { status: 'CANCELLED' | 'FAILED' | 'EXPIRED'; failureReason: string },
+    prismaTx: PrismaClient
   ): Promise<boolean> {
-    return this.prisma.$transaction(async (tx) => {
-      const payment = await tx.payment.updateMany({
-        where: { id, status: 'PENDING' },
-        data
-      })
-      if (payment.count === 0) return false
-      await cancelPendingInvoice(tx, invoiceId)
-      return true
+    const payment = await prismaTx.payment.updateMany({
+      where: { id, status: 'PENDING' },
+      data
     })
+    return payment.count > 0
   }
 }

@@ -17,7 +17,6 @@ import {
   UserTestNotFoundException
 } from './dto/user-test.error'
 import { UserTestStatus, TestStatus } from '@prisma/client'
-import { PrismaService } from '@/shared/services/prisma.service'
 import { SharedUserSubscriptionService } from '@/shared/services/user-subscription.service'
 import { FeatureKey, FeatureKeyType } from '@/common/constants/subscription.constant'
 
@@ -27,7 +26,6 @@ export class UserTestService {
 
   constructor(
     private readonly userTestRepo: UserTestRepo,
-    private readonly prisma: PrismaService,
     private readonly sharedUserSubscriptionService: SharedUserSubscriptionService,
     private readonly i18nService: I18nService
   ) {}
@@ -426,19 +424,7 @@ export class UserTestService {
       )
 
       // Lấy tất cả Test có status = ACTIVE, KHÔNG phải MATCH_TEST và KHÔNG phải PLACEMENT_TEST_DONE
-      const tests = await this.prisma.test.findMany({
-        where: {
-          status: 'ACTIVE',
-          testType: {
-            notIn: ['MATCH_TEST', 'PLACEMENT_TEST_DONE']
-          }
-        },
-        select: {
-          id: true,
-          testType: true,
-          limit: true
-        }
-      })
+      const tests = await this.userTestRepo.findTestsWithResettableLimit()
 
       if (tests.length === 0) {
         this.logger.warn('No tests found to update')
@@ -449,14 +435,7 @@ export class UserTestService {
 
       // Cập nhật limit cho từng test
       for (const test of tests) {
-        const result = await this.prisma.userTest.updateMany({
-          where: {
-            testId: test.id
-          },
-          data: {
-            limit: test.limit
-          }
-        })
+        const result = await this.userTestRepo.resetLimitForTest(test.id, test.limit)
 
         totalUpdated += result.count
         this.logger.log(

@@ -236,4 +236,8 @@ export class WalletService {
   ) {
     return this.walletRepo.minusBalanceToWalletWithTypeUserId(...args)
   }
+
+  creditOrCreate(...args: Parameters<WalletRepo['creditOrCreate']>) {
+    return this.walletRepo.creditOrCreate(...args)
+  }
 }
