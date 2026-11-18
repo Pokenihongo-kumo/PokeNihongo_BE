@@ -1253,7 +1253,8 @@ export const viMessages = {
     GET_LIST_SUCCESS: 'Lấy danh sách người tham gia vòng đấu thành công',
     NOT_FOUND: 'Không tìm thấy người tham gia vòng đấu',
     ALREADY_EXISTS: 'Người tham gia vòng đấu đã tồn tại',
-    INVALID_DATA: 'Dữ liệu người tham gia vòng đấu không hợp lệ'
+    INVALID_DATA: 'Dữ liệu người tham gia vòng đấu không hợp lệ',
+    NOT_YOUR_TURN: 'Chưa đến lượt bạn chọn Pokémon'
   },
   debuff_round: {
     CREATE_SUCCESS: 'Tạo debuff vòng đấu thành công',

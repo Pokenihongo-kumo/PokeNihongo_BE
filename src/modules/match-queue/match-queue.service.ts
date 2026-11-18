@@ -13,6 +13,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { QueueStatus } from '@prisma/client'
 import { Queue } from 'bull'
 import { MatchingGateway } from 'src/websockets/matching.gateway'
+import { NotStartedLeaderboardSeasonException } from '../leaderboard-season/dto/leaderboard-season.error'
 import { LeaderboardSeasonRepo } from '../leaderboard-season/leaderboard-season.repo'
 import { MatchParticipantRepo } from '../match-participant/match-participant.repo'
 import { MatchRepo } from '../match/match.repo'
@@ -276,8 +277,9 @@ export class MatchQueueService implements OnModuleInit {
   ) {
     try {
       const activeSeasonNow = await this.leaderboardSeasonRepo.findActiveSeason()
+      // no season running: the error joining a season gives (was a 404)
       if (!activeSeasonNow) {
-        throw new NotFoundRecordException()
+        throw new NotStartedLeaderboardSeasonException()
       }
       const [user, existingMatching, hasJoinedSeason, userPokemons] = await Promise.all([
         this.userCoreService.findUniqueWithLevel({

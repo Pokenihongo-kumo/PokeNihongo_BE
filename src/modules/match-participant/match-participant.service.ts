@@ -119,6 +119,11 @@ export class MatchParticipantService {
       if (!existingParticipant) {
         throw new MatchParticipantNotFoundException()
       }
+      // Only the player's own place: another player's answers like a missing
+      // one (anyone could accept or decline for someone else)
+      if (existingParticipant.userId !== userId) {
+        throw new MatchParticipantNotFoundException()
+      }
       if (existingParticipant.hasAccepted !== null) {
         throw new MatchParticipantInvalidActionException()
       }

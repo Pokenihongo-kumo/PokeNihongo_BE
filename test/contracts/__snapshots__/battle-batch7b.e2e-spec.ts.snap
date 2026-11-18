@@ -1,26 +1,18 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Battle batch 7b contract (e2e) a player can answer for the other's place 1`] = `
+exports[`Battle batch 7b contract (e2e) a player cannot answer for the other's place 1`] = `
 {
   "forOther": {
     "body": {
-      "data": {
-        "createdAt": "string",
-        "deletedAt": "null",
-        "hasAccepted": "boolean",
-        "id": "number",
-        "matchId": "number",
-        "updatedAt": "string",
-        "userId": "number",
-      },
-      "message": "Cập nhật người tham gia trận đấu thành công",
-      "statusCode": 200,
+      "error": "NOT_FOUND",
+      "message": "Không tìm thấy người tham gia trận đấu",
+      "statusCode": 404,
     },
-    "httpStatus": 200,
+    "httpStatus": 404,
   },
   "match": {
     "accepted": [
-      false,
+      null,
       null,
     ],
     "rounds": [],
@@ -295,7 +287,7 @@ exports[`Battle batch 7b contract (e2e) both accept: the match starts, three rou
             "id": "number",
             "participants": [
               {
-                "endTimeSelected": "null",
+                "endTimeSelected": "string",
                 "id": "number",
                 "matchParticipantId": "number",
                 "orderSelected": "number",
@@ -339,7 +331,7 @@ exports[`Battle batch 7b contract (e2e) both accept: the match starts, three rou
             "id": "number",
             "participants": [
               {
-                "endTimeSelected": "null",
+                "endTimeSelected": "string",
                 "id": "number",
                 "matchParticipantId": "number",
                 "orderSelected": "number",
@@ -417,7 +409,7 @@ exports[`Battle batch 7b contract (e2e) both accept: the match starts, three rou
           "roundNumber": "string",
           "status": "string",
         },
-        "selectionEndTime": "null",
+        "selectionEndTime": "string",
         "timeLimitMs": "number",
         "type": "string",
       },
@@ -605,19 +597,19 @@ exports[`Battle batch 7b contract (e2e) joining the queue is refused: no season,
   "noSeason": {
     "en": {
       "body": {
-        "error": "NOT_FOUND",
-        "message": "Record not found",
-        "statusCode": 404,
+        "error": "CONFLICT",
+        "message": "Leaderboard season has not started yet",
+        "statusCode": 409,
       },
-      "httpStatus": 404,
+      "httpStatus": 409,
     },
     "vi": {
       "body": {
-        "error": "NOT_FOUND",
-        "message": "Không tìm thấy bản ghi",
-        "statusCode": 404,
+        "error": "CONFLICT",
+        "message": "Mùa giải bảng xếp hạng chưa bắt đầu",
+        "statusCode": 409,
       },
-      "httpStatus": 404,
+      "httpStatus": 409,
     },
   },
   "notJoined": {
@@ -908,63 +900,6 @@ exports[`Battle batch 7b contract (e2e) round one picks in turn: out of turn, no
                     "id": "number",
                     "matchParticipantId": "number",
                     "orderSelected": "number",
-                    "selectedUserPokemon": "null",
-                    "selectedUserPokemonId": "null",
-                  },
-                ],
-                "roundNumber": "string",
-                "status": "string",
-              },
-            ],
-          },
-          "matchId": "number",
-          "matchRoundId": "number",
-          "timeLimitMs": "number",
-          "type": "string",
-        },
-        "room": "matching_N",
-      },
-      {
-        "event": "pokemon-selection-expired",
-        "payload": {
-          "matchId": "number",
-          "matchRoundId": "number",
-          "message": "Hết thời gian chọn Pokémon",
-          "type": "string",
-        },
-        "room": "match_N_user_N",
-      },
-      {
-        "event": "select-pokemon",
-        "payload": {
-          "data": {
-            "match": {
-              "id": "number",
-              "participants": [
-                {
-                  "id": "number",
-                  "user": {
-                    "avatar": "null",
-                    "eloscore": "number",
-                    "email": "string",
-                    "id": "number",
-                    "name": "string",
-                  },
-                  "userId": "number",
-                },
-              ],
-              "status": "string",
-            },
-            "rounds": [
-              {
-                "endTimeRound": "null",
-                "id": "number",
-                "participants": [
-                  {
-                    "endTimeSelected": "null",
-                    "id": "number",
-                    "matchParticipantId": "number",
-                    "orderSelected": "number",
                     "selectedUserPokemon": {
                       "id": "number",
                       "pokemon": {
@@ -1023,19 +958,19 @@ exports[`Battle batch 7b contract (e2e) round one picks in turn: out of turn, no
               "status": "PENDING",
             },
             {
-              "hasEndTime": false,
+              "hasEndTime": true,
               "orderSelected": 2,
-              "picked": true,
-              "status": "PENDING",
+              "picked": false,
+              "status": "SELECTING_POKEMON",
             },
           ],
           "roundNumber": "ONE",
-          "status": "PENDING",
+          "status": "SELECTING_POKEMON",
         },
         {
           "participants": [
             {
-              "hasEndTime": true,
+              "hasEndTime": false,
               "orderSelected": 3,
               "picked": false,
               "status": "SELECTING_POKEMON",
@@ -1074,14 +1009,67 @@ exports[`Battle batch 7b contract (e2e) round one picks in turn: out of turn, no
   },
   "events": [
     {
-      "event": "pokemon-selection-expired",
+      "event": "select-pokemon",
       "payload": {
+        "data": {
+          "match": {
+            "id": "number",
+            "participants": [
+              {
+                "id": "number",
+                "user": {
+                  "avatar": "null",
+                  "eloscore": "number",
+                  "email": "string",
+                  "id": "number",
+                  "name": "string",
+                },
+                "userId": "number",
+              },
+            ],
+            "status": "string",
+          },
+          "rounds": [
+            {
+              "endTimeRound": "null",
+              "id": "number",
+              "participants": [
+                {
+                  "endTimeSelected": {},
+                  "id": "number",
+                  "matchParticipantId": "number",
+                  "orderSelected": "number",
+                  "selectedUserPokemon": {
+                    "id": "number",
+                    "pokemon": {
+                      "id": "number",
+                      "imageUrl": "null",
+                      "nameJp": "string",
+                      "nameTranslations": {
+                        "en": "string",
+                        "ja": "string",
+                        "vi": "string",
+                      },
+                      "pokedex_number": "number",
+                      "rarity": "string",
+                    },
+                    "pokemonId": "number",
+                    "userId": "number",
+                  },
+                  "selectedUserPokemonId": "number",
+                },
+              ],
+              "roundNumber": "string",
+              "status": "string",
+            },
+          ],
+        },
         "matchId": "number",
         "matchRoundId": "number",
-        "message": "Hết thời gian chọn Pokémon",
+        "timeLimitMs": "number",
         "type": "string",
       },
-      "room": "match_N_user_N",
+      "room": "matching_N",
     },
   ],
   "first": {
@@ -1106,7 +1094,16 @@ exports[`Battle batch 7b contract (e2e) round one picks in turn: out of turn, no
     },
     "httpStatus": 200,
   },
-  "jobs": [],
+  "jobs": [
+    {
+      "data": {
+        "matchRoundParticipantId": "number",
+      },
+      "delay": 5000,
+      "name": "check-pokemon-selection-timeout",
+      "queue": "match-round-participant-timeout",
+    },
+  ],
   "match": {
     "accepted": [
       true,
@@ -1122,7 +1119,7 @@ exports[`Battle batch 7b contract (e2e) round one picks in turn: out of turn, no
             "status": "PENDING",
           },
           {
-            "hasEndTime": false,
+            "hasEndTime": true,
             "orderSelected": 2,
             "picked": true,
             "status": "PENDING",
@@ -1191,42 +1188,42 @@ exports[`Battle batch 7b contract (e2e) round one picks in turn: out of turn, no
   "outOfTurn": {
     "en": {
       "body": {
-        "error": "BAD_REQUEST",
-        "message": "Time’s up for selecting a Pokémon",
-        "statusCode": 400,
+        "error": "CONFLICT",
+        "message": "It is not your turn to choose a Pokémon yet",
+        "statusCode": 409,
       },
-      "httpStatus": 400,
+      "httpStatus": 409,
     },
     "vi": {
       "body": {
-        "data": {
-          "createdAt": "string",
-          "deletedAt": "null",
-          "endTimeSelected": "null",
-          "id": "number",
-          "matchParticipantId": "number",
-          "matchRoundId": "number",
-          "orderSelected": "number",
-          "points": "null",
-          "questionsTotal": "number",
-          "selectedUserPokemonId": "number",
-          "status": "string",
-          "totalTimeMs": "null",
-          "updatedAt": "string",
-        },
-        "message": "Cập nhật người tham gia vòng đấu thành công",
-        "statusCode": 200,
+        "error": "CONFLICT",
+        "message": "Chưa đến lượt bạn chọn Pokémon",
+        "statusCode": 409,
       },
-      "httpStatus": 200,
+      "httpStatus": 409,
     },
   },
   "second": {
     "body": {
-      "error": "BAD_REQUEST",
-      "message": "Hết thời gian chọn Pokémon",
-      "statusCode": 400,
+      "data": {
+        "createdAt": "string",
+        "deletedAt": "null",
+        "endTimeSelected": "string",
+        "id": "number",
+        "matchParticipantId": "number",
+        "matchRoundId": "number",
+        "orderSelected": "number",
+        "points": "null",
+        "questionsTotal": "number",
+        "selectedUserPokemonId": "number",
+        "status": "string",
+        "totalTimeMs": "null",
+        "updatedAt": "string",
+      },
+      "message": "Cập nhật người tham gia vòng đấu thành công",
+      "statusCode": 200,
     },
-    "httpStatus": 400,
+    "httpStatus": 200,
   },
 }
 `;
