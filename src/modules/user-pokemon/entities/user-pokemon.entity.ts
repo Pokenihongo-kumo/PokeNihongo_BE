@@ -2,6 +2,7 @@ import { checkIdSchema } from '@/common/utils/id.validation'
 import { UserPokemonMessage } from '@/i18n/message-keys'
 import { PokemonSchema } from '@/modules/pokemon/entities/pokemon.entity'
 import { PaginationQuerySchema } from '@/shared/models/request.model'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -36,11 +37,7 @@ export const CreateUserPokemonBodySchema = z
   })
   .strict()
 
-export const CreateUserPokemonResSchema = z.object({
-  statusCode: z.number(),
-  data: UserPokemonSchema,
-  message: z.string()
-})
+export const CreateUserPokemonResSchema = resSchema(UserPokemonSchema)
 
 // Update Schema
 export const UpdateUserPokemonBodySchema = z
@@ -77,9 +74,8 @@ export const GetUserPokemonByPokemonIdParamsSchema = z.object({
   pokemonId: checkIdSchema(UserPokemonMessage.INVALID_POKEMON_ID)
 })
 
-export const GetUserPokemonDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: z.object({
+export const GetUserPokemonDetailResSchema = resSchema(
+  z.object({
     ...UserPokemonSchema.shape,
     user: z
       .object({
@@ -238,23 +234,19 @@ export const GetUserPokemonDetailResSchema = z.object({
       })
       .optional()
       .nullable()
-  }),
-  message: z.string()
-})
+  })
+)
 
-export const GetUserPokemonStatsResSchema = z.object({
-  statusCode: z.number(),
-  data: z.object({
+export const GetUserPokemonStatsResSchema = resSchema(
+  z.object({
     ownershipPercentage: z.number(),
     userPokemonsCount: z.number(),
     totalPokemons: z.number()
-  }),
-  message: z.string()
-})
+  })
+)
 
-export const GetUserPokemonAddExpDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: UserPokemonSchema.extend({
+export const GetUserPokemonAddExpDetailResSchema = resSchema(
+  UserPokemonSchema.extend({
     user: z
       .object({
         id: z.number(),
@@ -284,9 +276,8 @@ export const GetUserPokemonAddExpDetailResSchema = z.object({
           .optional()
       })
       .optional()
-  }),
-  message: z.string()
-})
+  })
+)
 
 // Add EXP Schema
 export const AddExpBodySchema = z
@@ -302,15 +293,13 @@ export const EvolvePokemonBodySchema = z
   })
   .strict()
 
-export const EvolvePokemonResSchema = z.object({
-  statusCode: z.number(),
-  data: z.object({
+export const EvolvePokemonResSchema = resSchema(
+  z.object({
     newUserPokemon: UserPokemonSchema,
     transferredExp: z.number(),
     message: z.string()
-  }),
-  message: z.string()
-})
+  })
+)
 
 const DisplayNameSchema = z.object({
   en: z.string(),
@@ -376,11 +365,9 @@ export const GetUserPokemonByPokemonIdwithListOwnershipSchema = UserPokemonSchem
   })
 })
 
-export const GetUserPokemonByPokemonIdwithListOwnershipResSchema = z.object({
-  statusCode: z.number(),
-  data: GetUserPokemonByPokemonIdwithListOwnershipSchema,
-  message: z.string()
-})
+export const GetUserPokemonByPokemonIdwithListOwnershipResSchema = resSchema(
+  GetUserPokemonByPokemonIdwithListOwnershipSchema
+)
 
 // Type exports
 export type UserPokemonType = z.infer<typeof UserPokemonSchema>

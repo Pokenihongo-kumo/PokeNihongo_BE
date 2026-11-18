@@ -4,6 +4,7 @@ import { LeaderboardSeasonMessage } from '@/i18n/message-keys'
 import { RewardSchema } from '@/modules/reward/entities/reward.entity'
 import { SeasonRankRewardSchema } from '@/modules/season-rank-reward/entities/season-rank-reward.entity'
 import { TranslationInputSchema } from '@/shared/models/translation-input.model'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -60,11 +61,7 @@ export const CreateLeaderboardSeasonBodySchema = LeaderboardSeasonSchema.pick({
   isRandomItemAgain: true
 }).strict()
 
-export const CreateLeaderboardSeasonResSchema = z.object({
-  statusCode: z.number(),
-  data: LeaderboardSeasonSchema,
-  message: z.string()
-})
+export const CreateLeaderboardSeasonResSchema = resSchema(LeaderboardSeasonSchema)
 
 export const UpdateLeaderboardSeasonBodyInputSchema =
   CreateLeaderboardSeasonBodyInputSchema.partial().strict()
@@ -80,9 +77,8 @@ export const GetLeaderboardSeasonParamsSchema = z
   })
   .strict()
 
-export const GetLeaderboardSeasonDetailWithAllLangResSchema = z.object({
-  statusCode: z.number(),
-  data: LeaderboardSeasonSchema.extend({
+export const GetLeaderboardSeasonDetailWithAllLangResSchema = resSchema(
+  LeaderboardSeasonSchema.extend({
     nameTranslations: z
       .array(
         z.object({
@@ -91,9 +87,8 @@ export const GetLeaderboardSeasonDetailWithAllLangResSchema = z.object({
         })
       )
       .optional()
-  }),
-  message: z.string()
-})
+  })
+)
 
 export const GetLeaderboardWithRewardSeasonDetailSchema = LeaderboardSeasonSchema.pick({
   id: true,
@@ -124,14 +119,11 @@ export const GetLeaderboardWithRewardSeasonDetailSchema = LeaderboardSeasonSchem
   )
 })
 
-export const GetLeaderboardWithRewardSeasonDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: GetLeaderboardWithRewardSeasonDetailSchema,
-  message: z.string()
-})
-export const GetLeaderboardSeasonDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: LeaderboardSeasonSchema.extend({
+export const GetLeaderboardWithRewardSeasonDetailResSchema = resSchema(
+  GetLeaderboardWithRewardSeasonDetailSchema
+)
+export const GetLeaderboardSeasonDetailResSchema = resSchema(
+  LeaderboardSeasonSchema.extend({
     nameTranslation: z.string().nullable().optional(),
     nameTranslations: TranslationInputSchema.nullable().optional(),
     seasonRankRewards: z.array(
@@ -153,9 +145,8 @@ export const GetLeaderboardSeasonDetailResSchema = z.object({
         })
         .nullable()
     )
-  }),
-  message: z.string()
-})
+  })
+)
 
 export type LeaderboardSeasonType = z.infer<typeof LeaderboardSeasonSchema>
 export type CreateLeaderboardSeasonBodyInputType = z.infer<

@@ -1,5 +1,6 @@
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { ENTITY_MESSAGE } from '@/i18n/message-keys'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -24,11 +25,7 @@ export const CreateMatchParticipantBodySchema = MatchParticipantSchema.pick({
   userId: true
 }).strict()
 
-export const CreateMatchParticipantResSchema = z.object({
-  statusCode: z.number(),
-  data: MatchParticipantSchema,
-  message: z.string()
-})
+export const CreateMatchParticipantResSchema = resSchema(MatchParticipantSchema)
 
 // Update Schema
 export const UpdateMatchParticipantBodySchema = CreateMatchParticipantBodySchema.extend({
@@ -39,11 +36,7 @@ export const UpdateMatchParticipantBodySchema = CreateMatchParticipantBodySchema
 
 export const UpdateMatchParticipantResSchema = CreateMatchParticipantResSchema
 
-export const UpdateWithListItemResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(MatchParticipantSchema),
-  message: z.string()
-})
+export const UpdateWithListItemResSchema = resSchema(z.array(MatchParticipantSchema))
 
 // Query Schema
 export const GetMatchParticipantParamsSchema = z.object({
@@ -52,11 +45,9 @@ export const GetMatchParticipantParamsSchema = z.object({
 
 export const GetMatchParticipantDetailSchema = MatchParticipantSchema
 
-export const GetMatchParticipantDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: GetMatchParticipantDetailSchema,
-  message: z.string()
-})
+export const GetMatchParticipantDetailResSchema = resSchema(
+  GetMatchParticipantDetailSchema
+)
 
 // Type exports
 export type MatchParticipantType = z.infer<typeof MatchParticipantSchema>

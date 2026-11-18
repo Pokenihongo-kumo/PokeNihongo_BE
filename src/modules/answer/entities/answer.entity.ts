@@ -1,9 +1,11 @@
-import { extendZodWithOpenApi } from '@anatine/zod-openapi'
-import { patchNestJsSwagger } from 'nestjs-zod'
-import { z } from 'zod'
 import { AnswerSortField, SortOrder } from '@/common/enum/enum'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { AnswerMessage } from '@/i18n/message-keys'
+import { paginatedResSchema } from '@/shared/utils/pagination'
+import { resSchema } from '@/shared/utils/res-schema'
+import { extendZodWithOpenApi } from '@anatine/zod-openapi'
+import { patchNestJsSwagger } from 'nestjs-zod'
+import { z } from 'zod'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
@@ -161,66 +163,44 @@ export const GetAnswerListQueryType = z.object({
 })
 
 // Response schemas
-export const AnswerResponseSchema = z
-  .object({
-    statusCode: z.number(),
-    data: AnswerType.omit({ answerKey: true }).extend({
-      meaning: z.string().optional(),
-      meanings: z
-        .array(
-          z.object({
-            language_code: z.string(),
-            value: z.string()
-          })
-        )
-        .optional(),
-      // Parsed convenience fields
-      answerVi: z.string().optional(),
-      answerEn: z.string().optional()
-    }),
-    message: z.string()
+export const AnswerResponseSchema = resSchema(
+  AnswerType.omit({ answerKey: true }).extend({
+    meaning: z.string().optional(),
+    meanings: z
+      .array(
+        z.object({
+          language_code: z.string(),
+          value: z.string()
+        })
+      )
+      .optional(),
+    // Parsed convenience fields
+    answerVi: z.string().optional(),
+    answerEn: z.string().optional()
   })
-  .strict()
+).strict()
 
-export const AnswerListResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(AnswerWithTranslationType),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
+export const AnswerListResSchema = paginatedResSchema(AnswerWithTranslationType).strict()
 
 // Response schema for multiple answers creation
-export const CreateMultipleAnswersResponseSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      created: z.array(AnswerType),
-      updated: z.array(AnswerType),
-      failed: z.array(
-        z.object({
-          answerJp: z.string(),
-          reason: z.string()
-        })
-      ),
-      summary: z.object({
-        total: z.number(),
-        created: z.number(),
-        updated: z.number(),
-        failed: z.number()
+export const CreateMultipleAnswersResponseSchema = resSchema(
+  z.object({
+    created: z.array(AnswerType),
+    updated: z.array(AnswerType),
+    failed: z.array(
+      z.object({
+        answerJp: z.string(),
+        reason: z.string()
       })
-    }),
-    message: z.string()
+    ),
+    summary: z.object({
+      total: z.number(),
+      created: z.number(),
+      updated: z.number(),
+      failed: z.number()
+    })
   })
-  .strict()
+).strict()
 
 // Type exports
 export type AnswerType = z.infer<typeof AnswerType>

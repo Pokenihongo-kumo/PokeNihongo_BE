@@ -1,6 +1,8 @@
-import { z } from 'zod'
 import { LessonContentSortField, SortOrder } from '@/common/enum/enum'
+import { paginatedResSchema } from '@/shared/utils/pagination'
+import { resSchema } from '@/shared/utils/res-schema'
 import { LessonContentsType as PrismaLessonContentType } from '@prisma/client'
+import { z } from 'zod'
 
 // Lesson Content Entity Types
 export const LessonContentType = z.object({
@@ -63,21 +65,7 @@ export const GetLessonContentListQueryType = z.object({
 })
 
 // Response schemas
-export const LessonContentListResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(LessonContentType),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
+export const LessonContentListResSchema = paginatedResSchema(LessonContentType).strict()
 
 // Schema for grouped lesson content with translations
 export const VocabularyContentSchema = z.object({
@@ -200,13 +188,7 @@ export const GroupedLessonContentSchema = z.object({
   checkLastTest: z.boolean().optional()
 })
 
-export const LessonContentFullResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: GroupedLessonContentSchema,
-    message: z.string()
-  })
-  .strict()
+export const LessonContentFullResSchema = resSchema(GroupedLessonContentSchema).strict()
 
 // Type exports
 export type LessonContentType = z.infer<typeof LessonContentType>

@@ -1,9 +1,11 @@
+import { KanjiSortField, SortOrder } from '@/common/enum/enum'
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { KanjiMessage } from '@/i18n/message-keys'
+import { paginatedResSchema } from '@/shared/utils/pagination'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
-import { KanjiMessage } from '@/i18n/message-keys'
-import { checkIdSchema } from '@/common/utils/id.validation'
-import { KanjiSortField, SortOrder } from '@/common/enum/enum'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
@@ -161,45 +163,12 @@ export const KanjiListResponseSchema = z.object({
 })
 
 // Standard Response Schemas (like vocabulary pattern)
-export const KanjiResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: KanjiSchema,
-    message: z.string()
-  })
-  .strict()
+export const KanjiResSchema = resSchema(KanjiSchema).strict()
 
-export const KanjiListResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(KanjiSchema),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
+export const KanjiListResSchema = paginatedResSchema(KanjiSchema).strict()
 
-export const KanjiManagementListResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(KanjiManagementSchema),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
+export const KanjiManagementListResSchema =
+  paginatedResSchema(KanjiManagementSchema).strict()
 
 // Type exports
 export type Kanji = z.infer<typeof KanjiSchema>

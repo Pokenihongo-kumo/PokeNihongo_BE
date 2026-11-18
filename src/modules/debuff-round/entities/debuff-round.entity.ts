@@ -2,6 +2,7 @@ import { MatchDebuffType } from '@/common/constants/debuff.constant'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { DebuffRoundMessage } from '@/i18n/message-keys'
 import { TranslationInputSchema } from '@/shared/models/translation-input.model'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -42,11 +43,7 @@ export const CreateDebuffRoundBodySchema = DebuffRoundSchema.pick({
   valueDebuff: true
 }).strict()
 
-export const CreateDebuffRoundResSchema = z.object({
-  statusCode: z.number(),
-  data: DebuffRoundSchema,
-  message: z.string()
-})
+export const CreateDebuffRoundResSchema = resSchema(DebuffRoundSchema)
 
 export const UpdateDebuffRoundBodyInputSchema =
   CreateDebuffRoundBodyInputSchema.partial().strict()
@@ -61,9 +58,8 @@ export const GetDebuffRoundParamsSchema = z
   })
   .strict()
 
-export const GetDebuffRoundDetailWithAllLangResSchema = z.object({
-  statusCode: z.number(),
-  data: DebuffRoundSchema.extend({
+export const GetDebuffRoundDetailWithAllLangResSchema = resSchema(
+  DebuffRoundSchema.extend({
     nameTranslations: z
       .array(
         z.object({
@@ -72,18 +68,15 @@ export const GetDebuffRoundDetailWithAllLangResSchema = z.object({
         })
       )
       .optional()
-  }),
-  message: z.string()
-})
+  })
+)
 
-export const GetDebuffRoundDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: DebuffRoundSchema.extend({
+export const GetDebuffRoundDetailResSchema = resSchema(
+  DebuffRoundSchema.extend({
     nameTranslation: z.string().nullable().optional(),
     nameTranslations: TranslationInputSchema.optional().nullable()
-  }),
-  message: z.string()
-})
+  })
+)
 
 export type DebuffRoundType = z.infer<typeof DebuffRoundSchema>
 export type CreateDebuffRoundBodyInputType = z.infer<

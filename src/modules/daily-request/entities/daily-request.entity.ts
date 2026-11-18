@@ -4,6 +4,7 @@ import { ENTITY_MESSAGE } from '@/i18n/message-keys'
 import { RewardSchema } from '@/modules/reward/entities/reward.entity'
 import { TranslationSchema } from '@/modules/translation/entities/translation.entity'
 import { TranslationInputSchema } from '@/shared/models/translation-input.model'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -59,11 +60,7 @@ export const CreateDailyRequestBodySchema = DailyRequestSchema.pick({
   isStreak: true
 }).strict()
 
-export const CreateDailyRequestResSchema = z.object({
-  statusCode: z.number(),
-  data: DailyRequestSchema,
-  message: z.string()
-})
+export const CreateDailyRequestResSchema = resSchema(DailyRequestSchema)
 
 export const UpdateDailyRequestBodyInputSchema =
   CreateDailyRequestBodyInputSchema.partial().strict()
@@ -77,9 +74,8 @@ export const GetParamsDailyRequestSchema = z.object({
   dailyRequestId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
 
-export const GetDailyRequestDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: DailyRequestSchema.extend({
+export const GetDailyRequestDetailResSchema = resSchema(
+  DailyRequestSchema.extend({
     nameTranslation: z.string().nullable().optional(),
     descriptionTranslation: z.string().nullable().optional(),
     reward: RewardSchema.extend({
@@ -89,13 +85,11 @@ export const GetDailyRequestDetailResSchema = z.object({
     })
       .nullable()
       .optional()
-  }),
-  message: z.string()
-})
+  })
+)
 
-export const GetDailyRequestDetailwithAllLangResSchema = z.object({
-  statusCode: z.number(),
-  data: DailyRequestSchema.extend({
+export const GetDailyRequestDetailwithAllLangResSchema = resSchema(
+  DailyRequestSchema.extend({
     nameTranslations: z.array(z.object({ key: z.string(), value: z.string() })),
     descriptionTranslations: z.array(z.object({ key: z.string(), value: z.string() })),
     reward: RewardSchema.extend({
@@ -105,9 +99,8 @@ export const GetDailyRequestDetailwithAllLangResSchema = z.object({
     })
       .nullable()
       .optional()
-  }),
-  message: z.string()
-})
+  })
+)
 
 // Type definitions
 export type DailyRequestType = z.infer<typeof DailyRequestSchema>

@@ -1,6 +1,7 @@
 import { InvoiceStatus } from '@/common/constants/invoice.constant'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { ENTITY_MESSAGE, InvoiceMessage } from '@/i18n/message-keys'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -39,11 +40,7 @@ export const CreateInvoiceBodySchema = InvoiceSchema.pick({
   })
   .strict()
 
-export const CreateInvoiceResSchema = z.object({
-  statusCode: z.number(),
-  data: InvoiceSchema,
-  message: z.string()
-})
+export const CreateInvoiceResSchema = resSchema(InvoiceSchema)
 
 // Update Schema
 export const UpdateInvoiceBodySchema = InvoiceSchema.pick({
@@ -65,11 +62,7 @@ export const GetRewardByLeaderboardParamsSchema = z.object({
 
 export const GetInvoiceDetailSchema = InvoiceSchema
 
-export const GetInvoiceDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: GetInvoiceDetailSchema,
-  message: z.string()
-})
+export const GetInvoiceDetailResSchema = resSchema(GetInvoiceDetailSchema)
 
 // Type exports
 export type InvoiceType = z.infer<typeof InvoiceSchema>

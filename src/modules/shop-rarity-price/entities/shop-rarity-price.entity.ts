@@ -1,6 +1,7 @@
 import { RarityPokemon } from '@/common/constants/pokemon.constant'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { ENTITY_MESSAGE } from '@/i18n/message-keys'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -33,11 +34,7 @@ export const CreateShopRarityPriceBodySchema = ShopRarityPriceSchema.pick({
   price: true
 }).strict()
 
-export const CreateShopRarityPriceResSchema = z.object({
-  statusCode: z.number(),
-  data: ShopRarityPriceSchema,
-  message: z.string()
-})
+export const CreateShopRarityPriceResSchema = resSchema(ShopRarityPriceSchema)
 
 // Update Schema
 export const UpdateShopRarityPriceBodySchema = CreateShopRarityPriceBodySchema.extend({
@@ -48,11 +45,7 @@ export const UpdateShopRarityPriceBodySchema = CreateShopRarityPriceBodySchema.e
 
 export const UpdateShopRarityPriceResSchema = CreateShopRarityPriceResSchema
 
-export const UpdateWithListItemResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(ShopRarityPriceSchema),
-  message: z.string()
-})
+export const UpdateWithListItemResSchema = resSchema(z.array(ShopRarityPriceSchema))
 
 // Query Schema
 export const GetShopRarityPriceParamsSchema = z.object({
@@ -61,11 +54,7 @@ export const GetShopRarityPriceParamsSchema = z.object({
 
 export const GetShopRarityPriceDetailSchema = ShopRarityPriceSchema
 
-export const GetShopRarityPriceDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: GetShopRarityPriceDetailSchema,
-  message: z.string()
-})
+export const GetShopRarityPriceDetailResSchema = resSchema(GetShopRarityPriceDetailSchema)
 
 // Type exports
 export type ShopRarityPriceType = z.infer<typeof ShopRarityPriceSchema>

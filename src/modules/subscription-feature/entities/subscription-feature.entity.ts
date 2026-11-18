@@ -1,5 +1,6 @@
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { ENTITY_MESSAGE } from '@/i18n/message-keys'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -30,11 +31,7 @@ export const CreateSubscriptionFeatureBodySchema = SubscriptionFeatureSchema.pic
   value: true
 }).strict()
 
-export const CreateSubscriptionFeatureResSchema = z.object({
-  statusCode: z.number(),
-  data: SubscriptionFeatureSchema,
-  message: z.string()
-})
+export const CreateSubscriptionFeatureResSchema = resSchema(SubscriptionFeatureSchema)
 
 // Update Schema
 export const UpdateSubscriptionFeatureBodySchema =
@@ -56,11 +53,7 @@ export const UpdateWithListItemBodySchema = z.object({
 
 export type UpdateWithListItemBodyType = z.infer<typeof UpdateWithListItemBodySchema>
 
-export const UpdateWithListItemResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(SubscriptionFeatureSchema),
-  message: z.string()
-})
+export const UpdateWithListItemResSchema = resSchema(z.array(SubscriptionFeatureSchema))
 
 // Query Schema
 export const GetSubscriptionFeatureParamsSchema = z.object({
@@ -69,11 +62,9 @@ export const GetSubscriptionFeatureParamsSchema = z.object({
 
 export const GetSubscriptionFeatureDetailSchema = SubscriptionFeatureSchema
 
-export const GetSubscriptionFeatureDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: GetSubscriptionFeatureDetailSchema,
-  message: z.string()
-})
+export const GetSubscriptionFeatureDetailResSchema = resSchema(
+  GetSubscriptionFeatureDetailSchema
+)
 
 // Type exports
 export type SubscriptionFeatureType = z.infer<typeof SubscriptionFeatureSchema>

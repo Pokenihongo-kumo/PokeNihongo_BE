@@ -1,9 +1,11 @@
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { UserExerciseAttemptMessage as M } from '@/i18n/message-keys'
+import { paginatedResSchema } from '@/shared/utils/pagination'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
+import { LessonContentsType } from '@prisma/client'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
-import { LessonContentsType } from '@prisma/client'
-import { UserExerciseAttemptMessage as M } from '@/i18n/message-keys'
-import { checkIdSchema } from '@/common/utils/id.validation'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
@@ -43,29 +45,11 @@ export const UpdateUserExerciseAttemptBodySchema = z
   })
   .strict()
 
-export const UserExerciseAttemptResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: UserExerciseAttemptSchema,
-    message: z.string()
-  })
-  .strict()
+export const UserExerciseAttemptResSchema = resSchema(UserExerciseAttemptSchema).strict()
 
-export const UserExerciseAttemptListResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(UserExerciseAttemptSchema),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
+export const UserExerciseAttemptListResSchema = paginatedResSchema(
+  UserExerciseAttemptSchema
+).strict()
 
 export const GetUserExerciseAttemptByIdParamsSchema = z
   .object({ id: checkIdSchema(M.INVALID_ID) })
@@ -103,13 +87,9 @@ export const LatestExerciseAttemptSchema = z.object({
   updatedAt: z.date()
 })
 
-export const LatestExerciseAttemptsByLessonResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.array(LatestExerciseAttemptSchema),
-    message: z.string()
-  })
-  .strict()
+export const LatestExerciseAttemptsByLessonResSchema = resSchema(
+  z.array(LatestExerciseAttemptSchema)
+).strict()
 
 // Submit / abandon body: time spent in seconds, optional
 export const CheckExerciseCompletionBodySchema = z

@@ -2,6 +2,7 @@ import { UserAchievementStatus } from '@/common/constants/achievement.constant'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { ENTITY_MESSAGE, UserAchievementMessage } from '@/i18n/message-keys'
 import { PaginationQuerySchema } from '@/shared/models/request.model'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -34,11 +35,7 @@ export const CreateUserAchievementBodySchema = UserAchievementSchema.pick({
   status: true
 }).strict()
 
-export const CreateUserAchievementResSchema = z.object({
-  statusCode: z.number(),
-  data: UserAchievementSchema,
-  message: z.string()
-})
+export const CreateUserAchievementResSchema = resSchema(UserAchievementSchema)
 
 // Update Schema
 export const UpdateUserAchievementBodySchema =
@@ -46,11 +43,7 @@ export const UpdateUserAchievementBodySchema =
 
 export const UpdateUserAchievementResSchema = CreateUserAchievementResSchema
 
-export const UpdateWithListItemResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(UserAchievementSchema),
-  message: z.string()
-})
+export const UpdateWithListItemResSchema = resSchema(z.array(UserAchievementSchema))
 
 // Query Schema
 export const GetUserAchievementParamsSchema = z.object({
@@ -59,11 +52,7 @@ export const GetUserAchievementParamsSchema = z.object({
 
 export const GetUserAchievementDetailSchema = UserAchievementSchema
 
-export const GetUserAchievementDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: GetUserAchievementDetailSchema,
-  message: z.string()
-})
+export const GetUserAchievementDetailResSchema = resSchema(GetUserAchievementDetailSchema)
 
 // Type exports
 export type UserAchievementType = z.infer<typeof UserAchievementSchema>

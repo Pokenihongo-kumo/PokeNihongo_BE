@@ -1,9 +1,11 @@
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { UserTestAttemptMessage as M } from '@/i18n/message-keys'
+import { paginatedResSchema } from '@/shared/utils/pagination'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
+import { TestAttemptStatus } from '@prisma/client'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
-import { TestAttemptStatus } from '@prisma/client'
-import { UserTestAttemptMessage as M } from '@/i18n/message-keys'
-import { checkIdSchema } from '@/common/utils/id.validation'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
@@ -32,29 +34,10 @@ export const UpdateUserTestAttemptBodySchema = z
   .object({ status: statusOf.optional() })
   .strict()
 
-export const UserTestAttemptResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: UserTestAttemptSchema,
-    message: z.string()
-  })
-  .strict()
+export const UserTestAttemptResSchema = resSchema(UserTestAttemptSchema).strict()
 
-export const UserTestAttemptListResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(UserTestAttemptSchema),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
+export const UserTestAttemptListResSchema =
+  paginatedResSchema(UserTestAttemptSchema).strict()
 
 export const GetUserTestAttemptByIdParamsSchema = z
   .object({ id: checkIdSchema(M.INVALID_ID) })

@@ -1,8 +1,9 @@
-import { extendZodWithOpenApi } from '@anatine/zod-openapi'
-import { patchNestJsSwagger } from 'nestjs-zod'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { LanguagesMessage } from '@/i18n/message-keys'
 import { paginatedResSchema } from '@/shared/utils/pagination'
+import { resSchema } from '@/shared/utils/res-schema'
+import { extendZodWithOpenApi } from '@anatine/zod-openapi'
+import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
 
 extendZodWithOpenApi(z)
@@ -102,13 +103,7 @@ export const GetLanguagesByCodeParamsSchema = z.object({
 })
 
 // Standard Response Schemas (like vocabulary pattern)
-export const LanguagesResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: LanguagesSchema,
-    message: z.string()
-  })
-  .strict()
+export const LanguagesResSchema = resSchema(LanguagesSchema).strict()
 
 export const LanguagesListResSchema = paginatedResSchema(LanguagesSchema)
 

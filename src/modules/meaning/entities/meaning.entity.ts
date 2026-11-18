@@ -1,6 +1,7 @@
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { MeaningMessage } from '@/i18n/message-keys'
 import { paginatedResSchema } from '@/shared/utils/pagination'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -111,11 +112,7 @@ export const GetMeaningListQuerySchema = z.object({
 })
 
 // Response envelopes: statusCode is part of them, else the serializer drops it
-export const MeaningResSchema = z.object({
-  statusCode: z.number(),
-  data: MeaningSchema,
-  message: z.string()
-})
+export const MeaningResSchema = resSchema(MeaningSchema)
 
 export const MeaningListResSchema = paginatedResSchema(MeaningSchema)
 

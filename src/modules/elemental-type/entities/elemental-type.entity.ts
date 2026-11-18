@@ -1,5 +1,6 @@
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { ElementalTypeMessage } from '@/i18n/message-keys'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -35,11 +36,7 @@ export const CreateElementalTypeBodySchema = ElementalTypeSchema.pick({
   color_hex: true
 }).strict()
 
-export const CreateElementalTypeResSchema = z.object({
-  statusCode: z.number(),
-  data: ElementalTypeSchema,
-  message: z.string()
-})
+export const CreateElementalTypeResSchema = resSchema(ElementalTypeSchema)
 
 export const UpdateElementalTypeBodySchema = CreateElementalTypeBodySchema.partial()
 
@@ -51,18 +48,10 @@ export const GetElementalTypeParamsSchema = z
   })
   .strict()
 
-export const GetElementalTypeDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: ElementalTypeSchema,
-  message: z.string()
-})
+export const GetElementalTypeDetailResSchema = resSchema(ElementalTypeSchema)
 
 // GET /elemental-type/active: every active type, not paginated
-export const GetActiveElementalTypesResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(ElementalTypeSchema),
-  message: z.string()
-})
+export const GetActiveElementalTypesResSchema = resSchema(z.array(ElementalTypeSchema))
 
 // Types
 export type ElementalTypeType = z.infer<typeof ElementalTypeSchema>

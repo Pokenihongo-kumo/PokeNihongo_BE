@@ -1,3 +1,5 @@
+import { paginatedResSchema } from '@/shared/utils/pagination'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -42,30 +44,12 @@ export const UpdateUserSpeakingAttemptSchema =
   CreateUserSpeakingAttemptSchema.partial().strict()
 
 // UserSpeakingAttempt Response Schema
-export const UserSpeakingAttemptResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: UserSpeakingAttemptSchema,
-    message: z.string()
-  })
-  .strict()
+export const UserSpeakingAttemptResSchema = resSchema(UserSpeakingAttemptSchema).strict()
 
 // UserSpeakingAttempt List Response Schema
-export const UserSpeakingAttemptListResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(UserSpeakingAttemptSchema),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
+export const UserSpeakingAttemptListResSchema = paginatedResSchema(
+  UserSpeakingAttemptSchema
+).strict()
 
 // Get UserSpeakingAttempt by ID Params Schema
 export const GetUserSpeakingAttemptByIdParamsSchema = z
@@ -120,24 +104,20 @@ export const EvaluateSpeakingRequestSchema = z
   .strict()
 
 // Evaluate Speaking Response Schema
-export const EvaluateSpeakingResponseSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      userSpeakingAttempt: UserSpeakingAttemptSchema,
-      evaluation: z.object({
-        accuracy: z.number().min(0).max(100),
-        pronunciation: z.number().min(0).max(100),
-        fluency: z.number().min(0).max(100),
-        overallScore: z.number().min(0).max(100),
-        confidence: z.number().min(0).max(1),
-        transcription: z.string().optional(),
-        feedback: z.string().optional()
-      })
-    }),
-    message: z.string()
+export const EvaluateSpeakingResponseSchema = resSchema(
+  z.object({
+    userSpeakingAttempt: UserSpeakingAttemptSchema,
+    evaluation: z.object({
+      accuracy: z.number().min(0).max(100),
+      pronunciation: z.number().min(0).max(100),
+      fluency: z.number().min(0).max(100),
+      overallScore: z.number().min(0).max(100),
+      confidence: z.number().min(0).max(1),
+      transcription: z.string().optional(),
+      feedback: z.string().optional()
+    })
   })
-  .strict()
+).strict()
 
 // Speaking Statistics Schema
 export const SpeakingStatisticsSchema = z.object({
@@ -149,13 +129,7 @@ export const SpeakingStatisticsSchema = z.object({
   recentAttempts: z.array(UserSpeakingAttemptSchema)
 })
 
-export const SpeakingStatisticsResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: SpeakingStatisticsSchema,
-    message: z.string()
-  })
-  .strict()
+export const SpeakingStatisticsResSchema = resSchema(SpeakingStatisticsSchema).strict()
 
 // Types
 export type UserSpeakingAttemptType = z.infer<typeof UserSpeakingAttemptSchema>

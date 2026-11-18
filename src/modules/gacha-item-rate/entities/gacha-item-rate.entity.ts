@@ -1,6 +1,7 @@
 import { GachaStarType } from '@/common/constants/gacha.constant'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { ENTITY_MESSAGE } from '@/i18n/message-keys'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -33,11 +34,7 @@ export const CreateGachaItemRateBodySchema = GachaItemRateSchema.pick({
   rate: true
 }).strict()
 
-export const CreateGachaItemRateResSchema = z.object({
-  statusCode: z.number(),
-  data: GachaItemRateSchema,
-  message: z.string()
-})
+export const CreateGachaItemRateResSchema = resSchema(GachaItemRateSchema)
 
 // Update Schema
 export const UpdateGachaItemRateBodySchema =
@@ -45,11 +42,7 @@ export const UpdateGachaItemRateBodySchema =
 
 export const UpdateGachaItemRateResSchema = CreateGachaItemRateResSchema
 
-export const UpdateWithListItemResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(GachaItemRateSchema),
-  message: z.string()
-})
+export const UpdateWithListItemResSchema = resSchema(z.array(GachaItemRateSchema))
 
 // Query Schema
 export const GetGachaItemRateParamsSchema = z.object({
@@ -58,11 +51,7 @@ export const GetGachaItemRateParamsSchema = z.object({
 
 export const GetGachaItemRateDetailSchema = GachaItemRateSchema
 
-export const GetGachaItemRateDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: GetGachaItemRateDetailSchema,
-  message: z.string()
-})
+export const GetGachaItemRateDetailResSchema = resSchema(GetGachaItemRateDetailSchema)
 
 // Type exports
 export type GachaItemRateType = z.infer<typeof GachaItemRateSchema>

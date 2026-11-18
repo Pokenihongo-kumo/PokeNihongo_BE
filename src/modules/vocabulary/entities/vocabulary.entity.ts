@@ -1,9 +1,11 @@
+import { VocabularySortField, VocabularySortOrder } from '@/common/enum/enum'
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { VocabularyMessage } from '@/i18n/message-keys'
+import { paginatedResSchema } from '@/shared/utils/pagination'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
-import { VocabularyMessage } from '@/i18n/message-keys'
-import { checkIdSchema } from '@/common/utils/id.validation'
-import { VocabularySortField, VocabularySortOrder } from '@/common/enum/enum'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
@@ -85,29 +87,9 @@ export const UpdateVocabularyBodySchema = VocabularySchema.pick({
   .partial()
   .strict()
 
-export const VocabularyResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: VocabularySchema,
-    message: z.string()
-  })
-  .strict()
+export const VocabularyResSchema = resSchema(VocabularySchema).strict()
 
-export const VocabularyListResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(VocabularySchema),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
+export const VocabularyListResSchema = paginatedResSchema(VocabularySchema).strict()
 
 export const GetVocabularyByIdParamsSchema = z
   .object({
@@ -155,13 +137,9 @@ export const VocabularyStatisticsSchema = z.object({
   vocabularyN1: z.number()
 })
 
-export const VocabularyStatisticsResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: VocabularyStatisticsSchema,
-    message: z.string()
-  })
-  .strict()
+export const VocabularyStatisticsResSchema = resSchema(
+  VocabularyStatisticsSchema
+).strict()
 
 // Search Schema
 export const VocabularySearchItemSchema = z.object({
@@ -187,21 +165,9 @@ export const VocabularySearchQuerySchema = z
   })
   .strict()
 
-export const VocabularySearchResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(VocabularySearchItemSchema),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
+export const VocabularySearchResSchema = paginatedResSchema(
+  VocabularySearchItemSchema
+).strict()
 
 // Detail Schema (for search/:id)
 export const VocabularyMeaningDetailSchema = z.object({
@@ -225,13 +191,7 @@ export const VocabularyDetailSchema = z.object({
   relatedWords: z.array(VocabularySearchItemSchema)
 })
 
-export const VocabularyDetailResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: VocabularyDetailSchema,
-    message: z.string()
-  })
-  .strict()
+export const VocabularyDetailResSchema = resSchema(VocabularyDetailSchema).strict()
 
 // Search History Schema
 export const VocabularySearchHistoryItemSchema = z.object({
@@ -255,21 +215,9 @@ export const VocabularySearchHistoryQuerySchema = z
   })
   .strict()
 
-export const VocabularySearchHistoryResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(VocabularySearchHistoryItemSchema),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
+export const VocabularySearchHistoryResSchema = paginatedResSchema(
+  VocabularySearchHistoryItemSchema
+).strict()
 
 // Types
 export type VocabularyType = z.infer<typeof VocabularySchema>

@@ -1,6 +1,7 @@
 import { NotificationType } from '@/common/constants/notification.constant'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { ENTITY_MESSAGE } from '@/i18n/message-keys'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -46,11 +47,7 @@ export const CreateNotificationBodySchema = NotificationSchema.pick({
 
   .strict()
 
-export const CreateNotificationResSchema = z.object({
-  statusCode: z.number(),
-  data: NotificationSchema,
-  message: z.string()
-})
+export const CreateNotificationResSchema = resSchema(NotificationSchema)
 
 // Update Schema
 export const UpdateNotificationBodySchema = NotificationSchema.pick({
@@ -75,11 +72,7 @@ export const UpdateNotificationReadListBodySchema = z
   })
   .strict()
 
-export const UpdateNotificationReadListResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(NotificationSchema),
-  message: z.string()
-})
+export const UpdateNotificationReadListResSchema = resSchema(z.array(NotificationSchema))
 
 export const GetRewardByLeaderboardParamsSchema = z.object({
   leaderboardSeasonId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
@@ -90,11 +83,7 @@ export const GetNotificationDetailSchema = NotificationSchema.extend({
   body: z.string().nullable()
 })
 
-export const GetNotificationDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: GetNotificationDetailSchema,
-  message: z.string()
-})
+export const GetNotificationDetailResSchema = resSchema(GetNotificationDetailSchema)
 
 // Type exports
 export type NotificationType = z.infer<typeof NotificationSchema>

@@ -1,4 +1,5 @@
 import { WeekDay } from '@/common/constants/attendence-config.constant'
+import { resSchema } from '@/shared/utils/res-schema'
 
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { AttendenceConfigMessage, ENTITY_MESSAGE } from '@/i18n/message-keys'
@@ -39,11 +40,7 @@ export const CreateAttendanceConfigBodySchema = AttendanceConfigSchema.pick({
   bonusCoin: true
 }).strict()
 
-export const CreateAttendanceConfigResSchema = z.object({
-  statusCode: z.number(),
-  data: AttendanceConfigSchema,
-  message: z.string()
-})
+export const CreateAttendanceConfigResSchema = resSchema(AttendanceConfigSchema)
 
 export const UpdateAttendanceConfigBodySchema =
   CreateAttendanceConfigBodySchema.partial().strict()
@@ -54,11 +51,7 @@ export const GetParamsAttendanceConfigSchema = z.object({
   attendenceConfigId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
 
-export const GetAttendanceConfigResSchema = z.object({
-  statusCode: z.number(),
-  data: AttendanceConfigSchema,
-  message: z.string()
-})
+export const GetAttendanceConfigResSchema = resSchema(AttendanceConfigSchema)
 
 //type
 

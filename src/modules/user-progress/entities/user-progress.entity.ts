@@ -1,6 +1,7 @@
-import { z } from 'zod'
-import { UserProgressMessage } from '@/i18n/message-keys'
 import { checkIdSchema } from '@/common/utils/id.validation'
+import { UserProgressMessage } from '@/i18n/message-keys'
+import { paginatedResSchema } from '@/shared/utils/pagination'
+import { z } from 'zod'
 
 // ProgressStatus enum
 export const ProgressStatusSchema = z.enum([
@@ -66,21 +67,9 @@ export const UserProgressResSchema = z
   })
   .strict()
 
-export const UserProgressListResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(UserProgressWithRelationsSchema),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
+export const UserProgressListResSchema = paginatedResSchema(
+  UserProgressWithRelationsSchema
+).strict()
 
 // Params and Query schemas
 export const GetUserProgressByIdParamsSchema = z

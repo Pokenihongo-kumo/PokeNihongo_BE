@@ -1,6 +1,7 @@
 import { MatchRoundParticipantStatus } from '@/common/constants/match.constant'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { ENTITY_MESSAGE } from '@/i18n/message-keys'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -39,11 +40,7 @@ export const CreateMatchRoundParticipantBodySchema = MatchRoundParticipantSchema
   selectedUserPokemonId: true
 }).strict()
 
-export const CreateMatchRoundParticipantResSchema = z.object({
-  statusCode: z.number(),
-  data: MatchRoundParticipantSchema,
-  message: z.string()
-})
+export const CreateMatchRoundParticipantResSchema = resSchema(MatchRoundParticipantSchema)
 
 // Update Schema
 export const UpdateMatchRoundParticipantBodySchema = MatchRoundParticipantSchema.pick({
@@ -61,11 +58,7 @@ export const ChoosePokemonMatchRoundParticipantBodySchema = z.object({
 
 export const UpdateMatchRoundParticipantResSchema = CreateMatchRoundParticipantResSchema
 
-export const UpdateWithListItemResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(MatchRoundParticipantSchema),
-  message: z.string()
-})
+export const UpdateWithListItemResSchema = resSchema(z.array(MatchRoundParticipantSchema))
 
 // Query Schema
 export const GetMatchRoundParticipantParamsSchema = z.object({
@@ -78,11 +71,9 @@ export const GetMatchRoundParticipantByRoundParamsSchema = z.object({
 
 export const GetMatchRoundParticipantDetailSchema = MatchRoundParticipantSchema
 
-export const GetMatchRoundParticipantDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: GetMatchRoundParticipantDetailSchema,
-  message: z.string()
-})
+export const GetMatchRoundParticipantDetailResSchema = resSchema(
+  GetMatchRoundParticipantDetailSchema
+)
 
 // Type exports
 export type MatchRoundParticipantType = z.infer<typeof MatchRoundParticipantSchema>

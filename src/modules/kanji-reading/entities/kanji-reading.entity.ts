@@ -2,6 +2,7 @@ import { KanjiReadingSortField, SortOrder } from '@/common/enum/enum'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { KanjiReadingMessage } from '@/i18n/message-keys'
 import { paginatedResSchema } from '@/shared/utils/pagination'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -97,11 +98,7 @@ const KanjiReadingResItemSchema = z.object({
 })
 
 // statusCode is part of the envelope, else the serializer drops it
-export const KanjiReadingResSchema = z.object({
-  statusCode: z.number(),
-  data: KanjiReadingResItemSchema,
-  message: z.string()
-})
+export const KanjiReadingResSchema = resSchema(KanjiReadingResItemSchema)
 
 export const KanjiReadingListResSchema = paginatedResSchema(KanjiReadingResItemSchema)
 

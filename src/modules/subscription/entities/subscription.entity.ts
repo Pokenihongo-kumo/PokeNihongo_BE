@@ -4,6 +4,7 @@ import { SubscriptionMessage } from '@/i18n/message-keys'
 import { InvoiceSchema } from '@/modules/invoice/entities/invoice.entity'
 import { SubscriptionFeatureSchema } from '@/modules/subscription-feature/entities/subscription-feature.entity'
 import { TranslationInputSchema } from '@/shared/models/translation-input.model'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -45,11 +46,7 @@ export const CreateSubscriptionBodySchema = SubscriptionSchema.pick({
   tagName: true
 }).strict()
 
-export const CreateSubscriptionResSchema = z.object({
-  statusCode: z.number(),
-  data: SubscriptionSchema,
-  message: z.string()
-})
+export const CreateSubscriptionResSchema = resSchema(SubscriptionSchema)
 
 export const UpdateSubscriptionBodyInputSchema =
   CreateSubscriptionBodyInputSchema.partial().strict()
@@ -65,9 +62,8 @@ export const GetSubscriptionParamsSchema = z
   })
   .strict()
 
-export const GetSubscriptionDetailWithAllLangResSchema = z.object({
-  statusCode: z.number(),
-  data: SubscriptionSchema.extend({
+export const GetSubscriptionDetailWithAllLangResSchema = resSchema(
+  SubscriptionSchema.extend({
     nameTranslations: z
       .array(
         z.object({
@@ -84,9 +80,8 @@ export const GetSubscriptionDetailWithAllLangResSchema = z.object({
         })
       )
       .optional()
-  }),
-  message: z.string()
-})
+  })
+)
 
 export const GetLeaderboardWithRewardSeasonDetailSchema = SubscriptionSchema.pick({
   id: true,
@@ -98,14 +93,11 @@ export const GetLeaderboardWithRewardSeasonDetailSchema = SubscriptionSchema.pic
   descriptionTranslations: TranslationInputSchema.nullable().optional()
 })
 
-export const GetLeaderboardWithRewardSeasonDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: GetLeaderboardWithRewardSeasonDetailSchema,
-  message: z.string()
-})
-export const GetSubscriptionDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: SubscriptionSchema.extend({
+export const GetLeaderboardWithRewardSeasonDetailResSchema = resSchema(
+  GetLeaderboardWithRewardSeasonDetailSchema
+)
+export const GetSubscriptionDetailResSchema = resSchema(
+  SubscriptionSchema.extend({
     nameTranslation: z.string().nullable().optional(),
     nameTranslations: TranslationInputSchema.nullable().optional(),
     descriptionTranslation: z.string().nullable().optional(),
@@ -119,9 +111,8 @@ export const GetSubscriptionDetailResSchema = z.object({
         })
       )
       .optional()
-  }),
-  message: z.string()
-})
+  })
+)
 
 export type SubscriptionType = z.infer<typeof SubscriptionSchema>
 export type CreateSubscriptionBodyInputType = z.infer<
@@ -199,14 +190,10 @@ const MarketplaceSubscriptionOptionsSchema = z.object({
   features: z.array(MarketplaceFeatureSchema)
 })
 
-export const GetMarketplaceListResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(MarketplaceSubscriptionSchema),
-  message: z.string()
-})
+export const GetMarketplaceListResSchema = resSchema(
+  z.array(MarketplaceSubscriptionSchema)
+)
 
-export const GetMarketplaceOptionsResSchema = z.object({
-  statusCode: z.number(),
-  data: MarketplaceSubscriptionOptionsSchema,
-  message: z.string()
-})
+export const GetMarketplaceOptionsResSchema = resSchema(
+  MarketplaceSubscriptionOptionsSchema
+)

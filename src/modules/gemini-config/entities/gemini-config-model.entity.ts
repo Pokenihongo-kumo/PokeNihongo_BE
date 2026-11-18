@@ -1,5 +1,6 @@
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { ENTITY_MESSAGE } from '@/i18n/message-keys'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -66,11 +67,7 @@ export const GetParamsGeminiConfigModelSchema = z.object({
   id: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
 
-export const GeminiConfigModelResSchema = z.object({
-  statusCode: z.number(),
-  data: GeminiConfigModelSchema,
-  message: z.string()
-})
+export const GeminiConfigModelResSchema = resSchema(GeminiConfigModelSchema)
 
 // types
 export type CreateGeminiConfigModelBodyType = z.infer<

@@ -1,5 +1,6 @@
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { MatchQueueMessage } from '@/i18n/message-keys'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { QueueStatus } from '@prisma/client'
 import { patchNestJsSwagger } from 'nestjs-zod'
@@ -23,11 +24,7 @@ export const CreateMatchQueueBodySchema = MatchQueueSchema.pick({
   status: true
 }).strict()
 
-export const CreateMatchQueueResSchema = z.object({
-  statusCode: z.number(),
-  data: MatchQueueSchema,
-  message: z.string()
-})
+export const CreateMatchQueueResSchema = resSchema(MatchQueueSchema)
 
 export const UpdateMatchQueueBodySchema = CreateMatchQueueBodySchema.partial().strict()
 
@@ -39,11 +36,7 @@ export const GetMatchQueueParamsSchema = z
   })
   .strict()
 
-export const GetMatchQueueDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: MatchQueueSchema,
-  message: z.string()
-})
+export const GetMatchQueueDetailResSchema = resSchema(MatchQueueSchema)
 
 export type MatchQueueType = z.infer<typeof MatchQueueSchema>
 export type CreateMatchQueueBodyType = z.infer<typeof CreateMatchQueueBodySchema>

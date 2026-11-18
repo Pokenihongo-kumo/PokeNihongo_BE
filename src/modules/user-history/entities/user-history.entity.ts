@@ -1,9 +1,11 @@
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { UserHistoryMessage } from '@/i18n/message-keys'
+import { paginatedResSchema } from '@/shared/utils/pagination'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
+import { TestStatus } from '@prisma/client'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
-import { UserHistoryMessage } from '@/i18n/message-keys'
-import { checkIdSchema } from '@/common/utils/id.validation'
-import { TestStatus } from '@prisma/client'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
@@ -41,38 +43,11 @@ export const AdminHistoryItemSchema = HistoryItemSchema.extend({
 })
 
 // History List Response Schema
-export const HistoryListResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(HistoryItemSchema),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
+export const HistoryListResSchema = paginatedResSchema(HistoryItemSchema).strict()
 
 // Admin History List Response Schema (có thể có user info)
-export const AdminHistoryListResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(AdminHistoryItemSchema),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
+export const AdminHistoryListResSchema =
+  paginatedResSchema(AdminHistoryItemSchema).strict()
 
 // History List Query Schema
 export const GetHistoryListQuerySchema = z
@@ -119,27 +94,23 @@ export const HistoryExerciseItemSchema = z.object({
   updatedAt: z.date()
 })
 
-export const HistoryExercisesResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(HistoryExerciseItemSchema),
-      allTime: z.number(), // Tổng thời gian của tất cả attempts (giây)
-      allAttempts: z.number(),
-      completedAttempts: z.number(),
-      failedAttempts: z.number(),
-      skippedAttempts: z.number(),
-      abandonedAttempts: z.number(),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
+export const HistoryExercisesResSchema = resSchema(
+  z.object({
+    results: z.array(HistoryExerciseItemSchema),
+    allTime: z.number(), // Tổng thời gian của tất cả attempts (giây)
+    allAttempts: z.number(),
+    completedAttempts: z.number(),
+    failedAttempts: z.number(),
+    skippedAttempts: z.number(),
+    abandonedAttempts: z.number(),
+    pagination: z.object({
+      current: z.number(),
+      pageSize: z.number(),
+      totalPage: z.number(),
+      totalItem: z.number()
+    })
   })
-  .strict()
+).strict()
 
 // History Tests Item Schema
 export const HistoryTestItemSchema = z.object({
@@ -155,27 +126,23 @@ export const HistoryTestItemSchema = z.object({
   updatedAt: z.date()
 })
 
-export const HistoryTestsResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(HistoryTestItemSchema),
-      allTime: z.number(), // Tổng thời gian của tất cả attempts (giây)
-      allAttempts: z.number(),
-      completedAttempts: z.number(),
-      failedAttempts: z.number(),
-      skippedAttempts: z.number(),
-      abandonedAttempts: z.number(),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
+export const HistoryTestsResSchema = resSchema(
+  z.object({
+    results: z.array(HistoryTestItemSchema),
+    allTime: z.number(), // Tổng thời gian của tất cả attempts (giây)
+    allAttempts: z.number(),
+    completedAttempts: z.number(),
+    failedAttempts: z.number(),
+    skippedAttempts: z.number(),
+    abandonedAttempts: z.number(),
+    pagination: z.object({
+      current: z.number(),
+      pageSize: z.number(),
+      totalPage: z.number(),
+      totalItem: z.number()
+    })
   })
-  .strict()
+).strict()
 
 // Recent Exercises Query Schema
 export const GetRecentExercisesQuerySchema = z
@@ -190,21 +157,9 @@ export const GetRecentExercisesQuerySchema = z
   .strict()
 
 // Recent Exercises Response Schema
-export const RecentExercisesResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(RecentExerciseItemSchema),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
+export const RecentExercisesResSchema = paginatedResSchema(
+  RecentExerciseItemSchema
+).strict()
 
 // Type exports
 export type HistoryType = z.infer<typeof HistoryTypeSchema>

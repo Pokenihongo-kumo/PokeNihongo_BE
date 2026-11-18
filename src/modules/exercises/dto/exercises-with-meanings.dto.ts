@@ -1,8 +1,9 @@
-import { ApiProperty } from '@nestjs/swagger'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
+import { ApiProperty } from '@nestjs/swagger'
+import { LessonContentsType } from '@prisma/client'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
-import { LessonContentsType } from '@prisma/client'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
@@ -91,13 +92,9 @@ export const ExercisesWithMeaningsResponseSchema = z.object({
 })
 
 // Standard response schema
-export const ExercisesWithMeaningsResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: ExercisesWithMeaningsResponseSchema,
-    message: z.string()
-  })
-  .strict()
+export const ExercisesWithMeaningsResSchema = resSchema(
+  ExercisesWithMeaningsResponseSchema
+).strict()
 
 // Swagger DTOs
 export class MeaningWithTranslationsSwaggerDTO {

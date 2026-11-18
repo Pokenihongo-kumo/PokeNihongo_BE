@@ -4,6 +4,7 @@ import { ShopBannerMessage } from '@/i18n/message-keys'
 import { PokemonSchema } from '@/modules/pokemon/entities/pokemon.entity'
 import { ShopItemSchema } from '@/modules/shop-item/entities/shop-item.entity'
 import { TranslationInputSchema } from '@/shared/models/translation-input.model'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -64,11 +65,7 @@ export const CreateShopBannerBodySchema = ShopBannerSchema.pick({
   isRandomItemAgain: true
 }).strict()
 
-export const CreateShopBannerResSchema = z.object({
-  statusCode: z.number(),
-  data: ShopBannerSchema,
-  message: z.string()
-})
+export const CreateShopBannerResSchema = resSchema(ShopBannerSchema)
 
 export const UpdateShopBannerBodyInputSchema =
   CreateShopBannerBodyInputSchema.partial().strict()
@@ -93,9 +90,8 @@ export const GetShopBannerDetailByUserSchema = ShopBannerSchema.extend({
   )
 }).nullable()
 
-export const GetShopBannerDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: ShopBannerSchema.extend({
+export const GetShopBannerDetailResSchema = resSchema(
+  ShopBannerSchema.extend({
     nameTranslation: z.string().nullable(),
     nameTranslations: TranslationInputSchema.optional().nullable(),
     shopItems: z.array(
@@ -110,15 +106,10 @@ export const GetShopBannerDetailResSchema = z.object({
         })
       })
     )
-  }),
-  message: z.string()
-})
+  })
+)
 
-export const GetShopBannerByTodayResSchema = z.object({
-  statusCode: z.number(),
-  data: GetShopBannerDetailByUserSchema,
-  message: z.string()
-})
+export const GetShopBannerByTodayResSchema = resSchema(GetShopBannerDetailByUserSchema)
 
 export type ShopBannerType = z.infer<typeof ShopBannerSchema>
 export type CreateShopBannerBodyInputType = z.infer<

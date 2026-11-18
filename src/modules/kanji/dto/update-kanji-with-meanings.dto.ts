@@ -1,9 +1,10 @@
+import { KanjiReadingSchema } from '@/modules/kanji-reading/entities/kanji-reading.entity'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
+import { ApiProperty } from '@nestjs/swagger'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
-import { ApiProperty } from '@nestjs/swagger'
 import { KanjiSchema } from '../entities/kanji.entity'
-import { KanjiReadingSchema } from '@/modules/kanji-reading/entities/kanji-reading.entity'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
@@ -51,13 +52,9 @@ export const UpdateKanjiWithMeaningsResponseSchema = z.object({
     .optional()
 })
 
-export const UpdateKanjiWithMeaningsResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: UpdateKanjiWithMeaningsResponseSchema,
-    message: z.string()
-  })
-  .strict()
+export const UpdateKanjiWithMeaningsResSchema = resSchema(
+  UpdateKanjiWithMeaningsResponseSchema
+).strict()
 
 // --- Swagger DTOs ---
 

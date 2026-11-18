@@ -1,6 +1,7 @@
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { ENTITY_MESSAGE } from '@/i18n/message-keys'
 import { PokemonSchema } from '@/modules/pokemon/entities/pokemon.entity'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -39,17 +40,9 @@ export const CreateWithListItemBodySchema = z.object({
   items: z.array(CreateShopItemBodySchema).min(1, 'At least one item is required')
 })
 
-export const CreateShopItemResSchema = z.object({
-  statusCode: z.number(),
-  data: ShopItemSchema,
-  message: z.string()
-})
+export const CreateShopItemResSchema = resSchema(ShopItemSchema)
 
-export const CreateWithListItemResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(ShopItemSchema),
-  message: z.string()
-})
+export const CreateWithListItemResSchema = resSchema(z.array(ShopItemSchema))
 
 // Update Schema
 export const UpdateShopItemBodySchema = CreateShopItemBodySchema.extend({
@@ -76,11 +69,7 @@ export const UpdateWithListItemBodySchema = z.object({
   items: z.array(UpdateShopItemWithIdSchema).min(1)
 })
 
-export const UpdateWithListItemResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(ShopItemSchema),
-  message: z.string()
-})
+export const UpdateWithListItemResSchema = resSchema(z.array(ShopItemSchema))
 
 export const GetRamdomAmountShopItemBodySchema = z
   .object({
@@ -89,9 +78,8 @@ export const GetRamdomAmountShopItemBodySchema = z
   })
   .strict()
 
-export const GetRandomShopItemResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(
+export const GetRandomShopItemResSchema = resSchema(
+  z.array(
     z.object({
       shopBannerId: z.number(),
       pokemonId: z.number(),
@@ -103,9 +91,8 @@ export const GetRandomShopItemResSchema = z.object({
 
       isHas: z.boolean()
     })
-  ),
-  message: z.string()
-})
+  )
+)
 
 // Query Schema
 export const GetShopItemParamsSchema = z.object({
@@ -120,11 +107,7 @@ export const GetShopItemDetailSchema = ShopItemSchema.extend({
   pokemon: PokemonSchema.optional()
 })
 
-export const GetShopItemDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: GetShopItemDetailSchema,
-  message: z.string()
-})
+export const GetShopItemDetailResSchema = resSchema(GetShopItemDetailSchema)
 
 // Type exports
 export type ShopItemType = z.infer<typeof ShopItemSchema>

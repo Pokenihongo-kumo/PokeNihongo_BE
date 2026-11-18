@@ -1,6 +1,7 @@
 import { TypeOfVerificationCode } from '@/common/constants/auth.constant'
 import { AuthMessage } from '@/i18n/message-keys'
 import { LevelSchema } from '@/modules/level/entities/level.entity'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { RoleSchema } from 'src/shared/models/shared-role.model'
@@ -52,46 +53,37 @@ export const VerifyOTPBodySchema = VerificationCodeSchema.pick({
   type: true
 }).strict()
 
-export const VerifyOTPResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      message: z.string()
-    }),
+export const VerifyOTPResSchema = resSchema(
+  z.object({
     message: z.string()
   })
-  .strict()
+).strict()
 
 export const LoginBodySchema = z
   .object({ email: emailSchema, password: UserSchema.shape.password })
   .strict()
 
-export const LoginResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      accessToken: z.string(),
-      refreshToken: z.string(),
-      ...UserSchema.pick({
-        id: true,
-        name: true,
-        email: true,
-        status: true,
-        levelJLPT: true,
-        eloscore: true,
-        phoneNumber: true,
-        exp: true,
-        roleId: true,
-        avatar: true
-      }).shape,
-      role: RoleSchema,
+export const LoginResSchema = resSchema(
+  z.object({
+    accessToken: z.string(),
+    refreshToken: z.string(),
+    ...UserSchema.pick({
+      id: true,
+      name: true,
+      email: true,
+      status: true,
+      levelJLPT: true,
+      eloscore: true,
+      phoneNumber: true,
+      exp: true,
+      roleId: true,
+      avatar: true
+    }).shape,
+    role: RoleSchema,
 
-      level: LevelSchema.optional().nullable()
-    }),
-
-    message: z.string()
+    level: LevelSchema.optional().nullable()
   })
-  .strict()
+).strict()
 
 export const RegisterBodySchema = UserSchema.pick({
   name: true,
@@ -140,13 +132,11 @@ export const GoogleAuthStateSchema = DeviceSchema.pick({
   ip: true
 })
 
-export const GetAuthorizationUrlResSchema = z.object({
-  statusCode: z.number(),
-  data: z.object({
+export const GetAuthorizationUrlResSchema = resSchema(
+  z.object({
     url: z.string().url()
-  }),
-  message: z.string()
-})
+  })
+)
 
 // GET /auth/google-link (ADR D-auth §3): the PKCE challenge of the client that
 // starts sign-in (S256 of its code verifier, base64url) and where to send it back
@@ -168,11 +158,9 @@ export const GoogleExchangeBodySchema = z
   })
   .strict()
 
-export const GoogleExchangeResSchema = z.object({
-  statusCode: z.number(),
-  data: z.object({ accessToken: z.string(), refreshToken: z.string() }),
-  message: z.string()
-})
+export const GoogleExchangeResSchema = resSchema(
+  z.object({ accessToken: z.string(), refreshToken: z.string() })
+)
 
 export const ForgotPasswordBodySchema = z
   .object({
@@ -187,15 +175,11 @@ export const verifyForgotPasswordBodySchema = z
   })
   .strict()
 
-export const verifyForgotPasswordResSchema = z
-  .object({
-    data: z.object({
-      accessToken: z.string()
-    }),
-    message: z.string(),
-    statusCode: z.number()
+export const verifyForgotPasswordResSchema = resSchema(
+  z.object({
+    accessToken: z.string()
   })
-  .strict()
+).strict()
 
 export const ResetPasswordBodySchema = z
   .object({
@@ -238,13 +222,9 @@ export const UpdateLevelJLPTBodySchema = z
   })
   .strict()
 
-export const UpdateLevelJLPTResSchema = z
-  .object({
-    data: UserSchema.omit({ password: true }),
-    message: z.string(),
-    statusCode: z.number()
-  })
-  .strict()
+export const UpdateLevelJLPTResSchema = resSchema(
+  UserSchema.omit({ password: true })
+).strict()
 
 export const UpdateMeBodySchema = z
   .object({
@@ -269,31 +249,27 @@ export const VerifyEmailBodySchema = UserSchema.pick({
   email: true
 }).strict()
 
-export const GetAccountProfileResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      ...UserSchema.omit({ password: true }).shape,
-      role: RoleSchema.pick({ id: true, name: true, description: true }),
+export const GetAccountProfileResSchema = resSchema(
+  z.object({
+    ...UserSchema.omit({ password: true }).shape,
+    role: RoleSchema.pick({ id: true, name: true, description: true }),
 
-      level: z
-        .object({
-          ...LevelSchema.shape,
-          nextLevel: LevelSchema.omit({ nextLevelId: true, rewardId: true }).nullable()
-        })
-        .nullable(),
-      pokemonCount: z.number(),
-      rankName: z.string(),
-      subscription: z.object({
-        canRead: z.boolean(),
-        canListen: z.boolean(),
-        isUltra: z.boolean(),
-        ultraExpiresAt: z.date().nullable()
+    level: z
+      .object({
+        ...LevelSchema.shape,
+        nextLevel: LevelSchema.omit({ nextLevelId: true, rewardId: true }).nullable()
       })
-    }),
-    message: z.string()
+      .nullable(),
+    pokemonCount: z.number(),
+    rankName: z.string(),
+    subscription: z.object({
+      canRead: z.boolean(),
+      canListen: z.boolean(),
+      isUltra: z.boolean(),
+      ultraExpiresAt: z.date().nullable()
+    })
   })
-  .strict()
+).strict()
 
 //type
 export type VerifyEmailBodyType = z.infer<typeof VerifyEmailBodySchema>

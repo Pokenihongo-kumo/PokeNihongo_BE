@@ -1,24 +1,16 @@
 import { paginatedResSchema } from '@/shared/utils/pagination'
+import { resSchema } from '@/shared/utils/res-schema'
 import { createZodDto } from 'nestjs-zod'
-import { z } from 'zod'
 import {
   LessonCategoryType,
   LessonCategoryWithRelationsType
 } from '../entities/lesson-category.entity'
 
 // Reads (by id, by slug): the translated view, same items as the list
-export const LessonCategoryResponseSchema = z.object({
-  statusCode: z.number(),
-  data: LessonCategoryWithRelationsType,
-  message: z.string()
-})
+export const LessonCategoryResponseSchema = resSchema(LessonCategoryWithRelationsType)
 
 // Writes (create, update): the stored row, with nameKey
-export const LessonCategoryEntityResponseSchema = z.object({
-  statusCode: z.number(),
-  data: LessonCategoryType,
-  message: z.string()
-})
+export const LessonCategoryEntityResponseSchema = resSchema(LessonCategoryType)
 
 export const LessonCategoryListResponseSchema = paginatedResSchema(
   LessonCategoryWithRelationsType

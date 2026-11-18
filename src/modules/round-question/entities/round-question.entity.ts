@@ -1,5 +1,6 @@
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { ENTITY_MESSAGE } from '@/i18n/message-keys'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -30,11 +31,7 @@ export const CreateRoundQuestionBodySchema = RoundQuestionSchema.pick({
 
   .strict()
 
-export const CreateRoundQuestionResSchema = z.object({
-  statusCode: z.number(),
-  data: RoundQuestionSchema,
-  message: z.string()
-})
+export const CreateRoundQuestionResSchema = resSchema(RoundQuestionSchema)
 
 // Update Schema
 export const UpdateRoundQuestionBodySchema =
@@ -49,17 +46,9 @@ export const AnswerQuestionBodySchema = z
   })
   .strict()
 
-export const AnswerQuestionResSchema = z.object({
-  statusCode: z.number(),
-  data: RoundQuestionSchema,
-  message: z.string()
-})
+export const AnswerQuestionResSchema = resSchema(RoundQuestionSchema)
 
-export const UpdateWithListItemResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(RoundQuestionSchema),
-  message: z.string()
-})
+export const UpdateWithListItemResSchema = resSchema(z.array(RoundQuestionSchema))
 
 // Query Schema
 export const GetRoundQuestionParamsSchema = z.object({
@@ -68,11 +57,7 @@ export const GetRoundQuestionParamsSchema = z.object({
 
 export const GetRoundQuestionDetailSchema = RoundQuestionSchema
 
-export const GetRoundQuestionDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: GetRoundQuestionDetailSchema,
-  message: z.string()
-})
+export const GetRoundQuestionDetailResSchema = resSchema(GetRoundQuestionDetailSchema)
 
 // Type exports
 export type RoundQuestionType = z.infer<typeof RoundQuestionSchema>

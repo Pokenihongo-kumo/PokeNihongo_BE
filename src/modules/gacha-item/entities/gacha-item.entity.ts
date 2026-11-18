@@ -1,6 +1,7 @@
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { ENTITY_MESSAGE } from '@/i18n/message-keys'
 import { PokemonSchema } from '@/modules/pokemon/entities/pokemon.entity'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { GachaStarType } from '@prisma/client'
 import { patchNestJsSwagger } from 'nestjs-zod'
@@ -85,9 +86,8 @@ export type GetRamdomAmountGachaItemsBodyType = z.infer<
   typeof GetRamdomAmountGachaItemsBodySchema
 >
 
-export const GetRandomGachaItemsResSchema = z.object({
-  statusCode: z.number(),
-  data: z.object({
+export const GetRandomGachaItemsResSchema = resSchema(
+  z.object({
     bannerId: z.number(),
     items: z.array(
       z.object({
@@ -95,31 +95,18 @@ export const GetRandomGachaItemsResSchema = z.object({
         pokemons: z.array(PokemonSchema)
       })
     )
-  }),
-  message: z.string()
-})
+  })
+)
 
 // ============ RESPONSE SCHEMAS ============
 
-export const CreateGachaItemResSchema = z.object({
-  statusCode: z.number(),
-  data: GachaItemSchema,
-  message: z.string()
-})
+export const CreateGachaItemResSchema = resSchema(GachaItemSchema)
 
-export const CreateWithListItemResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(GachaItemSchema),
-  message: z.string()
-})
+export const CreateWithListItemResSchema = resSchema(z.array(GachaItemSchema))
 
 export const UpdateGachaItemResSchema = CreateGachaItemResSchema
 
-export const UpdateWithListItemResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(GachaItemSchema),
-  message: z.string()
-})
+export const UpdateWithListItemResSchema = resSchema(z.array(GachaItemSchema))
 
 // ============ QUERY SCHEMAS ============
 
@@ -142,11 +129,7 @@ export const GetGachaItemDetailSchema = GachaItemSchema.extend({
   })
 })
 
-export const GetGachaItemDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: GetGachaItemDetailSchema,
-  message: z.string()
-})
+export const GetGachaItemDetailResSchema = resSchema(GetGachaItemDetailSchema)
 
 // ============ TYPE EXPORTS ============
 

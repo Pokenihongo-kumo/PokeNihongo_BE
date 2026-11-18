@@ -1,5 +1,7 @@
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { UserRewardHistoryMessage } from '@/i18n/message-keys'
+import { paginatedResSchema } from '@/shared/utils/pagination'
+import { resSchema } from '@/shared/utils/res-schema'
 import { z } from 'zod'
 
 const invalid = { message: UserRewardHistoryMessage.INVALID_DATA }
@@ -113,29 +115,11 @@ export const GetMyRewardHistoryQuerySchema = z
   })
   .strict()
 
-export const UserRewardHistoryResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: UserRewardHistorySchema,
-    message: z.string()
-  })
-  .strict()
+export const UserRewardHistoryResSchema = resSchema(UserRewardHistorySchema).strict()
 
-export const UserRewardHistoryListResSchema = z
-  .object({
-    statusCode: z.number(),
-    data: z.object({
-      results: z.array(UserRewardHistorySchema),
-      pagination: z.object({
-        current: z.number(),
-        pageSize: z.number(),
-        totalPage: z.number(),
-        totalItem: z.number()
-      })
-    }),
-    message: z.string()
-  })
-  .strict()
+export const UserRewardHistoryListResSchema = paginatedResSchema(
+  UserRewardHistorySchema
+).strict()
 
 export type UserRewardHistoryType = z.infer<typeof UserRewardHistorySchema>
 export type CreateUserRewardHistoryBodyType = z.infer<

@@ -1,8 +1,9 @@
 import { LessonSortField, SortOrder } from '@/common/enum/enum'
-import { z } from 'zod'
-import { LessonMessage as M } from '@/i18n/message-keys'
 import { checkIdSchema } from '@/common/utils/id.validation'
+import { LessonMessage as M } from '@/i18n/message-keys'
 import { paginatedResSchema } from '@/shared/utils/pagination'
+import { resSchema } from '@/shared/utils/res-schema'
+import { z } from 'zod'
 
 // Body ids are JSON numbers (no coercion); params and query use checkIdSchema
 const idOf = (key: string) =>
@@ -137,11 +138,7 @@ export const GetLessonListQueryType = z.object({
 })
 
 // Response Schemas
-export const LessonResSchema = z.object({
-  statusCode: z.number(),
-  data: LessonWithRelationsType,
-  message: z.string()
-})
+export const LessonResSchema = resSchema(LessonWithRelationsType)
 
 export const LessonListResSchema = paginatedResSchema(LessonWithRelationsType)
 

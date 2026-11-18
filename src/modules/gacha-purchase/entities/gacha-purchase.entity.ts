@@ -1,5 +1,6 @@
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { ENTITY_MESSAGE, GachaPurchaseMessage } from '@/i18n/message-keys'
+import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -38,11 +39,7 @@ export const CreateGachaPurchaseBodySchema = GachaPurchaseSchema.pick({
   })
   .strict()
 
-export const CreateGachaPurchaseResSchema = z.object({
-  statusCode: z.number(),
-  data: GachaPurchaseSchema,
-  message: z.string()
-})
+export const CreateGachaPurchaseResSchema = resSchema(GachaPurchaseSchema)
 
 // Update Schema
 export const UpdateGachaPurchaseBodySchema = CreateGachaPurchaseBodySchema.extend({})
@@ -58,17 +55,11 @@ export const GetGachaPurchaseParamsSchema = z.object({
 
 export const GetGachaPurchaseDetailSchema = GachaPurchaseSchema.extend({})
 
-export const GetGachaPurchaseListResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(GetGachaPurchaseDetailSchema),
-  message: z.string()
-})
+export const GetGachaPurchaseListResSchema = resSchema(
+  z.array(GetGachaPurchaseDetailSchema)
+)
 
-export const GetGachaPurchaseDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: GetGachaPurchaseDetailSchema,
-  message: z.string()
-})
+export const GetGachaPurchaseDetailResSchema = resSchema(GetGachaPurchaseDetailSchema)
 
 // Type exports
 export type GachaPurchaseType = z.infer<typeof GachaPurchaseSchema>
