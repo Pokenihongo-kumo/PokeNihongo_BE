@@ -1,15 +1,11 @@
 import { InvoiceStatus, InvoiceStatusType } from '@/common/constants/invoice.constant'
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import {
-  CreateInvoiceBodyType,
-  InvoiceType,
-  USER_SEASON_HISTORY_FIELDS,
-  UpdateInvoiceBodyType
-} from './entities/invoice.entity'
+import { CreateInvoiceBody, UpdateInvoiceBody } from './dto/invoice.zod-dto'
+import { Invoice, USER_SEASON_HISTORY_FIELDS } from './entities/invoice.entity'
 
 @Injectable()
 export class InvoiceRepo {
@@ -23,7 +19,7 @@ export class InvoiceRepo {
       data
     }: {
       createdById: number
-      data: CreateInvoiceBodyType & {
+      data: CreateInvoiceBody & {
         userId: number
         subtotalAmount: number
         discountAmount: number
@@ -31,7 +27,7 @@ export class InvoiceRepo {
       }
     },
     prismaTx?: PrismaClient
-  ): Promise<InvoiceType> {
+  ): Promise<Invoice> {
     const client = prismaTx || this.prismaService
     return client.invoice.create({
       data: {
@@ -48,11 +44,11 @@ export class InvoiceRepo {
       updatedById
     }: {
       id: number
-      data: UpdateInvoiceBodyType
+      data: UpdateInvoiceBody
       updatedById?: number
     },
     prismaTx?: PrismaClient
-  ): Promise<InvoiceType> {
+  ): Promise<Invoice> {
     const client = prismaTx || this.prismaService
     return client.invoice.update({
       where: {
@@ -69,7 +65,7 @@ export class InvoiceRepo {
     id: number,
     walletTransactionId: number,
     prismaTx?: PrismaClient
-  ): Promise<InvoiceType> {
+  ): Promise<Invoice> {
     const client = prismaTx || this.prismaService
     return client.invoice.update({
       where: {
@@ -82,7 +78,7 @@ export class InvoiceRepo {
     })
   }
 
-  delete(id: number, isHard?: boolean, prismaTx?: PrismaClient): Promise<InvoiceType> {
+  delete(id: number, isHard?: boolean, prismaTx?: PrismaClient): Promise<Invoice> {
     const client = prismaTx || this.prismaService
     return isHard
       ? client.invoice.delete({
@@ -99,7 +95,7 @@ export class InvoiceRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, USER_SEASON_HISTORY_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -135,7 +131,7 @@ export class InvoiceRepo {
   }
 
   async getInvoicesWithUserSub(
-    pagination: PaginationQueryType,
+    pagination: PaginationQuery,
     userId: number,
     langId?: number
   ) {
@@ -223,7 +219,7 @@ export class InvoiceRepo {
     }
   }
 
-  findById(id: number): Promise<InvoiceType | null> {
+  findById(id: number): Promise<Invoice | null> {
     return this.prismaService.invoice.findUnique({
       where: {
         id,
@@ -236,7 +232,7 @@ export class InvoiceRepo {
     userId: number,
     planId: number,
     status: InvoiceStatusType
-  ): Promise<InvoiceType | null> {
+  ): Promise<Invoice | null> {
     return this.prismaService.invoice.findFirst({
       where: {
         userId,

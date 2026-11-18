@@ -33,13 +33,11 @@ import {
 } from './dto/lesson-content.dto'
 import { LessonContentListResponseDTO } from './dto/lesson-content.response.dto'
 import {
+  CreateMutiLessonContentBody,
   GetLessonContentListQueryDTO,
   LessonContentFullResDTO
 } from './dto/lesson-content.zod-dto'
-import {
-  CreateMutiLessonContentBodyType,
-  UpdateLessonContentOrder
-} from './entities/lesson-content.entities'
+import { UpdateLessonContentOrder } from './entities/lesson-content.entities'
 import { LessonContentService } from './lesson-content.service'
 
 @ApiTags('Lesson Contents')
@@ -63,7 +61,7 @@ export class LessonContentController {
     description: 'Tạo nội dung bài học thành công',
     type: LessonContentResponseSwaggerDTO
   })
-  async createLessonContent(@Body() body: CreateMutiLessonContentBodyType) {
+  async createLessonContent(@Body() body: CreateMutiLessonContentBody) {
     return await this.lessonContentService.createLessonContent(body)
   }
 

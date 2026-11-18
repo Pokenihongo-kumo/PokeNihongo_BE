@@ -1,14 +1,14 @@
-import { Injectable } from '@nestjs/common'
 import { PrismaService } from '@/shared/services/prisma.service'
-import {
-  CreateTestSetWithMeaningsBodyType,
-  GetTestSetListQueryType,
-  TestSetType,
-  UpdateTestSetBodyType,
-  UpdateTestSetWithMeaningsBodyType
-} from './entities/testset.entity'
 import { toSkipTake } from '@/shared/utils/pagination'
-import { Prisma, TestSet } from '@prisma/client'
+import { Injectable } from '@nestjs/common'
+import { Prisma, TestSet as PrismaTestSet } from '@prisma/client'
+import {
+  CreateTestSetWithMeaningsBody,
+  GetTestSetListQuery,
+  UpdateTestSetBody,
+  UpdateTestSetWithMeaningsBody
+} from './dto/testset.zod-dto'
+import { TestSet } from './entities/testset.entity'
 
 type Tx = Prisma.TransactionClient
 type TextField = 'name' | 'description'
@@ -39,7 +39,7 @@ export type UpsertQuestion = {
 export class TestSetRepo {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findById(id: number, language?: string): Promise<TestSetType | null> {
+  async findById(id: number, language?: string): Promise<TestSet | null> {
     const row = await this.prisma.testSet.findUnique({ where: { id } })
     if (!row) return null
     const [testSet] = await this.withTexts([row], language)
@@ -47,8 +47,8 @@ export class TestSetRepo {
   }
 
   async findMany(
-    query: GetTestSetListQueryType
-  ): Promise<{ data: TestSetType[]; total: number }> {
+    query: GetTestSetListQuery
+  ): Promise<{ data: TestSet[]; total: number }> {
     const { currentPage, pageSize, search, language, sortBy, sort } = query
     const where: Prisma.TestSetWhereInput = {
       ...(query.levelN !== undefined && { levelN: query.levelN }),
@@ -107,7 +107,7 @@ export class TestSetRepo {
     return this.prisma.testSet.delete({ where: { id } })
   }
 
-  createWithMeanings(data: CreateTestSetWithMeaningsBodyType, userId: number) {
+  createWithMeanings(data: CreateTestSetWithMeaningsBody, userId: number) {
     const { meanings, ...fields } = data
     return this.prisma.$transaction(async (tx) => {
       const testSet = await this.createRow(tx, fields, userId)
@@ -116,7 +116,7 @@ export class TestSetRepo {
     })
   }
 
-  updateWithMeanings(id: number, data: UpdateTestSetWithMeaningsBodyType) {
+  updateWithMeanings(id: number, data: UpdateTestSetWithMeaningsBody) {
     const { meanings, ...fields } = data
     return this.prisma.$transaction(async (tx) => {
       const testSet = await tx.testSet.update({ where: { id }, data: fields })
@@ -127,7 +127,7 @@ export class TestSetRepo {
 
   // PUT /testset/:id: each translation becomes the first meaning of its field
   // (it was written to testset.{id}.{field}, a key the readers skip)
-  updateWithTranslations(id: number, data: UpdateTestSetBodyType) {
+  updateWithTranslations(id: number, data: UpdateTestSetBody) {
     const { translations, ...fields } = data
     return this.prisma.$transaction(async (tx) => {
       const testSet = await tx.testSet.update({ where: { id }, data: fields })
@@ -276,13 +276,13 @@ export class TestSetRepo {
   }
 
   //#region helpers
-  private toTestSet<T extends TestSet>(row: T) {
+  private toTestSet<T extends PrismaTestSet>(row: T) {
     return { ...row, price: row.price ? Number(row.price) : null }
   }
 
   // With a language: the first meaning in it (else the stored key) as a string.
   // Without: every meaning as [{ language, value }]
-  private async withTexts(rows: TestSet[], language?: string): Promise<TestSetType[]> {
+  private async withTexts(rows: PrismaTestSet[], language?: string): Promise<TestSet[]> {
     if (rows.length === 0) return []
     const languageId = language
       ? (await this.prisma.languages.findFirst({ where: { code: language } }))?.id

@@ -1,14 +1,14 @@
 import { createZodDto } from 'nestjs-zod'
 import {
-  GetUserAchievementListForUserQuerySchema,
   CreateUserAchievementBodySchema,
   CreateUserAchievementResSchema,
   GetUserAchievementDetailResSchema,
+  GetUserAchievementListForUserQuerySchema,
   GetUserAchievementParamsSchema,
   UpdateUserAchievementBodySchema,
   UpdateUserAchievementResSchema,
   UpdateWithListItemResSchema
-} from '../entities/user-achievement.entity'
+} from './user-achievement.zod-dto'
 
 // Request DTOs
 export class CreateUserAchievementBodyDTO extends createZodDto(

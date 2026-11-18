@@ -1,7 +1,7 @@
 import { I18nService } from '@/i18n/i18n.service'
 import { ElementalTypeMessage } from '@/i18n/message-keys'
 import { NotFoundRecordException } from '@/shared/error'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError,
@@ -9,11 +9,11 @@ import {
 } from '@/shared/utils/prisma-errors'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { ElementalTypeAlreadyExistsException } from './dto/elemental-type.error'
-import { ElementalTypeRepo } from './elemental-type.repo'
 import {
-  CreateElementalTypeBodyType,
-  UpdateElementalTypeBodyType
-} from './entities/elemental-type.entity'
+  CreateElementalTypeBody,
+  UpdateElementalTypeBody
+} from './dto/elemental-type.zod-dto'
+import { ElementalTypeRepo } from './elemental-type.repo'
 
 @Injectable()
 export class ElementalTypeService {
@@ -22,7 +22,7 @@ export class ElementalTypeService {
     private readonly i18nService: I18nService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.elementalTypeRepo.list(pagination)
     return {
       statusCode: HttpStatus.OK,
@@ -47,7 +47,7 @@ export class ElementalTypeService {
       data,
       createdById
     }: {
-      data: CreateElementalTypeBodyType
+      data: CreateElementalTypeBody
       createdById: number
     },
     lang: string = 'vi'
@@ -86,7 +86,7 @@ export class ElementalTypeService {
       updatedById
     }: {
       id: number
-      data: UpdateElementalTypeBodyType
+      data: UpdateElementalTypeBody
       updatedById: number
     },
     lang: string = 'vi'

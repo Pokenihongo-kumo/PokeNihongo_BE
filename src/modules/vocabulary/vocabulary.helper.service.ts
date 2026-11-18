@@ -1,16 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common'
-import { VocabularyRepo } from './vocabulary.repo'
 import { KanjiService } from '@/modules/kanji/kanji.service'
+import { LanguagesService } from '@/modules/languages/languages.service'
 import { MeaningService } from '@/modules/meaning/meaning.service'
 import { TranslationService } from '@/modules/translation/translation.service'
-import { LanguagesService } from '@/modules/languages/languages.service'
-import { TRANSLATION_MESSAGE } from '@/common/constants/message'
 import { MeaningAlreadyExistsException } from '@/modules/vocabulary/dto/vocabulary.error'
-import type {
-  TranslationItemType,
-  ExampleTranslationType,
-  TranslationsType
-} from './dto/create-vocabulary-full.dto'
+import { Injectable, Logger } from '@nestjs/common'
+import type { Translations } from './dto/create-vocabulary-full.dto'
+import { VocabularyRepo } from './vocabulary.repo'
 
 @Injectable()
 export class VocabularyHelperService {
@@ -332,7 +327,7 @@ export class VocabularyHelperService {
   private async checkDuplicateMeaning(
     prisma: any,
     vocabularyId: number,
-    translations: TranslationsType
+    translations: Translations
   ) {
     try {
       this.logger.log(`Checking duplicate meaning for vocabulary ${vocabularyId}`)
@@ -454,7 +449,7 @@ export class VocabularyHelperService {
       imageUrl?: string
       createdById?: number
     },
-    translations: TranslationsType,
+    translations: Translations,
     wordTypeId?: number
   ) {
     // Sử dụng transaction để đảm bảo rollback nếu có lỗi
@@ -581,7 +576,7 @@ export class VocabularyHelperService {
    */
   async addMeaningWithTranslations(
     vocabularyId: number,
-    translations: TranslationsType,
+    translations: Translations,
     wordTypeId?: number
   ) {
     // Sử dụng transaction để đảm bảo rollback nếu có lỗi

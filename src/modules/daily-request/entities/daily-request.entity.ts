@@ -1,10 +1,4 @@
 import { dailyRequestType } from '@/common/constants/achievement.constant'
-import { checkIdSchema } from '@/common/utils/id.validation'
-import { ENTITY_MESSAGE } from '@/i18n/message-keys'
-import { RewardSchema } from '@/modules/reward/entities/reward.entity'
-import { TranslationSchema } from '@/modules/translation/entities/translation.entity'
-import { TranslationInputSchema } from '@/shared/models/translation-input.model'
-import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -37,91 +31,8 @@ export const DailyRequestSchema = z.object({
   updatedAt: z.date()
 })
 
-export const CreateDailyRequestBodyInputSchema = DailyRequestSchema.pick({
-  dailyRequestType: true,
-  conditionValue: true,
-  rewardId: true,
-  isActive: true,
-  isStreak: true
-})
-  .extend({
-    nameTranslations: TranslationInputSchema,
-    descriptionTranslations: TranslationInputSchema
-  })
-  .strict()
-
-export const CreateDailyRequestBodySchema = DailyRequestSchema.pick({
-  nameKey: true,
-  descriptionKey: true,
-  dailyRequestType: true,
-  conditionValue: true,
-  rewardId: true,
-  isActive: true,
-  isStreak: true
-}).strict()
-
-export const CreateDailyRequestResSchema = resSchema(DailyRequestSchema)
-
-export const UpdateDailyRequestBodyInputSchema =
-  CreateDailyRequestBodyInputSchema.partial().strict()
-
-export const UpdateDailyRequestBodySchema =
-  CreateDailyRequestBodySchema.partial().strict()
-
-export const UpdateDailyRequestResSchema = CreateDailyRequestResSchema
-
-export const GetParamsDailyRequestSchema = z.object({
-  dailyRequestId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
-})
-
-export const GetDailyRequestDetailResSchema = resSchema(
-  DailyRequestSchema.extend({
-    nameTranslation: z.string().nullable().optional(),
-    descriptionTranslation: z.string().nullable().optional(),
-    reward: RewardSchema.extend({
-      nameTranslations: z
-        .array(TranslationSchema.pick({ id: true, languageId: true, value: true }))
-        .optional()
-    })
-      .nullable()
-      .optional()
-  })
-)
-
-export const GetDailyRequestDetailwithAllLangResSchema = resSchema(
-  DailyRequestSchema.extend({
-    nameTranslations: z.array(z.object({ key: z.string(), value: z.string() })),
-    descriptionTranslations: z.array(z.object({ key: z.string(), value: z.string() })),
-    reward: RewardSchema.extend({
-      nameTranslations: z
-        .array(TranslationSchema.pick({ id: true, languageId: true, value: true }))
-        .optional()
-    })
-      .nullable()
-      .optional()
-  })
-)
-
 // Type definitions
-export type DailyRequestType = z.infer<typeof DailyRequestSchema>
-
-export type CreateDailyRequestBodyInputType = z.infer<
-  typeof CreateDailyRequestBodyInputSchema
->
-
-export type CreateDailyRequestBodyType = z.infer<typeof CreateDailyRequestBodySchema>
-
-export type UpdateDailyRequestBodyInputType = z.infer<
-  typeof UpdateDailyRequestBodyInputSchema
->
-
-export type UpdateDailyRequestBodyType = z.infer<typeof UpdateDailyRequestBodySchema>
-
-export type GetParamsDailyRequestType = z.infer<typeof GetParamsDailyRequestSchema>
-
-export type GetParamDailyRequestDetailType = z.infer<
-  typeof GetDailyRequestDetailResSchema
->
+export type DailyRequest = z.infer<typeof DailyRequestSchema>
 
 // Field
 

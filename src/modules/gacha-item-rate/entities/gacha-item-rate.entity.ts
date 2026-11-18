@@ -1,7 +1,4 @@
 import { GachaStarType } from '@/common/constants/gacha.constant'
-import { checkIdSchema } from '@/common/utils/id.validation'
-import { ENTITY_MESSAGE } from '@/i18n/message-keys'
-import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -28,37 +25,10 @@ export const GachaItemRateSchema = z.object({
   updatedAt: z.date()
 })
 
-// Create Schema
-export const CreateGachaItemRateBodySchema = GachaItemRateSchema.pick({
-  starType: true,
-  rate: true
-}).strict()
-
-export const CreateGachaItemRateResSchema = resSchema(GachaItemRateSchema)
-
-// Update Schema
-export const UpdateGachaItemRateBodySchema =
-  CreateGachaItemRateBodySchema.partial().strict()
-
-export const UpdateGachaItemRateResSchema = CreateGachaItemRateResSchema
-
-export const UpdateWithListItemResSchema = resSchema(z.array(GachaItemRateSchema))
-
-// Query Schema
-export const GetGachaItemRateParamsSchema = z.object({
-  gachaItemRateId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
-})
-
 export const GetGachaItemRateDetailSchema = GachaItemRateSchema
 
-export const GetGachaItemRateDetailResSchema = resSchema(GetGachaItemRateDetailSchema)
-
 // Type exports
-export type GachaItemRateType = z.infer<typeof GachaItemRateSchema>
-export type CreateGachaItemRateBodyType = z.infer<typeof CreateGachaItemRateBodySchema>
-export type UpdateGachaItemRateBodyType = z.infer<typeof UpdateGachaItemRateBodySchema>
-export type GetGachaItemRateParamsType = z.infer<typeof GetGachaItemRateParamsSchema>
-
+export type GachaItemRate = z.infer<typeof GachaItemRateSchema>
 // Field for query
 export type GachaItemFieldType = keyof z.infer<typeof GachaItemRateSchema>
 export const GACHA_ITEM_RATE_FIELDS = Object.keys(

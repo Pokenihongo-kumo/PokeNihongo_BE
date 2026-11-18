@@ -36,8 +36,8 @@ export const UploadFileResponseSchema = resSchema(
 )
 
 // Type definitions
-export type UploadFileBodyType = z.infer<typeof UploadFileBodySchema>
-export type UploadFileResponseType = z.infer<typeof UploadFileResponseSchema>
+export type UploadFileBody = z.infer<typeof UploadFileBodySchema>
+export type UploadFileResponse = z.infer<typeof UploadFileResponseSchema>
 
 // DTOs
 export class UploadFileBodyDTO extends createZodDto(UploadFileBodySchema) {}

@@ -62,9 +62,9 @@ export const UpdateProfileResSchema = z.object({
   message: z.string()
 })
 
-export type UserType = z.infer<typeof UserSchema>
+export type User = z.infer<typeof UserSchema>
 
 // A user found by id or by email
 export type WhereUniqueUserType = { id: number } | { email: string }
-export type GetUserProfileResType = z.infer<typeof GetAccountProfileResSchema>
-export type UpdateProfileResType = z.infer<typeof UpdateProfileResSchema>
+export type GetUserProfileRes = z.infer<typeof GetAccountProfileResSchema>
+export type UpdateProfileRes = z.infer<typeof UpdateProfileResSchema>

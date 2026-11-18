@@ -2,7 +2,7 @@ import { PrismaService } from '@/shared/services/prisma.service'
 import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
-import { GetLessonListQueryType } from './entities/lesson.entity'
+import { GetLessonListQuery } from './dto/lesson.zod-dto'
 
 // Category, author and test returned with a lesson
 const withRelations = {
@@ -18,7 +18,7 @@ export const titleKeyOf = (id: number) => `lesson.${id}.title`
 export class LessonRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async findMany(params: GetLessonListQueryType) {
+  async findMany(params: GetLessonListQuery) {
     const { currentPage, pageSize, search, lessonCategoryId, levelJlpt, isPublished } =
       params
     const where: Prisma.LessonWhereInput = {

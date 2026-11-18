@@ -1,18 +1,14 @@
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 
 import { parseQs } from '@/common/utils/qs-parser'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
-import {
-  CreateFeatureBodyType,
-  FeatureType,
-  LEADERBOARD_SEASON_FIELDS,
-  UpdateFeatureBodyType
-} from './entities/feature.entity'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
+import { CreateFeatureBody, UpdateFeatureBody } from './dto/feature.zod-dto'
+import { Feature, LEADERBOARD_SEASON_FIELDS } from './entities/feature.entity'
 
-type FeaturePrismaType = Omit<FeatureType, 'nameKey'> & {
+type FeaturePrismaType = Omit<Feature, 'nameKey'> & {
   name: string
 }
 
@@ -31,10 +27,10 @@ export class FeatureRepo {
       data
     }: {
       createdById: number | null
-      data: CreateFeatureBodyType
+      data: CreateFeatureBody
     },
     prismaTx?: PrismaClient
-  ): Promise<FeatureType> {
+  ): Promise<Feature> {
     const client = prismaTx || this.prismaService
     return client.feature.create({
       data: {
@@ -52,13 +48,13 @@ export class FeatureRepo {
     }: {
       id: number
       updatedById?: number
-      data: UpdateFeatureBodyType & {
-        nameTranslations?: CreateTranslationBodyType[]
+      data: UpdateFeatureBody & {
+        nameTranslations?: CreateTranslationBody[]
         featureNameKey?: string
       }
     },
     prismaTx?: PrismaClient
-  ): Promise<FeatureType> {
+  ): Promise<Feature> {
     const client = prismaTx || this.prismaService
     const {
       nameTranslations,
@@ -113,7 +109,7 @@ export class FeatureRepo {
     },
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<FeatureType> {
+  ): Promise<Feature> {
     const client = prismaTx || this.prismaService
     const result = isHard
       ? await this.prismaService.feature.delete({
@@ -134,7 +130,7 @@ export class FeatureRepo {
     return result
   }
 
-  async list(pagination: PaginationQueryType, langId?: number, isAdmin: boolean = false) {
+  async list(pagination: PaginationQuery, langId?: number, isAdmin: boolean = false) {
     const { where: rawWhere = {}, orderBy } = parseQs(
       pagination.qs,
       LEADERBOARD_SEASON_FIELDS
@@ -220,7 +216,7 @@ export class FeatureRepo {
       }
     }
   }
-  findById(id: number): Promise<FeatureType | null> {
+  findById(id: number): Promise<Feature | null> {
     return this.prismaService.feature.findUnique({
       where: {
         id,
@@ -233,7 +229,7 @@ export class FeatureRepo {
     id: number,
     isAllLang: boolean,
     langId: number
-  ): Promise<FeatureType | null> {
+  ): Promise<Feature | null> {
     return this.prismaService.feature.findUnique({
       where: {
         id,

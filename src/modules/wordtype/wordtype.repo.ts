@@ -1,12 +1,9 @@
-import {
-  WordType,
-  CreateWordTypeBodyType,
-  UpdateWordTypeBodyType
-} from './entities/wordtype.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
 import { Prisma, WordType as WordTypeRow } from '@prisma/client'
+import { CreateWordTypeBody, UpdateWordTypeBody } from './dto/wordtype.zod-dto'
+import { WordType } from './entities/wordtype.entity'
 
 @Injectable()
 export class WordTypeRepo {
@@ -53,7 +50,7 @@ export class WordTypeRepo {
     return this.transformWordType(result)
   }
 
-  async create(data: CreateWordTypeBodyType): Promise<WordType> {
+  async create(data: CreateWordTypeBody): Promise<WordType> {
     const createData: Prisma.WordTypeCreateInput = {
       nameKey: data.nameKey,
       ...(data.id && { id: data.id })
@@ -81,7 +78,7 @@ export class WordTypeRepo {
       )`
   }
 
-  async update(id: number, data: UpdateWordTypeBodyType): Promise<WordType> {
+  async update(id: number, data: UpdateWordTypeBody): Promise<WordType> {
     const result = await this.prismaService.wordType.update({
       where: { id },
       data: {

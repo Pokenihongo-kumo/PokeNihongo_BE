@@ -7,7 +7,7 @@ import {
   UpdateUserGachaPityBodySchema,
   UpdateUserGachaPityResSchema,
   UpdateWithListItemResSchema
-} from '../entities/user-gacha-pityentity'
+} from './user-gacha-pity.zod-dto'
 
 // Request DTOs
 export class CreateUserGachaPityBodyDTO extends createZodDto(

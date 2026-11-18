@@ -312,18 +312,16 @@ export class KanjiWithMeaningsResponseSwaggerDTO {
 }
 
 // Type exports
-export type CreateKanjiWithMeaningsBodyType = z.infer<
+export type CreateKanjiWithMeaningsBody = z.infer<
   typeof CreateKanjiWithMeaningsSchema
 > & {
   meanings?: any[] | any | string // Allow array, object, or string for multipart/form-data
   readings?: any[] | string // Allow string for multipart/form-data
 }
-export type KanjiWithMeaningsResponseType = z.infer<
-  typeof KanjiWithMeaningsResponseSchema
->
-export type KanjiWithMeaningsResType = z.infer<typeof KanjiWithMeaningsResSchema>
-export type ReadingWithMeaningsType = z.infer<typeof ReadingSchema>
-export type MeaningWithTranslationsType = z.infer<typeof MeaningSchema>
+export type KanjiWithMeaningsResponse = z.infer<typeof KanjiWithMeaningsResponseSchema>
+export type KanjiWithMeaningsRes = z.infer<typeof KanjiWithMeaningsResSchema>
+export type ReadingWithMeanings = z.infer<typeof ReadingSchema>
+export type MeaningWithTranslations = z.infer<typeof MeaningSchema>
 
 // Zod DTOs for NestJS
 export const CreateKanjiWithMeaningsBodyDTO = CreateKanjiWithMeaningsSchema

@@ -2,6 +2,10 @@ import { InvoiceStatus } from '@/common/constants/invoice.constant'
 import { RoleName } from '@/common/constants/role.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { SubscriptionMessage } from '@/i18n/message-keys'
+import { InvoiceService } from '@/modules/invoice/invoice.service'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { SubscriptionPlanService } from '@/modules/subscription-plan/subscription-plan.service'
+import { TranslationService } from '@/modules/translation/translation.service'
 import {
   LanguageNotExistToTranslateException,
   NotFoundRecordException
@@ -12,20 +16,16 @@ import {
   isUniqueConstraintPrismaError,
   todayUTCWith0000
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { InvoiceService } from '@/modules/invoice/invoice.service'
-import { LanguagesService } from '@/modules/languages/languages.service'
-import { SubscriptionPlanService } from '@/modules/subscription-plan/subscription-plan.service'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
-import { TranslationService } from '@/modules/translation/translation.service'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { SubscriptionAlreadyExistsException } from './dto/subscription.error'
 import {
-  CreateSubscriptionBodyInputType,
-  CreateSubscriptionBodyType,
-  UpdateSubscriptionBodyInputType,
-  UpdateSubscriptionBodyType
-} from './entities/subscription.entity'
+  CreateSubscriptionBody,
+  CreateSubscriptionBodyInput,
+  UpdateSubscriptionBody,
+  UpdateSubscriptionBodyInput
+} from './dto/subscription.zod-dto'
 import { SubscriptionRepo } from './subscription.repo'
 
 @Injectable()
@@ -54,7 +54,7 @@ export class SubscriptionService {
     }))
   }
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi', roleName: string) {
+  async list(pagination: PaginationQuery, lang: string = 'vi', roleName: string) {
     const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
@@ -198,7 +198,7 @@ export class SubscriptionService {
       data,
       createdById
     }: {
-      data: CreateSubscriptionBodyInputType
+      data: CreateSubscriptionBodyInput
       createdById: number
     },
     lang: string = 'vi'
@@ -212,7 +212,7 @@ export class SubscriptionService {
 
         // Convert data for create
         const now = todayUTCWith0000()
-        const dataCreate: CreateSubscriptionBodyType = {
+        const dataCreate: CreateSubscriptionBody = {
           nameKey,
           descriptionKey,
           tagName: data.tagName
@@ -252,8 +252,8 @@ export class SubscriptionService {
         }
 
         // Create translation records
-        const nameTranslationRecords: CreateTranslationBodyType[] = []
-        const descriptionTranslationRecords: CreateTranslationBodyType[] = []
+        const nameTranslationRecords: CreateTranslationBody[] = []
+        const descriptionTranslationRecords: CreateTranslationBody[] = []
 
         // nameTranslations → key = fNameKey
         for (const item of data.nameTranslations) {
@@ -334,7 +334,7 @@ export class SubscriptionService {
       updatedById
     }: {
       id: number
-      data: UpdateSubscriptionBodyInputType
+      data: UpdateSubscriptionBodyInput
       updatedById: number
     },
     lang: string = 'vi'
@@ -344,21 +344,21 @@ export class SubscriptionService {
     try {
       return await this.subscriptionRepo.withTransaction(async (prismaTx) => {
         let hasOpen = false
-        let translationRecords: CreateTranslationBodyType[] = []
+        let translationRecords: CreateTranslationBody[] = []
         // Get current record
         existingSubscription = await this.subscriptionRepo.findById(id)
         if (!existingSubscription) throw new NotFoundRecordException()
 
         // Prepare data for update
-        const dataUpdate: Partial<UpdateSubscriptionBodyType> = {}
+        const dataUpdate: Partial<UpdateSubscriptionBody> = {}
 
         if (data.tagName) {
           dataUpdate.tagName = data.tagName
         }
 
         // Handle translations if provided
-        let nameTranslationRecords: CreateTranslationBodyType[] = []
-        let descriptionTranslationRecords: CreateTranslationBodyType[] = []
+        let nameTranslationRecords: CreateTranslationBody[] = []
+        let descriptionTranslationRecords: CreateTranslationBody[] = []
 
         if (data.nameTranslations || data.descriptionTranslations) {
           const nameList = data.nameTranslations?.map((t) => t.key) || []

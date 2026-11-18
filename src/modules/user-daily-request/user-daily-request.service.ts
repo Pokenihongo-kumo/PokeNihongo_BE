@@ -2,6 +2,9 @@
 import { DailyRequestTypeType } from '@/common/constants/achievement.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { UserDailyRequestMessage } from '@/i18n/message-keys'
+import { DailyRequestService } from '@/modules/daily-request/daily-request.service'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { TranslationService } from '@/modules/translation/translation.service'
 import { UserService } from '@/modules/user/user.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
@@ -10,16 +13,13 @@ import {
   isUniqueConstraintPrismaError,
   todayUTCWith0000
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable, Logger } from '@nestjs/common'
-import { DailyRequestService } from '@/modules/daily-request/daily-request.service'
-import { LanguagesService } from '@/modules/languages/languages.service'
-import { TranslationService } from '@/modules/translation/translation.service'
 import { UserDailyRequestAlreadyExistsException } from './dto/user-daily-request.error'
 import {
-  CreateUserDailyRequestBodyType,
-  UpdateUserDailyRequestBodyType
-} from './entities/user-daily-request.entity'
+  CreateUserDailyRequestBody,
+  UpdateUserDailyRequestBody
+} from './dto/user-daily-request.zod-dto'
 import { UserDailyRequestRepo } from './user-daily-request.repo'
 
 @Injectable()
@@ -35,7 +35,7 @@ export class UserDailyRequestService {
     private readonly userService: UserService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.userDailyRequestRepo.list(pagination)
     return {
       data,
@@ -60,7 +60,7 @@ export class UserDailyRequestService {
       data,
       createdById
     }: {
-      data: CreateUserDailyRequestBodyType
+      data: CreateUserDailyRequestBody
       createdById: number
     },
     lang: string = 'vi'
@@ -111,7 +111,7 @@ export class UserDailyRequestService {
       updatedById
     }: {
       id: number
-      data: UpdateUserDailyRequestBodyType
+      data: UpdateUserDailyRequestBody
       updatedById: number
     },
     lang: string = 'vi'

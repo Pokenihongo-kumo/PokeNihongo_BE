@@ -7,7 +7,7 @@ import {
   UpdateRoundQuestionsAnswerLogBodySchema,
   UpdateRoundQuestionsAnswerLogResSchema,
   UpdateWithListItemResSchema
-} from '../entities/round-question-answerlog.entity'
+} from './round-question-answerlog.zod-dto'
 
 // Request DTOs
 export class CreateRoundQuestionsAnswerLogBodyDTO extends createZodDto(

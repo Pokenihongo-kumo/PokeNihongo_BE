@@ -1,12 +1,12 @@
-import { Injectable } from '@nestjs/common'
 import { PrismaService } from '@/shared/services/prisma.service'
-import {
-  CreateUserRewardHistoryBodyType,
-  GetUserRewardHistoryListQueryType,
-  UpdateUserRewardHistoryBodyType,
-  UserRewardHistoryType
-} from '@/modules/user-reward-history/entities/user-reward-history.entities'
+import { Injectable } from '@nestjs/common'
 import { Prisma, RewardTarget } from '@prisma/client'
+import {
+  CreateUserRewardHistoryBody,
+  GetUserRewardHistoryListQuery,
+  UpdateUserRewardHistoryBody
+} from './dto/user-reward-history.zod-dto'
+import { UserRewardHistory } from './entities/user-reward-history.entities'
 
 @Injectable()
 export class UserRewardHistoryRepository {
@@ -16,7 +16,7 @@ export class UserRewardHistoryRepository {
     return (this.prismaService as any).userRewardHistory as any
   }
 
-  private transform(record: any): UserRewardHistoryType {
+  private transform(record: any): UserRewardHistory {
     return {
       id: record.id,
       userId: record.userId,
@@ -39,7 +39,7 @@ export class UserRewardHistoryRepository {
     }
   }
 
-  async findMany(params: GetUserRewardHistoryListQueryType) {
+  async findMany(params: GetUserRewardHistoryListQuery) {
     const {
       currentPage,
       pageSize,
@@ -98,7 +98,7 @@ export class UserRewardHistoryRepository {
     }
   }
 
-  async findUnique(id: number): Promise<UserRewardHistoryType | null> {
+  async findUnique(id: number): Promise<UserRewardHistory | null> {
     const record = await this.delegate.findUnique({
       where: { id },
       include: {
@@ -108,7 +108,7 @@ export class UserRewardHistoryRepository {
     return record ? this.transform(record) : null
   }
 
-  async create(data: CreateUserRewardHistoryBodyType): Promise<UserRewardHistoryType> {
+  async create(data: CreateUserRewardHistoryBody): Promise<UserRewardHistory> {
     const result = await this.delegate.create({
       data: {
         userId: data.userId,
@@ -130,8 +130,8 @@ export class UserRewardHistoryRepository {
 
   async update(
     id: number,
-    data: UpdateUserRewardHistoryBodyType
-  ): Promise<UserRewardHistoryType> {
+    data: UpdateUserRewardHistoryBody
+  ): Promise<UserRewardHistory> {
     const updateData: Record<string, any> = {}
 
     if ('rewardId' in data) {
@@ -175,7 +175,7 @@ export class UserRewardHistoryRepository {
     return this.transform(result)
   }
 
-  async delete(id: number): Promise<UserRewardHistoryType> {
+  async delete(id: number): Promise<UserRewardHistory> {
     const result = await this.delegate.delete({
       where: { id },
       include: {

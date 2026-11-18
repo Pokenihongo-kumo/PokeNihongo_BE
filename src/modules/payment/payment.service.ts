@@ -6,13 +6,15 @@ import {
 import envConfig from '@/config/env.config'
 // Legacy helpers không cần nữa cho invoice flow
 
-import { UserCoreService } from '@/modules/user/user-core.service'
 import { PaymentGateway } from '@/infrastructure/integrations/payment/payment-gateway.port'
+import { UserCoreService } from '@/modules/user/user-core.service'
 
 import { MailService } from '@/3rdService/mail/mail.service'
 import { BullAction, BullQueue } from '@/common/constants/bull-action.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { InvoiceMessage, PaymentMessage, SendMailMessage } from '@/i18n/message-keys'
+import { CreateInvoiceBody } from '@/modules/invoice/dto/invoice.zod-dto'
+import { SubscriptionPlanService } from '@/modules/subscription-plan/subscription-plan.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
@@ -21,10 +23,8 @@ import {
 import { InjectQueue } from '@nestjs/bull'
 import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { Queue } from 'bull'
-import { CreateInvoiceBodyType } from '../invoice/entities/invoice.entity'
 import { InvoiceService } from '../invoice/invoice.service'
 import { SubscriptionPlanNotFoundException } from '../subscription-plan/dto/subscription-plan.error'
-import { SubscriptionPlanService } from '@/modules/subscription-plan/subscription-plan.service'
 import { UserSubscriptionService } from '../user-subscription/user-subscription.service'
 import {
   ErrorPaymentToPayException,
@@ -32,7 +32,7 @@ import {
   InvoiceNotFoundException,
   PaymentLinkInProgressException
 } from './dto/payment.error'
-import { CreatePayOSPaymentDto, PaymentType } from './entities/payment.model'
+import { CreatePayOSPaymentDto, Payment } from './entities/payment.model'
 import { PaymentRepo } from './payment.repo'
 
 @Injectable()
@@ -55,7 +55,7 @@ export class PaymentService {
   // POST /invoice: the pending invoice is committed first, then its payment
   // link is opened (the order the invoice module used to follow itself)
   async checkoutNewInvoice(
-    { userId, data }: { userId: number; data: CreateInvoiceBodyType },
+    { userId, data }: { userId: number; data: CreateInvoiceBody },
     lang: string = 'vi'
   ) {
     const invoice = await this.invoiceService.createPending({ userId, data })
@@ -255,7 +255,7 @@ export class PaymentService {
   }
 
   // The open link of an invoice, as POST /payments/payos answers it
-  private paymentLinkResult(payment: PaymentType, lang: string) {
+  private paymentLinkResult(payment: Payment, lang: string) {
     const expiredAtMs = payment.expiredAt
       ? new Date(payment.expiredAt).getTime()
       : undefined
@@ -384,7 +384,7 @@ export class PaymentService {
 
   // PAID + subscription exactly once, in one transaction, whichever callback
   // (return, cancel, webhook) arrives first
-  private async grantPaidPayment(payment: PaymentType) {
+  private async grantPaidPayment(payment: Payment) {
     const claimed = await this.paymentRepo.markInvoicePaidOnce(
       payment.id,
       payment.invoiceId
@@ -417,7 +417,7 @@ export class PaymentService {
   // still PENDING. An invoice another link paid (or is paying:
   // markInvoicePaidOnce holds its row) is left alone.
   private async closeCancelledPayment(
-    payment: PaymentType,
+    payment: Payment,
     payosStatus: 'CANCELLED' | 'EXPIRED' | 'FAILED',
     lang: string
   ) {

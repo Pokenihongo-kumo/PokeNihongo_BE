@@ -1,18 +1,14 @@
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 
 import { parseQs } from '@/common/utils/qs-parser'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
-import {
-  CreateRewardBodyType,
-  REWARD_FIELDS,
-  RewardType,
-  UpdateRewardBodyType
-} from './entities/reward.entity'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
+import { CreateRewardBody, UpdateRewardBody } from './dto/reward.zod-dto'
+import { REWARD_FIELDS, Reward } from './entities/reward.entity'
 
-type RewardPrismaType = Omit<RewardType, 'nameKey'> & { name: string }
+type RewardPrismaType = Omit<Reward, 'nameKey'> & { name: string }
 
 @Injectable()
 export class RewardRepo {
@@ -29,10 +25,10 @@ export class RewardRepo {
       data
     }: {
       createdById: number | null
-      data: CreateRewardBodyType
+      data: CreateRewardBody
     },
     prismaTx?: PrismaClient
-  ): Promise<RewardType> {
+  ): Promise<Reward> {
     const client = prismaTx || this.prismaService
     return client.reward.create({
       data: {
@@ -50,13 +46,13 @@ export class RewardRepo {
     }: {
       id: number
       updatedById?: number
-      data: UpdateRewardBodyType & {
-        nameTranslations: CreateTranslationBodyType[]
+      data: UpdateRewardBody & {
+        nameTranslations: CreateTranslationBody[]
         rewardNameKey: string
       }
     },
     prismaTx?: PrismaClient
-  ): Promise<RewardType> {
+  ): Promise<Reward> {
     const client = prismaTx || this.prismaService
     const { nameTranslations, rewardNameKey, ...rewardData } = data
 
@@ -104,7 +100,7 @@ export class RewardRepo {
     },
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<RewardType> {
+  ): Promise<Reward> {
     const client = prismaTx || this.prismaService
     const result = isHard
       ? await client.reward.delete({
@@ -125,7 +121,7 @@ export class RewardRepo {
     return result
   }
 
-  async list(pagination: PaginationQueryType, langId?: number) {
+  async list(pagination: PaginationQuery, langId?: number) {
     const { where: rawWhere = {}, orderBy } = parseQs(pagination.qs, REWARD_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -199,7 +195,7 @@ export class RewardRepo {
     }
   }
 
-  async getListWithAllLang(pagination: PaginationQueryType, langId?: number) {
+  async getListWithAllLang(pagination: PaginationQuery, langId?: number) {
     const { where: rawWhere = {}, orderBy } = parseQs(pagination.qs, REWARD_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -264,7 +260,7 @@ export class RewardRepo {
     }
   }
 
-  findById(id: number): Promise<RewardType | null> {
+  findById(id: number): Promise<Reward | null> {
     return this.prismaService.reward.findUnique({
       where: {
         id,
@@ -273,7 +269,7 @@ export class RewardRepo {
     })
   }
 
-  findDelId(id: number): Promise<RewardType | null> {
+  findDelId(id: number): Promise<Reward | null> {
     return this.prismaService.reward.findUnique({
       where: {
         id
@@ -281,7 +277,7 @@ export class RewardRepo {
     })
   }
 
-  findManyByIds(ids: number[]): Promise<RewardType[]> {
+  findManyByIds(ids: number[]): Promise<Reward[]> {
     return this.prismaService.reward.findMany({
       where: {
         id: { in: ids },
@@ -290,7 +286,7 @@ export class RewardRepo {
     })
   }
 
-  findByIdWithLangId(id: number, langId: number): Promise<RewardType | null> {
+  findByIdWithLangId(id: number, langId: number): Promise<Reward | null> {
     return this.prismaService.reward.findUnique({
       where: {
         id,

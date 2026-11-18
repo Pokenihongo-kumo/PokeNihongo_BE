@@ -1,32 +1,25 @@
-import {
-  CreateVocabularyBodyType,
-  GetVocabularyByIdParamsType,
-  GetVocabularyListQueryType,
-  UpdateVocabularyBodyType,
-  VocabularyType
-} from '@/modules/vocabulary/entities/vocabulary.entity'
-import {
-  InvalidVocabularyDataException,
-  VocabularyAlreadyExistsException,
-  VocabularyNotFoundException,
-  MeaningAlreadyExistsException,
-  VocabularyJapaneseTextInvalidException
-} from '@/modules/vocabulary/dto/vocabulary.error'
-import { VocabularyRepo } from '@/modules/vocabulary/vocabulary.repo'
-import { VocabularyHelperService } from '@/modules/vocabulary/vocabulary.helper.service'
-import { MeaningService } from '@/modules/meaning/meaning.service'
-import { I18nService } from '@/i18n/i18n.service'
-import { hasJapaneseText } from '@/common/utils/japanese-text'
-import { VocabularyMessage as M } from '@/i18n/message-keys'
-import { UploadService } from '@/3rdService/upload/upload.service'
 import { TextToSpeechService } from '@/3rdService/speech/text-to-speech.service'
-import { TranslationService } from '@/modules/translation/translation.service'
+import { UploadService } from '@/3rdService/upload/upload.service'
+import { hasJapaneseText } from '@/common/utils/japanese-text'
+import { I18nService } from '@/i18n/i18n.service'
+import { VocabularyMessage as M } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
+import { MeaningService } from '@/modules/meaning/meaning.service'
+import { TranslationService } from '@/modules/translation/translation.service'
+import { WordTypeService } from '@/modules/wordtype/wordtype.service'
 import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from '@/shared/helpers'
 import { Injectable, Logger } from '@nestjs/common'
 import * as XLSX from 'xlsx'
-import { WordTypeService } from '@/modules/wordtype/wordtype.service'
-import e from 'express'
+import {
+  InvalidVocabularyDataException,
+  MeaningAlreadyExistsException,
+  VocabularyAlreadyExistsException,
+  VocabularyJapaneseTextInvalidException,
+  VocabularyNotFoundException
+} from './dto/vocabulary.error'
+import { GetVocabularyListQuery, UpdateVocabularyBody } from './dto/vocabulary.zod-dto'
+import { VocabularyHelperService } from './vocabulary.helper.service'
+import { VocabularyRepo } from './vocabulary.repo'
 
 @Injectable()
 export class VocabularyService {
@@ -47,7 +40,7 @@ export class VocabularyService {
   // Removed old create method - use createFullVocabularyWithFiles instead
 
   //#region Find All
-  async findAll(query: GetVocabularyListQueryType, lang: string) {
+  async findAll(query: GetVocabularyListQuery, lang: string) {
     try {
       const { currentPage, pageSize, search, levelN, lessonId, sortBy, sort } = query
 
@@ -1056,7 +1049,7 @@ export class VocabularyService {
   //#region Update
   async update(
     id: number,
-    body: UpdateVocabularyBodyType,
+    body: UpdateVocabularyBody,
     imageFile?: Express.Multer.File,
     audioFile?: Express.Multer.File,
     regenerateAudio?: boolean,

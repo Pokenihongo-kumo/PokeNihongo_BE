@@ -59,15 +59,15 @@ export const UpdateRoleBodySchema = RoleSchema.pick({
 
 export const UpdateRoleResSchema = CreateRoleResSchema
 
-export type RoleWithPermissionsType = z.infer<typeof RoleWithPermissionsSchema>
-export type GetRolesResType = z.infer<typeof GetRolesResSchema>
-export type GetRolesQueryType = z.infer<typeof GetRolesQuerySchema>
-export type GetRoleDetailResType = z.infer<typeof GetRoleDetailResSchema>
-export type CreateRoleResType = z.infer<typeof CreateRoleResSchema>
-export type CreateRoleBodyType = z.infer<typeof CreateRoleBodySchema>
-export type GetRoleParamsType = z.infer<typeof GetRoleParamsSchema>
-export type UpdateRoleBodyType = z.infer<typeof UpdateRoleBodySchema>
-export type UpdateRoleResType = z.infer<typeof UpdateRoleResSchema>
+export type RoleWithPermissions = z.infer<typeof RoleWithPermissionsSchema>
+export type GetRolesRes = z.infer<typeof GetRolesResSchema>
+export type GetRolesQuery = z.infer<typeof GetRolesQuerySchema>
+export type GetRoleDetailRes = z.infer<typeof GetRoleDetailResSchema>
+export type CreateRoleRes = z.infer<typeof CreateRoleResSchema>
+export type CreateRoleBody = z.infer<typeof CreateRoleBodySchema>
+export type GetRoleParams = z.infer<typeof GetRoleParamsSchema>
+export type UpdateRoleBody = z.infer<typeof UpdateRoleBodySchema>
+export type UpdateRoleRes = z.infer<typeof UpdateRoleResSchema>
 
 // field cho qs
 type RoleFieldType = keyof z.infer<typeof RoleSchema>

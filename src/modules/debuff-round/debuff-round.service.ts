@@ -1,6 +1,8 @@
 import { RoleName } from '@/common/constants/role.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { DebuffRoundMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { TranslationService } from '@/modules/translation/translation.service'
 import {
   LanguageNotExistToTranslateException,
   NotFoundRecordException
@@ -10,19 +12,17 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { LanguagesService } from '@/modules/languages/languages.service'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
-import { TranslationService } from '@/modules/translation/translation.service'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { DebuffRoundRepo } from './debuff-round.repo'
 import { DebuffRoundAlreadyExistsException } from './dto/debuff-round.error'
 import {
-  CreateDebuffRoundBodyInputType,
-  CreateDebuffRoundBodyType,
-  UpdateDebuffRoundBodyInputType,
-  UpdateDebuffRoundBodyType
-} from './entities/debuff-round.entity'
+  CreateDebuffRoundBody,
+  CreateDebuffRoundBodyInput,
+  UpdateDebuffRoundBody,
+  UpdateDebuffRoundBodyInput
+} from './dto/debuff-round.zod-dto'
 
 @Injectable()
 export class DebuffRoundService {
@@ -48,7 +48,7 @@ export class DebuffRoundService {
     }))
   }
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi', roleName: string) {
+  async list(pagination: PaginationQuery, lang: string = 'vi', roleName: string) {
     const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
@@ -140,7 +140,7 @@ export class DebuffRoundService {
       data,
       createdById
     }: {
-      data: CreateDebuffRoundBodyInputType
+      data: CreateDebuffRoundBodyInput
       createdById: number
     },
     lang: string = 'vi'
@@ -151,7 +151,7 @@ export class DebuffRoundService {
       return await this.debuffRoundRepo.withTransaction(async (prismaTx) => {
         const nameKey = `debuffRound.name.${Date.now()}`
 
-        const dataCreate: CreateDebuffRoundBodyType = {
+        const dataCreate: CreateDebuffRoundBody = {
           nameKey,
           typeDebuff: data.typeDebuff,
           valueDebuff: data.valueDebuff
@@ -186,7 +186,7 @@ export class DebuffRoundService {
         }
 
         // Create translation records
-        const translationRecords: CreateTranslationBodyType[] = []
+        const translationRecords: CreateTranslationBody[] = []
 
         // nameTranslations → key = nameKey
         for (const item of data.nameTranslations) {
@@ -259,7 +259,7 @@ export class DebuffRoundService {
       updatedById
     }: {
       id: number
-      data: UpdateDebuffRoundBodyInputType
+      data: UpdateDebuffRoundBodyInput
       updatedById: number
     },
     lang: string = 'vi'
@@ -268,13 +268,13 @@ export class DebuffRoundService {
 
     try {
       return await this.debuffRoundRepo.withTransaction(async (prismaTx) => {
-        let translationRecords: CreateTranslationBodyType[] = []
+        let translationRecords: CreateTranslationBody[] = []
         // Get current record
         existingDebuffRound = await this.debuffRoundRepo.findById(id)
         if (!existingDebuffRound) throw new NotFoundRecordException()
 
         // Prepare data for update
-        const dataUpdate: Partial<UpdateDebuffRoundBodyType> = {}
+        const dataUpdate: Partial<UpdateDebuffRoundBody> = {}
 
         if (data.typeDebuff !== undefined) {
           dataUpdate.typeDebuff = data.typeDebuff

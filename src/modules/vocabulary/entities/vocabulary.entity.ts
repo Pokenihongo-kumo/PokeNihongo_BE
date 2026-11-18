@@ -1,8 +1,3 @@
-import { VocabularySortField, VocabularySortOrder } from '@/common/enum/enum'
-import { checkIdSchema } from '@/common/utils/id.validation'
-import { VocabularyMessage } from '@/i18n/message-keys'
-import { paginatedResSchema } from '@/shared/utils/pagination'
-import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -71,61 +66,6 @@ export const VocabularySchema = z.object({
   updatedAt: z.date()
 })
 
-export const CreateVocabularyBodySchema = VocabularySchema.pick({
-  wordJp: true,
-  reading: true,
-  imageUrl: true,
-  audioUrl: true
-}).strict()
-
-export const UpdateVocabularyBodySchema = VocabularySchema.pick({
-  wordJp: true,
-  reading: true,
-  imageUrl: true,
-  audioUrl: true
-})
-  .partial()
-  .strict()
-
-export const VocabularyResSchema = resSchema(VocabularySchema).strict()
-
-export const VocabularyListResSchema = paginatedResSchema(VocabularySchema).strict()
-
-export const GetVocabularyByIdParamsSchema = z
-  .object({
-    id: checkIdSchema(VocabularyMessage.INVALID_ID)
-  })
-  .strict()
-
-export const GetVocabularyListQuerySchema = z
-  .object({
-    currentPage: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('1'),
-    pageSize: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('10'),
-    search: z.string().optional(),
-    levelN: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional(),
-    lessonId: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional(),
-    sortBy: z
-      .nativeEnum(VocabularySortField)
-      .optional()
-      .default(VocabularySortField.CREATED_AT),
-    sort: z.nativeEnum(VocabularySortOrder).optional().default(VocabularySortOrder.DESC)
-  })
-  .strict()
-
 // Statistics Schema
 export const VocabularyStatisticsSchema = z.object({
   totalVocabulary: z.number(),
@@ -137,10 +77,6 @@ export const VocabularyStatisticsSchema = z.object({
   vocabularyN1: z.number()
 })
 
-export const VocabularyStatisticsResSchema = resSchema(
-  VocabularyStatisticsSchema
-).strict()
-
 // Search Schema
 export const VocabularySearchItemSchema = z.object({
   id: z.number(),
@@ -148,26 +84,6 @@ export const VocabularySearchItemSchema = z.object({
   reading: z.string(),
   meaning: z.string()
 })
-
-export const VocabularySearchQuerySchema = z
-  .object({
-    keyword: z.string().min(1, 'Từ khóa tìm kiếm không được để trống'),
-    currentPage: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('1'),
-    pageSize: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('20')
-  })
-  .strict()
-
-export const VocabularySearchResSchema = paginatedResSchema(
-  VocabularySearchItemSchema
-).strict()
 
 // Detail Schema (for search/:id)
 export const VocabularyMeaningDetailSchema = z.object({
@@ -191,8 +107,6 @@ export const VocabularyDetailSchema = z.object({
   relatedWords: z.array(VocabularySearchItemSchema)
 })
 
-export const VocabularyDetailResSchema = resSchema(VocabularyDetailSchema).strict()
-
 // Search History Schema
 export const VocabularySearchHistoryItemSchema = z.object({
   id: z.number(),
@@ -200,47 +114,12 @@ export const VocabularySearchHistoryItemSchema = z.object({
   createdAt: z.date()
 })
 
-export const VocabularySearchHistoryQuerySchema = z
-  .object({
-    currentPage: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('1'),
-    pageSize: z
-      .string()
-      .transform((val) => parseInt(val, 10))
-      .optional()
-      .default('20')
-  })
-  .strict()
-
-export const VocabularySearchHistoryResSchema = paginatedResSchema(
-  VocabularySearchHistoryItemSchema
-).strict()
-
 // Types
-export type VocabularyType = z.infer<typeof VocabularySchema>
-export type CreateVocabularyBodyType = z.infer<typeof CreateVocabularyBodySchema>
-export type UpdateVocabularyBodyType = z.infer<typeof UpdateVocabularyBodySchema>
-export type VocabularyResType = z.infer<typeof VocabularyResSchema>
-export type VocabularyListResType = z.infer<typeof VocabularyListResSchema>
-export type GetVocabularyByIdParamsType = z.infer<typeof GetVocabularyByIdParamsSchema>
-export type GetVocabularyListQueryType = z.infer<typeof GetVocabularyListQuerySchema>
-export type VocabularyStatisticsType = z.infer<typeof VocabularyStatisticsSchema>
-export type VocabularyStatisticsResType = z.infer<typeof VocabularyStatisticsResSchema>
-export type VocabularySearchItemType = z.infer<typeof VocabularySearchItemSchema>
-export type VocabularySearchQueryType = z.infer<typeof VocabularySearchQuerySchema>
-export type VocabularySearchResType = z.infer<typeof VocabularySearchResSchema>
-export type VocabularyMeaningDetailType = z.infer<typeof VocabularyMeaningDetailSchema>
-export type VocabularyDetailType = z.infer<typeof VocabularyDetailSchema>
-export type VocabularyDetailResType = z.infer<typeof VocabularyDetailResSchema>
-export type VocabularySearchHistoryItemType = z.infer<
+export type Vocabulary = z.infer<typeof VocabularySchema>
+export type VocabularyStatistics = z.infer<typeof VocabularyStatisticsSchema>
+export type VocabularySearchItem = z.infer<typeof VocabularySearchItemSchema>
+export type VocabularyMeaningDetail = z.infer<typeof VocabularyMeaningDetailSchema>
+export type VocabularyDetail = z.infer<typeof VocabularyDetailSchema>
+export type VocabularySearchHistoryItem = z.infer<
   typeof VocabularySearchHistoryItemSchema
->
-export type VocabularySearchHistoryQueryType = z.infer<
-  typeof VocabularySearchHistoryQuerySchema
->
-export type VocabularySearchHistoryResType = z.infer<
-  typeof VocabularySearchHistoryResSchema
 >

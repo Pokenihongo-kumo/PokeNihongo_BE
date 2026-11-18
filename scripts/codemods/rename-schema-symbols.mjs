@@ -17,7 +17,44 @@ import ts from 'typescript'
 const args = process.argv.slice(2)
 const MODE = args[args.indexOf('--mode') + 1]
 const DRY = args.includes('--dry')
-if (!['s2', 's3a'].includes(MODE)) throw new Error('--mode s2|s3a')
+if (!['s2', 's3a', 'alias-prisma'].includes(MODE)) throw new Error('--mode s2|s3a|alias-prisma')
+
+// --mode alias-prisma --files a.ts,b.ts --names Languages,Meaning
+//   `import { Languages } from '@prisma/client'` -> `import { Languages as PrismaLanguages }`
+//   and every use in that file, so the zod-inferred type can take the plain name (run before s3a)
+if (MODE === 'alias-prisma') {
+  const files = args[args.indexOf('--files') + 1].split(',')
+  const names = new Set(args[args.indexOf('--names') + 1].split(','))
+  for (const file of files) {
+    let s = fs.readFileSync(file, 'utf8')
+    const sf = ts.createSourceFile(file, s, ts.ScriptTarget.Latest, true)
+    const aliased = new Set()
+    for (const st of sf.statements) {
+      if (!ts.isImportDeclaration(st) || st.moduleSpecifier.text !== '@prisma/client') continue
+      st.importClause?.namedBindings?.elements?.forEach((e) => {
+        if (!e.propertyName && names.has(e.name.text)) aliased.add(e.name.text)
+      })
+    }
+    const edits = []
+    const visit = (n) => {
+      if (ts.isIdentifier(n) && aliased.has(n.text)) {
+        const p = n.parent
+        const member =
+          (ts.isPropertyAccessExpression(p) && p.name === n) ||
+          (ts.isQualifiedName(p) && p.right === n) ||
+          ((ts.isPropertyAssignment(p) || ts.isPropertySignature(p) || ts.isMethodDeclaration(p)) && p.name === n)
+        if (!member)
+          edits.push({ start: n.getStart(sf), end: n.getEnd(), text: ts.isImportSpecifier(p) ? `${n.text} as Prisma${n.text}` : `Prisma${n.text}` })
+      }
+      ts.forEachChild(n, visit)
+    }
+    visit(sf)
+    for (const e of edits.sort((a, b) => b.start - a.start)) s = s.slice(0, e.start) + e.text + s.slice(e.end)
+    if (!DRY) fs.writeFileSync(file, s)
+    console.log(`${file}: ${[...aliased].join(', ')} (${edits.length} uses)`)
+  }
+  process.exit(0)
+}
 
 const cfgPath = ts.findConfigFile('.', ts.sys.fileExists, 'tsconfig.json')
 const cfg = ts.parseJsonConfigFileContent(ts.readConfigFile(cfgPath, ts.sys.readFile).config, ts.sys, '.')
@@ -62,10 +99,14 @@ for (const sf of sourceFiles) {
         jobs.push({ file: sf.fileName, pos: d.name.getStart(sf), from: name, to: name.replace(/Type$/, 'Schema'), meaning: 'value' })
       }
     }
-    if (MODE === 's3a' && ts.isTypeAliasDeclaration(st) && isExported(st) && isZInfer(st.type)) {
+    if (MODE === 's3a' && ts.isTypeAliasDeclaration(st) && isExported(st) && (isZInfer(st.type) || (ts.isIntersectionTypeNode(st.type) && isZInfer(st.type.types[0])))) {
       const name = st.name.text
       if (!/^\w+Type$/.test(name) || name === 'Type') continue
-      jobs.push({ file: sf.fileName, pos: st.name.getStart(sf), from: name, to: name.replace(/Type$/, ''), meaning: 'type' })
+      // already final when named after its schema (`ElementalType` of `ElementalTypeSchema`)
+      const zRef = isZInfer(st.type) ? st.type : st.type.types[0]
+      if (zRef.typeArguments?.[0]?.getText(sf) === `typeof ${name}Schema`) continue
+      // `XSchemaType` -> `X` too
+      jobs.push({ file: sf.fileName, pos: st.name.getStart(sf), from: name, to: name.replace(/(Schema)?Type$/, ''), meaning: 'type' })
     }
   }
 }

@@ -1,6 +1,3 @@
-import { checkIdSchema } from '@/common/utils/id.validation'
-import { ENTITY_MESSAGE } from '@/i18n/message-keys'
-import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -24,60 +21,10 @@ export const SubscriptionFeatureSchema = z.object({
   updatedAt: z.date()
 })
 
-// Create Schema
-export const CreateSubscriptionFeatureBodySchema = SubscriptionFeatureSchema.pick({
-  subscriptionId: true,
-  featureId: true,
-  value: true
-}).strict()
-
-export const CreateSubscriptionFeatureResSchema = resSchema(SubscriptionFeatureSchema)
-
-// Update Schema
-export const UpdateSubscriptionFeatureBodySchema =
-  CreateSubscriptionFeatureBodySchema.partial().strict()
-
-export const UpdateSubscriptionFeatureResSchema = CreateSubscriptionFeatureResSchema
-
-// Update with list of features for a subscription
-export const UpdateWithListItemBodySchema = z.object({
-  items: z
-    .array(
-      z.object({
-        featureId: SubscriptionFeatureSchema.shape.featureId,
-        value: SubscriptionFeatureSchema.shape.value
-      })
-    )
-    .min(1)
-})
-
-export type UpdateWithListItemBodyType = z.infer<typeof UpdateWithListItemBodySchema>
-
-export const UpdateWithListItemResSchema = resSchema(z.array(SubscriptionFeatureSchema))
-
-// Query Schema
-export const GetSubscriptionFeatureParamsSchema = z.object({
-  subscriptionFeatureId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
-})
-
 export const GetSubscriptionFeatureDetailSchema = SubscriptionFeatureSchema
 
-export const GetSubscriptionFeatureDetailResSchema = resSchema(
-  GetSubscriptionFeatureDetailSchema
-)
-
 // Type exports
-export type SubscriptionFeatureType = z.infer<typeof SubscriptionFeatureSchema>
-export type CreateSubscriptionFeatureBodyType = z.infer<
-  typeof CreateSubscriptionFeatureBodySchema
->
-export type UpdateSubscriptionFeatureBodyType = z.infer<
-  typeof UpdateSubscriptionFeatureBodySchema
->
-export type GetSubscriptionFeatureParamsType = z.infer<
-  typeof GetSubscriptionFeatureParamsSchema
->
-
+export type SubscriptionFeature = z.infer<typeof SubscriptionFeatureSchema>
 // Field for query
 export type SubscriptionFeatureFieldType = keyof z.infer<typeof SubscriptionFeatureSchema>
 export const USER_GACHA_PITY_FIELDS = Object.keys(

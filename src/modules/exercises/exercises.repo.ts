@@ -2,7 +2,7 @@ import { PrismaService } from '@/shared/services/prisma.service'
 import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
-import { GetExercisesListQueryType } from './entities/exercises.entity'
+import { GetExercisesListQuery } from './dto/exercises.zod-dto'
 
 // Lesson and test set summary returned with an exercise
 const withLessonAndTestSet = {
@@ -26,7 +26,7 @@ const withLessonAndTestSet = {
 export class ExercisesRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async findMany(params: GetExercisesListQueryType) {
+  async findMany(params: GetExercisesListQuery) {
     const { currentPage, pageSize, exerciseType, lessonId, isBlocked, search } = params
     const where: Prisma.ExercisesWhereInput = {
       ...(exerciseType && { exerciseType }),

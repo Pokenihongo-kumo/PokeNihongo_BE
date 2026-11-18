@@ -1,12 +1,9 @@
 import { PrismaService } from '@/shared/services/prisma.service'
 import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
-import { Languages, Prisma } from '@prisma/client'
-import {
-  CreateLanguagesBodyType,
-  LanguagesType,
-  UpdateLanguagesBodyType
-} from './entities/languages.entity'
+import { Prisma, Languages as PrismaLanguages } from '@prisma/client'
+import { CreateLanguagesBody, UpdateLanguagesBody } from './dto/languages.zod-dto'
+import { Languages } from './entities/languages.entity'
 
 @Injectable()
 export class LanguagesRepo {
@@ -17,7 +14,7 @@ export class LanguagesRepo {
     pageSize: number
     search?: string
     code?: string
-  }): Promise<{ data: LanguagesType[]; total: number }> {
+  }): Promise<{ data: Languages[]; total: number }> {
     const { currentPage, pageSize, search, code } = params
 
     const where: Prisma.LanguagesWhereInput = {
@@ -42,17 +39,17 @@ export class LanguagesRepo {
     return { data: data.map((item) => this.transformLanguages(item)), total }
   }
 
-  async findById(id: number): Promise<LanguagesType | null> {
+  async findById(id: number): Promise<Languages | null> {
     const languages = await this.prismaService.languages.findUnique({ where: { id } })
     return languages ? this.transformLanguages(languages) : null
   }
 
-  async findByCode(code: string): Promise<LanguagesType | null> {
+  async findByCode(code: string): Promise<Languages | null> {
     const languages = await this.prismaService.languages.findUnique({ where: { code } })
     return languages ? this.transformLanguages(languages) : null
   }
 
-  async create(data: CreateLanguagesBodyType): Promise<LanguagesType> {
+  async create(data: CreateLanguagesBody): Promise<Languages> {
     // `flag` is accepted by the body but Languages has no such column; passing it
     // made Prisma reject every create that sent it (500)
     const createData: Prisma.LanguagesCreateInput = {
@@ -71,7 +68,7 @@ export class LanguagesRepo {
     return this.transformLanguages(result)
   }
 
-  async update(id: number, data: UpdateLanguagesBodyType): Promise<LanguagesType> {
+  async update(id: number, data: UpdateLanguagesBody): Promise<Languages> {
     const result = await this.prismaService.languages.update({
       where: { id },
       data: { code: data.code, name: data.name }
@@ -79,10 +76,7 @@ export class LanguagesRepo {
     return this.transformLanguages(result)
   }
 
-  async updateByCode(
-    code: string,
-    data: UpdateLanguagesBodyType
-  ): Promise<LanguagesType> {
+  async updateByCode(code: string, data: UpdateLanguagesBody): Promise<Languages> {
     const result = await this.prismaService.languages.update({
       where: { code },
       data: { code: data.code, name: data.name }
@@ -111,7 +105,7 @@ export class LanguagesRepo {
       )`
   }
 
-  private transformLanguages(languages: Languages): LanguagesType {
+  private transformLanguages(languages: PrismaLanguages): Languages {
     return {
       id: languages.id,
       code: languages.code,
@@ -131,7 +125,7 @@ export class LanguagesRepo {
     return count === codes.length
   }
 
-  async getWithListCode(codes: string[]): Promise<Pick<LanguagesType, 'id' | 'code'>[]> {
+  async getWithListCode(codes: string[]): Promise<Pick<Languages, 'id' | 'code'>[]> {
     if (!codes || codes.length === 0) return []
 
     return this.prismaService.languages.findMany({
@@ -149,7 +143,7 @@ export class LanguagesRepo {
     return language?.id ?? null
   }
 
-  async getWithListId(ids: number[]): Promise<Array<Pick<LanguagesType, 'id' | 'code'>>> {
+  async getWithListId(ids: number[]): Promise<Array<Pick<Languages, 'id' | 'code'>>> {
     if (!ids || ids.length === 0) return []
 
     return this.prismaService.languages.findMany({

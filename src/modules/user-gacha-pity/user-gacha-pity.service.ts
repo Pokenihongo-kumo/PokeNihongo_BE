@@ -6,16 +6,16 @@ import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import {
   UserGachaPityHasPendingException,
   UserGachaPityNotFoundException
 } from './dto/user-gacha-pity.error'
 import {
-  CreateUserGachaPityBodyType,
-  UpdateUserGachaPityBodyType
-} from './entities/user-gacha-pityentity'
+  CreateUserGachaPityBody,
+  UpdateUserGachaPityBody
+} from './dto/user-gacha-pity.zod-dto'
 import { UserGachaPityRepo } from './user-gacha-pity.repo'
 
 @Injectable()
@@ -26,7 +26,7 @@ export class UserGachaPityService {
     private readonly i18nService: I18nService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.userGachaPityRepo.list(pagination)
     return {
       statusCode: 200,
@@ -50,7 +50,7 @@ export class UserGachaPityService {
   }
 
   async create(
-    { userId, data }: { userId: number; data: CreateUserGachaPityBodyType },
+    { userId, data }: { userId: number; data: CreateUserGachaPityBody },
     lang: string = 'vi'
   ) {
     try {
@@ -95,7 +95,7 @@ export class UserGachaPityService {
       userId
     }: {
       id: number
-      data: UpdateUserGachaPityBodyType
+      data: UpdateUserGachaPityBody
       userId?: number
     },
     lang: string = 'vi'

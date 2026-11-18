@@ -1,7 +1,7 @@
-import { TestSetQuestionBankType } from './entities/testset-questionbank.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
+import { TestSetQuestionBank } from './entities/testset-questionbank.entity'
 
 @Injectable()
 export class TestSetQuestionBankRepo {
@@ -9,15 +9,15 @@ export class TestSetQuestionBankRepo {
 
   create(
     data: Prisma.TestSetQuestionBankUncheckedCreateInput
-  ): Promise<TestSetQuestionBankType> {
+  ): Promise<TestSetQuestionBank> {
     return this.prismaService.testSetQuestionBank.create({ data })
   }
 
-  findById(id: number): Promise<TestSetQuestionBankType | null> {
+  findById(id: number): Promise<TestSetQuestionBank | null> {
     return this.prismaService.testSetQuestionBank.findUnique({ where: { id } })
   }
 
-  findByTestSetId(testSetId: number): Promise<TestSetQuestionBankType[]> {
+  findByTestSetId(testSetId: number): Promise<TestSetQuestionBank[]> {
     return this.prismaService.testSetQuestionBank.findMany({
       where: { testSetId },
       orderBy: { questionOrder: 'asc' }
@@ -27,7 +27,7 @@ export class TestSetQuestionBankRepo {
   findByTestSetAndQuestionBank(
     testSetId: number,
     questionBankId: number
-  ): Promise<TestSetQuestionBankType | null> {
+  ): Promise<TestSetQuestionBank | null> {
     return this.prismaService.testSetQuestionBank.findUnique({
       where: { testSetId_questionBankId: { testSetId, questionBankId } }
     })
@@ -51,11 +51,11 @@ export class TestSetQuestionBankRepo {
   update(
     id: number,
     data: Prisma.TestSetQuestionBankUncheckedUpdateInput
-  ): Promise<TestSetQuestionBankType> {
+  ): Promise<TestSetQuestionBank> {
     return this.prismaService.testSetQuestionBank.update({ where: { id }, data })
   }
 
-  delete(id: number): Promise<TestSetQuestionBankType> {
+  delete(id: number): Promise<TestSetQuestionBank> {
     return this.prismaService.testSetQuestionBank.delete({ where: { id } })
   }
 

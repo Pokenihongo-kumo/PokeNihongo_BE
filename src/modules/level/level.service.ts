@@ -2,7 +2,7 @@ import { LevelTypeType } from '@/common/constants/level.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { LevelMessage } from '@/i18n/message-keys'
 import { NotFoundRecordException } from '@/shared/error'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError,
@@ -25,7 +25,7 @@ export class LevelService {
     private readonly i18nService: I18nService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.levelRepo.list(pagination)
     return {
       data,

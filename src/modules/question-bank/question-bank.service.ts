@@ -1,29 +1,29 @@
+import { TextToSpeechService } from '@/3rdService/speech/text-to-speech.service'
+import { I18nService } from '@/i18n/i18n.service'
+import { QuestionBankMessage as M } from '@/i18n/message-keys'
+import { AnswerService } from '@/modules/answer/answer.service'
+import { toPaginationMeta } from '@/shared/utils/pagination'
 import {
-  CreateQuestionBankWithMeaningsBodyType,
-  UpdateQuestionBankWithMeaningsBodyType,
-  CreateQuestionBankWithAnswersBodyType,
-  GetQuestionBankListQueryType,
-  lacksPronunciation
-} from '@/modules/question-bank/entities/question-bank.entity'
+  isNotFoundPrismaError,
+  isUniqueConstraintPrismaError
+} from '@/shared/utils/prisma-errors'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
+import { QuestionType } from '@prisma/client'
 import {
   InvalidQuestionBankDataException,
   NoQuestionBankDeletedException,
   QuestionBankAlreadyExistsException,
   QuestionBankNotFoundException,
   QuestionBankPronunciationRequiredException
-} from '@/modules/question-bank/dto/question-bank.error'
-import { QuestionBankRepo } from '@/modules/question-bank/question-bank.repo'
-import { HttpException, Injectable, Logger } from '@nestjs/common'
-import { QuestionType } from '@prisma/client'
-import { TextToSpeechService } from '@/3rdService/speech/text-to-speech.service'
-import { AnswerService } from '@/modules/answer/answer.service'
-import { I18nService } from '@/i18n/i18n.service'
-import { QuestionBankMessage as M } from '@/i18n/message-keys'
-import { toPaginationMeta } from '@/shared/utils/pagination'
+} from './dto/question-bank.error'
 import {
-  isNotFoundPrismaError,
-  isUniqueConstraintPrismaError
-} from '@/shared/utils/prisma-errors'
+  CreateQuestionBankWithAnswersBody,
+  CreateQuestionBankWithMeaningsBody,
+  GetQuestionBankListQuery,
+  UpdateQuestionBankWithMeaningsBody
+} from './dto/question-bank.zod-dto'
+import { lacksPronunciation } from './entities/question-bank.entity'
+import { QuestionBankRepo } from './question-bank.repo'
 
 const blankToNull = (value: string | null | undefined) =>
   value === undefined ? undefined : value?.trim() ? value : null
@@ -44,7 +44,7 @@ export class QuestionBankService {
   // Used by the testset upsert (no route). SPEAKING questions may repeat
   // questionJp there (skipDuplicateCheck)
   async createWithMeanings(
-    body: CreateQuestionBankWithMeaningsBodyType,
+    body: CreateQuestionBankWithMeaningsBody,
     userId: number,
     skipDuplicateCheck: boolean = false,
     lang: string = 'vi'
@@ -69,7 +69,7 @@ export class QuestionBankService {
   // The question, then each answer on its own (failures are reported).
   // statusCode: 201 all answers, 207 some, 400 none (the question stays)
   async createWithAnswers(
-    body: CreateQuestionBankWithAnswersBodyType,
+    body: CreateQuestionBankWithAnswersBody,
     userId: number,
     lang: string = 'vi'
   ) {
@@ -123,7 +123,7 @@ export class QuestionBankService {
     }
   }
 
-  async findAll(query: GetQuestionBankListQueryType, lang: string = 'vi') {
+  async findAll(query: GetQuestionBankListQuery, lang: string = 'vi') {
     const [{ data, total }, levelCounts] = await Promise.all([
       this.questionBankRepo.findMany(query),
       this.questionBankRepo.countByLevelN(query)
@@ -174,7 +174,7 @@ export class QuestionBankService {
 
   async updateWithMeanings(
     id: number,
-    body: UpdateQuestionBankWithMeaningsBodyType,
+    body: UpdateQuestionBankWithMeaningsBody,
     lang: string = 'vi'
   ) {
     try {

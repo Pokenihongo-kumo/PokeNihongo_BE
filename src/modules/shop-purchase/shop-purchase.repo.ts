@@ -1,14 +1,13 @@
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
-  CreateShopPurchaseBodyType,
-  SHOP_PURCHASE_FIELDS,
-  ShopPurchaseType,
-  UpdateShopPurchaseBodyType
-} from './entities/shop-purchase.entity'
+  CreateShopPurchaseBody,
+  UpdateShopPurchaseBody
+} from './dto/shop-purchase.zod-dto'
+import { SHOP_PURCHASE_FIELDS, ShopPurchase } from './entities/shop-purchase.entity'
 
 @Injectable()
 export class ShopPurchaseRepo {
@@ -22,14 +21,14 @@ export class ShopPurchaseRepo {
       data
     }: {
       createdById?: number
-      data: CreateShopPurchaseBodyType & {
+      data: CreateShopPurchaseBody & {
         totalPrice: number
         userId: number
         walletTransId: number | null
       }
     },
     prismaTx?: PrismaClient
-  ): Promise<ShopPurchaseType> {
+  ): Promise<ShopPurchase> {
     const client = prismaTx || this.prismaService
     return client.shopPurchase.create({
       data: {
@@ -46,11 +45,11 @@ export class ShopPurchaseRepo {
       updatedById
     }: {
       id: number
-      data: UpdateShopPurchaseBodyType & { walletTransId?: number | null }
+      data: UpdateShopPurchaseBody & { walletTransId?: number | null }
       updatedById?: number
     },
     prismaTx?: PrismaClient
-  ): Promise<ShopPurchaseType> {
+  ): Promise<ShopPurchase> {
     const client = prismaTx || this.prismaService
     return client.shopPurchase.update({
       where: {
@@ -64,11 +63,7 @@ export class ShopPurchaseRepo {
     })
   }
 
-  delete(
-    id: number,
-    isHard?: boolean,
-    prismaTx?: PrismaClient
-  ): Promise<ShopPurchaseType> {
+  delete(id: number, isHard?: boolean, prismaTx?: PrismaClient): Promise<ShopPurchase> {
     const client = prismaTx || this.prismaService
     return isHard
       ? client.shopPurchase.delete({
@@ -85,7 +80,7 @@ export class ShopPurchaseRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, SHOP_PURCHASE_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -124,7 +119,7 @@ export class ShopPurchaseRepo {
     }
   }
 
-  findById(id: number): Promise<ShopPurchaseType | null> {
+  findById(id: number): Promise<ShopPurchase | null> {
     return this.prismaService.shopPurchase.findUnique({
       where: {
         id,
@@ -137,7 +132,7 @@ export class ShopPurchaseRepo {
     })
   }
 
-  findByUserId(userId: number): Promise<ShopPurchaseType[]> {
+  findByUserId(userId: number): Promise<ShopPurchase[]> {
     return this.prismaService.shopPurchase.findMany({
       where: {
         userId,

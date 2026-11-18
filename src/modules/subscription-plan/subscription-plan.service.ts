@@ -1,22 +1,22 @@
-import { maxPokeCoinDiscount } from '@/common/constants/subscription.constant'
 import { RoleName } from '@/common/constants/role.constant'
+import { maxPokeCoinDiscount } from '@/common/constants/subscription.constant'
 import { walletType } from '@/common/constants/wallet.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { SubscriptionPlanMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { WalletService } from '@/modules/wallet/wallet.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
-import { LanguagesService } from '@/modules/languages/languages.service'
-import { WalletService } from '@/modules/wallet/wallet.service'
 import { SubscriptionPlanNotFoundException } from './dto/subscription-plan.error'
 import {
-  CreateSubscriptionPlanBodyType,
-  UpdateSubscriptionPlanBodyType
-} from './entities/subscription-plan.entity'
+  CreateSubscriptionPlanBody,
+  UpdateSubscriptionPlanBody
+} from './dto/subscription-plan.zod-dto'
 import { SubscriptionPlanRepo } from './subscription-plan.repo'
 
 @Injectable()
@@ -43,7 +43,7 @@ export class SubscriptionPlanService {
     }))
   }
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi', roleName: string) {
+  async list(pagination: PaginationQuery, lang: string = 'vi', roleName: string) {
     const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
@@ -170,7 +170,7 @@ export class SubscriptionPlanService {
   }
 
   async create(
-    { userId, data }: { userId: number; data: CreateSubscriptionPlanBodyType },
+    { userId, data }: { userId: number; data: CreateSubscriptionPlanBody },
     lang: string = 'vi'
   ) {
     try {
@@ -205,7 +205,7 @@ export class SubscriptionPlanService {
       userId
     }: {
       id: number
-      data: UpdateSubscriptionPlanBodyType
+      data: UpdateSubscriptionPlanBody
       userId?: number
     },
     lang: string = 'vi'

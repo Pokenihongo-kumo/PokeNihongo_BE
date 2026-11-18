@@ -6,6 +6,14 @@ import {
 } from '@/common/constants/match.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { MatchingSocketMessage, MatchRoundParticipantMessage } from '@/i18n/message-keys'
+import { DebuffRoundService } from '@/modules/debuff-round/debuff-round.service'
+import { MatchRoundService } from '@/modules/match-round/match-round.service'
+import { MatchService } from '@/modules/match/match.service'
+import { PokemonService } from '@/modules/pokemon/pokemon.service'
+import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
+import { RoundQuestionService } from '@/modules/round-question/round-question.service'
+import { UserPokemonService } from '@/modules/user-pokemon/user-pokemon.service'
+import { UserCoreService } from '@/modules/user/user-core.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   addTimeUTC,
@@ -14,29 +22,21 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { InjectQueue } from '@nestjs/bull'
 import { Injectable, Logger } from '@nestjs/common'
 import { Queue } from 'bull'
-import { DebuffRoundService } from '@/modules/debuff-round/debuff-round.service'
-import { MatchService } from '@/modules/match/match.service'
-import { RoundQuestionService } from '@/modules/round-question/round-question.service'
-import { UserCoreService } from '@/modules/user/user-core.service'
 import { MatchingGateway } from 'src/websockets/matching.gateway'
-import { MatchRoundService } from '@/modules/match-round/match-round.service'
-import { PokemonService } from '@/modules/pokemon/pokemon.service'
-import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
-import { UserPokemonService } from '@/modules/user-pokemon/user-pokemon.service'
 import {
   MatchRoundParticipantNotFoundException,
   NotYourTurnToPickException,
   PokemonSelectionExpiredException
 } from './dto/match-round-participant.error'
 import {
-  ChoosePokemonMatchRoundParticipantBodyType,
-  CreateMatchRoundParticipantBodyType,
-  UpdateMatchRoundParticipantBodyType
-} from './entities/match-round-participant.entity'
+  ChoosePokemonMatchRoundParticipantBody,
+  CreateMatchRoundParticipantBody,
+  UpdateMatchRoundParticipantBody
+} from './dto/match-round-participant.zod-dto'
 import { MatchRoundParticipantRepo } from './match-round-participant.repo'
 
 const TIME_CHOOSE_POKEMON_MS = 5000
@@ -62,7 +62,7 @@ export class MatchRoundParticipantService {
     private readonly matchRoundParticipantTimeoutQueue: Queue
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.matchRoundParticipantRepo.list(pagination)
     return {
       statusCode: 200,
@@ -92,7 +92,7 @@ export class MatchRoundParticipantService {
   }
 
   async create(
-    { userId, data }: { userId: number; data: CreateMatchRoundParticipantBodyType },
+    { userId, data }: { userId: number; data: CreateMatchRoundParticipantBody },
     lang: string = 'vi'
   ) {
     try {
@@ -131,7 +131,7 @@ export class MatchRoundParticipantService {
       userId
     }: {
       id: number
-      data: UpdateMatchRoundParticipantBodyType
+      data: UpdateMatchRoundParticipantBody
       userId?: number
     },
     lang: string = 'vi'
@@ -176,7 +176,7 @@ export class MatchRoundParticipantService {
     }: {
       matchRoundId: number
       userId: number
-      data: ChoosePokemonMatchRoundParticipantBodyType
+      data: ChoosePokemonMatchRoundParticipantBody
     },
     lang: string = 'vi'
   ) {

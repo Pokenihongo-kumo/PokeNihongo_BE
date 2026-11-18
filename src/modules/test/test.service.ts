@@ -1,14 +1,15 @@
+import { pickLabelFromComposite } from '@/common/utils/prase.utils'
+import { I18nService } from '@/i18n/i18n.service'
+import { TestMessage as M } from '@/i18n/message-keys'
+import { MessageResDTO } from '@/shared/dtos/response.dto'
+import { toPaginationMeta } from '@/shared/utils/pagination'
+import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
 import { HttpException, Injectable, Logger } from '@nestjs/common'
-import { TestRepo } from './test.repo'
-import {
-  GetTestListQueryType,
-  CreateTestWithMeaningsBodyType,
-  UpdateTestWithMeaningsBodyType,
-  DeleteManyTestsBodyType,
-  AddTestSetsToTestBodyType,
-  RemoveTestSetsFromTestBodyType,
-  TestType
-} from './entities/test.entity'
+import { TestStatus, UserTestStatus } from '@prisma/client'
+import { TestSetQuestionBankService } from '../testset-questionbank/testset-questionbank.service'
+import { UserTestAttemptRepo } from '../user-test-attempt/user-test-attempt.repo'
+import { UserTestRepo } from '../user-test/user-test.repo'
+import { UserTestService } from '../user-test/user-test.service'
 import {
   InvalidTestDataException,
   TestNotFoundException,
@@ -16,17 +17,16 @@ import {
   TestReferenceNotFoundException,
   TestRuleViolationException
 } from './dto/test.error'
-import { MessageResDTO } from '@/shared/dtos/response.dto'
-import { TestSetQuestionBankService } from '../testset-questionbank/testset-questionbank.service'
-import { UserTestAttemptRepo } from '../user-test-attempt/user-test-attempt.repo'
-import { UserTestRepo } from '../user-test/user-test.repo'
-import { UserTestService } from '../user-test/user-test.service'
-import { TestStatus, UserTestStatus } from '@prisma/client'
-import { pickLabelFromComposite } from '@/common/utils/prase.utils'
-import { I18nService } from '@/i18n/i18n.service'
-import { TestMessage as M } from '@/i18n/message-keys'
-import { toPaginationMeta } from '@/shared/utils/pagination'
-import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
+import {
+  AddTestSetsToTestBody,
+  CreateTestWithMeaningsBody,
+  DeleteManyTestsBody,
+  GetTestListQuery,
+  RemoveTestSetsFromTestBody,
+  UpdateTestWithMeaningsBody
+} from './dto/test.zod-dto'
+import { Test } from './entities/test.entity'
+import { TestRepo } from './test.repo'
 
 // A test of one of these types only takes test sets of the matching type
 const SINGLE_TYPE_TESTS = ['READING_TEST', 'LISTENING_TEST', 'SPEAKING_TEST']
@@ -47,7 +47,7 @@ export class TestService {
   ) {}
 
   // Admins get every translation of name/description (lang undefined)
-  async findAll(query: GetTestListQueryType, lang?: string, messageLang: string = 'vi') {
+  async findAll(query: GetTestListQuery, lang?: string, messageLang: string = 'vi') {
     const { data, total } = await this.testRepo.findMany({ ...query, language: lang })
     return {
       statusCode: 200,
@@ -72,7 +72,7 @@ export class TestService {
 
   // There is only one PLACEMENT_TEST_DONE test; every user then gets a UserTest
   async createTestWithMeanings(
-    data: CreateTestWithMeaningsBodyType,
+    data: CreateTestWithMeaningsBody,
     userId: number,
     lang: string = 'vi'
   ) {
@@ -97,7 +97,7 @@ export class TestService {
   // A status change updates the users' UserTests, then all users are re-synced
   async updateTestWithMeanings(
     id: number,
-    data: UpdateTestWithMeaningsBodyType,
+    data: UpdateTestWithMeaningsBody,
     userId: number,
     lang: string = 'vi'
   ) {
@@ -140,11 +140,7 @@ export class TestService {
   }
 
   // Every id must exist and belong to the user (up to 100)
-  async deleteManyTests(
-    data: DeleteManyTestsBodyType,
-    userId: number,
-    lang: string = 'vi'
-  ) {
+  async deleteManyTests(data: DeleteManyTestsBody, userId: number, lang: string = 'vi') {
     try {
       const { ids } = data
       const tests = await this.testRepo.findCreatorsOf(ids)
@@ -184,7 +180,7 @@ export class TestService {
   // READING/LISTENING/SPEAKING_TEST: only that type; SPEAKING_TEST: one at most
   async addTestSetsToTest(
     testId: number,
-    data: AddTestSetsToTestBodyType,
+    data: AddTestSetsToTestBody,
     lang: string = 'vi'
   ) {
     try {
@@ -222,7 +218,7 @@ export class TestService {
   // The lesson's review test ends up with exactly these test sets
   async addTestSetsToLessonReviewTest(
     lessonId: number,
-    data: AddTestSetsToTestBodyType,
+    data: AddTestSetsToTestBody,
     lang: string = 'vi'
   ) {
     try {
@@ -247,7 +243,7 @@ export class TestService {
 
   async removeTestSetsFromTest(
     testId: number,
-    data: RemoveTestSetsFromTestBodyType,
+    data: RemoveTestSetsFromTestBody,
     lang: string = 'vi'
   ) {
     try {
@@ -266,7 +262,7 @@ export class TestService {
   }
 
   //#region rules and helpers
-  private async ownedTest(id: number, userId: number): Promise<TestType> {
+  private async ownedTest(id: number, userId: number): Promise<Test> {
     const test = await this.testRepo.findById(id)
     if (!test) throw new TestNotFoundException()
     if (test.creatorId !== userId) throw new TestPermissionDeniedException()

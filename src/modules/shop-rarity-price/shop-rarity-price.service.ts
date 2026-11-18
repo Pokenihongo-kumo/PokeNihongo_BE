@@ -7,7 +7,7 @@ import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { forwardRef, Inject, Injectable } from '@nestjs/common'
 import { ShopBannerRepo } from '../shop-banner/shop-banner.repo'
 import { ShopItemRepo } from '../shop-item/shop-item.repo'
@@ -16,9 +16,9 @@ import {
   ShopRarityPriceNotFoundException
 } from './dto/shop-rarity-price.error'
 import {
-  CreateShopRarityPriceBodyType,
-  UpdateShopRarityPriceBodyType
-} from './entities/shop-rarity-price.entity'
+  CreateShopRarityPriceBody,
+  UpdateShopRarityPriceBody
+} from './dto/shop-rarity-price.zod-dto'
 import { ShopRarityPriceRepo } from './shop-rarity-price.repo'
 
 @Injectable()
@@ -32,7 +32,7 @@ export class ShopRarityPriceService {
     private shopItemRepo: ShopItemRepo
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.shopRarityPriceRepo.list(pagination)
     return {
       statusCode: 200,
@@ -56,7 +56,7 @@ export class ShopRarityPriceService {
   }
 
   async create(
-    { userId, data }: { userId: number; data: CreateShopRarityPriceBodyType },
+    { userId, data }: { userId: number; data: CreateShopRarityPriceBody },
     lang: string = 'vi'
   ) {
     try {
@@ -95,7 +95,7 @@ export class ShopRarityPriceService {
       userId
     }: {
       id: number
-      data: UpdateShopRarityPriceBodyType
+      data: UpdateShopRarityPriceBody
       userId?: number
     },
     lang: string = 'vi'

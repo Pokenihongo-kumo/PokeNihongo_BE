@@ -19,11 +19,11 @@ import {
   TestSetNotFoundException
 } from './dto/exercises.error'
 import {
-  CreateExercisesBodyType,
-  ExercisesType,
-  GetExercisesListQueryType,
-  UpdateExercisesBodyType
-} from './entities/exercises.entity'
+  CreateExercisesBody,
+  GetExercisesListQuery,
+  UpdateExercisesBody
+} from './dto/exercises.zod-dto'
+import { Exercises } from './entities/exercises.entity'
 import { ExercisesRepo } from './exercises.repo'
 
 // A lesson has at most one exercise of each type: VOCABULARY, GRAMMAR, KANJI
@@ -40,7 +40,7 @@ export class ExercisesService {
     private readonly i18nService: I18nService
   ) {}
 
-  async create(data: CreateExercisesBodyType, lang: string = 'vi') {
+  async create(data: CreateExercisesBody, lang: string = 'vi') {
     try {
       await this.assertRules(data)
       const exercise = await this.exercisesRepo.create({
@@ -56,7 +56,7 @@ export class ExercisesService {
     }
   }
 
-  async update(id: number, data: UpdateExercisesBodyType, lang: string = 'vi') {
+  async update(id: number, data: UpdateExercisesBody, lang: string = 'vi') {
     try {
       const current = await this.exercisesRepo.findById(id)
       if (!current) throw new ExercisesNotFoundException()
@@ -67,7 +67,7 @@ export class ExercisesService {
             lessonId: data.lessonId ?? current.lessonId,
             testSetId: data.testSetId ?? current.testSetId,
             exerciseType:
-              data.exerciseType ?? (current.exerciseType as ExercisesType['exerciseType'])
+              data.exerciseType ?? (current.exerciseType as Exercises['exerciseType'])
           },
           id
         )
@@ -95,7 +95,7 @@ export class ExercisesService {
   }
 
   // Used by user-exercise-attempt: the exercise's own fields
-  async findById(id: number): Promise<ExercisesType> {
+  async findById(id: number): Promise<Exercises> {
     const exercise = await this.exercisesRepo.findById(id)
     if (!exercise) throw new ExercisesNotFoundException()
     return {
@@ -103,7 +103,7 @@ export class ExercisesService {
       createdAt: exercise.createdAt,
       updatedAt: exercise.updatedAt,
       lessonId: exercise.lessonId,
-      exerciseType: exercise.exerciseType as ExercisesType['exerciseType'],
+      exerciseType: exercise.exerciseType as Exercises['exerciseType'],
       isBlocked: exercise.isBlocked,
       testSetId: exercise.testSetId ?? null,
       rewardId: exercise.rewardId ?? []
@@ -111,17 +111,17 @@ export class ExercisesService {
   }
 
   // Used by lesson-content and user-exercise-attempt
-  async findByLessonId(lessonId: number): Promise<ExercisesType[]> {
+  async findByLessonId(lessonId: number): Promise<Exercises[]> {
     const exercises = await this.exercisesRepo.findByLessonId(lessonId)
     return exercises.map((e) => ({
       ...e,
-      exerciseType: e.exerciseType as ExercisesType['exerciseType'],
+      exerciseType: e.exerciseType as Exercises['exerciseType'],
       testSetId: e.testSetId ?? null,
       rewardId: e.rewardId ?? []
     }))
   }
 
-  async getExercisesList(query: GetExercisesListQueryType, lang: string = 'vi') {
+  async getExercisesList(query: GetExercisesListQuery, lang: string = 'vi') {
     const { items, total } = await this.exercisesRepo.findMany(query)
     return {
       statusCode: 200,
@@ -179,7 +179,7 @@ export class ExercisesService {
     target: {
       lessonId: number
       testSetId?: number | null
-      exerciseType: ExercisesType['exerciseType']
+      exerciseType: Exercises['exerciseType']
     },
     exceptId?: number
   ) {

@@ -13,11 +13,11 @@ import {
   InvalidGrammarUsageDataException
 } from './dto/grammar-usage.error'
 import {
-  CreateGrammarUsageBodyType,
-  GetGrammarUsageByIdParamsType,
-  GetGrammarUsageListQueryType,
-  UpdateGrammarUsageBodyType
-} from './entities/grammar-usage.entity'
+  CreateGrammarUsageBody,
+  GetGrammarUsageByIdParams,
+  GetGrammarUsageListQuery,
+  UpdateGrammarUsageBody
+} from './dto/grammar-usage.zod-dto'
 import { GrammarUsageRepo } from './grammar-usage.repo'
 
 @Injectable()
@@ -29,7 +29,7 @@ export class GrammarUsageService {
     private readonly i18nService: I18nService
   ) {}
 
-  async getGrammarUsageList(params: GetGrammarUsageListQueryType, lang: string = 'vi') {
+  async getGrammarUsageList(params: GetGrammarUsageListQuery, lang: string = 'vi') {
     const result = await this.grammarUsageRepository.findMany(params)
     return {
       statusCode: 200,
@@ -41,7 +41,7 @@ export class GrammarUsageService {
     }
   }
 
-  async getGrammarUsageById(params: GetGrammarUsageByIdParamsType, lang: string = 'vi') {
+  async getGrammarUsageById(params: GetGrammarUsageByIdParams, lang: string = 'vi') {
     try {
       const grammarUsage = await this.grammarUsageRepository.findById(params.id)
       if (!grammarUsage) {
@@ -56,7 +56,7 @@ export class GrammarUsageService {
     }
   }
 
-  async createGrammarUsage(data: CreateGrammarUsageBodyType, lang: string = 'vi') {
+  async createGrammarUsage(data: CreateGrammarUsageBody, lang: string = 'vi') {
     try {
       if (!(await this.grammarUsageRepository.checkGrammarExists(data.grammarId))) {
         throw new GrammarNotFoundException()
@@ -82,7 +82,7 @@ export class GrammarUsageService {
 
   async updateGrammarUsage(
     id: number,
-    data: UpdateGrammarUsageBodyType,
+    data: UpdateGrammarUsageBody,
     lang: string = 'vi'
   ) {
     try {

@@ -4,16 +4,16 @@ import {
 } from '@/common/constants/achievement.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { UserAchievementMessage } from '@/i18n/message-keys'
+import { AchievementGroupService } from '@/modules/achievement-group/achievement-group.service'
+import { LanguagesService } from '@/modules/languages/languages.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { UserRewardSourceType } from '@prisma/client'
-import { AchievementGroupService } from '@/modules/achievement-group/achievement-group.service'
-import { LanguagesService } from '@/modules/languages/languages.service'
 import { RewardService } from '../reward/reward.service'
 import { UserProgressService } from '../user-progress/user-progress.service'
 import {
@@ -21,9 +21,9 @@ import {
   UserAchievementNotFoundException
 } from './dto/user-achievement.error'
 import {
-  CreateUserAchievementBodyType,
-  UpdateUserAchievementBodyType
-} from './entities/user-achievement.entity'
+  CreateUserAchievementBody,
+  UpdateUserAchievementBody
+} from './dto/user-achievement.zod-dto'
 import { UserAchievementRepo } from './user-achievement.repo'
 
 @Injectable()
@@ -38,7 +38,7 @@ export class UserAchievementService {
     private readonly rewardService: RewardService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.userAchievementRepo.list(pagination)
     return {
       statusCode: 200,
@@ -62,7 +62,7 @@ export class UserAchievementService {
   }
 
   async create(
-    { userId, data }: { userId: number; data: CreateUserAchievementBodyType },
+    { userId, data }: { userId: number; data: CreateUserAchievementBody },
     lang: string = 'vi'
   ) {
     try {
@@ -95,7 +95,7 @@ export class UserAchievementService {
       userId
     }: {
       id: number
-      data: UpdateUserAchievementBodyType
+      data: UpdateUserAchievementBody
       userId?: number
     },
     lang: string = 'vi'
@@ -147,7 +147,7 @@ export class UserAchievementService {
   async getListAchieveforUser(
     userId: number,
     lang: string = 'vi',
-    pagination: PaginationQueryType,
+    pagination: PaginationQuery,
     achCurrentPage?: number,
     achPageSize?: number,
     achievementGroupId?: number

@@ -25,11 +25,13 @@ import {
   LessonNotFoundException
 } from './dto/lesson-content.error'
 import {
-  CreateMutiLessonContentBodyType,
-  GetLessonContentListQueryType,
-  GroupedLessonContentType,
-  LessonContentFullResType,
-  UpdateLessonContentBodyType,
+  CreateMutiLessonContentBody,
+  GetLessonContentListQuery,
+  LessonContentFullRes,
+  UpdateLessonContentBody
+} from './dto/lesson-content.zod-dto'
+import {
+  GroupedLessonContent,
   UpdateLessonContentOrder
 } from './entities/lesson-content.entities'
 import { LessonContentRepository } from './lesson-content.repo'
@@ -51,7 +53,7 @@ export class LessonContentService {
     private readonly exercisesService: ExercisesService
   ) {}
 
-  async getLessonContentList(params: GetLessonContentListQueryType) {
+  async getLessonContentList(params: GetLessonContentListQuery) {
     try {
       this.logger.log('Getting lesson content list with params:', params)
 
@@ -96,7 +98,7 @@ export class LessonContentService {
     }
   }
 
-  async createLessonContent(createData: CreateMutiLessonContentBodyType) {
+  async createLessonContent(createData: CreateMutiLessonContentBody) {
     try {
       this.logger.log('Creating multiple lesson contents with data:', createData)
 
@@ -253,7 +255,7 @@ export class LessonContentService {
     }
   }
 
-  async updateLessonContent(id: number, data: UpdateLessonContentBodyType) {
+  async updateLessonContent(id: number, data: UpdateLessonContentBody) {
     try {
       this.logger.log(`Updating lesson content ${id} with data:`, data)
 
@@ -314,7 +316,7 @@ export class LessonContentService {
     lessonId: number,
     languageCode?: string,
     userId?: number
-  ): Promise<LessonContentFullResType> {
+  ): Promise<LessonContentFullRes> {
     try {
       this.logger.log(
         `Getting full lesson content for lesson ${lessonId} with language ${languageCode ?? 'ALL'}`
@@ -352,7 +354,7 @@ export class LessonContentService {
       }
 
       // Nhóm content theo type
-      const groupedContent: GroupedLessonContentType = {}
+      const groupedContent: GroupedLessonContent = {}
 
       // Xử lý VOCABULARY
       const vocabularyContents = lessonContents.data.filter(

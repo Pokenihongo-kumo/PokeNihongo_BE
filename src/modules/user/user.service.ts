@@ -1,7 +1,10 @@
 import { MailService } from '@/3rdService/mail/mail.service'
 import { I18nService } from '@/i18n/i18n.service'
 import { AuthMessage, ENTITY_MESSAGE, UserMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
 import { LevelService } from '@/modules/level/level.service'
+import { MatchService } from '@/modules/match/match.service'
 import { UserPokemonService } from '@/modules/user-pokemon/user-pokemon.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
@@ -10,25 +13,18 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
-import { UserCoreService } from '@/modules/user/user-core.service'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable, Logger } from '@nestjs/common'
 import { UserStatus } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
-import { LanguagesService } from '@/modules/languages/languages.service'
 import { NotStartedLeaderboardSeasonException } from '../leaderboard-season/dto/leaderboard-season.error'
-import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
-import { MatchService } from '@/modules/match/match.service'
 import { UserPokemonNotFoundException } from '../user-pokemon/dto/user-pokemon.error'
 import { UserProgressService } from '../user-progress/user-progress.service'
 import { UserSeasonHistoryRepo } from '../user-season-history/user-season-history.repo'
 import { WalletService } from '../wallet/wallet.service'
 import { EmailAlreadyExistsException, UserNotFoundException } from './dto/user.error'
-import {
-  CreateUserBodyType,
-  SetMainPokemonBodyType,
-  UpdateUserBodyType
-} from './entities/user.entity'
+import { CreateUserBody, SetMainPokemonBody, UpdateUserBody } from './dto/user.zod-dto'
+import { UserCoreService } from './user-core.service'
 import { UserRepo } from './user.repo'
 
 @Injectable()
@@ -64,7 +60,7 @@ export class UserService {
     return password
   }
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.userRepo.list(pagination)
     return {
       statusCode: 200,
@@ -86,7 +82,7 @@ export class UserService {
   }
 
   async create(
-    { data, createdById }: { data: CreateUserBodyType; createdById: number },
+    { data, createdById }: { data: CreateUserBody; createdById: number },
     lang: string = 'vi'
   ) {
     try {
@@ -155,7 +151,7 @@ export class UserService {
       updatedById
     }: {
       id: number
-      data: UpdateUserBodyType
+      data: UpdateUserBody
       updatedById: number
     },
     lang: string = 'vi'
@@ -240,11 +236,7 @@ export class UserService {
     }
   }
 
-  async setMainPokemon(
-    userId: number,
-    data: SetMainPokemonBodyType,
-    lang: string = 'vi'
-  ) {
+  async setMainPokemon(userId: number, data: SetMainPokemonBody, lang: string = 'vi') {
     try {
       // Check if user exists
       const user = await this.userRepo.findById(userId)
@@ -629,7 +621,7 @@ export class UserService {
   async getMatchingHisByUserId(
     userId: number,
     lang: string,
-    pagination?: PaginationQueryType
+    pagination?: PaginationQuery
   ) {
     const langId = await this.languagesService.getIdByCode(lang)
 

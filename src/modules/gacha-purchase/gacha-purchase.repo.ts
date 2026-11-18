@@ -1,14 +1,13 @@
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
-  CreateGachaPurchaseBodyType,
-  GachaPurchaseType,
-  SHOP_PURCHASE_FIELDS,
-  UpdateGachaPurchaseBodyType
-} from './entities/gacha-purchase.entity'
+  CreateGachaPurchaseBody,
+  UpdateGachaPurchaseBody
+} from './dto/gacha-purchase.zod-dto'
+import { GachaPurchase, SHOP_PURCHASE_FIELDS } from './entities/gacha-purchase.entity'
 
 @Injectable()
 export class GachaPurchaseRepo {
@@ -22,14 +21,14 @@ export class GachaPurchaseRepo {
       data
     }: {
       createdById?: number
-      data: CreateGachaPurchaseBodyType & {
+      data: CreateGachaPurchaseBody & {
         totalCost: number
         userId: number
         walletTransId: number | null
       }
     },
     prismaTx?: PrismaClient
-  ): Promise<GachaPurchaseType> {
+  ): Promise<GachaPurchase> {
     const client = prismaTx || this.prismaService
     return client.gachaPurchase.create({
       data: {
@@ -46,11 +45,11 @@ export class GachaPurchaseRepo {
       updatedById
     }: {
       id: number
-      data: UpdateGachaPurchaseBodyType & { walletTransId?: number | null }
+      data: UpdateGachaPurchaseBody & { walletTransId?: number | null }
       updatedById?: number
     },
     prismaTx?: PrismaClient
-  ): Promise<GachaPurchaseType> {
+  ): Promise<GachaPurchase> {
     const client = prismaTx || this.prismaService
     return client.gachaPurchase.update({
       where: {
@@ -64,11 +63,7 @@ export class GachaPurchaseRepo {
     })
   }
 
-  delete(
-    id: number,
-    isHard?: boolean,
-    prismaTx?: PrismaClient
-  ): Promise<GachaPurchaseType> {
+  delete(id: number, isHard?: boolean, prismaTx?: PrismaClient): Promise<GachaPurchase> {
     const client = prismaTx || this.prismaService
     return isHard
       ? client.gachaPurchase.delete({
@@ -85,7 +80,7 @@ export class GachaPurchaseRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, SHOP_PURCHASE_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -123,7 +118,7 @@ export class GachaPurchaseRepo {
     }
   }
 
-  findById(id: number): Promise<GachaPurchaseType | null> {
+  findById(id: number): Promise<GachaPurchase | null> {
     return this.prismaService.gachaPurchase.findUnique({
       where: {
         id,
@@ -135,7 +130,7 @@ export class GachaPurchaseRepo {
     })
   }
 
-  findByUserId(userId: number): Promise<GachaPurchaseType[]> {
+  findByUserId(userId: number): Promise<GachaPurchase[]> {
     return this.prismaService.gachaPurchase.findMany({
       where: {
         userId,

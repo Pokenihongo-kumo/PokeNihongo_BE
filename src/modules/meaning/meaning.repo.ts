@@ -1,21 +1,21 @@
 import { PrismaService } from '@/shared/services/prisma.service'
 import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
-import { Meaning, Prisma, PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient, Meaning as PrismaMeaning } from '@prisma/client'
 import {
-  CreateMeaningServiceType,
-  GetMeaningListQueryType,
-  MeaningType,
-  UpdateMeaningBodyType
-} from './entities/meaning.entity'
+  CreateMeaningService,
+  GetMeaningListQuery,
+  UpdateMeaningBody
+} from './dto/meaning.zod-dto'
+import { Meaning } from './entities/meaning.entity'
 
 @Injectable()
 export class MeaningRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(
-    params: GetMeaningListQueryType
-  ): Promise<{ data: MeaningType[]; total: number }> {
+    params: GetMeaningListQuery
+  ): Promise<{ data: Meaning[]; total: number }> {
     const { page, limit, search, vocabularyId, wordTypeId } = params
     const where: Prisma.MeaningWhereInput = {
       ...(search && {
@@ -42,12 +42,12 @@ export class MeaningRepo {
     return { data: data.map((item) => this.toMeaning(item)), total }
   }
 
-  async findById(id: number): Promise<MeaningType | null> {
+  async findById(id: number): Promise<Meaning | null> {
     const meaning = await this.prismaService.meaning.findUnique({ where: { id } })
     return meaning && this.toMeaning(meaning)
   }
 
-  async findByVocabularyId(vocabularyId: number): Promise<MeaningType[]> {
+  async findByVocabularyId(vocabularyId: number): Promise<Meaning[]> {
     const meanings = await this.prismaService.meaning.findMany({
       where: { vocabularyId },
       orderBy: { createdAt: 'asc' }
@@ -55,7 +55,7 @@ export class MeaningRepo {
     return meanings.map((item) => this.toMeaning(item))
   }
 
-  async create(data: CreateMeaningServiceType): Promise<MeaningType> {
+  async create(data: CreateMeaningService): Promise<Meaning> {
     const meaning = await this.prismaService.meaning.create({
       data: {
         vocabularyId: data.vocabularyId,
@@ -69,7 +69,7 @@ export class MeaningRepo {
     return this.toMeaning(meaning)
   }
 
-  async update(id: number, data: UpdateMeaningBodyType): Promise<MeaningType> {
+  async update(id: number, data: UpdateMeaningBody): Promise<Meaning> {
     const meaning = await this.prismaService.meaning.update({ where: { id }, data })
     return this.toMeaning(meaning)
   }
@@ -83,7 +83,7 @@ export class MeaningRepo {
   }
 
   // Empty keys and nulls come back as undefined (unchanged answer shape)
-  private toMeaning(meaning: Meaning): MeaningType {
+  private toMeaning(meaning: PrismaMeaning): Meaning {
     return {
       id: meaning.id,
       vocabularyId: meaning.vocabularyId,

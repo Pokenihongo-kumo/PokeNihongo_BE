@@ -2,18 +2,18 @@ import { RarityPokemonType } from '@/common/constants/pokemon.constant'
 import { GachaBannerStatus } from '@/common/constants/shop-banner.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { GachaItemMessage } from '@/i18n/message-keys'
+import { GachaItemRateService } from '@/modules/gacha-item-rate/gacha-item-rate.service'
+import { PokemonService } from '@/modules/pokemon/pokemon.service'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { forwardRef, Inject, Injectable } from '@nestjs/common'
 import { GachaStarType, RarityPokemon } from '@prisma/client'
 import { GachaBannerRepo } from '../gacha-banner/gacha-banner.repo'
-import { GachaItemRateService } from '@/modules/gacha-item-rate/gacha-item-rate.service'
-import { PokemonService } from '@/modules/pokemon/pokemon.service'
 import {
   DuplicateStarTypeInListException,
   GachaBannerActiveException,
@@ -26,10 +26,10 @@ import {
   PokemonInvalidRarityWithStarTypeToAddException
 } from './dto/gacha-item.error'
 import {
-  CreateWithListItemBodyType,
-  GetRamdomAmountGachaItemsBodyType,
-  UpdateWithListGachaItemBodyType
-} from './entities/gacha-item.entity'
+  CreateWithListItemBody,
+  GetRamdomAmountGachaItemsBody,
+  UpdateWithListGachaItemBody
+} from './dto/gacha-item.zod-dto'
 import { GachaItemRepo } from './gacha-item.repo'
 
 const STAR_TYPE_TO_RARITY: Record<GachaStarType, RarityPokemonType> = {
@@ -59,7 +59,7 @@ export class GachaItemService {
     private readonly i18nService: I18nService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.gachaItemRepo.list(pagination)
     return {
       statusCode: 200,
@@ -119,7 +119,7 @@ export class GachaItemService {
    */
   async createByList(
     createdById: number,
-    data: CreateWithListItemBodyType,
+    data: CreateWithListItemBody,
     lang: string = 'vi'
   ) {
     const { bannerId, items } = data
@@ -224,7 +224,7 @@ export class GachaItemService {
    */
   async updateByList(
     updatedById: number,
-    data: UpdateWithListGachaItemBodyType,
+    data: UpdateWithListGachaItemBody,
     lang: string = 'vi'
   ) {
     try {
@@ -356,7 +356,7 @@ export class GachaItemService {
     }
   }
 
-  async getRandomListItem(data: GetRamdomAmountGachaItemsBodyType, lang: string = 'vi') {
+  async getRandomListItem(data: GetRamdomAmountGachaItemsBody, lang: string = 'vi') {
     const { bannerId, items } = data
     const banner = await this.gachaBannerRepo.findById(bannerId)
     if (!banner) throw new InvalidGachaBannerException()

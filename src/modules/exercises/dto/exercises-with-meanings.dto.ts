@@ -200,16 +200,16 @@ export class ExercisesWithMeaningsResponseSwaggerDTO {
 }
 
 // Type exports
-export type CreateExercisesWithMeaningsBodyType = z.infer<
+export type CreateExercisesWithMeaningsBody = z.infer<
   typeof CreateExercisesWithMeaningsSchema
 > & {
   audioFile?: Express.Multer.File // File upload for multipart/form-data
 }
-export type ExercisesWithMeaningsResponseType = z.infer<
+export type ExercisesWithMeaningsResponse = z.infer<
   typeof ExercisesWithMeaningsResponseSchema
 >
-export type ExercisesWithMeaningsResType = z.infer<typeof ExercisesWithMeaningsResSchema>
-export type MeaningWithTranslationsType = z.infer<typeof MeaningSchema>
+export type ExercisesWithMeaningsRes = z.infer<typeof ExercisesWithMeaningsResSchema>
+export type MeaningWithTranslations = z.infer<typeof MeaningSchema>
 
 // Zod DTOs for NestJS
 export const CreateExercisesWithMeaningsBodyDTO = CreateExercisesWithMeaningsSchema

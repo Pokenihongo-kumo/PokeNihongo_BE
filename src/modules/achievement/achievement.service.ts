@@ -1,6 +1,8 @@
 import { RoleName } from '@/common/constants/role.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { AchievementMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { TranslationService } from '@/modules/translation/translation.service'
 import {
   LanguageNotExistToTranslateException,
   NotFoundRecordException
@@ -10,20 +12,18 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { LanguagesService } from '@/modules/languages/languages.service'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
-import { TranslationService } from '@/modules/translation/translation.service'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { AchievementRepo } from './achievement.repo'
 import { AchievementAlreadyExistsException } from './dto/achievement.error'
 import {
-  CreateAchievementBodyInputType,
-  CreateAchievementBodyType,
-  UpdateAchievementBodyInputType,
-  UpdateAchievementBodyType
-} from './entities/achievement.entity'
+  CreateAchievementBody,
+  CreateAchievementBodyInput,
+  UpdateAchievementBody,
+  UpdateAchievementBodyInput
+} from './dto/achievement.zod-dto'
 
 @Injectable()
 export class AchievementService {
@@ -50,7 +50,7 @@ export class AchievementService {
     }))
   }
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi', roleName: string) {
+  async list(pagination: PaginationQuery, lang: string = 'vi', roleName: string) {
     const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
@@ -219,7 +219,7 @@ export class AchievementService {
       data,
       createdById
     }: {
-      data: CreateAchievementBodyInputType
+      data: CreateAchievementBodyInput
       createdById: number
     },
     lang: string = 'vi'
@@ -233,7 +233,7 @@ export class AchievementService {
         const conditionTextKey = `achievement.conditionText.${Date.now()}`
         let hasOpened = false
 
-        const dataCreate: CreateAchievementBodyType = {
+        const dataCreate: CreateAchievementBody = {
           nameKey,
           descriptionKey,
           conditionTextKey,
@@ -284,9 +284,9 @@ export class AchievementService {
         }
 
         // Create translation records for all three fields
-        const nameTranslationRecords: CreateTranslationBodyType[] = []
-        const descriptionTranslationRecords: CreateTranslationBodyType[] = []
-        const conditionTextTranslationRecords: CreateTranslationBodyType[] = []
+        const nameTranslationRecords: CreateTranslationBody[] = []
+        const descriptionTranslationRecords: CreateTranslationBody[] = []
+        const conditionTextTranslationRecords: CreateTranslationBody[] = []
 
         // nameTranslations → key = fNameKey
         for (const item of data.nameTranslations) {
@@ -379,7 +379,7 @@ export class AchievementService {
       updatedById
     }: {
       id: number
-      data: UpdateAchievementBodyInputType
+      data: UpdateAchievementBodyInput
       updatedById: number
     },
     lang: string = 'vi'
@@ -389,16 +389,16 @@ export class AchievementService {
     try {
       return await this.achievementRepo.withTransaction(async (prismaTx) => {
         let hasOpen = false
-        let nameTranslationRecords: CreateTranslationBodyType[] = []
-        let descriptionTranslationRecords: CreateTranslationBodyType[] = []
-        let conditionTextTranslationRecords: CreateTranslationBodyType[] = []
+        let nameTranslationRecords: CreateTranslationBody[] = []
+        let descriptionTranslationRecords: CreateTranslationBody[] = []
+        let conditionTextTranslationRecords: CreateTranslationBody[] = []
 
         // Get current record
         existingAchievement = await this.achievementRepo.findById(id)
         if (!existingAchievement) throw new NotFoundRecordException()
 
         // Prepare data for update
-        const dataUpdate: Partial<UpdateAchievementBodyType> = {}
+        const dataUpdate: Partial<UpdateAchievementBody> = {}
 
         if (data.imageUrl !== undefined) dataUpdate.imageUrl = data.imageUrl
         if (data.achievementTierType !== undefined)

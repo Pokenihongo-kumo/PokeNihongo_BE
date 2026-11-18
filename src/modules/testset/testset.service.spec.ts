@@ -1,6 +1,6 @@
 import { HttpStatus } from '@nestjs/common'
+import { UpsertTestSetWithQuestionBanksBodySchema } from './dto/testset.zod-dto'
 import { TestSetService } from './testset.service'
-import { UpsertTestSetWithQuestionBanksBodySchema } from './entities/testset.entity'
 
 describe('TestSetService', () => {
   const repo = {

@@ -51,10 +51,8 @@ export const GenerateUploadUrlResponseSchema = resSchema(
 )
 
 // Type definitions
-export type GenerateUploadUrlBodyType = z.infer<typeof GenerateUploadUrlBodySchema>
-export type GenerateUploadUrlResponseType = z.infer<
-  typeof GenerateUploadUrlResponseSchema
->
+export type GenerateUploadUrlBody = z.infer<typeof GenerateUploadUrlBodySchema>
+export type GenerateUploadUrlResponse = z.infer<typeof GenerateUploadUrlResponseSchema>
 
 // DTOs
 export class GenerateUploadUrlBodyDTO extends createZodDto(GenerateUploadUrlBodySchema) {}

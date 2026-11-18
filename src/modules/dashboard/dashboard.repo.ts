@@ -1,12 +1,12 @@
 import { RoleName } from '@/common/constants/role.constant'
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
-import { DashboardGachaBannerNotFoundException } from './dto/dashboard.error'
 import { InvoiceStatus, PrismaClient, UserSubscriptionStatus } from '@prisma/client'
 import { todayUTCWith0000 } from 'src/shared/helpers'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import { USER_SEASON_HISTORY_FIELDS } from '../user-subscription/entities/user-subscription.entity'
+import { DashboardGachaBannerNotFoundException } from './dto/dashboard.error'
 
 @Injectable()
 export class DashboardRepo {
@@ -461,7 +461,7 @@ export class DashboardRepo {
 
   // Lấy danh sách user đăng ký gần đây
 
-  async getUsersSubWithSubPlan(pagination: PaginationQueryType, langId?: number) {
+  async getUsersSubWithSubPlan(pagination: PaginationQuery, langId?: number) {
     const { where, orderBy } = parseQs(pagination.qs, USER_SEASON_HISTORY_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize

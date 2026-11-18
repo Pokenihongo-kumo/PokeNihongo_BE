@@ -6,20 +6,20 @@ import {
 import { walletType } from '@/common/constants/wallet.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { ShopPurchaseMessage } from '@/i18n/message-keys'
+import { PokemonService } from '@/modules/pokemon/pokemon.service'
+import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
+import { WalletService } from '@/modules/wallet/wallet.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { forwardRef, Inject, Injectable } from '@nestjs/common'
-import { PokemonService } from '@/modules/pokemon/pokemon.service'
 import { ShopBannerRepo } from '../shop-banner/shop-banner.repo'
 import { ShopItemRepo } from '../shop-item/shop-item.repo'
 import { UserHasPokemonException } from '../user-pokemon/dto/user-pokemon.error'
 import { UserPokemonService } from '../user-pokemon/user-pokemon.service'
-import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
-import { WalletService } from '@/modules/wallet/wallet.service'
 import {
   NotEnoughBalanceException,
   PurchaseLimitReachedException,
@@ -27,9 +27,9 @@ import {
   ShopPurchaseNotFoundException
 } from './dto/shop-purchase.error'
 import {
-  CreateShopPurchaseBodyType,
-  UpdateShopPurchaseBodyType
-} from './entities/shop-purchase.entity'
+  CreateShopPurchaseBody,
+  UpdateShopPurchaseBody
+} from './dto/shop-purchase.zod-dto'
 import { ShopPurchaseRepo } from './shop-purchase.repo'
 
 @Injectable()
@@ -46,7 +46,7 @@ export class ShopPurchaseService {
     private readonly pokemonService: PokemonService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.shopPurchaseRepo.list(pagination)
     return {
       statusCode: 200,
@@ -70,7 +70,7 @@ export class ShopPurchaseService {
   }
 
   async create(
-    { userId, data }: { userId: number; data: CreateShopPurchaseBodyType },
+    { userId, data }: { userId: number; data: CreateShopPurchaseBody },
     lang: string = 'vi'
   ) {
     try {
@@ -206,7 +206,7 @@ export class ShopPurchaseService {
       userId
     }: {
       id: number
-      data: UpdateShopPurchaseBodyType
+      data: UpdateShopPurchaseBody
       userId?: number
     },
     lang: string = 'vi'

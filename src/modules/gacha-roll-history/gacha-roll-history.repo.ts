@@ -1,13 +1,15 @@
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
-  CreateGachaRollHistoryBodyType,
+  CreateGachaRollHistoryBody,
+  UpdateGachaRollHistoryBody
+} from './dto/gacha-roll-history.zod-dto'
+import {
   GACHA_ROLL_HISTORY_FIELDS,
-  GachaRollHistoryType,
-  UpdateGachaRollHistoryBodyType
+  GachaRollHistory
 } from './entities/gacha-roll-history.entity'
 
 @Injectable()
@@ -22,10 +24,10 @@ export class GachaRollHistoryRepo {
       data
     }: {
       createdById: number
-      data: CreateGachaRollHistoryBodyType
+      data: CreateGachaRollHistoryBody
     },
     prismaTx?: PrismaClient
-  ): Promise<GachaRollHistoryType> {
+  ): Promise<GachaRollHistory> {
     const client = prismaTx || this.prismaService
     return client.gachaRollHistory.create({
       data: {
@@ -42,11 +44,11 @@ export class GachaRollHistoryRepo {
       updatedById
     }: {
       id: number
-      data: UpdateGachaRollHistoryBodyType
+      data: UpdateGachaRollHistoryBody
       updatedById?: number
     },
     prismaTx?: PrismaClient
-  ): Promise<GachaRollHistoryType> {
+  ): Promise<GachaRollHistory> {
     const client = prismaTx || this.prismaService
     return client.gachaRollHistory.update({
       where: {
@@ -63,7 +65,7 @@ export class GachaRollHistoryRepo {
     id: number,
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<GachaRollHistoryType> {
+  ): Promise<GachaRollHistory> {
     const client = prismaTx || this.prismaService
     return isHard
       ? client.gachaRollHistory.delete({
@@ -80,7 +82,7 @@ export class GachaRollHistoryRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, GACHA_ROLL_HISTORY_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -115,7 +117,7 @@ export class GachaRollHistoryRepo {
     }
   }
 
-  findById(id: number): Promise<GachaRollHistoryType | null> {
+  findById(id: number): Promise<GachaRollHistory | null> {
     return this.prismaService.gachaRollHistory.findUnique({
       where: {
         id,
@@ -124,7 +126,7 @@ export class GachaRollHistoryRepo {
     })
   }
 
-  async findListGachaHisByUserId(userId: number, pagination: PaginationQueryType) {
+  async findListGachaHisByUserId(userId: number, pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, GACHA_ROLL_HISTORY_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize

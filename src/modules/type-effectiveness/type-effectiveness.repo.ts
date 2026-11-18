@@ -1,14 +1,14 @@
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { toPaginationMeta, toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
 import { Prisma, TypeEffectiveness } from '@prisma/client'
 import {
-  CreateTypeEffectivenessBodyType,
-  TYPE_EFFECTIVENESS_FIELDS,
-  UpdateTypeEffectivenessBodyType
-} from './entities/type-effectiveness.entity'
+  CreateTypeEffectivenessBody,
+  UpdateTypeEffectivenessBody
+} from './dto/type-effectiveness.zod-dto'
+import { TYPE_EFFECTIVENESS_FIELDS } from './entities/type-effectiveness.entity'
 
 // Every read returns both elemental types with these fields
 const TYPE_SELECT = {
@@ -32,7 +32,7 @@ export class TypeEffectivenessRepo {
     data
   }: {
     createdById: number | null
-    data: CreateTypeEffectivenessBodyType
+    data: CreateTypeEffectivenessBody
   }): Promise<TypeEffectivenessWithTypes> {
     return this.prismaService.typeEffectiveness.create({
       data: { ...data, createdById },
@@ -47,7 +47,7 @@ export class TypeEffectivenessRepo {
   }: {
     id: number
     updatedById: number
-    data: UpdateTypeEffectivenessBodyType
+    data: UpdateTypeEffectivenessBody
   }): Promise<TypeEffectivenessWithTypes> {
     return this.prismaService.typeEffectiveness.update({
       where: { id, deletedAt: null },
@@ -74,7 +74,7 @@ export class TypeEffectivenessRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, TYPE_EFFECTIVENESS_FIELDS)
     const { skip, take } = toSkipTake(pagination.currentPage, pagination.pageSize)
 

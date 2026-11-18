@@ -1,6 +1,3 @@
-import { checkIdSchema } from '@/common/utils/id.validation'
-import { ENTITY_MESSAGE } from '@/i18n/message-keys'
-import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -11,7 +8,7 @@ const MAX_TOKENS_JSON_MODE = 3072
 const MAX_TOKENS_DEFAULT = 2000
 const MIN_TOKENS = 1024
 
-const GeminiConfigModelBase = z.object({
+export const GeminiConfigModelBase = z.object({
   id: z.number(),
   name: z.string().min(1).max(255),
   geminiModelId: z.number(),
@@ -37,46 +34,3 @@ const GeminiConfigModelBase = z.object({
 })
 
 export const GeminiConfigModelSchema = GeminiConfigModelBase
-
-export const CreateGeminiConfigModelBodySchema = GeminiConfigModelBase.pick({
-  name: true,
-  geminiModelId: true,
-  presetId: true,
-  maxTokens: true,
-  jsonMode: true,
-  systemInstruction: true,
-  safetySettings: true,
-  extraParams: true,
-  isEnabled: true
-})
-  .partial({
-    presetId: true,
-    maxTokens: true,
-    jsonMode: true,
-    systemInstruction: true,
-    safetySettings: true,
-    extraParams: true,
-    isEnabled: true
-  })
-  .strict()
-
-export const UpdateGeminiConfigModelBodySchema =
-  CreateGeminiConfigModelBodySchema.partial().strict()
-
-export const GetParamsGeminiConfigModelSchema = z.object({
-  id: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
-})
-
-export const GeminiConfigModelResSchema = resSchema(GeminiConfigModelSchema)
-
-// types
-export type CreateGeminiConfigModelBodyType = z.infer<
-  typeof CreateGeminiConfigModelBodySchema
->
-export type UpdateGeminiConfigModelBodyType = z.infer<
-  typeof UpdateGeminiConfigModelBodySchema
->
-export type GetParamsGeminiConfigModelType = z.infer<
-  typeof GetParamsGeminiConfigModelSchema
->
-export type GeminiConfigModelResType = z.infer<typeof GeminiConfigModelResSchema>

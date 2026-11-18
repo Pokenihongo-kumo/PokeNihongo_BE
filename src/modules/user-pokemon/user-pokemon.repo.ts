@@ -1,16 +1,12 @@
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import {
-  CreateUserPokemonBodyType,
-  UpdateUserPokemonBodyType,
-  USER_POKEMON_FIELDS,
-  UserPokemonType
-} from './entities/user-pokemon.entity'
+import { CreateUserPokemonBody, UpdateUserPokemonBody } from './dto/user-pokemon.zod-dto'
+import { USER_POKEMON_FIELDS, UserPokemon } from './entities/user-pokemon.entity'
 
-type UserPokemonWithRelations = UserPokemonType & {
+type UserPokemonWithRelations = UserPokemon & {
   user?: {
     id: number
     name: string
@@ -68,7 +64,7 @@ type UserPokemonWithRelations = UserPokemonType & {
   }
 }
 
-type UserPokemonBasic = UserPokemonType
+type UserPokemonBasic = UserPokemon
 
 @Injectable()
 export class UserPokemonRepo {
@@ -80,7 +76,7 @@ export class UserPokemonRepo {
       data
     }: {
       userId: number
-      data: CreateUserPokemonBodyType
+      data: CreateUserPokemonBody
     },
     prismaTx?: PrismaClient
   ): Promise<UserPokemonBasic> {
@@ -99,7 +95,7 @@ export class UserPokemonRepo {
       data
     }: {
       id: number
-      data: UpdateUserPokemonBodyType
+      data: UpdateUserPokemonBody
     },
     prismaTx?: PrismaClient
   ): Promise<UserPokemonBasic> {
@@ -129,7 +125,7 @@ export class UserPokemonRepo {
         })
   }
 
-  async getByUserId(userId: number): Promise<UserPokemonType[]> {
+  async getByUserId(userId: number): Promise<UserPokemon[]> {
     return this.prismaService.userPokemon.findMany({
       where: {
         userId,
@@ -161,7 +157,7 @@ export class UserPokemonRepo {
     })
   }
 
-  async list(pagination: PaginationQueryType, userId?: number) {
+  async list(pagination: PaginationQuery, userId?: number) {
     const { where, orderBy } = parseQs(pagination.qs, USER_POKEMON_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -455,7 +451,7 @@ export class UserPokemonRepo {
   }
 
   // Get user's Pokemon by user ID
-  getUserPokemons(userId: number): Promise<UserPokemonType[]> {
+  getUserPokemons(userId: number): Promise<UserPokemon[]> {
     return this.prismaService.userPokemon.findMany({
       where: {
         userId,

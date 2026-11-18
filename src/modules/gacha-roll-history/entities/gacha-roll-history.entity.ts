@@ -1,8 +1,5 @@
 import { GachaPityType, GachaStarType } from '@/common/constants/gacha.constant'
-import { checkIdSchema } from '@/common/utils/id.validation'
-import { ENTITY_MESSAGE } from '@/i18n/message-keys'
 import { PokemonSchema } from '@/modules/pokemon/entities/pokemon.entity'
-import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -36,42 +33,7 @@ export const GachaRollHistorySchema = z.object({
   updatedAt: z.date()
 })
 
-// Create Schema
-export const CreateGachaRollHistoryBodySchema = GachaRollHistorySchema.pick({
-  purchaseId: true,
-  userId: true,
-  bannerId: true,
-  pokemonId: true,
-  rarity: true,
-  pityId: true,
-  pityNow: true,
-  pityStatus: true
-})
-  .extend({
-    userId: z.number().optional()
-  })
-  .strict()
-
-export const CreateGachaRollHistoryResSchema = resSchema(GachaRollHistorySchema)
-
-// Update Schema
-export const UpdateGachaRollHistoryBodySchema =
-  CreateGachaRollHistoryBodySchema.partial().strict()
-
-export const UpdateGachaRollHistoryResSchema = CreateGachaRollHistoryResSchema
-
-export const UpdateWithListItemResSchema = resSchema(z.array(GachaRollHistorySchema))
-
-// Query Schema
-export const GetGachaRollHistoryParamsSchema = z.object({
-  gachaRollHistoryId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
-})
-
 export const GetGachaRollHistoryDetailSchema = GachaRollHistorySchema
-
-export const GetGachaRollHistoryDetailResSchema = resSchema(
-  GetGachaRollHistoryDetailSchema
-)
 
 export const GetGachasRolHisWithPokemonSchema = GachaRollHistorySchema.extend({
   pokemon: PokemonSchema.pick({
@@ -85,17 +47,7 @@ export const GetGachasRolHisWithPokemonSchema = GachaRollHistorySchema.extend({
 })
 
 // Type exports
-export type GachaRollHistoryType = z.infer<typeof GachaRollHistorySchema>
-export type CreateGachaRollHistoryBodyType = z.infer<
-  typeof CreateGachaRollHistoryBodySchema
->
-export type UpdateGachaRollHistoryBodyType = z.infer<
-  typeof UpdateGachaRollHistoryBodySchema
->
-export type GetGachaRollHistoryParamsType = z.infer<
-  typeof GetGachaRollHistoryParamsSchema
->
-
+export type GachaRollHistory = z.infer<typeof GachaRollHistorySchema>
 // Field for query
 export type GachaRollHistoryFieldType = keyof z.infer<typeof GachaRollHistorySchema>
 export const GACHA_ROLL_HISTORY_FIELDS = Object.keys(

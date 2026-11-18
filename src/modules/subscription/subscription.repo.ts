@@ -1,18 +1,17 @@
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 
 import { parseQs } from '@/common/utils/qs-parser'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import {
-  CreateSubscriptionBodyType,
-  LEADERBOARD_SEASON_FIELDS,
-  SubscriptionType,
-  UpdateSubscriptionBodyType
-} from './entities/subscription.entity'
+  CreateSubscriptionBody,
+  UpdateSubscriptionBody
+} from './dto/subscription.zod-dto'
+import { LEADERBOARD_SEASON_FIELDS, Subscription } from './entities/subscription.entity'
 
-type SubscriptionPrismaType = Omit<SubscriptionType, 'nameKey'> & {
+type SubscriptionPrismaType = Omit<Subscription, 'nameKey'> & {
   name: string
 }
 
@@ -31,10 +30,10 @@ export class SubscriptionRepo {
       data
     }: {
       createdById: number | null
-      data: CreateSubscriptionBodyType
+      data: CreateSubscriptionBody
     },
     prismaTx?: PrismaClient
-  ): Promise<SubscriptionType> {
+  ): Promise<Subscription> {
     const client = prismaTx || this.prismaService
     return client.subscription.create({
       data: {
@@ -52,15 +51,15 @@ export class SubscriptionRepo {
     }: {
       id: number
       updatedById?: number
-      data: UpdateSubscriptionBodyType & {
-        nameTranslations?: CreateTranslationBodyType[]
+      data: UpdateSubscriptionBody & {
+        nameTranslations?: CreateTranslationBody[]
         subscriptionNameKey?: string
-        descriptionTranslations?: CreateTranslationBodyType[]
+        descriptionTranslations?: CreateTranslationBody[]
         subscriptionDescriptionKey?: string
       }
     },
     prismaTx?: PrismaClient
-  ): Promise<SubscriptionType> {
+  ): Promise<Subscription> {
     const client = prismaTx || this.prismaService
     const {
       nameTranslations,
@@ -141,7 +140,7 @@ export class SubscriptionRepo {
     },
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<SubscriptionType> {
+  ): Promise<Subscription> {
     const client = prismaTx || this.prismaService
     const result = isHard
       ? await this.prismaService.subscription.delete({
@@ -162,7 +161,7 @@ export class SubscriptionRepo {
     return result
   }
 
-  async list(pagination: PaginationQueryType, langId?: number, isAdmin: boolean = false) {
+  async list(pagination: PaginationQuery, langId?: number, isAdmin: boolean = false) {
     const { where: rawWhere = {}, orderBy } = parseQs(
       pagination.qs,
       LEADERBOARD_SEASON_FIELDS
@@ -258,7 +257,7 @@ export class SubscriptionRepo {
       }
     }
   }
-  findById(id: number): Promise<SubscriptionType | null> {
+  findById(id: number): Promise<Subscription | null> {
     return this.prismaService.subscription.findUnique({
       where: {
         id,
@@ -271,7 +270,7 @@ export class SubscriptionRepo {
     id: number,
     isAllLang: boolean,
     langId: number
-  ): Promise<SubscriptionType | null> {
+  ): Promise<Subscription | null> {
     return this.prismaService.subscription.findUnique({
       where: {
         id,

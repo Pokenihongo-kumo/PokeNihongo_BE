@@ -2,14 +2,14 @@ import { RarityPokemon } from '@/common/constants/pokemon.constant'
 import { ShopBannerStatus } from '@/common/constants/shop-banner.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { ShopItemMessage } from '@/i18n/message-keys'
+import { PokemonService } from '@/modules/pokemon/pokemon.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { forwardRef, Inject, Injectable } from '@nestjs/common'
-import { PokemonService } from '@/modules/pokemon/pokemon.service'
 import { ShopBannerRepo } from '../shop-banner/shop-banner.repo'
 import { ShopRarityPriceRepo } from '../shop-rarity-price/shop-rarity-price.repo'
 import {
@@ -22,12 +22,12 @@ import {
   ShopItemNotFoundException
 } from './dto/shop-item.error'
 import {
-  CreateShopItemBodyType,
-  CreateWithListItemBodyType,
-  GetRamdomAmountShopItemBodyType,
-  UpdateShopItemBodyType,
-  UpdateWithListItemBodyType
-} from './entities/shop-item.entity'
+  CreateShopItemBody,
+  CreateWithListItemBody,
+  GetRamdomAmountShopItemBody,
+  UpdateShopItemBody,
+  UpdateWithListItemBody
+} from './dto/shop-item.zod-dto'
 import { ShopItemRepo } from './shop-item.repo'
 
 @Injectable()
@@ -41,7 +41,7 @@ export class ShopItemService {
     private shopRarityPriceRepo: ShopRarityPriceRepo
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const data = await this.shopItemRepo.list(pagination)
     return {
       statusCode: 200,
@@ -65,7 +65,7 @@ export class ShopItemService {
   }
 
   async create(
-    { userId, data }: { userId: number; data: CreateShopItemBodyType },
+    { userId, data }: { userId: number; data: CreateShopItemBody },
     lang: string = 'vi'
   ) {
     try {
@@ -110,7 +110,7 @@ export class ShopItemService {
   }
 
   async createByList(
-    { userId, data }: { userId: number; data: CreateWithListItemBodyType },
+    { userId, data }: { userId: number; data: CreateWithListItemBody },
     lang: string = 'vi'
   ) {
     try {
@@ -169,7 +169,7 @@ export class ShopItemService {
       userId
     }: {
       id: number
-      data: UpdateShopItemBodyType
+      data: UpdateShopItemBody
       userId?: number
     },
     lang: string = 'vi'
@@ -216,12 +216,12 @@ export class ShopItemService {
   }
 
   async updateByList(
-    { userId, data }: { userId: number; data: UpdateWithListItemBodyType },
+    { userId, data }: { userId: number; data: UpdateWithListItemBody },
     lang: string = 'vi'
   ) {
     try {
       // Validate tất cả items tồn tại và lấy thông tin
-      const itemsToUpdate: Array<{ id: number } & UpdateShopItemBodyType> = []
+      const itemsToUpdate: Array<{ id: number } & UpdateShopItemBody> = []
       const shopBannerIds = new Set<number>()
 
       for (const item of data.items) {
@@ -344,7 +344,7 @@ export class ShopItemService {
     }
   }
 
-  async getRandomListItem(body: GetRamdomAmountShopItemBodyType, lang: string = 'vi') {
+  async getRandomListItem(body: GetRamdomAmountShopItemBody, lang: string = 'vi') {
     try {
       // 1. Validate shop banner
       // 3. Lấy tất cả pokemon có thể random (exclude LEGENDARY)

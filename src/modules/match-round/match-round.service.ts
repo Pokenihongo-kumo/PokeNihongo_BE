@@ -2,6 +2,11 @@ import { BullAction, BullQueue } from '@/common/constants/bull-action.constant'
 import { MatchRoundNumber } from '@/common/constants/match.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { MatchRoundMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
+import { MatchService } from '@/modules/match/match.service'
+import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
+import { RoundQuestionService } from '@/modules/round-question/round-question.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   addTimeUTC,
@@ -9,20 +14,12 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { InjectQueue } from '@nestjs/bull'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { Queue } from 'bull'
-import { LanguagesService } from '@/modules/languages/languages.service'
-import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
-import { MatchService } from '@/modules/match/match.service'
-import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
-import { RoundQuestionService } from '@/modules/round-question/round-question.service'
 import { MatchRoundAlreadyExistsException } from './dto/match-round.error'
-import {
-  CreateMatchRoundBodyType,
-  UpdateMatchRoundBodyType
-} from './entities/match-round.entity'
+import { CreateMatchRoundBody, UpdateMatchRoundBody } from './dto/match-round.zod-dto'
 import { MatchRoundRepo } from './match-round.repo'
 
 @Injectable()
@@ -39,7 +36,7 @@ export class MatchRoundService {
     private readonly roundQuestionService: RoundQuestionService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const langId = await this.languagesService.getIdByCode(lang)
     const data = await this.matchRoundRepo.list(pagination, langId ?? undefined)
     return {
@@ -192,7 +189,7 @@ export class MatchRoundService {
       data
     }: {
       createdById: number
-      data: CreateMatchRoundBodyType
+      data: CreateMatchRoundBody
     },
     lang: string = 'vi'
   ) {
@@ -358,7 +355,7 @@ export class MatchRoundService {
       updatedById
     }: {
       id: number
-      data: UpdateMatchRoundBodyType
+      data: UpdateMatchRoundBody
       updatedById: number
     },
     lang: string = 'vi'

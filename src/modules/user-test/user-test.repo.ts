@@ -1,12 +1,12 @@
-import { Injectable } from '@nestjs/common'
 import { PrismaService } from '@/shared/services/prisma.service'
+import { Injectable } from '@nestjs/common'
+import { TestSetStatus, TestStatus, UserTestStatus } from '@prisma/client'
 import {
-  UserTestType,
-  CreateUserTestBodyType,
-  UpdateUserTestBodyType,
-  GetUserTestListQueryType
-} from './entities/user-test.entity'
-import { UserTestStatus, TestSetStatus, TestStatus } from '@prisma/client'
+  CreateUserTestBody,
+  GetUserTestListQuery,
+  UpdateUserTestBody
+} from './dto/user-test.zod-dto'
+import { UserTest } from './entities/user-test.entity'
 
 @Injectable()
 export class UserTestRepo {
@@ -38,7 +38,7 @@ export class UserTestRepo {
     })
   }
 
-  async create(data: CreateUserTestBodyType): Promise<UserTestType> {
+  async create(data: CreateUserTestBody): Promise<UserTest> {
     const result = await this.prisma.userTest.create({
       data: {
         userId: Number(data.userId),
@@ -47,17 +47,17 @@ export class UserTestRepo {
         limit: data.limit ?? null
       } as any
     })
-    return result as UserTestType
+    return result as UserTest
   }
 
-  async findById(id: number): Promise<UserTestType | null> {
+  async findById(id: number): Promise<UserTest | null> {
     const result = await this.prisma.userTest.findUnique({
       where: { id }
     })
-    return result as UserTestType | null
+    return result as UserTest | null
   }
 
-  async findByUserAndTest(userId: number, testId: number): Promise<UserTestType | null> {
+  async findByUserAndTest(userId: number, testId: number): Promise<UserTest | null> {
     const result = await this.prisma.userTest.findUnique({
       where: {
         userId_testId: {
@@ -66,12 +66,12 @@ export class UserTestRepo {
         }
       }
     })
-    return result as UserTestType | null
+    return result as UserTest | null
   }
 
   async findMany(
-    query: GetUserTestListQueryType
-  ): Promise<{ items: UserTestType[]; total: number; page: number; limit: number }> {
+    query: GetUserTestListQuery
+  ): Promise<{ items: UserTest[]; total: number; page: number; limit: number }> {
     const {
       currentPage = 1,
       pageSize = 10,
@@ -119,19 +119,19 @@ export class UserTestRepo {
     ])
 
     return {
-      items: items as UserTestType[],
+      items: items as UserTest[],
       total,
       page: Number(currentPage),
       limit: Number(pageSize)
     }
   }
 
-  async update(id: number, data: UpdateUserTestBodyType): Promise<UserTestType> {
+  async update(id: number, data: UpdateUserTestBody): Promise<UserTest> {
     const result = await this.prisma.userTest.update({
       where: { id },
       data
     })
-    return result as UserTestType
+    return result as UserTest
   }
 
   async delete(id: number): Promise<void> {
@@ -158,7 +158,7 @@ export class UserTestRepo {
   /**
    * Giảm limit của UserTest và cập nhật status nếu cần
    */
-  async decrementLimit(userId: number, testId: number): Promise<UserTestType | null> {
+  async decrementLimit(userId: number, testId: number): Promise<UserTest | null> {
     // Lấy UserTest hiện tại
     const userTest = await this.findByUserAndTest(userId, testId)
     if (!userTest) {
@@ -184,7 +184,7 @@ export class UserTestRepo {
       data: updateData
     })
 
-    return result as UserTestType
+    return result as UserTest
   }
 
   /**

@@ -1,16 +1,15 @@
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { PaginationResponseType } from '@/shared/models/response.model'
 import { Injectable } from '@nestjs/common'
 import { UserStatus } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
+import { CreateUserBody, UpdateUserBody } from './dto/user.zod-dto'
 import {
-  CreateUserBodyType,
-  UpdateUserBodyType,
+  User,
   USER_FIELDS,
-  UserType,
-  UserWithoutPasswordSchema,
-  UserWithoutPasswordType
+  UserWithoutPassword,
+  UserWithoutPasswordSchema
 } from './entities/user.entity'
 
 @Injectable()
@@ -22,8 +21,8 @@ export class UserRepo {
     data
   }: {
     createdById: number | null
-    data: CreateUserBodyType & { password: string; status: UserStatus }
-  }): Promise<UserType> {
+    data: CreateUserBody & { password: string; status: UserStatus }
+  }): Promise<User> {
     return this.prismaService.user.create({
       data: {
         ...data,
@@ -39,8 +38,8 @@ export class UserRepo {
   }: {
     id: number
     updatedById: number
-    data: UpdateUserBodyType
-  }): Promise<UserType> {
+    data: UpdateUserBody
+  }): Promise<User> {
     return this.prismaService.user.update({
       where: {
         id,
@@ -62,7 +61,7 @@ export class UserRepo {
       deletedById: number
     },
     isHard?: boolean
-  ): Promise<UserType> {
+  ): Promise<User> {
     return isHard
       ? this.prismaService.user.delete({
           where: {
@@ -82,8 +81,8 @@ export class UserRepo {
   }
 
   async list(
-    pagination: PaginationQueryType
-  ): Promise<PaginationResponseType<UserWithoutPasswordType>> {
+    pagination: PaginationQuery
+  ): Promise<PaginationResponseType<UserWithoutPassword>> {
     const { where, orderBy } = parseQs(pagination.qs, USER_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -117,7 +116,7 @@ export class UserRepo {
     }
   }
 
-  findById(id: number): Promise<UserType | null> {
+  findById(id: number): Promise<User | null> {
     return this.prismaService.user.findUnique({
       where: {
         id,
@@ -130,7 +129,7 @@ export class UserRepo {
     })
   }
 
-  findByEmail(email: string): Promise<UserType | null> {
+  findByEmail(email: string): Promise<User | null> {
     return this.prismaService.user.findUnique({
       where: {
         email,
@@ -143,7 +142,7 @@ export class UserRepo {
     })
   }
 
-  async incrementFreeCoins(userId: number, amount: number): Promise<UserType> {
+  async incrementFreeCoins(userId: number, amount: number): Promise<User> {
     return this.prismaService.user.update({
       where: {
         id: userId,

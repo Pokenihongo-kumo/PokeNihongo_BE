@@ -1,10 +1,9 @@
-import { RoleName } from '@/common/constants/role.constant'
-import { convertEloToRank } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
-import { Injectable } from '@nestjs/common'
-import { DashboardSeasonNotFoundException } from './dto/dashboard.error'
 import { LanguagesService } from '@/modules/languages/languages.service'
+import { convertEloToRank } from '@/shared/helpers'
+import { PaginationQuery } from '@/shared/models/request.model'
+import { Injectable } from '@nestjs/common'
 import { DashboardRepo } from './dashboard.repo'
+import { DashboardSeasonNotFoundException } from './dto/dashboard.error'
 
 @Injectable()
 export class DashboardService {
@@ -117,7 +116,7 @@ export class DashboardService {
     return this.dashboardRepo.getYearlyRevenueBreakdown(lang, year)
   }
 
-  async getListUserRegister(query: PaginationQueryType, lang: string = 'vi') {
+  async getListUserRegister(query: PaginationQuery, lang: string = 'vi') {
     const langId = await this.languagesService.getIdByCode(lang)
     if (!langId) {
       return this.dashboardRepo.getUsersSubWithSubPlan(query)

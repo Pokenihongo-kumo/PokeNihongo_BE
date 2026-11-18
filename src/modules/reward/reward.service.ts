@@ -1,6 +1,15 @@
 import { FeatureKey } from '@/common/constants/subscription.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { NotificationMessage, RewardMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { NotificationService } from '@/modules/notification/notification.service'
+import { PokemonService } from '@/modules/pokemon/pokemon.service'
+import { TranslationService } from '@/modules/translation/translation.service'
+import { UserPokemonService } from '@/modules/user-pokemon/user-pokemon.service'
+import { CreateUserRewardHistoryBody } from '@/modules/user-reward-history/dto/user-reward-history.zod-dto'
+import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
+import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
+import { WalletService } from '@/modules/wallet/wallet.service'
 import {
   InvalidForeignKeyConstraintException,
   LanguageNotExistToTranslateException,
@@ -12,9 +21,7 @@ import {
   isRestrictViolationPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
-import { NotificationService } from '@/modules/notification/notification.service'
-import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable, Logger } from '@nestjs/common'
 import {
   RarityPokemon,
@@ -22,23 +29,16 @@ import {
   UserRewardSourceType,
   WalletType
 } from '@prisma/client'
-import { LanguagesService } from '@/modules/languages/languages.service'
-import { PokemonService } from '@/modules/pokemon/pokemon.service'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
-import { TranslationService } from '@/modules/translation/translation.service'
-import { UserPokemonService } from '@/modules/user-pokemon/user-pokemon.service'
-import { CreateUserRewardHistoryBodyType } from '../user-reward-history/entities/user-reward-history.entities'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { UserRewardHistoryService } from '../user-reward-history/user-reward-history.service'
 import { UserService } from '../user/user.service'
-import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
-import { WalletService } from '@/modules/wallet/wallet.service'
 import { RewardAlreadyExistsException } from './dto/reward.error'
 import {
-  CreateRewardBodyInputType,
-  CreateRewardBodyType,
-  UpdateRewardBodyInputType,
-  UpdateRewardBodyType
-} from './entities/reward.entity'
+  CreateRewardBody,
+  CreateRewardBodyInput,
+  UpdateRewardBody,
+  UpdateRewardBodyInput
+} from './dto/reward.zod-dto'
 import { RewardRepo } from './reward.repo'
 
 @Injectable()
@@ -117,7 +117,7 @@ export class RewardService {
   }
 
   private pushHistoryEntry(
-    entries: CreateUserRewardHistoryBodyType[],
+    entries: CreateUserRewardHistoryBody[],
     params: {
       userId: number
       rewardId?: number
@@ -139,7 +139,7 @@ export class RewardService {
     entries.push(payload)
   }
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const langId = await this.languagesService.getIdByCode(lang)
     const data = await this.rewardRepo.list(pagination, langId ?? undefined)
     return {
@@ -148,7 +148,7 @@ export class RewardService {
     }
   }
 
-  async getListWithAllLang(pagination: PaginationQueryType, lang: string = 'vi') {
+  async getListWithAllLang(pagination: PaginationQuery, lang: string = 'vi') {
     const langId = await this.languagesService.getIdByCode(lang)
     const data = await this.rewardRepo.getListWithAllLang(pagination, langId ?? undefined)
 
@@ -243,7 +243,7 @@ export class RewardService {
       data,
       createdById
     }: {
-      data: CreateRewardBodyInputType
+      data: CreateRewardBodyInput
       createdById: number
     },
     lang: string = 'vi'
@@ -254,7 +254,7 @@ export class RewardService {
         const nameKey = `reward.name.${Date.now()}`
 
         // Convert data for create
-        const dataCreate: CreateRewardBodyType = {
+        const dataCreate: CreateRewardBody = {
           nameKey,
           rewardType: data.rewardType,
           rewardItem: data.rewardItem,
@@ -290,7 +290,7 @@ export class RewardService {
         }
 
         // Create translation records
-        const translationRecords: CreateTranslationBodyType[] = []
+        const translationRecords: CreateTranslationBody[] = []
 
         // nameTranslations → key = nameKey
         for (const item of data.nameTranslations) {
@@ -350,7 +350,7 @@ export class RewardService {
       updatedById
     }: {
       id: number
-      data: UpdateRewardBodyInputType
+      data: UpdateRewardBodyInput
       updatedById: number
     },
     lang: string = 'vi'
@@ -359,13 +359,13 @@ export class RewardService {
 
     try {
       return await this.rewardRepo.withTransaction(async (prismaTx) => {
-        const translationRecords: CreateTranslationBodyType[] = []
+        const translationRecords: CreateTranslationBody[] = []
         // Get current record
         existingReward = await this.rewardRepo.findById(id)
         if (!existingReward) throw new NotFoundRecordException()
 
         // Prepare data for update
-        const dataUpdate: Partial<UpdateRewardBodyType> = {}
+        const dataUpdate: Partial<UpdateRewardBody> = {}
 
         if (data.rewardType !== undefined) dataUpdate.rewardType = data.rewardType
         if (data.rewardItem !== undefined) dataUpdate.rewardItem = data.rewardItem
@@ -535,7 +535,7 @@ export class RewardService {
       levelRewards: [] // Track rewards from level-ups
     }
 
-    const historyEntries: CreateUserRewardHistoryBodyType[] = []
+    const historyEntries: CreateUserRewardHistoryBody[] = []
     const notificationType = this.mapToNotificationType(sourceType)
     const notificationsToCreate: Array<{
       titleKey: string

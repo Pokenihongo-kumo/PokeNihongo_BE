@@ -11,10 +11,10 @@ src/modules/<feature>/
   <feature>.service.ts        # nghiệp vụ, transaction, map lỗi, envelope { data, message }
   <feature>.repo.ts           # class <Feature>Repo: query Prisma, mapping persistence
   <feature>.service.spec.ts   # unit test logic riêng của feature
-  dto/<feature>.zod-dto.ts    # class XDTO extends createZodDto(schema)
+  dto/<feature>.zod-dto.ts    # hợp đồng HTTP: body/query/params/res schema + type + class XDTO
   dto/<feature>.dto.ts        # Swagger DTO khi Zod không tự sinh đủ (multipart, ví dụ)
   dto/<feature>.error.ts      # exception class của feature
-  entities/<feature>.entity.ts # Zod schema + type infer
+  entities/<feature>.entity.ts # hình dạng dữ liệu: XSchema, XWithRelationsSchema, type X, X_FIELDS
 ```
 
 - Tên: `XRepo`, `XDTO` (hậu tố in hoa), file kebab-case, `.entity.ts` số ít. Đổi tên file/class là **commit riêng, chỉ cơ học** (mẫu: `f51127d`, `161bcbb`), trước commit đổi logic.
@@ -23,9 +23,15 @@ src/modules/<feature>/
 
 ## 2. Schema, DTO, serializer
 
-- Một nguồn: Zod schema trong `entities/`, DTO là `createZodDto(schema)`. Swagger DTO riêng chỉ khi cần (multipart, envelope chưa có Zod) và phải khớp response thật — có test đọc OpenAPI sinh ra (`test/docs/wordtype-openapi.e2e-spec.ts`).
+- Bố cục theo [schema-dto-layout-plan](schema-dto-layout-plan.md) (giai đoạn 7, mẫu: module **level**):
+  - `entities/` chỉ giữ hình dạng dữ liệu dùng lại ở nhiều response hoặc trong service/repo. Không có schema request/response, không có envelope.
+  - Mọi schema thuộc HTTP (body, query, params, response) nằm trong `dto/<feature>.zod-dto.ts`, đặt theo thứ tự schema, type, class: phụ thuộc một chiều `dto → entity`. File quá lớn thì tách theo use case trong `dto/`.
+  - Tên: `XSchema` (giá trị Zod), `X` (type suy ra, **không hậu tố** `Type`), `XDTO` (class). Ví dụ `CreateLevelBodySchema`, `CreateLevelBody`, `CreateLevelBodyDTO`. Trong repo cần cả type dòng Prisma cùng tên thì import Prisma với alias `PrismaX`.
+  - Service/repo dùng type suy ra từ schema HTTP (`CreateLevelBody`), import từ `dto/`; không thêm lớp input riêng chỉ để map 1–1.
+  - `arch:deps` chặn tái phát: `httpSchemasInEntities` = 0, `handWrittenEnvelopes` chỉ còn 2 ngoại lệ đã ghi trong baseline.
+- DTO là `createZodDto(schema)`. Swagger DTO riêng chỉ khi cần (multipart, envelope chưa có Zod) và phải khớp response thật — có test đọc OpenAPI sinh ra (`test/docs/wordtype-openapi.e2e-spec.ts`). Toàn bộ tài liệu OpenAPI bị chụp ở `test/docs/openapi-snapshot.e2e-spec.ts`; đổi API có chủ đích thì chạy với `UPDATE_OPENAPI=1` và nêu trong commit.
 - **Mọi route trả JSON có `@ZodSerializerDto` với schema của cả envelope**, không phải schema entity trần (lỗi cũ: `GET /wordtype/name-key/:nameKey` luôn 500).
-  - Chi tiết/tạo/sửa: `z.object({ statusCode, message, data: XSchema })`.
+  - Chi tiết/tạo/sửa: `resSchema(XSchema)` (`@/shared/utils/res-schema`), không viết tay `z.object({ statusCode, message, data })`.
   - List: `paginatedResSchema(ItemSchema)` (`@/shared/utils/pagination`).
 - Tham số id: `checkIdSchema(XMessage.INVALID_ID)` (`@/common/utils/id.validation`) → id sai là 422 có `errors[]`, không phải 500 từ `parseInt` + Prisma.
 - Message validation trong schema là **i18n key** (`LevelMessage.LEVEL_NUMBER_MIN`), không phải câu tiếng Việt; pipe chuyển key, `ApiExceptionFilter` dịch theo request.

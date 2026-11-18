@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { z } from 'zod'
 import { createZodDto } from 'nestjs-zod'
+import { z } from 'zod'
 
 // Schema để thêm nghĩa mới
 export const AddMeaningToVocabularySchema = z.object({
@@ -40,4 +40,4 @@ export class AddMeaningSwaggerDTO {
   exampleSentenceJp?: string
 }
 
-export type AddMeaningToVocabularyType = z.infer<typeof AddMeaningToVocabularySchema>
+export type AddMeaningToVocabulary = z.infer<typeof AddMeaningToVocabularySchema>

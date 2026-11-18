@@ -1,21 +1,17 @@
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 
 import { GachaBannerStatus } from '@/common/constants/shop-banner.constant'
 import { parseQs } from '@/common/utils/qs-parser'
 import { Prisma, PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import { GachaItemRateType } from '../gacha-item-rate/entities/gacha-item-rate.entity'
-import { GachaItemType } from '../gacha-item/entities/gacha-item.entity'
-import { PokemonType } from '../pokemon/entities/pokemon.entity'
-import {
-  CreateGachaBannerBodyType,
-  GACHA_BANNER_FIELDS,
-  GachaBannerType,
-  UpdateGachaBannerBodyType
-} from './entities/gacha-banner.entity'
+import { GachaItemRate } from '../gacha-item-rate/entities/gacha-item-rate.entity'
+import { GachaItem } from '../gacha-item/entities/gacha-item.entity'
+import { Pokemon } from '../pokemon/entities/pokemon.entity'
+import { CreateGachaBannerBody, UpdateGachaBannerBody } from './dto/gacha-banner.zod-dto'
+import { GACHA_BANNER_FIELDS, GachaBanner } from './entities/gacha-banner.entity'
 
-type GachaBannerPrismaType = Omit<GachaBannerType, 'nameKey'> & { name: string }
+type GachaBannerPrismaType = Omit<GachaBanner, 'nameKey'> & { name: string }
 
 @Injectable()
 export class GachaBannerRepo {
@@ -32,10 +28,10 @@ export class GachaBannerRepo {
       data
     }: {
       createdById: number | null
-      data: CreateGachaBannerBodyType
+      data: CreateGachaBannerBody
     },
     prismaTx?: PrismaClient
-  ): Promise<GachaBannerType> {
+  ): Promise<GachaBanner> {
     const client = prismaTx || this.prismaService
     return client.gachaBanner.create({
       data: {
@@ -53,10 +49,10 @@ export class GachaBannerRepo {
     }: {
       id: number
       updatedById?: number
-      data: UpdateGachaBannerBodyType
+      data: UpdateGachaBannerBody
     },
     prismaTx?: PrismaClient
-  ): Promise<GachaBannerType> {
+  ): Promise<GachaBanner> {
     const client = prismaTx || this.prismaService
     return client.gachaBanner.update({
       where: { id, deletedAt: null },
@@ -77,7 +73,7 @@ export class GachaBannerRepo {
     },
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<GachaBannerType> {
+  ): Promise<GachaBanner> {
     const client = prismaTx || this.prismaService
     const result = isHard
       ? await this.prismaService.gachaBanner.delete({
@@ -98,11 +94,7 @@ export class GachaBannerRepo {
     return result
   }
 
-  async list(
-    pagination: PaginationQueryType,
-    langId?: number,
-    isAllLang: boolean = false
-  ) {
+  async list(pagination: PaginationQuery, langId?: number, isAllLang: boolean = false) {
     const { where: rawWhere = {}, orderBy } = parseQs(pagination.qs, GACHA_BANNER_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -205,7 +197,7 @@ export class GachaBannerRepo {
     }
   }
 
-  async listwithDetail(pagination: PaginationQueryType, langId?: number) {
+  async listwithDetail(pagination: PaginationQuery, langId?: number) {
     const { where: rawWhere = {}, orderBy } = parseQs(pagination.qs, GACHA_BANNER_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -293,7 +285,7 @@ export class GachaBannerRepo {
     }
   }
 
-  findById(id: number): Promise<GachaBannerType | null> {
+  findById(id: number): Promise<GachaBanner | null> {
     return this.prismaService.gachaBanner.findUnique({
       where: {
         id,
@@ -306,7 +298,7 @@ export class GachaBannerRepo {
     id: number,
     langId: number,
     isAllLang: boolean = false
-  ): Promise<GachaBannerType | null> {
+  ): Promise<GachaBanner | null> {
     return this.prismaService.gachaBanner.findUnique({
       where: {
         id,
@@ -393,10 +385,10 @@ export class GachaBannerRepo {
   }
 
   findByIdWithItemWithitemRate(id: number): Promise<
-    | (GachaBannerType & {
-        items: (GachaItemType & {
-          gachaItemRate: GachaItemRateType
-          pokemon: PokemonType
+    | (GachaBanner & {
+        items: (GachaItem & {
+          gachaItemRate: GachaItemRate
+          pokemon: Pokemon
         })[]
       })
     | null

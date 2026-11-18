@@ -1,26 +1,25 @@
 import {
-  CreateWordTypeBodyType,
-  UpdateWordTypeBodyType,
-  GetWordTypeListQueryType,
-  WordType
-} from './entities/wordtype.entity'
+  CreateWordTypeBody,
+  GetWordTypeListQuery,
+  UpdateWordTypeBody
+} from './dto/wordtype.zod-dto'
 
-import { HttpException, Injectable, Logger, OnModuleInit } from '@nestjs/common'
+import { I18nService } from '@/i18n/i18n.service'
+import { WordTypeMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { TranslationService } from '@/modules/translation/translation.service'
 import { toPaginationMeta } from '@/shared/utils/pagination'
 import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/utils/prisma-errors'
-import { WordTypeRepo } from './wordtype.repo'
+import { HttpException, Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import {
-  WordTypeNotFoundException,
+  InvalidWordTypeDataException,
   WordTypeAlreadyExistsException,
-  InvalidWordTypeDataException
+  WordTypeNotFoundException
 } from './dto/wordtype.error'
-import { TranslationService } from '@/modules/translation/translation.service'
-import { LanguagesService } from '@/modules/languages/languages.service'
-import { I18nService } from '@/i18n/i18n.service'
-import { WordTypeMessage } from '@/i18n/message-keys'
+import { WordTypeRepo } from './wordtype.repo'
 
 @Injectable()
 export class WordTypeService implements OnModuleInit {
@@ -46,7 +45,7 @@ export class WordTypeService implements OnModuleInit {
     }
   }
 
-  async findAll(params: GetWordTypeListQueryType, lang: string = 'vi') {
+  async findAll(params: GetWordTypeListQuery, lang: string = 'vi') {
     try {
       this.logger.log(`Finding word types with params: ${JSON.stringify(params)}`)
 
@@ -154,7 +153,7 @@ export class WordTypeService implements OnModuleInit {
     }
   }
 
-  async create(data: CreateWordTypeBodyType, lang: string = 'vi') {
+  async create(data: CreateWordTypeBody, lang: string = 'vi') {
     try {
       this.logger.log(`Creating word type with nameKey: ${data.nameKey}`)
 
@@ -165,7 +164,7 @@ export class WordTypeService implements OnModuleInit {
       }
 
       const wordType = await this.wordTypeRepository.create(data)
-      this.logger.log(`Word type created successfully: ${wordType.id}`)
+      this.logger.log(`WordType type created successfully: ${wordType.id}`)
       return {
         data: wordType,
         message: this.i18nService.translate(WordTypeMessage.CREATE_SUCCESS, lang)
@@ -176,7 +175,7 @@ export class WordTypeService implements OnModuleInit {
     }
   }
 
-  async update(id: number, data: UpdateWordTypeBodyType, lang: string = 'vi') {
+  async update(id: number, data: UpdateWordTypeBody, lang: string = 'vi') {
     try {
       this.logger.log(`Updating word type: ${id}`)
 
@@ -198,7 +197,7 @@ export class WordTypeService implements OnModuleInit {
       }
 
       const wordType = await this.wordTypeRepository.update(id, data)
-      this.logger.log(`Word type updated successfully: ${wordType.id}`)
+      this.logger.log(`WordType type updated successfully: ${wordType.id}`)
       return {
         data: wordType,
         message: this.i18nService.translate(WordTypeMessage.UPDATE_SUCCESS, lang)
@@ -220,7 +219,7 @@ export class WordTypeService implements OnModuleInit {
       }
 
       await this.wordTypeRepository.delete(id)
-      this.logger.log(`Word type deleted successfully: ${id}`)
+      this.logger.log(`WordType type deleted successfully: ${id}`)
       return {
         message: this.i18nService.translate(WordTypeMessage.DELETE_SUCCESS, lang)
       }

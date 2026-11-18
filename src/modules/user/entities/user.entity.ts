@@ -1,50 +1,12 @@
-import { checkIdSchema } from '@/common/utils/id.validation'
-import { UserMessage, ValidationMessage } from '@/i18n/message-keys'
 import { LeaderboardSeasonSchema } from '@/modules/leaderboard-season/entities/leaderboard-season.entity'
 import { LevelSchema } from '@/modules/level/entities/level.entity'
 import { RoleSchema } from '@/shared/models/shared-role.model'
 import { UserSchema } from '@/shared/models/shared-user.model'
-import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
-
-export const CreateUserBodySchema = UserSchema.pick({
-  email: true,
-  name: true,
-  roleId: true,
-  phoneNumber: true,
-  avatar: true
-})
-  .extend({
-    avatar: z.string().url().optional()
-  })
-  .strict()
-
-export const CreateUserResSchema = resSchema(UserSchema.omit({ password: true }))
-
-export const UpdateUserBodySchema = UserSchema.pick({
-  name: true,
-  phoneNumber: true,
-  avatar: true,
-  status: true,
-  roleId: true,
-  levelId: true,
-  password: true,
-  exp: true
-})
-  .partial()
-  .strict()
-
-export const UpdateUserResSchema = CreateUserResSchema
-
-export const GetUserParamsSchema = z
-  .object({
-    userId: checkIdSchema(ValidationMessage.INVALID_USER_ID)
-  })
-  .strict()
 
 export const GetStatsUserSeasonSchema = z
   .object({
@@ -71,8 +33,6 @@ export const GetStatsUserSeasonSchema = z
 
   .strict()
 
-export const GetUserStatsSeasonResSchema = resSchema(GetStatsUserSeasonSchema)
-
 export const GetListMatchHisByUserSchema = z
   .object({
     isWin: z.boolean(),
@@ -85,10 +45,6 @@ export const GetListMatchHisByUserSchema = z
     })
   })
   .strict()
-
-export const GetListMatchHisByUserResSchema = resSchema(
-  z.array(GetListMatchHisByUserSchema)
-)
 
 export const UserWithoutPasswordSchema = z.object({
   ...UserSchema.omit({ password: true }).shape, // Không trả về password
@@ -108,24 +64,7 @@ export const UserWithoutPasswordSchema = z.object({
     .optional()
 })
 
-export const GetUserDetailResSchema = resSchema(UserWithoutPasswordSchema)
-
-export const SetMainPokemonBodySchema = z
-  .object({
-    pokemonId: z
-      .number()
-      .int(UserMessage.INVALID_POKEMON_ID)
-      .min(1, UserMessage.INVALID_POKEMON_ID)
-  })
-  .strict()
-
-export type UserType = z.infer<typeof UserSchema>
-export type CreateUserBodyType = z.infer<typeof CreateUserBodySchema>
-export type UpdateUserBodyType = z.infer<typeof UpdateUserBodySchema>
-export type GetUserParamsType = z.infer<typeof GetUserParamsSchema>
-export type GetUserDetailResType = z.infer<typeof GetUserDetailResSchema>
-export type UserWithoutPasswordType = z.infer<typeof UserWithoutPasswordSchema>
-export type SetMainPokemonBodyType = z.infer<typeof SetMainPokemonBodySchema>
-
+export type User = z.infer<typeof UserSchema>
+export type UserWithoutPassword = z.infer<typeof UserWithoutPasswordSchema>
 type UserFieldType = keyof z.infer<typeof UserSchema>
 export const USER_FIELDS = Object.keys(UserSchema.shape) as UserFieldType[]

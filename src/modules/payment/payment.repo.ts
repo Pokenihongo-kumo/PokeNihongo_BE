@@ -4,19 +4,19 @@ import { addTimeUTC, isUniqueConstraintPrismaError } from '@/shared/helpers'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
 import { Prisma, PrismaClient } from '@prisma/client'
-import { CreatePaymentType, PaymentType } from './entities/payment.model'
+import { CreatePayment, Payment } from './entities/payment.model'
 
 @Injectable()
 export class PaymentRepo {
   constructor(private prisma: PrismaService) {}
   // Payment CRUD operations
-  async createPayment(data: CreatePaymentType): Promise<PaymentType> {
+  async createPayment(data: CreatePayment): Promise<Payment> {
     return this.prisma.payment.create({
       data
     })
   }
 
-  async findPaymentByPayOSOrderId(payosOrderId: string): Promise<PaymentType | null> {
+  async findPaymentByPayOSOrderId(payosOrderId: string): Promise<Payment | null> {
     return this.prisma.payment.findFirst({
       where: {
         payosOrderId,
@@ -25,7 +25,7 @@ export class PaymentRepo {
     })
   }
 
-  async updatePayment(id: number, data: Prisma.PaymentUpdateInput): Promise<PaymentType> {
+  async updatePayment(id: number, data: Prisma.PaymentUpdateInput): Promise<Payment> {
     return this.prisma.payment.update({
       where: { id },
       data
@@ -39,7 +39,7 @@ export class PaymentRepo {
    * index "Payment_invoiceId_pending_key" refuses a second): the caller hands
    * that one out instead of creating another PayOS link.
    */
-  async reservePendingPayment(data: CreatePaymentType): Promise<PaymentType | null> {
+  async reservePendingPayment(data: CreatePayment): Promise<Payment | null> {
     try {
       return await this.prisma.$transaction(async (tx) => {
         await tx.payment.updateMany({
@@ -66,7 +66,7 @@ export class PaymentRepo {
     })
   }
 
-  async findLatestPendingByInvoice(invoiceId: number): Promise<PaymentType | null> {
+  async findLatestPendingByInvoice(invoiceId: number): Promise<Payment | null> {
     return this.prisma.payment.findFirst({
       where: {
         invoiceId,

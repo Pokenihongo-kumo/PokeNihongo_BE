@@ -7,6 +7,8 @@
     "sharedModuleBusinessRepos": 0,
     "sharedModuleBusinessProviders": 0,
     "prismaOutsideRepoFiles": 1,
+    "httpSchemasInEntities": 0,
+    "handWrittenEnvelopes": 2,
     "prismaOutsideRepoCalls": 27
   },
   "details": {
@@ -53,6 +55,11 @@
     "sharedModuleBusinessProviders": [],
     "prismaOutsideRepoFiles": [
       "cronjobs/handle-leaderboard-season.cronjob.ts"
+    ],
+    "httpSchemasInEntities": [],
+    "handWrittenEnvelopes": [
+      "modules/match-round/dto/match-round.zod-dto.ts",
+      "shared/models/response.model.ts"
     ]
   }
 }

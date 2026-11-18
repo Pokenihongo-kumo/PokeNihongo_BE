@@ -1,14 +1,10 @@
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 
 import { parseQs } from '@/common/utils/qs-parser'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import {
-  ATTENDANCE_FIELDS,
-  AttendanceType,
-  CreateAttendanceBodyType,
-  UpdateAttendanceBodyType
-} from './entities/attendance.entity'
+import { CreateAttendanceBody, UpdateAttendanceBody } from './dto/attendance.zod-dto'
+import { ATTENDANCE_FIELDS, Attendance } from './entities/attendance.entity'
 
 @Injectable()
 export class AttendanceRepo {
@@ -19,8 +15,8 @@ export class AttendanceRepo {
     data
   }: {
     createdById: number | null
-    data: CreateAttendanceBodyType
-  }): Promise<AttendanceType> {
+    data: CreateAttendanceBody
+  }): Promise<Attendance> {
     return this.prismaService.attendance.create({
       data: {
         ...data,
@@ -37,8 +33,8 @@ export class AttendanceRepo {
   }: {
     id: number
     updatedById: number
-    data: UpdateAttendanceBodyType
-  }): Promise<AttendanceType> {
+    data: UpdateAttendanceBody
+  }): Promise<Attendance> {
     return this.prismaService.attendance.update({
       where: {
         id,
@@ -60,7 +56,7 @@ export class AttendanceRepo {
       deletedById: number
     },
     isHard?: boolean
-  ): Promise<AttendanceType> {
+  ): Promise<Attendance> {
     return isHard
       ? this.prismaService.attendance.delete({
           where: {
@@ -79,7 +75,7 @@ export class AttendanceRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, ATTENDANCE_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -109,7 +105,7 @@ export class AttendanceRepo {
     }
   }
 
-  findById(id: number): Promise<AttendanceType | null> {
+  findById(id: number): Promise<Attendance | null> {
     return this.prismaService.attendance.findUnique({
       where: {
         id,
@@ -122,7 +118,7 @@ export class AttendanceRepo {
     userId: number,
     startOfWeek: Date,
     endOfWeek: Date
-  ): Promise<AttendanceType[]> {
+  ): Promise<Attendance[]> {
     return this.prismaService.attendance.findMany({
       where: {
         userId,
@@ -136,7 +132,7 @@ export class AttendanceRepo {
     })
   }
 
-  findByUserIdAndDate(userId: number, date: Date): Promise<AttendanceType | null> {
+  findByUserIdAndDate(userId: number, date: Date): Promise<Attendance | null> {
     return this.prismaService.attendance.findFirst({
       where: {
         userId,
@@ -145,7 +141,7 @@ export class AttendanceRepo {
     })
   }
 
-  findByUserId(userId: number): Promise<AttendanceType[]> {
+  findByUserId(userId: number): Promise<Attendance[]> {
     return this.prismaService.attendance.findMany({
       where: {
         userId,

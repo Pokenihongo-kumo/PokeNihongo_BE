@@ -1,22 +1,20 @@
+import { PrismaService } from '@/shared/services/prisma.service'
+import { Injectable } from '@nestjs/common'
 import {
-  CreateFlashcardCardBody,
+  Prisma,
+  FlashcardCardStatus as PrismaFlashcardCardStatus,
+  FlashcardContentType as PrismaFlashcardContentType,
+  FlashcardDeckStatus as PrismaFlashcardDeckStatus,
+  SrsContentType as PrismaSrsContentType
+} from '@prisma/client'
+import {
   CreateFlashcardDeckBody,
-  FlashcardContentType,
-  FlashcardDeckStatus,
   GetFlashcardCardListQuery,
   GetFlashcardDeckListQuery,
   UpdateFlashcardCardBody,
   UpdateFlashcardDeckBody
-} from './entities/flashcard.entity'
-import { Injectable } from '@nestjs/common'
-import {
-  Prisma,
-  FlashcardContentType as PrismaFlashcardContentType,
-  FlashcardDeckStatus as PrismaFlashcardDeckStatus,
-  FlashcardCardStatus as PrismaFlashcardCardStatus,
-  SrsContentType as PrismaSrsContentType
-} from '@prisma/client'
-import { PrismaService } from '@/shared/services/prisma.service'
+} from './dto/flashcard.zod-dto'
+import { FlashcardContent, FlashcardDeckStatus } from './entities/flashcard.entity'
 
 const CARD_RELATION_INCLUDE = {
   vocabulary: {
@@ -292,7 +290,7 @@ export class FlashcardRepo {
 
   async findExistingContentCards(
     deckId: number,
-    contentType: FlashcardContentType,
+    contentType: FlashcardContent,
     ids: number[]
   ) {
     if (!ids.length) {
@@ -662,7 +660,7 @@ export class FlashcardRepo {
 
   async findCardsForReview(
     deckId: number,
-    types: Array<Exclude<FlashcardContentType, 'CUSTOM'>>,
+    types: Array<Exclude<FlashcardContent, 'CUSTOM'>>,
     limit: number
   ) {
     if (!types.length) return []
@@ -688,7 +686,7 @@ export class FlashcardRepo {
 
   async findSrsEntries(
     userId: number,
-    type: Exclude<FlashcardContentType, 'CUSTOM'>,
+    type: Exclude<FlashcardContent, 'CUSTOM'>,
     ids: number[]
   ): Promise<
     Array<{

@@ -1,5 +1,8 @@
 import { I18nService } from '@/i18n/i18n.service'
 import { MatchMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
+import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   addTimeUTC,
@@ -7,16 +10,13 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { LanguagesService } from '@/modules/languages/languages.service'
-import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
-import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
 import {
   MatchAlreadyExistsException,
   NotHaveActiveLeaderboardSeasonException
 } from './dto/match.error'
-import { UpdateMatchBodyType } from './entities/match.entity'
+import { UpdateMatchBody } from './dto/match.zod-dto'
 import { MatchRepo } from './match.repo'
 
 @Injectable()
@@ -29,7 +29,7 @@ export class MatchService {
     private readonly questionBankService: QuestionBankService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const langId = await this.languagesService.getIdByCode(lang)
     const data = await this.matchRepo.list(pagination, langId ?? undefined)
     return {
@@ -117,7 +117,7 @@ export class MatchService {
       updatedById
     }: {
       id: number
-      data: UpdateMatchBodyType
+      data: UpdateMatchBody
       updatedById: number
     },
     lang: string = 'vi'

@@ -1,5 +1,7 @@
 import { I18nService } from '@/i18n/i18n.service'
 import { DailyRequestMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { TranslationService } from '@/modules/translation/translation.service'
 import {
   LanguageNotExistToTranslateException,
   NotFoundRecordException
@@ -9,19 +11,17 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { LanguagesService } from '@/modules/languages/languages.service'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
-import { TranslationService } from '@/modules/translation/translation.service'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { DailyRequestRepo } from './daily-request.repo'
 import { DailyRequestAlreadyExistsException } from './dto/daily-request.error'
 import {
-  CreateDailyRequestBodyInputType,
-  CreateDailyRequestBodyType,
-  UpdateDailyRequestBodyInputType,
-  UpdateDailyRequestBodyType
-} from './entities/daily-request.entity'
+  CreateDailyRequestBody,
+  CreateDailyRequestBodyInput,
+  UpdateDailyRequestBody,
+  UpdateDailyRequestBodyInput
+} from './dto/daily-request.zod-dto'
 
 @Injectable()
 export class DailyRequestService {
@@ -32,7 +32,7 @@ export class DailyRequestService {
     private readonly translationService: TranslationService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
     const langId = await this.languagesService.getIdByCode(lang)
     if (!langId) {
       throw new NotFoundRecordException()
@@ -45,7 +45,7 @@ export class DailyRequestService {
     }
   }
 
-  async getListwithAllLang(pagination: PaginationQueryType, lang: string = 'vi') {
+  async getListwithAllLang(pagination: PaginationQuery, lang: string = 'vi') {
     const langId = await this.languagesService.getIdByCode(lang)
     const data = await this.dailyRequestRepo.getListwithAllLang(
       pagination,
@@ -152,7 +152,7 @@ export class DailyRequestService {
       data,
       createdById
     }: {
-      data: CreateDailyRequestBodyInputType
+      data: CreateDailyRequestBodyInput
       createdById: number
     },
     lang: string = 'vi'
@@ -165,7 +165,7 @@ export class DailyRequestService {
         const descKey = `daily_request.description.${Date.now()}`
 
         //convert data cho create
-        const dataCreate: CreateDailyRequestBodyType = {
+        const dataCreate: CreateDailyRequestBody = {
           conditionValue: data.conditionValue,
           nameKey,
           descriptionKey: descKey,
@@ -206,7 +206,7 @@ export class DailyRequestService {
         }
 
         // Tạo danh sách bản dịch
-        const translationRecords: CreateTranslationBodyType[] = []
+        const translationRecords: CreateTranslationBody[] = []
 
         // nameTranslations → key = nameKey
         for (const item of data.nameTranslations) {
@@ -304,7 +304,7 @@ export class DailyRequestService {
       updatedById
     }: {
       id: number
-      data: UpdateDailyRequestBodyInputType
+      data: UpdateDailyRequestBodyInput
       updatedById: number
     },
     lang: string = 'vi'
@@ -319,7 +319,7 @@ export class DailyRequestService {
 
         // --- 2. Chuẩn bị data update ---
         // Chỉ include những field thực sự được gửi (không để undefined)
-        const dataUpdate: Partial<UpdateDailyRequestBodyType> = {}
+        const dataUpdate: Partial<UpdateDailyRequestBody> = {}
 
         if (data.isStreak !== undefined) dataUpdate.isStreak = data.isStreak
         if (data.conditionValue !== undefined)
@@ -348,7 +348,7 @@ export class DailyRequestService {
             if (missingLangs.length > 0) throw new LanguageNotExistToTranslateException()
 
             // --- 4. Tạo translation records ---
-            const translationRecords: CreateTranslationBodyType[] = []
+            const translationRecords: CreateTranslationBody[] = []
 
             // nameTranslations
             for (const t of data.nameTranslations ?? []) {

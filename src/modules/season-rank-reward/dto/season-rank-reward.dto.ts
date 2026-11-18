@@ -9,7 +9,7 @@ import {
   UpdateSeasonRankRewardResSchema,
   UpdateWithListItemBodySchema,
   UpdateWithListItemResSchema
-} from '../entities/season-rank-reward.entity'
+} from './season-rank-reward.zod-dto'
 
 // Request DTOs
 export class CreateSeasonRankRewardBodyDTO extends createZodDto(

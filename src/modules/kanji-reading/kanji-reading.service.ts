@@ -14,11 +14,11 @@ import {
   KanjiReadingNotFoundException
 } from './dto/kanji-reading.error'
 import {
-  CreateKanjiReadingBodyType,
-  GetKanjiReadingListQueryType,
-  KanjiReading,
-  UpdateKanjiReadingBodyType
-} from './entities/kanji-reading.entity'
+  CreateKanjiReadingBody,
+  GetKanjiReadingListQuery,
+  UpdateKanjiReadingBody
+} from './dto/kanji-reading.zod-dto'
+import { KanjiReading } from './entities/kanji-reading.entity'
 import { KanjiReadingRepo } from './kanji-reading.repo'
 
 @Injectable()
@@ -31,7 +31,7 @@ export class KanjiReadingService {
   ) {}
 
   //#region HTTP routes (envelope + translated message)
-  async findMany(params: GetKanjiReadingListQueryType, lang: string = 'vi') {
+  async findMany(params: GetKanjiReadingListQuery, lang: string = 'vi') {
     const result = await this.kanjiReadingRepository.findMany(params)
     return {
       statusCode: 200,
@@ -68,14 +68,14 @@ export class KanjiReadingService {
     }
   }
 
-  async createReading(data: CreateKanjiReadingBodyType, lang: string = 'vi') {
+  async createReading(data: CreateKanjiReadingBody, lang: string = 'vi') {
     return {
       data: await this.create(data),
       message: this.i18nService.translate(KanjiReadingMessage.CREATE_SUCCESS, lang)
     }
   }
 
-  async updateReading(id: number, data: UpdateKanjiReadingBodyType, lang: string = 'vi') {
+  async updateReading(id: number, data: UpdateKanjiReadingBody, lang: string = 'vi') {
     return {
       data: await this.update(id, data),
       message: this.i18nService.translate(KanjiReadingMessage.UPDATE_SUCCESS, lang)
@@ -120,7 +120,7 @@ export class KanjiReadingService {
   //#endregion
 
   //#region Used by kanji too (plain data, unchanged shapes)
-  async create(data: CreateKanjiReadingBodyType): Promise<KanjiReading> {
+  async create(data: CreateKanjiReadingBody): Promise<KanjiReading> {
     try {
       if (
         await this.kanjiReadingRepository.existsByKanjiTypeAndReading(
@@ -137,7 +137,7 @@ export class KanjiReadingService {
     }
   }
 
-  async update(id: number, data: UpdateKanjiReadingBodyType): Promise<KanjiReading> {
+  async update(id: number, data: UpdateKanjiReadingBody): Promise<KanjiReading> {
     try {
       const existing = await this.kanjiReadingRepository.findById(id)
       if (!existing) {

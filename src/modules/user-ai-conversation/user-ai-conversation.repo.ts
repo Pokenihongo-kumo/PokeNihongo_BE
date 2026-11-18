@@ -1,14 +1,14 @@
-import { UserAIConversationType } from '@/modules/user-ai-conversation/entities/user-ai-conversation.entity'
+import { UserAIConversation } from '@/modules/user-ai-conversation/entities/user-ai-conversation.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
-import { Prisma, UserAIConversation } from '@prisma/client'
+import { Prisma, UserAIConversation as PrismaUserAIConversation } from '@prisma/client'
 
-const toMessage = (row: UserAIConversation): UserAIConversationType => ({
+const toMessage = (row: PrismaUserAIConversation): UserAIConversation => ({
   id: row.id,
   userId: row.userId,
   conversationId: row.conversationId,
-  role: row.role as UserAIConversationType['role'],
+  role: row.role as UserAIConversation['role'],
   message: row.message,
   audioUrl: row.audioUrl,
   deletedAt: row.deletedAt,
@@ -45,7 +45,7 @@ export class UserAIConversationRepo {
   }
 
   // The user's message, not deleted
-  async findOwned(id: number, userId: number): Promise<UserAIConversationType | null> {
+  async findOwned(id: number, userId: number): Promise<UserAIConversation | null> {
     const row = await this.prismaService.userAIConversation.findFirst({
       where: { id, userId, deletedAt: null }
     })
@@ -66,7 +66,7 @@ export class UserAIConversationRepo {
     role: 'USER' | 'AI'
     message: string
     audioUrl?: string | null
-  }): Promise<UserAIConversationType> {
+  }): Promise<UserAIConversation> {
     return toMessage(
       await this.prismaService.userAIConversation.create({
         data: { ...data, audioUrl: data.audioUrl || null }
@@ -77,14 +77,14 @@ export class UserAIConversationRepo {
   async update(
     id: number,
     data: { message?: string; audioUrl?: string | null }
-  ): Promise<UserAIConversationType> {
+  ): Promise<UserAIConversation> {
     return toMessage(
       await this.prismaService.userAIConversation.update({ where: { id }, data })
     )
   }
 
   // Soft delete
-  async delete(id: number): Promise<UserAIConversationType> {
+  async delete(id: number): Promise<UserAIConversation> {
     return toMessage(
       await this.prismaService.userAIConversation.update({
         where: { id },

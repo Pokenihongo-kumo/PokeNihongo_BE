@@ -2,8 +2,7 @@ import { calculateScore } from '@/common/utils/algorithm'
 import { pickLabelFromComposite } from '@/common/utils/prase.utils'
 import { I18nService } from '@/i18n/i18n.service'
 import { UserTestAttemptMessage as M } from '@/i18n/message-keys'
-import { toPaginationMeta } from '@/shared/utils/pagination'
-import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
+import { LessonService } from '@/modules/lesson/lesson.service'
 import { LevelService } from '@/modules/level/level.service'
 import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
 import { TestRepo } from '@/modules/test/test.repo'
@@ -13,6 +12,14 @@ import { TestSetService } from '@/modules/testset/testset.service'
 import { TranslationHelperService } from '@/modules/translation/translation.helper.service'
 import { UserProgressService } from '@/modules/user-progress/user-progress.service'
 import { UserTestAnswerLogService } from '@/modules/user-test-answer-log/user-test-answer-log.service'
+import { UserTestService } from '@/modules/user-test/user-test.service'
+import { UserService } from '@/modules/user/user.service'
+import { MessageResDTO } from '@/shared/dtos/response.dto'
+import { toPaginationMeta } from '@/shared/utils/pagination'
+import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
+import { ProgressStatus, UserRewardSourceType } from '@prisma/client'
+import { RewardService } from '../reward/reward.service'
 import {
   AttemptNotOwnedException,
   InvalidUserTestAttemptDataException,
@@ -24,20 +31,13 @@ import {
   TestOutOfLimitException,
   UserTestAttemptNotFoundException,
   UserTestNotFoundException
-} from '@/modules/user-test-attempt/dto/user-test-attempt.error'
+} from './dto/user-test-attempt.error'
 import {
-  GetUserTestAttemptListQueryType,
-  UpdateUserTestAttemptBodyType
-} from '@/modules/user-test-attempt/entities/user-test-attempt.entity'
-import { UserTestAttemptRepo } from '@/modules/user-test-attempt/user-test-attempt.repo'
-import { UserTestService } from '@/modules/user-test/user-test.service'
-import { UserService } from '@/modules/user/user.service'
-import { MessageResDTO } from '@/shared/dtos/response.dto'
-import { HttpException, Injectable, Logger } from '@nestjs/common'
-import { ProgressStatus, UserRewardSourceType } from '@prisma/client'
-import { LessonService } from '@/modules/lesson/lesson.service'
-import { RewardService } from '../reward/reward.service'
+  GetUserTestAttemptListQuery,
+  UpdateUserTestAttemptBody
+} from './dto/user-test-attempt.zod-dto'
 import { REQUIRED_ANSWERS_FOR_LESSON_REVIEW } from './dto/variable'
+import { UserTestAttemptRepo } from './user-test-attempt.repo'
 
 @Injectable()
 export class UserTestAttemptService {
@@ -83,7 +83,7 @@ export class UserTestAttemptService {
     }
   }
 
-  async findAll(query: GetUserTestAttemptListQueryType, lang: string = 'vi') {
+  async findAll(query: GetUserTestAttemptListQuery, lang: string = 'vi') {
     const { currentPage, pageSize, userId, testId, status } = query
 
     const result = await this.userTestAttemptRepository.findMany({
@@ -120,7 +120,7 @@ export class UserTestAttemptService {
     }
   }
 
-  async update(id: number, body: UpdateUserTestAttemptBodyType, lang: string = 'vi') {
+  async update(id: number, body: UpdateUserTestAttemptBody, lang: string = 'vi') {
     try {
       const userTestAttempt = await this.userTestAttemptRepository.update({ id }, body)
       return {

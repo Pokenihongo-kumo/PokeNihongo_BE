@@ -1,4 +1,4 @@
-import { UpdateTypeEffectivenessBodySchema } from './entities/type-effectiveness.entity'
+import { UpdateTypeEffectivenessBodySchema } from './dto/type-effectiveness.zod-dto'
 import { TypeEffectivenessService } from './type-effectiveness.service'
 
 describe('TypeEffectiveness', () => {

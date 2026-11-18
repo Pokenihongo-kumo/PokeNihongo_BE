@@ -4,16 +4,16 @@ import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 import {
-  CreateGrammarUsageBodyType,
-  GetGrammarUsageListQueryType,
-  UpdateGrammarUsageBodyType
-} from './entities/grammar-usage.entity'
+  CreateGrammarUsageBody,
+  GetGrammarUsageListQuery,
+  UpdateGrammarUsageBody
+} from './dto/grammar-usage.zod-dto'
 
 @Injectable()
 export class GrammarUsageRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async findMany(params: GetGrammarUsageListQueryType) {
+  async findMany(params: GetGrammarUsageListQuery) {
     const {
       page,
       limit,
@@ -60,7 +60,7 @@ export class GrammarUsageRepo {
     })
   }
 
-  async create(data: CreateGrammarUsageBodyType) {
+  async create(data: CreateGrammarUsageBody) {
     return this.prismaService.grammarUsage.create({
       data,
       include: {
@@ -75,7 +75,7 @@ export class GrammarUsageRepo {
     })
   }
 
-  async update(id: number, data: UpdateGrammarUsageBodyType) {
+  async update(id: number, data: UpdateGrammarUsageBody) {
     return this.prismaService.grammarUsage.update({
       where: { id },
       data,

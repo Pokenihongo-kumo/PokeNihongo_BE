@@ -1,14 +1,13 @@
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
-  CreateNotificationBodyType,
-  NotificationType,
-  USER_SEASON_HISTORY_FIELDS,
-  UpdateNotificationBodyType
-} from './entities/notification.entity'
+  CreateNotificationBody,
+  UpdateNotificationBody
+} from './dto/notification.zod-dto'
+import { Notification, USER_SEASON_HISTORY_FIELDS } from './entities/notification.entity'
 
 @Injectable()
 export class NotificationRepo {
@@ -22,10 +21,10 @@ export class NotificationRepo {
       data
     }: {
       createdById: number
-      data: CreateNotificationBodyType & { userId: number }
+      data: CreateNotificationBody & { userId: number }
     },
     prismaTx?: PrismaClient
-  ): Promise<NotificationType> {
+  ): Promise<Notification> {
     const client = prismaTx || this.prismaService
     return client.notification.create({
       data: {
@@ -42,11 +41,11 @@ export class NotificationRepo {
       updatedById
     }: {
       id: number
-      data: UpdateNotificationBodyType
+      data: UpdateNotificationBody
       updatedById?: number
     },
     prismaTx?: PrismaClient
-  ): Promise<NotificationType> {
+  ): Promise<Notification> {
     const client = prismaTx || this.prismaService
     return client.notification.update({
       where: {
@@ -59,11 +58,7 @@ export class NotificationRepo {
     })
   }
 
-  delete(
-    id: number,
-    isHard?: boolean,
-    prismaTx?: PrismaClient
-  ): Promise<NotificationType> {
+  delete(id: number, isHard?: boolean, prismaTx?: PrismaClient): Promise<Notification> {
     const client = prismaTx || this.prismaService
     return isHard
       ? client.notification.delete({
@@ -80,7 +75,7 @@ export class NotificationRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, USER_SEASON_HISTORY_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -116,7 +111,7 @@ export class NotificationRepo {
   }
 
   async getUserSubWithSubPlan(
-    pagination: PaginationQueryType,
+    pagination: PaginationQuery,
     userId: number,
     langId?: number
   ) {
@@ -153,7 +148,7 @@ export class NotificationRepo {
     }
   }
 
-  findById(id: number): Promise<NotificationType | null> {
+  findById(id: number): Promise<Notification | null> {
     return this.prismaService.notification.findUnique({
       where: {
         id,

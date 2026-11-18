@@ -20,14 +20,14 @@ import {
   QuestionNotFoundException
 } from './dto/answer.error'
 import {
-  CreateAnswerBodyType,
-  CreateMultipleAnswersBodyType,
-  GetAnswerListQueryType,
-  UpdateAnswerBodyType
-} from './entities/answer.entity'
+  CreateAnswerBody,
+  CreateMultipleAnswersBody,
+  GetAnswerListQuery,
+  UpdateAnswerBody
+} from './dto/answer.zod-dto'
 
 type TranslationInput = { language_code: string; value: string }
-type AnswerTranslations = CreateAnswerBodyType['translations']
+type AnswerTranslations = CreateAnswerBody['translations']
 type Translate = (key: string, args?: Record<string, string | number>) => string
 // Language ids by code and codes by id, read from the Languages table
 // (they were hard-coded as vi=1, en=2, ja=3)
@@ -49,7 +49,7 @@ export class AnswerService {
 
   //#region Get Answer
   // `language` (query) picks one meaning per answer; without it, all meanings
-  async getAnswerList(params: GetAnswerListQueryType, lang: string = 'vi') {
+  async getAnswerList(params: GetAnswerListQuery, lang: string = 'vi') {
     const result = await this.answerRepository.findMany(params)
     const languages = await this.languageMaps()
     const languageId = params.language
@@ -147,7 +147,7 @@ export class AnswerService {
   //#endregion
 
   //#region Create Answer (also used by question-bank)
-  async createAnswer(data: CreateAnswerBodyType, lang: string = 'vi') {
+  async createAnswer(data: CreateAnswerBody, lang: string = 'vi') {
     try {
       if (!(await this.answerRepository.checkQuestionExists(data.questionBankId))) {
         throw new QuestionNotFoundException()
@@ -182,7 +182,7 @@ export class AnswerService {
   //#endregion
 
   //#region Update Answer
-  async updateAnswer(id: number, data: UpdateAnswerBodyType, lang: string = 'vi') {
+  async updateAnswer(id: number, data: UpdateAnswerBody, lang: string = 'vi') {
     try {
       if (!(await this.answerRepository.findById(id))) {
         throw new AnswerNotFoundException()
@@ -246,7 +246,7 @@ export class AnswerService {
    * saved. statusCode: 201 created only, 200 with updates, 207 some failed,
    * 400 none saved.
    */
-  async createMultiple(data: CreateMultipleAnswersBodyType, lang: string = 'vi') {
+  async createMultiple(data: CreateMultipleAnswersBody, lang: string = 'vi') {
     try {
       if (!(await this.answerRepository.checkQuestionExists(data.questionBankId))) {
         throw new QuestionNotFoundException()

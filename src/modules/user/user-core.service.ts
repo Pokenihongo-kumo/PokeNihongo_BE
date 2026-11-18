@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { UserType, WhereUniqueUserType } from 'src/shared/models/shared-user.model'
+import { User, WhereUniqueUserType } from 'src/shared/models/shared-user.model'
 import { UserCoreRepo } from './user-core.repo'
 
 // The User table for other modules (module-boundary plan B2, tier 0): reads
@@ -26,7 +26,7 @@ export class UserCoreService {
     return this.userCoreRepo.findUniqueProfileWithStats(where)
   }
 
-  update(where: { id: number }, data: Partial<UserType>) {
+  update(where: { id: number }, data: Partial<User>) {
     return this.userCoreRepo.update(where, data)
   }
 

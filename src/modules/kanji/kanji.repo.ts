@@ -1,8 +1,9 @@
-import { PrismaClient } from '@prisma/client'
-import { Kanji, CreateKanjiBodyType, UpdateKanjiBodyType } from './entities/kanji.entity'
+import { KanjiSortField, SortOrder } from '@/common/enum/enum'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
-import { KanjiSortField, SortOrder } from '@/common/enum/enum'
+import { PrismaClient } from '@prisma/client'
+import { CreateKanjiBody, UpdateKanjiBody } from './dto/kanji.zod-dto'
+import { Kanji } from './entities/kanji.entity'
 
 @Injectable()
 export class KanjiRepo {
@@ -156,7 +157,7 @@ export class KanjiRepo {
     return this.transformKanji(kanji)
   }
 
-  async create(data: CreateKanjiBodyType): Promise<Kanji> {
+  async create(data: CreateKanjiBody): Promise<Kanji> {
     const createData: any = {
       character: data.character,
       meaningKey: data.meaningKey,
@@ -183,7 +184,7 @@ export class KanjiRepo {
     return this.transformKanji(result)
   }
 
-  async update(id: number, data: UpdateKanjiBodyType): Promise<Kanji> {
+  async update(id: number, data: UpdateKanjiBody): Promise<Kanji> {
     const updateData: any = {
       character: data.character,
       meaningKey: data.meaningKey,
@@ -212,7 +213,7 @@ export class KanjiRepo {
   }
 
   // Method riêng cho updateWithMeanings (không cần character và meaningKey)
-  async updatePartial(id: number, data: Partial<UpdateKanjiBodyType>): Promise<Kanji> {
+  async updatePartial(id: number, data: Partial<UpdateKanjiBody>): Promise<Kanji> {
     const updateData: any = {
       strokeCount: data.strokeCount,
       jlptLevel: data.jlptLevel

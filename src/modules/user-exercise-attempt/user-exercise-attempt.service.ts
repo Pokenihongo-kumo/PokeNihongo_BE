@@ -1,8 +1,19 @@
-import {
-  GetUserExerciseAttemptListQueryType,
-  LatestExerciseAttemptsByLessonResType,
-  UpdateUserExerciseAttemptBodyType
-} from '@/modules/user-exercise-attempt/entities/user-exercise-attempt.entity'
+import { calculateScore } from '@/common/utils/algorithm'
+import { pickLabelFromComposite } from '@/common/utils/prase.utils'
+import { I18nService } from '@/i18n/i18n.service'
+import { UserExerciseAttemptMessage as M } from '@/i18n/message-keys'
+import { ExercisesService } from '@/modules/exercises/exercises.service'
+import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
+import { TranslationHelperService } from '@/modules/translation/translation.helper.service'
+import { UserAnswerLogService } from '@/modules/user-answer-log/user-answer-log.service'
+import { UserProgressService } from '@/modules/user-progress/user-progress.service'
+import { UserCoreService } from '@/modules/user/user-core.service'
+import { MessageResDTO } from '@/shared/dtos/response.dto'
+import { toPaginationMeta } from '@/shared/utils/pagination'
+import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
+import { ProgressStatus, UserRewardSourceType } from '@prisma/client'
+import { RewardService } from '../reward/reward.service'
 import {
   AttemptNotOwnedException,
   ExerciseAttemptNotInProgressException,
@@ -12,24 +23,13 @@ import {
   LessonPrerequisiteNotMetException,
   ReviewInsufficientScoreException,
   UserExerciseAttemptNotFoundException
-} from '@/modules/user-exercise-attempt/dto/user-exercise-attempt.error'
-import { UserExerciseAttemptRepo } from '@/modules/user-exercise-attempt/user-exercise-attempt.repo'
-import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
-import { UserAnswerLogService } from '@/modules/user-answer-log/user-answer-log.service'
-import { UserProgressService } from '@/modules/user-progress/user-progress.service'
-import { ExercisesService } from '@/modules/exercises/exercises.service'
-import { UserCoreService } from '@/modules/user/user-core.service'
-import { HttpException, Injectable, Logger } from '@nestjs/common'
-import { MessageResDTO } from '@/shared/dtos/response.dto'
-import { TranslationHelperService } from '@/modules/translation/translation.helper.service'
-import { I18nService } from '@/i18n/i18n.service'
-import { UserExerciseAttemptMessage as M } from '@/i18n/message-keys'
-import { pickLabelFromComposite } from '@/common/utils/prase.utils'
-import { calculateScore } from '@/common/utils/algorithm'
-import { toPaginationMeta } from '@/shared/utils/pagination'
-import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
-import { ProgressStatus, UserRewardSourceType } from '@prisma/client'
-import { RewardService } from '../reward/reward.service'
+} from './dto/user-exercise-attempt.error'
+import {
+  GetUserExerciseAttemptListQuery,
+  LatestExerciseAttemptsByLessonRes,
+  UpdateUserExerciseAttemptBody
+} from './dto/user-exercise-attempt.zod-dto'
+import { UserExerciseAttemptRepo } from './user-exercise-attempt.repo'
 
 @Injectable()
 export class UserExerciseAttemptService {
@@ -121,7 +121,7 @@ export class UserExerciseAttemptService {
     }
   }
 
-  async findAll(query: GetUserExerciseAttemptListQueryType, lang: string = 'vi') {
+  async findAll(query: GetUserExerciseAttemptListQuery, lang: string = 'vi') {
     const { currentPage, pageSize, userId, exerciseId, status } = query
     const result = await this.userExerciseAttemptRepository.findMany({
       currentPage,
@@ -156,7 +156,7 @@ export class UserExerciseAttemptService {
   // The app continues or skips its own attempt
   async update(
     id: number,
-    body: UpdateUserExerciseAttemptBodyType,
+    body: UpdateUserExerciseAttemptBody,
     userId: number,
     lang: string = 'vi'
   ) {
@@ -389,7 +389,7 @@ export class UserExerciseAttemptService {
     userId: number,
     lessonId: number,
     lang: string = 'vi'
-  ): Promise<LatestExerciseAttemptsByLessonResType> {
+  ): Promise<LatestExerciseAttemptsByLessonRes> {
     // No skipping ahead: a lesson not started opens only when the one before
     // it was started
     const checkUserProgress = await this.userProgressService.findByUserAndLesson(

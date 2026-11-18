@@ -1,6 +1,6 @@
 import { LEVEL_TYPE, LevelTypeType } from '@/common/constants/level.constant'
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { toPaginationMeta, toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
@@ -82,7 +82,7 @@ export class LevelRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, LEVEL_FIELDS)
 
     const { skip, take } = toSkipTake(pagination.currentPage, pagination.pageSize)
