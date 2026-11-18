@@ -1262,6 +1262,7 @@ export const enMessages = {
     ALREADY_EXISTS: 'User season history already exists',
 
     INVALID_DATA: 'Invalid user season history data',
+    CAN_NOT_CLAIM_REWARDS: 'You cannot claim rewards for this season',
     GET_REWARD_SUCCESS: 'Season rewards claimed successfully'
   },
   round_question: {
@@ -1314,8 +1315,7 @@ export const enMessages = {
     INVALID_DATA_TO_ACTIVE: 'Cannot set to active: season has already been opened before',
     NOT_STARTED: 'Leaderboard season has not started yet',
     NEW_SEASON: 'A new leaderboard season has started, good luck!',
-    NOT_JOIN_NEW_SEASON: 'You have not joined the new leaderboard season',
-    CAN_NOT_CLAIM_REWARDS: 'You cannot claim rewards for this season'
+    NOT_JOIN_NEW_SEASON: 'You have not joined the new leaderboard season'
   },
   user_reward_history: {
     CREATE_SUCCESS: 'User reward history created successfully',

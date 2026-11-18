@@ -136,7 +136,10 @@ export class SeasonRankRewardService {
 
         //season active chua ? ko dc update
         const season = await this.leaderboardSeasonService.getById(seasonId)
-        if (!season || season.status === 'ACTIVE') {
+        if (!season) {
+          throw new NotFoundRecordException()
+        }
+        if (season.status === 'ACTIVE') {
           throw new LeaderboardSeasonHasActiveException()
         }
 
