@@ -502,4 +502,28 @@ export class MatchService {
   setStatus(...args: Parameters<MatchRepo['setStatus']>) {
     return this.matchRepo.setStatus(...args)
   }
+
+  // ---- For other modules: Completing a match (RoundQuestionService) (B7) ----
+
+  findStatusById(...args: Parameters<MatchRepo['findStatusById']>) {
+    return this.matchRepo.findStatusById(...args)
+  }
+
+  completeWithWinner(...args: Parameters<MatchRepo['completeWithWinner']>) {
+    return this.matchRepo.completeWithWinner(...args)
+  }
+
+  setEloResult(...args: Parameters<MatchRepo['setEloResult']>) {
+    return this.matchRepo.setEloResult(...args)
+  }
+
+  findCompletedWithDetails(...args: Parameters<MatchRepo['findCompletedWithDetails']>) {
+    return this.matchRepo.findCompletedWithDetails(...args)
+  }
+
+  // ---- For other modules: Completing a match (RoundQuestionTimeoutProcessor) (B7) ----
+
+  completeWithWinnerFull(...args: Parameters<MatchRepo['completeWithWinnerFull']>) {
+    return this.matchRepo.completeWithWinnerFull(...args)
+  }
 }

@@ -41,4 +41,10 @@ export class UserCoreService {
   listIdsPage(currentPage: number, pageSize: number) {
     return this.userCoreRepo.listIdsPage(currentPage, pageSize)
   }
+
+  // ---- For other modules: Elo after a battle (round-question completes the match, in its transaction) (B7) ----
+
+  setEloscore(...args: Parameters<UserCoreRepo['setEloscore']>) {
+    return this.userCoreRepo.setEloscore(...args)
+  }
 }

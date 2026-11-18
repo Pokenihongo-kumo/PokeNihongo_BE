@@ -448,4 +448,255 @@ export class MatchRepo {
       data: { status }
     })
   }
+
+  // ---- Completing a match (RoundQuestionService) ----
+
+  findStatusById(matchId: number) {
+    return this.prismaService.match.findUnique({
+      where: { id: matchId },
+      select: { status: true }
+    })
+  }
+
+  // COMPLETED with its winner (null on a tie), with what match-completed shows
+  completeWithWinner(matchId: number, winnerId: number | null, prismaTx: PrismaClient) {
+    return prismaTx.match.update({
+      where: { id: matchId },
+      data: { status: 'COMPLETED', winnerId },
+      include: {
+        winner: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+            eloscore: true
+          }
+        },
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+                eloscore: true
+              }
+            }
+          }
+        },
+        rounds: {
+          include: {
+            roundWinner: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    avatar: true,
+                    eloscore: true
+                  }
+                }
+              }
+            },
+            participants: {
+              include: {
+                matchParticipant: { include: { user: true } },
+                selectedUserPokemon: {
+                  include: {
+                    pokemon: {
+                      select: {
+                        id: true,
+                        pokedex_number: true,
+                        nameJp: true,
+                        nameTranslations: true,
+                        rarity: true,
+                        imageUrl: true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          orderBy: { roundNumber: 'asc' }
+        }
+      }
+    })
+  }
+
+  setEloResult(
+    matchId: number,
+    eloGained: number,
+    eloLost: number,
+    prismaTx: PrismaClient
+  ) {
+    return prismaTx.match.update({
+      where: { id: matchId },
+      data: { eloGained, eloLost }
+    })
+  }
+
+  findCompletedWithDetails(matchId: number) {
+    return this.prismaService.match.findUnique({
+      where: { id: matchId },
+      include: {
+        winner: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+            eloscore: true
+          }
+        },
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+                eloscore: true
+              }
+            }
+          }
+        },
+        rounds: {
+          include: {
+            roundWinner: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    avatar: true,
+                    eloscore: true
+                  }
+                }
+              }
+            },
+            participants: {
+              include: {
+                matchParticipant: {
+                  include: {
+                    user: {
+                      select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        avatar: true,
+                        eloscore: true
+                      }
+                    }
+                  }
+                },
+                selectedUserPokemon: {
+                  include: {
+                    pokemon: {
+                      select: {
+                        id: true,
+                        pokedex_number: true,
+                        nameJp: true,
+                        nameTranslations: true,
+                        rarity: true,
+                        imageUrl: true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          orderBy: { roundNumber: 'asc' }
+        }
+      }
+    })
+  }
+
+  // ---- Completing a match (RoundQuestionTimeoutProcessor) ----
+
+  // As completeWithWinner, with the full winner row (the timeout path reads it so)
+  completeWithWinnerFull(
+    matchId: number,
+    winnerId: number | null,
+    prismaTx: PrismaClient
+  ) {
+    return prismaTx.match.update({
+      where: { id: matchId },
+      data: {
+        status: 'COMPLETED',
+        winnerId
+      },
+      include: {
+        winner: true,
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+                eloscore: true
+              }
+            }
+          }
+        },
+        rounds: {
+          include: {
+            roundWinner: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    avatar: true,
+                    eloscore: true
+                  }
+                }
+              }
+            },
+            participants: {
+              include: {
+                matchParticipant: {
+                  include: {
+                    user: {
+                      select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        avatar: true,
+                        eloscore: true
+                      }
+                    }
+                  }
+                },
+                selectedUserPokemon: {
+                  include: {
+                    pokemon: {
+                      select: {
+                        id: true,
+                        pokedex_number: true,
+                        nameJp: true,
+                        nameTranslations: true,
+                        rarity: true,
+                        imageUrl: true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          orderBy: { roundNumber: 'asc' }
+        }
+      }
+    })
+  }
 }

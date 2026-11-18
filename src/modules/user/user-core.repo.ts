@@ -1,3 +1,4 @@
+import { PrismaClient } from '@prisma/client'
 import { LevelType } from '@/modules/level/entities/level.entity'
 import { Injectable } from '@nestjs/common'
 import { PermissionType } from 'src/shared/models/shared-permission.model'
@@ -147,5 +148,14 @@ export class UserCoreRepo {
       })
     ])
     return { ids: rows.map((row) => row.id), totalPage: Math.ceil(total / pageSize) }
+  }
+
+  // ---- Elo after a battle (round-question completes the match, in its transaction) ----
+
+  setEloscore(id: number, eloscore: number, prismaTx: PrismaClient) {
+    return prismaTx.user.update({
+      where: { id },
+      data: { eloscore }
+    })
   }
 }
