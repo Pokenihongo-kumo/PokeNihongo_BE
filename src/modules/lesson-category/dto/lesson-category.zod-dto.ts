@@ -1,21 +1,21 @@
 import { createZodDto } from 'nestjs-zod'
 import {
-  CreateLessonCategoryBodyType,
-  UpdateLessonCategoryBodyType,
-  GetLessonCategoryByIdParamsType,
-  GetLessonCategoryListQueryType
+  CreateLessonCategoryBodySchema,
+  GetLessonCategoryByIdParamsSchema,
+  GetLessonCategoryListQuerySchema,
+  UpdateLessonCategoryBodySchema
 } from '../entities/lesson-category.entity'
 
 // Lesson Category DTOs
 export class CreateLessonCategoryBodyDTO extends createZodDto(
-  CreateLessonCategoryBodyType
+  CreateLessonCategoryBodySchema
 ) {}
 export class UpdateLessonCategoryBodyDTO extends createZodDto(
-  UpdateLessonCategoryBodyType
+  UpdateLessonCategoryBodySchema
 ) {}
 export class GetLessonCategoryByIdParamsDTO extends createZodDto(
-  GetLessonCategoryByIdParamsType
+  GetLessonCategoryByIdParamsSchema
 ) {}
 export class GetLessonCategoryListQueryDTO extends createZodDto(
-  GetLessonCategoryListQueryType
+  GetLessonCategoryListQuerySchema
 ) {}

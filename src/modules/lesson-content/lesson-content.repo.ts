@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common'
+import { LessonContentSortField, SortOrder } from '@/common/enum/enum'
 import { PrismaService } from '@/shared/services/prisma.service'
+import { Injectable } from '@nestjs/common'
 import {
   CreateLessonContentBodyType,
-  UpdateLessonContentBodyType,
-  GetLessonContentListQueryType
+  GetLessonContentListQueryType,
+  UpdateLessonContentBodyType
 } from './entities/lesson-content.entities'
-import { LessonContentSortField, SortOrder } from '@/common/enum/enum'
 
 @Injectable()
 export class LessonContentRepository {

@@ -11,7 +11,7 @@ extendZodWithOpenApi(z)
 patchNestJsSwagger()
 
 // Answer Entity Types
-export const AnswerType = z.object({
+export const AnswerSchema = z.object({
   id: z.number(),
   answerJp: z.string(),
   answerKey: z.string(),
@@ -22,7 +22,7 @@ export const AnswerType = z.object({
 })
 
 // Answer with translation for list (without answerKey)
-export const AnswerWithTranslationType = AnswerType.omit({ answerKey: true })
+export const AnswerWithTranslationSchema = AnswerSchema.omit({ answerKey: true })
   .extend({
     meaning: z.string().optional(),
     meanings: z
@@ -47,7 +47,7 @@ export const AnswerWithTranslationType = AnswerType.omit({ answerKey: true })
   .strict()
 
 // Request/Response Types
-export const CreateAnswerBodyType = z.object({
+export const CreateAnswerBodySchema = z.object({
   answerJp: z
     .string()
     .min(1, AnswerMessage.ANSWER_JP_REQUIRED)
@@ -75,7 +75,7 @@ export const CreateAnswerBodyType = z.object({
 })
 
 // Schema for creating multiple answers
-export const CreateMultipleAnswersBodyType = z.object({
+export const CreateMultipleAnswersBodySchema = z.object({
   questionBankId: z.number().min(1, AnswerMessage.QUESTION_ID_INVALID),
   answers: z
     .array(
@@ -110,7 +110,7 @@ export const CreateMultipleAnswersBodyType = z.object({
     .max(10, AnswerMessage.ANSWERS_TOO_MANY)
 })
 
-export const UpdateAnswerBodyType = z.object({
+export const UpdateAnswerBodySchema = z.object({
   answerJp: z
     .string()
     .min(1, AnswerMessage.ANSWER_JP_REQUIRED)
@@ -138,11 +138,11 @@ export const UpdateAnswerBodyType = z.object({
     .optional()
 })
 
-export const GetAnswerByIdParamsType = z.object({
+export const GetAnswerByIdParamsSchema = z.object({
   id: checkIdSchema(AnswerMessage.INVALID_ID)
 })
 
-export const GetAnswerListQueryType = z.object({
+export const GetAnswerListQuerySchema = z.object({
   currentPage: z.string().transform(Number).default('1'),
   pageSize: z.string().transform(Number).default('10'),
   questionBankId: z.string().transform(Number).optional(),
@@ -164,7 +164,7 @@ export const GetAnswerListQueryType = z.object({
 
 // Response schemas
 export const AnswerResponseSchema = resSchema(
-  AnswerType.omit({ answerKey: true }).extend({
+  AnswerSchema.omit({ answerKey: true }).extend({
     meaning: z.string().optional(),
     meanings: z
       .array(
@@ -180,13 +180,15 @@ export const AnswerResponseSchema = resSchema(
   })
 ).strict()
 
-export const AnswerListResSchema = paginatedResSchema(AnswerWithTranslationType).strict()
+export const AnswerListResSchema = paginatedResSchema(
+  AnswerWithTranslationSchema
+).strict()
 
 // Response schema for multiple answers creation
 export const CreateMultipleAnswersResponseSchema = resSchema(
   z.object({
-    created: z.array(AnswerType),
-    updated: z.array(AnswerType),
+    created: z.array(AnswerSchema),
+    updated: z.array(AnswerSchema),
     failed: z.array(
       z.object({
         answerJp: z.string(),
@@ -203,13 +205,15 @@ export const CreateMultipleAnswersResponseSchema = resSchema(
 ).strict()
 
 // Type exports
-export type AnswerType = z.infer<typeof AnswerType>
-export type AnswerWithTranslationType = z.infer<typeof AnswerWithTranslationType>
-export type CreateAnswerBodyType = z.infer<typeof CreateAnswerBodyType>
-export type CreateMultipleAnswersBodyType = z.infer<typeof CreateMultipleAnswersBodyType>
-export type UpdateAnswerBodyType = z.infer<typeof UpdateAnswerBodyType>
-export type GetAnswerByIdParamsType = z.infer<typeof GetAnswerByIdParamsType>
-export type GetAnswerListQueryType = z.infer<typeof GetAnswerListQueryType>
+export type AnswerType = z.infer<typeof AnswerSchema>
+export type AnswerWithTranslationType = z.infer<typeof AnswerWithTranslationSchema>
+export type CreateAnswerBodyType = z.infer<typeof CreateAnswerBodySchema>
+export type CreateMultipleAnswersBodyType = z.infer<
+  typeof CreateMultipleAnswersBodySchema
+>
+export type UpdateAnswerBodyType = z.infer<typeof UpdateAnswerBodySchema>
+export type GetAnswerByIdParamsType = z.infer<typeof GetAnswerByIdParamsSchema>
+export type GetAnswerListQueryType = z.infer<typeof GetAnswerListQuerySchema>
 export type AnswerResponseType = z.infer<typeof AnswerResponseSchema>
 export type AnswerListResType = z.infer<typeof AnswerListResSchema>
 export type CreateMultipleAnswersResponseType = z.infer<

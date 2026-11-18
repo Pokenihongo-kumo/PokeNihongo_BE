@@ -1,40 +1,38 @@
-import {
-  Injectable,
-  Logger,
-  BadRequestException,
-  NotFoundException,
-  HttpException
-} from '@nestjs/common'
-import {
-  CreateLessonContentBodyType,
-  UpdateLessonContentBodyType,
-  GetLessonContentByIdParamsType,
-  GetLessonContentListQueryType,
-  CreateMutiLessonContentBodyType,
-  UpdateLessonContentOrder,
-  GroupedLessonContentType,
-  LessonContentFullResType
-} from './entities/lesson-content.entities'
-import {
-  LessonContentNotFoundException,
-  LessonContentAlreadyExistsException,
-  InvalidLessonContentDataException,
-  LessonNotFoundException,
-  ContentAlreadyExistsInLessonException
-} from './dto/lesson-content.error'
-import { LessonContentRepository } from './lesson-content.repo'
-import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from '@/shared/helpers'
-import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { LessonContentSortField, SortOrder } from '@/common/enum/enum'
-import { VocabularyService } from '../vocabulary/vocabulary.service'
 import { GrammarService } from '@/modules/grammar/grammar.service'
-import { KanjiService } from '../kanji/kanji.service'
-import { TranslationService } from '../translation/translation.service'
-import { LanguagesService } from '../languages/languages.service'
-import { MeaningService } from '../meaning/meaning.service'
 import { LessonService } from '@/modules/lesson/lesson.service'
 import { UserExerciseAttemptService } from '@/modules/user-exercise-attempt/user-exercise-attempt.service'
+import { MessageResDTO } from '@/shared/dtos/response.dto'
+import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from '@/shared/helpers'
+import {
+  BadRequestException,
+  HttpException,
+  Injectable,
+  Logger,
+  NotFoundException
+} from '@nestjs/common'
 import { ExercisesService } from '../exercises/exercises.service'
+import { KanjiService } from '../kanji/kanji.service'
+import { LanguagesService } from '../languages/languages.service'
+import { MeaningService } from '../meaning/meaning.service'
+import { TranslationService } from '../translation/translation.service'
+import { VocabularyService } from '../vocabulary/vocabulary.service'
+import {
+  ContentAlreadyExistsInLessonException,
+  InvalidLessonContentDataException,
+  LessonContentAlreadyExistsException,
+  LessonContentNotFoundException,
+  LessonNotFoundException
+} from './dto/lesson-content.error'
+import {
+  CreateMutiLessonContentBodyType,
+  GetLessonContentListQueryType,
+  GroupedLessonContentType,
+  LessonContentFullResType,
+  UpdateLessonContentBodyType,
+  UpdateLessonContentOrder
+} from './entities/lesson-content.entities'
+import { LessonContentRepository } from './lesson-content.repo'
 
 @Injectable()
 export class LessonContentService {

@@ -1,18 +1,18 @@
 import { createZodDto } from 'nestjs-zod'
 import {
-  CreateLessonBodyType,
-  UpdateLessonBodyType,
-  GetLessonByIdParamsType,
-  GetLessonListQueryType,
+  CreateLessonBodySchema,
+  GetLessonByIdParamsSchema,
+  GetLessonListQuerySchema,
+  LessonListResSchema,
   LessonResSchema,
-  LessonListResSchema
+  UpdateLessonBodySchema
 } from '../entities/lesson.entity'
 
 // Lesson DTOs
-export class CreateLessonBodyDTO extends createZodDto(CreateLessonBodyType) {}
-export class UpdateLessonBodyDTO extends createZodDto(UpdateLessonBodyType) {}
-export class GetLessonByIdParamsDTO extends createZodDto(GetLessonByIdParamsType) {}
-export class GetLessonListQueryDTO extends createZodDto(GetLessonListQueryType) {}
+export class CreateLessonBodyDTO extends createZodDto(CreateLessonBodySchema) {}
+export class UpdateLessonBodyDTO extends createZodDto(UpdateLessonBodySchema) {}
+export class GetLessonByIdParamsDTO extends createZodDto(GetLessonByIdParamsSchema) {}
+export class GetLessonListQueryDTO extends createZodDto(GetLessonListQuerySchema) {}
 
 // Response serializers (they strip unknown fields)
 export class LessonResDTO extends createZodDto(LessonResSchema) {}

@@ -10,7 +10,7 @@ const idOf = (key: string) =>
   z.number({ invalid_type_error: key, required_error: key }).int(key).positive(key)
 
 // Lesson Entity Types
-export const LessonType = z.object({
+export const LessonSchema = z.object({
   id: z.number(),
   slug: z.string(),
   titleJp: z.string(),
@@ -41,7 +41,7 @@ export const LessonType = z.object({
   updatedAt: z.date()
 })
 
-export const LessonWithRelationsType = LessonType.extend({
+export const LessonWithRelationsSchema = LessonSchema.extend({
   lessonCategory: z
     .object({
       id: z.number(),
@@ -58,7 +58,7 @@ export const LessonWithRelationsType = LessonType.extend({
     .optional()
 })
 
-export const CreateLessonBodyType = z.object({
+export const CreateLessonBodySchema = z.object({
   // Ignored: the slug is always lesson-{id}
   slug: z.preprocess(
     (val) => (val === '' ? undefined : val),
@@ -107,15 +107,15 @@ export const CreateLessonBodyType = z.object({
     .optional()
 })
 
-export const UpdateLessonBodyType = CreateLessonBodyType.partial().extend({
+export const UpdateLessonBodySchema = CreateLessonBodySchema.partial().extend({
   titleKey: z.string().min(1).max(500).optional()
 })
 
-export const GetLessonByIdParamsType = z.object({
+export const GetLessonByIdParamsSchema = z.object({
   id: checkIdSchema(M.INVALID_ID)
 })
 
-export const GetLessonListQueryType = z.object({
+export const GetLessonListQuerySchema = z.object({
   currentPage: checkIdSchema(M.INVALID_PAGE).default(1),
   pageSize: checkIdSchema(M.INVALID_PAGE_SIZE).default(10),
   // Matches the slug or the title key
@@ -138,15 +138,15 @@ export const GetLessonListQueryType = z.object({
 })
 
 // Response Schemas
-export const LessonResSchema = resSchema(LessonWithRelationsType)
+export const LessonResSchema = resSchema(LessonWithRelationsSchema)
 
-export const LessonListResSchema = paginatedResSchema(LessonWithRelationsType)
+export const LessonListResSchema = paginatedResSchema(LessonWithRelationsSchema)
 
 // Type exports
-export type LessonType = z.infer<typeof LessonType>
-export type LessonWithRelationsType = z.infer<typeof LessonWithRelationsType>
-export type CreateLessonBodyType = z.infer<typeof CreateLessonBodyType>
-export type UpdateLessonBodyType = z.infer<typeof UpdateLessonBodyType>
-export type GetLessonByIdParamsType = z.infer<typeof GetLessonByIdParamsType>
-export type GetLessonListQueryType = z.infer<typeof GetLessonListQueryType>
+export type LessonType = z.infer<typeof LessonSchema>
+export type LessonWithRelationsType = z.infer<typeof LessonWithRelationsSchema>
+export type CreateLessonBodyType = z.infer<typeof CreateLessonBodySchema>
+export type UpdateLessonBodyType = z.infer<typeof UpdateLessonBodySchema>
+export type GetLessonByIdParamsType = z.infer<typeof GetLessonByIdParamsSchema>
+export type GetLessonListQueryType = z.infer<typeof GetLessonListQuerySchema>
 export type LessonListResType = z.infer<typeof LessonListResSchema>

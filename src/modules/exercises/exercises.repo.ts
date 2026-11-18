@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common'
 import { PrismaService } from '@/shared/services/prisma.service'
-import { GetExercisesListQueryType } from './entities/exercises.entity'
 import { toSkipTake } from '@/shared/utils/pagination'
+import { Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
+import { GetExercisesListQueryType } from './entities/exercises.entity'
 
 // Lesson and test set summary returned with an exercise
 const withLessonAndTestSet = {

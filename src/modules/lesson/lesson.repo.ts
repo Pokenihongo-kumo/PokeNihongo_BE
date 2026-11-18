@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common'
 import { PrismaService } from '@/shared/services/prisma.service'
-import { GetLessonListQueryType } from './entities/lesson.entity'
 import { toSkipTake } from '@/shared/utils/pagination'
+import { Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
+import { GetLessonListQueryType } from './entities/lesson.entity'
 
 // Category, author and test returned with a lesson
 const withRelations = {

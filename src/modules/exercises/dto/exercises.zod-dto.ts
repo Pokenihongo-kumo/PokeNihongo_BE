@@ -1,16 +1,18 @@
 import { createZodDto } from 'nestjs-zod'
 import {
-  CreateExercisesBodyType,
-  UpdateExercisesBodyType,
-  GetExercisesByIdParamsType,
-  GetExercisesByLessonParamsType,
-  GetExercisesListQueryType
+  CreateExercisesBodySchema,
+  GetExercisesByIdParamsSchema,
+  GetExercisesByLessonParamsSchema,
+  GetExercisesListQuerySchema,
+  UpdateExercisesBodySchema
 } from '../entities/exercises.entity'
 
-export class CreateExercisesBodyDTO extends createZodDto(CreateExercisesBodyType) {}
-export class UpdateExercisesBodyDTO extends createZodDto(UpdateExercisesBodyType) {}
-export class GetExercisesByIdParamsDTO extends createZodDto(GetExercisesByIdParamsType) {}
-export class GetExercisesByLessonParamsDTO extends createZodDto(
-  GetExercisesByLessonParamsType
+export class CreateExercisesBodyDTO extends createZodDto(CreateExercisesBodySchema) {}
+export class UpdateExercisesBodyDTO extends createZodDto(UpdateExercisesBodySchema) {}
+export class GetExercisesByIdParamsDTO extends createZodDto(
+  GetExercisesByIdParamsSchema
 ) {}
-export class GetExercisesListQueryDTO extends createZodDto(GetExercisesListQueryType) {}
+export class GetExercisesByLessonParamsDTO extends createZodDto(
+  GetExercisesByLessonParamsSchema
+) {}
+export class GetExercisesListQueryDTO extends createZodDto(GetExercisesListQuerySchema) {}

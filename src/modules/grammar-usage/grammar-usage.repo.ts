@@ -1,13 +1,13 @@
+import { GrammarUsageSortField, SortOrder } from '@/common/enum/enum'
+import { PrismaService } from '@/shared/services/prisma.service'
 import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
-import { PrismaService } from '@/shared/services/prisma.service'
 import {
   CreateGrammarUsageBodyType,
-  UpdateGrammarUsageBodyType,
-  GetGrammarUsageListQueryType
+  GetGrammarUsageListQueryType,
+  UpdateGrammarUsageBodyType
 } from './entities/grammar-usage.entity'
-import { GrammarUsageSortField, SortOrder } from '@/common/enum/enum'
 
 @Injectable()
 export class GrammarUsageRepo {

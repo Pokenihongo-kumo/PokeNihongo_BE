@@ -1,5 +1,6 @@
 import { I18nService } from '@/i18n/i18n.service'
 import { LessonCategoryMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
 import { toPaginationMeta } from '@/shared/utils/pagination'
 import {
   isNotFoundPrismaError,
@@ -7,7 +8,6 @@ import {
 } from '@/shared/utils/prisma-errors'
 import { HttpException, Injectable, Logger } from '@nestjs/common'
 import { LessonCategory } from '@prisma/client'
-import { LanguagesService } from '@/modules/languages/languages.service'
 import { TranslationService } from '../translation/translation.service'
 import {
   InvalidLessonCategoryDataException,

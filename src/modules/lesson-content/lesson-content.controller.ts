@@ -1,3 +1,5 @@
+import { ActiveUser } from '@/common/decorators/active-user.decorator'
+import { AuthenticationGuard } from '@/common/guards/authentication.guard'
 import {
   Body,
   Controller,
@@ -8,7 +10,8 @@ import {
   Param,
   Post,
   Put,
-  Query
+  Query,
+  UseGuards
 } from '@nestjs/common'
 import {
   ApiBearerAuth,
@@ -20,36 +23,24 @@ import {
   ApiTags
 } from '@nestjs/swagger'
 import { ZodSerializerDto } from 'nestjs-zod'
-import { AuthenticationGuard } from '@/common/guards/authentication.guard'
-import { UseGuards } from '@nestjs/common'
-import { LessonContentService } from './lesson-content.service'
 import {
-  CreateLessonContentBodyDTO,
-  UpdateLessonContentBodyDTO,
-  GetLessonContentByIdParamsDTO,
+  CreateLessonContentSwaggerDTO,
+  GetLessonContentListQuerySwaggerDTO,
+  LessonContentFullResponseSwaggerDTO,
+  LessonContentListResponseSwaggerDTO,
+  LessonContentResponseSwaggerDTO,
+  UpdateLessonContentOrderSwaggerDTO
+} from './dto/lesson-content.dto'
+import { LessonContentListResponseDTO } from './dto/lesson-content.response.dto'
+import {
   GetLessonContentListQueryDTO,
   LessonContentFullResDTO
 } from './dto/lesson-content.zod-dto'
 import {
-  LessonContentResponseSwaggerDTO,
-  LessonContentListResponseSwaggerDTO,
-  CreateLessonContentSwaggerDTO,
-  UpdateLessonContentSwaggerDTO,
-  GetLessonContentListQuerySwaggerDTO,
-  UpdateLessonContentOrderSwaggerDTO,
-  LessonContentFullResponseSwaggerDTO
-} from './dto/lesson-content.dto'
-import { MessageResDTO } from '@/shared/dtos/response.dto'
-import {
-  LessonContentResponseDTO,
-  LessonContentListResponseDTO
-} from './dto/lesson-content.response.dto'
-import {
   CreateMutiLessonContentBodyType,
   UpdateLessonContentOrder
 } from './entities/lesson-content.entities'
-import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
-import { ActiveUser } from '@/common/decorators/active-user.decorator'
+import { LessonContentService } from './lesson-content.service'
 
 @ApiTags('Lesson Contents')
 @Controller('lesson-contents')

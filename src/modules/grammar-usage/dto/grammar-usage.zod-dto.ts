@@ -1,16 +1,20 @@
 import { createZodDto } from 'nestjs-zod'
 import {
-  CreateGrammarUsageBodyType,
-  UpdateGrammarUsageBodyType,
-  GetGrammarUsageByIdParamsType,
-  GetGrammarUsageListQueryType
+  CreateGrammarUsageBodySchema,
+  GetGrammarUsageByIdParamsSchema,
+  GetGrammarUsageListQuerySchema,
+  UpdateGrammarUsageBodySchema
 } from '../entities/grammar-usage.entity'
 
-export class CreateGrammarUsageBodyDTO extends createZodDto(CreateGrammarUsageBodyType) {}
-export class UpdateGrammarUsageBodyDTO extends createZodDto(UpdateGrammarUsageBodyType) {}
+export class CreateGrammarUsageBodyDTO extends createZodDto(
+  CreateGrammarUsageBodySchema
+) {}
+export class UpdateGrammarUsageBodyDTO extends createZodDto(
+  UpdateGrammarUsageBodySchema
+) {}
 export class GetGrammarUsageByIdParamsDTO extends createZodDto(
-  GetGrammarUsageByIdParamsType
+  GetGrammarUsageByIdParamsSchema
 ) {}
 export class GetGrammarUsageListQueryDTO extends createZodDto(
-  GetGrammarUsageListQueryType
+  GetGrammarUsageListQuerySchema
 ) {}
