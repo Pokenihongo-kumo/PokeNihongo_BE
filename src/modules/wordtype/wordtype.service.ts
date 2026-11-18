@@ -2,7 +2,7 @@ import {
   CreateWordTypeBody,
   GetWordTypeListQuery,
   UpdateWordTypeBody
-} from './entities/wordtype.entity'
+} from './dto/wordtype.zod-dto'
 
 import { I18nService } from '@/i18n/i18n.service'
 import { WordTypeMessage } from '@/i18n/message-keys'

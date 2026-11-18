@@ -2,7 +2,7 @@ import { PrismaService } from '@/shared/services/prisma.service'
 import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
-import { GetExercisesListQuery } from './entities/exercises.entity'
+import { GetExercisesListQuery } from './dto/exercises.zod-dto'
 
 // Lesson and test set summary returned with an exercise
 const withLessonAndTestSet = {

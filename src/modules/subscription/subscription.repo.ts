@@ -4,13 +4,12 @@ import { Injectable } from '@nestjs/common'
 import { parseQs } from '@/common/utils/qs-parser'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import { CreateTranslationBody } from '../translation/entities/translation.entity'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import {
   CreateSubscriptionBody,
-  LEADERBOARD_SEASON_FIELDS,
-  Subscription,
   UpdateSubscriptionBody
-} from './entities/subscription.entity'
+} from './dto/subscription.zod-dto'
+import { LEADERBOARD_SEASON_FIELDS, Subscription } from './entities/subscription.entity'
 
 type SubscriptionPrismaType = Omit<Subscription, 'nameKey'> & {
   name: string

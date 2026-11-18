@@ -6,10 +6,9 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
   CreateUserGachaPityBody,
-  USER_GACHA_PITY_FIELDS,
-  UpdateUserGachaPityBody,
-  UserGachaPity
-} from './entities/user-gacha-pityentity'
+  UpdateUserGachaPityBody
+} from './dto/user-gacha-pity.zod-dto'
+import { USER_GACHA_PITY_FIELDS, UserGachaPity } from './entities/user-gacha-pityentity'
 
 @Injectable()
 export class UserGachaPityRepo {

@@ -22,10 +22,7 @@ import {
   UserNotInRoundException,
   UserPokemonNotFoundException
 } from './dto/user-pokemon.error'
-import {
-  CreateUserPokemonBody,
-  UpdateUserPokemonBody
-} from './entities/user-pokemon.entity'
+import { CreateUserPokemonBody, UpdateUserPokemonBody } from './dto/user-pokemon.zod-dto'
 import { UserPokemonRepo } from './user-pokemon.repo'
 
 @Injectable()

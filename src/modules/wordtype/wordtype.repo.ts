@@ -2,7 +2,8 @@ import { PrismaService } from '@/shared/services/prisma.service'
 import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
 import { Prisma, WordType as WordTypeRow } from '@prisma/client'
-import { CreateWordTypeBody, UpdateWordTypeBody, WordType } from './entities/wordtype.entity'
+import { CreateWordTypeBody, UpdateWordTypeBody } from './dto/wordtype.zod-dto'
+import { WordType } from './entities/wordtype.entity'
 
 @Injectable()
 export class WordTypeRepo {

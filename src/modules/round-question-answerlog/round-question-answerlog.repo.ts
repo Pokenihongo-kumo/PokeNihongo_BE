@@ -5,9 +5,11 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
   CreateRoundQuestionsAnswerLogBody,
-  RoundQuestionsAnswerLog,
-  USER_SEASON_HISTORY_FIELDS,
   UpdateRoundQuestionsAnswerLogBody
+} from './dto/round-question-answerlog.zod-dto'
+import {
+  RoundQuestionsAnswerLog,
+  USER_SEASON_HISTORY_FIELDS
 } from './entities/round-question-answerlog.entity'
 
 @Injectable()

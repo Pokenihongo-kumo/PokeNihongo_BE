@@ -19,7 +19,7 @@ import { UserDailyRequestAlreadyExistsException } from './dto/user-daily-request
 import {
   CreateUserDailyRequestBody,
   UpdateUserDailyRequestBody
-} from './entities/user-daily-request.entity'
+} from './dto/user-daily-request.zod-dto'
 import { UserDailyRequestRepo } from './user-daily-request.repo'
 
 @Injectable()

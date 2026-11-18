@@ -35,11 +35,8 @@ import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-tr
 import { WalletService } from '@/modules/wallet/wallet.service'
 import { AttendanceRepo } from './attendence.repo'
 import { AttendancegAlreadyExistsException } from './dto/attendance.error'
-import {
-  Attendance,
-  CreateAttendanceBody,
-  UpdateAttendanceBody
-} from './entities/attendance.entity'
+import { CreateAttendanceBody, UpdateAttendanceBody } from './dto/attendance.zod-dto'
+import { Attendance } from './entities/attendance.entity'
 type AttendanceWithDayOfWeekType = Attendance & { dayOfWeek: WeekDayType }
 @Injectable()
 export class AttendanceService {

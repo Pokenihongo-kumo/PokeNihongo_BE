@@ -7,7 +7,7 @@ import {
   UpdateGachaItemRateBodySchema,
   UpdateGachaItemRateResSchema,
   UpdateWithListItemResSchema
-} from '../entities/gacha-item-rate.entity'
+} from './gacha-item-rate.zod-dto'
 
 // Request DTOs
 export class CreateGachaItemRateBodyDTO extends createZodDto(

@@ -4,12 +4,8 @@ import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import {
-  CreateInvoiceBody,
-  Invoice,
-  USER_SEASON_HISTORY_FIELDS,
-  UpdateInvoiceBody
-} from './entities/invoice.entity'
+import { CreateInvoiceBody, UpdateInvoiceBody } from './dto/invoice.zod-dto'
+import { Invoice, USER_SEASON_HISTORY_FIELDS } from './entities/invoice.entity'
 
 @Injectable()
 export class InvoiceRepo {

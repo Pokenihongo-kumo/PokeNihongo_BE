@@ -19,9 +19,9 @@ import {
   GetTranslationListQuery,
   GetTranslationsByKeyQuery,
   GetTranslationsByLanguageQuery,
-  Translation,
   UpdateTranslationBody
-} from './entities/translation.entity'
+} from './dto/translation.zod-dto'
+import { Translation } from './entities/translation.entity'
 import { TranslationRepo } from './translation.repo'
 
 @Injectable()

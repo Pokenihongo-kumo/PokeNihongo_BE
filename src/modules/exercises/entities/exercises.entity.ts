@@ -1,5 +1,3 @@
-import { checkIdSchema } from '@/common/utils/id.validation'
-import { ExercisesMessage as M } from '@/i18n/message-keys'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { LessonContentsType } from '@prisma/client'
 import { patchNestJsSwagger } from 'nestjs-zod'
@@ -7,14 +5,6 @@ import { z } from 'zod'
 
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
-
-// Body ids are JSON numbers (no coercion); params and query use checkIdSchema
-const idOf = (key: string) =>
-  z.number({ invalid_type_error: key, required_error: key }).int(key).positive(key)
-
-const exerciseType = z.nativeEnum(LessonContentsType, {
-  errorMap: () => ({ message: M.INVALID_EXERCISE_TYPE })
-})
 
 const RewardSummarySchema = z.object({
   id: z.number(),
@@ -37,64 +27,6 @@ export const ExercisesSchema = z.object({
   updatedAt: z.date()
 })
 
-// The exercise type, lesson and test set rules are checked by the service
-export const CreateExercisesBodySchema = z
-  .object({
-    exerciseType,
-    isBlocked: z.boolean({ invalid_type_error: M.INVALID_IS_BLOCKED }).default(false),
-    lessonId: idOf(M.INVALID_LESSON_ID),
-    testSetId: idOf(M.INVALID_TEST_SET_ID).optional(),
-    rewardId: z.array(idOf(M.INVALID_REWARD_ID)).optional().default([])
-  })
-  .strict()
-
-export const UpdateExercisesBodySchema = z
-  .object({
-    exerciseType: exerciseType.optional(),
-    isBlocked: z.boolean({ invalid_type_error: M.INVALID_IS_BLOCKED }).optional(),
-    lessonId: idOf(M.INVALID_LESSON_ID).optional(),
-    testSetId: idOf(M.INVALID_TEST_SET_ID).optional(),
-    rewardId: z.array(idOf(M.INVALID_REWARD_ID)).optional()
-  })
-  .strict()
-
-export const GetExercisesByIdParamsSchema = z.object({
-  id: checkIdSchema(M.INVALID_ID)
-})
-
-export const GetExercisesByLessonParamsSchema = z.object({
-  lessonId: checkIdSchema(M.INVALID_LESSON_ID)
-})
-
-export const GetExercisesListQuerySchema = z.object({
-  currentPage: checkIdSchema(M.INVALID_PAGE).default(1),
-  pageSize: checkIdSchema(M.INVALID_PAGE_SIZE).default(10),
-  exerciseType: exerciseType.optional(),
-  lessonId: checkIdSchema(M.INVALID_LESSON_ID).optional(),
-  isBlocked: z
-    .enum(['true', 'false'], { errorMap: () => ({ message: M.INVALID_IS_BLOCKED }) })
-    .transform((val) => val === 'true')
-    .optional(),
-  // Matches the test set's name or description
-  search: z.string().optional(),
-  // Columns of the table (the old enum also listed `price`, which has none)
-  sortBy: z
-    .enum(['id', 'exerciseType', 'isBlocked', 'lessonId', 'createdAt', 'updatedAt'])
-    .optional()
-    .default('createdAt'),
-  sort: z
-    .preprocess(
-      (val) => (typeof val === 'string' ? val.toLowerCase() : val),
-      z.enum(['asc', 'desc'])
-    )
-    .optional()
-    .default('desc')
-})
-
 // Type exports
 export type Exercises = z.infer<typeof ExercisesSchema>
 export type RewardSummary = z.infer<typeof RewardSummarySchema>
-export type CreateExercisesBody = z.infer<typeof CreateExercisesBodySchema>
-export type UpdateExercisesBody = z.infer<typeof UpdateExercisesBodySchema>
-export type GetExercisesByIdParams = z.infer<typeof GetExercisesByIdParamsSchema>
-export type GetExercisesListQuery = z.infer<typeof GetExercisesListQuerySchema>

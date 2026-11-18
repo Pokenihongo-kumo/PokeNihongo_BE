@@ -22,19 +22,19 @@ import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { ShopItemRepo } from '../shop-item/shop-item.repo'
 import { ShopPurchaseRepo } from '../shop-purchase/shop-purchase.repo'
-import { CreateTranslationBody } from '../translation/entities/translation.entity'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
+import {
+  CreateShopBannerBody,
+  CreateShopBannerBodyInput,
+  UpdateShopBannerBody,
+  UpdateShopBannerBodyInput
+} from './dto/shop-banner.zod-dto'
 import {
   InvalidMinMaxShopBannerException,
   OnlyOneShopBannerActiveException,
   ShopBannerAlreadyExistsException,
   ShopBannerInvalidDateRangeException
 } from './dto/shop-bannererror'
-import {
-  CreateShopBannerBody,
-  CreateShopBannerBodyInput,
-  UpdateShopBannerBody,
-  UpdateShopBannerBodyInput
-} from './entities/shop-banner.entity'
 import { ShopBannerRepo } from './shop-banner.repo'
 
 @Injectable()

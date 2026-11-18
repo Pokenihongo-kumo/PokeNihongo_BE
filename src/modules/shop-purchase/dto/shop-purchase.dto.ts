@@ -7,7 +7,7 @@ import {
   GetShopPurchaseParamsSchema,
   UpdateShopPurchaseBodySchema,
   UpdateShopPurchaseResSchema
-} from '../entities/shop-purchase.entity'
+} from './shop-purchase.zod-dto'
 
 // Request DTOs
 export class CreateShopPurchaseBodyDTO extends createZodDto(

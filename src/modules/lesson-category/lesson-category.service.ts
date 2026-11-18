@@ -18,9 +18,9 @@ import {
   CreateLessonCategoryBody,
   GetLessonCategoryByIdParams,
   GetLessonCategoryListQuery,
-  LessonCategoryWithRelations,
   UpdateLessonCategoryBody
-} from './entities/lesson-category.entity'
+} from './dto/lesson-category.zod-dto'
+import { LessonCategoryWithRelations } from './entities/lesson-category.entity'
 import { LessonCategoryRepo } from './lesson-category.repo'
 
 // Default names written when a category is created (editable later)

@@ -16,7 +16,7 @@ import {
   GetLanguagesByCodeParams,
   GetLanguagesListQuery,
   UpdateLanguagesBody
-} from './entities/languages.entity'
+} from './dto/languages.zod-dto'
 import { LanguagesRepo } from './languages.repo'
 
 // Other modules call findMany/findById/findByCode without a language; `lang`

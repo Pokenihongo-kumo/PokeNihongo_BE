@@ -1,12 +1,6 @@
 import { I18nService } from '@/i18n/i18n.service'
 import { NotificationMessage } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
-import { NotificationNotFoundException } from '@/modules/notification/dto/notification.error'
-import {
-  CreateNotificationBody,
-  UpdateNotificationBody,
-  UpdateNotificationReadListBody
-} from '@/modules/notification/entities/notification.entity'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
@@ -15,6 +9,12 @@ import {
 import { PaginationQuery } from '@/shared/models/request.model'
 import { UserGateway } from '@/websockets/user.gateway'
 import { Injectable } from '@nestjs/common'
+import { NotificationNotFoundException } from './dto/notification.error'
+import {
+  CreateNotificationBody,
+  UpdateNotificationBody,
+  UpdateNotificationReadListBody
+} from './dto/notification.zod-dto'
 import { NotificationRepo } from './notification.repo'
 
 @Injectable()

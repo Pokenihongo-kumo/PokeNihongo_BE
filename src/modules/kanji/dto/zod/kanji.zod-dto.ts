@@ -1,15 +1,15 @@
 import { createZodDto } from 'nestjs-zod'
+import { KanjiSchema } from '../../entities/kanji.entity'
 import {
   CreateKanjiSchema,
-  UpdateKanjiSchema,
   GetKanjiByIdParamsSchema,
   GetKanjiListQuerySchema,
-  KanjiSchema,
   KanjiListResponseSchema,
-  KanjiResSchema,
   KanjiListResSchema,
-  KanjiManagementListResSchema
-} from '../../entities/kanji.entity'
+  KanjiManagementListResSchema,
+  KanjiResSchema,
+  UpdateKanjiSchema
+} from '../kanji.zod-dto'
 
 // Zod DTOs - automatically validated
 export class CreateKanjiBodyDTO extends createZodDto(CreateKanjiSchema) {}

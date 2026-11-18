@@ -12,6 +12,14 @@ import { TestSetService } from '@/modules/testset/testset.service'
 import { TranslationHelperService } from '@/modules/translation/translation.helper.service'
 import { UserProgressService } from '@/modules/user-progress/user-progress.service'
 import { UserTestAnswerLogService } from '@/modules/user-test-answer-log/user-test-answer-log.service'
+import { UserTestService } from '@/modules/user-test/user-test.service'
+import { UserService } from '@/modules/user/user.service'
+import { MessageResDTO } from '@/shared/dtos/response.dto'
+import { toPaginationMeta } from '@/shared/utils/pagination'
+import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
+import { ProgressStatus, UserRewardSourceType } from '@prisma/client'
+import { RewardService } from '../reward/reward.service'
 import {
   AttemptNotOwnedException,
   InvalidUserTestAttemptDataException,
@@ -23,21 +31,13 @@ import {
   TestOutOfLimitException,
   UserTestAttemptNotFoundException,
   UserTestNotFoundException
-} from '@/modules/user-test-attempt/dto/user-test-attempt.error'
+} from './dto/user-test-attempt.error'
 import {
   GetUserTestAttemptListQuery,
   UpdateUserTestAttemptBody
-} from '@/modules/user-test-attempt/entities/user-test-attempt.entity'
-import { UserTestAttemptRepo } from '@/modules/user-test-attempt/user-test-attempt.repo'
-import { UserTestService } from '@/modules/user-test/user-test.service'
-import { UserService } from '@/modules/user/user.service'
-import { MessageResDTO } from '@/shared/dtos/response.dto'
-import { toPaginationMeta } from '@/shared/utils/pagination'
-import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
-import { HttpException, Injectable, Logger } from '@nestjs/common'
-import { ProgressStatus, UserRewardSourceType } from '@prisma/client'
-import { RewardService } from '../reward/reward.service'
+} from './dto/user-test-attempt.zod-dto'
 import { REQUIRED_ANSWERS_FOR_LESSON_REVIEW } from './dto/variable'
+import { UserTestAttemptRepo } from './user-test-attempt.repo'
 
 @Injectable()
 export class UserTestAttemptService {

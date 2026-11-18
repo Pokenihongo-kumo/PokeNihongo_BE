@@ -9,11 +9,11 @@ import {
 } from '@/shared/utils/prisma-errors'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { ElementalTypeAlreadyExistsException } from './dto/elemental-type.error'
-import { ElementalTypeRepo } from './elemental-type.repo'
 import {
   CreateElementalTypeBody,
   UpdateElementalTypeBody
-} from './entities/elemental-type.entity'
+} from './dto/elemental-type.zod-dto'
+import { ElementalTypeRepo } from './elemental-type.repo'
 
 @Injectable()
 export class ElementalTypeService {

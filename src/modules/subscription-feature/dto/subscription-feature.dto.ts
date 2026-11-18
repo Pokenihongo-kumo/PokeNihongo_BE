@@ -8,7 +8,7 @@ import {
   UpdateSubscriptionFeatureResSchema,
   UpdateWithListItemBodySchema,
   UpdateWithListItemResSchema
-} from '../entities/subscription-feature.entity'
+} from './subscription-feature.zod-dto'
 
 // Request DTOs
 export class CreateSubscriptionFeatureBodyDTO extends createZodDto(

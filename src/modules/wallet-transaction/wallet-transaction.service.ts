@@ -12,7 +12,7 @@ import { WalletTransactionAlreadyExistsException } from './dto/wallet-transactio
 import {
   CreateWalletTransactionBody,
   UpdateWalletTransactionBody
-} from './entities/wallet-transaction.entity'
+} from './dto/wallet-transaction.zod-dto'
 import { WalletTransactionRepo } from './wallet-transaction.repo'
 
 @Injectable()

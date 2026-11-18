@@ -17,7 +17,7 @@ import {
   EvaluateSpeakingRequest,
   GetUserSpeakingAttemptListQuery,
   UpdateUserSpeakingAttempt
-} from './entities/speaking.entities'
+} from './dto/speaking.zod-dto'
 import { SpeakingRepository } from './speaking.repo'
 
 @Injectable()

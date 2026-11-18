@@ -4,9 +4,8 @@ import { PaginationResponseType } from '@/shared/models/response.model'
 import { Injectable } from '@nestjs/common'
 import { UserStatus } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
+import { CreateUserBody, UpdateUserBody } from './dto/user.zod-dto'
 import {
-  CreateUserBody,
-  UpdateUserBody,
   User,
   USER_FIELDS,
   UserWithoutPassword,

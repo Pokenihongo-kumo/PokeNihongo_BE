@@ -11,7 +11,7 @@ import {
 import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable, Logger } from '@nestjs/common'
 import { WalletAlreadyExistsException } from './dto/wallet.error'
-import { CreateWalletBody, UpdateWalletBody } from './entities/wallet.entity'
+import { CreateWalletBody, UpdateWalletBody } from './dto/wallet.zod-dto'
 import { WalletRepo } from './wallet.repo'
 
 @Injectable()

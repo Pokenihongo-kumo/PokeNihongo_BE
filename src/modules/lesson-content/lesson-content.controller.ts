@@ -33,13 +33,11 @@ import {
 } from './dto/lesson-content.dto'
 import { LessonContentListResponseDTO } from './dto/lesson-content.response.dto'
 import {
+  CreateMutiLessonContentBody,
   GetLessonContentListQueryDTO,
   LessonContentFullResDTO
 } from './dto/lesson-content.zod-dto'
-import {
-  CreateMutiLessonContentBody,
-  UpdateLessonContentOrder
-} from './entities/lesson-content.entities'
+import { UpdateLessonContentOrder } from './entities/lesson-content.entities'
 import { LessonContentService } from './lesson-content.service'
 
 @ApiTags('Lesson Contents')

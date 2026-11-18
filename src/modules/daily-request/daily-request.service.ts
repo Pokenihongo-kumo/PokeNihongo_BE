@@ -13,7 +13,7 @@ import {
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { CreateTranslationBody } from '../translation/entities/translation.entity'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { DailyRequestRepo } from './daily-request.repo'
 import { DailyRequestAlreadyExistsException } from './dto/daily-request.error'
 import {
@@ -21,7 +21,7 @@ import {
   CreateDailyRequestBodyInput,
   UpdateDailyRequestBody,
   UpdateDailyRequestBodyInput
-} from './entities/daily-request.entity'
+} from './dto/daily-request.zod-dto'
 
 @Injectable()
 export class DailyRequestService {

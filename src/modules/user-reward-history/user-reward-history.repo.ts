@@ -1,12 +1,12 @@
-import {
-  CreateUserRewardHistoryBody,
-  GetUserRewardHistoryListQuery,
-  UpdateUserRewardHistoryBody,
-  UserRewardHistory
-} from '@/modules/user-reward-history/entities/user-reward-history.entities'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
 import { Prisma, RewardTarget } from '@prisma/client'
+import {
+  CreateUserRewardHistoryBody,
+  GetUserRewardHistoryListQuery,
+  UpdateUserRewardHistoryBody
+} from './dto/user-reward-history.zod-dto'
+import { UserRewardHistory } from './entities/user-reward-history.entities'
 
 @Injectable()
 export class UserRewardHistoryRepository {

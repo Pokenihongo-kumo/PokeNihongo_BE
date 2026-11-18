@@ -12,7 +12,7 @@ import { TypeEffectivenessAlreadyExistsException } from './dto/type-effectivenes
 import {
   CreateTypeEffectivenessBody,
   UpdateTypeEffectivenessBody
-} from './entities/type-effectiveness.entity'
+} from './dto/type-effectiveness.zod-dto'
 import { TypeEffectivenessRepo } from './type-effectiveness.repo'
 
 @Injectable()

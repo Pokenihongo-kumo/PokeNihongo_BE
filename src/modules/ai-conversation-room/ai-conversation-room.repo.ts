@@ -1,11 +1,9 @@
-import {
-  AIConversationRoom,
-  UpdateAIConversationRoomData
-} from '@/modules/ai-conversation-room/entities/ai-conversation-room.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
 import { Prisma, AIConversationRoom as PrismaAIConversationRoom } from '@prisma/client'
+import { UpdateAIConversationRoomData } from './dto/ai-conversation-room.zod-dto'
+import { AIConversationRoom } from './entities/ai-conversation-room.entity'
 
 const DEFAULT_VOICE = 'ja-JP-Wavenet-A'
 

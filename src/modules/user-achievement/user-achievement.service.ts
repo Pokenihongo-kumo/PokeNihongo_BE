@@ -23,7 +23,7 @@ import {
 import {
   CreateUserAchievementBody,
   UpdateUserAchievementBody
-} from './entities/user-achievement.entity'
+} from './dto/user-achievement.zod-dto'
 import { UserAchievementRepo } from './user-achievement.repo'
 
 @Injectable()

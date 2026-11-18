@@ -6,10 +6,9 @@ import { PrismaService } from 'src/shared/services/prisma.service'
 import {
   AssignPokemonTypesBody,
   CreatePokemonBody,
-  POKEMON_FIELDS,
-  Pokemon,
   UpdatePokemonBody
-} from './entities/pokemon.entity'
+} from './dto/pokemon.zod-dto'
+import { POKEMON_FIELDS, Pokemon } from './entities/pokemon.entity'
 
 type PokemonWithRelations = Pokemon & {
   types?: Array<{

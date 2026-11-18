@@ -6,12 +6,8 @@ import { parseQs } from '@/common/utils/qs-parser'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import { MatchParticipant } from '../match-participant/entities/match-participant.entity'
-import {
-  CreateMatchBody,
-  MATCH_FIELDS,
-  Match,
-  UpdateMatchBody
-} from './entities/match.entity'
+import { CreateMatchBody, UpdateMatchBody } from './dto/match.zod-dto'
+import { MATCH_FIELDS, Match } from './entities/match.entity'
 
 type MatchPrismaType = Omit<Match, 'nameKey'> & { name: string }
 

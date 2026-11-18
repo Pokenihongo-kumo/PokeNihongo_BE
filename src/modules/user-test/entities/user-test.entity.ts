@@ -1,8 +1,5 @@
-import { checkIdSchema } from '@/common/utils/id.validation'
-import { UserTestMessage as M } from '@/i18n/message-keys'
-import { paginatedResSchema } from '@/shared/utils/pagination'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
-import { TestStatus, UserTestStatus } from '@prisma/client'
+import { UserTestStatus } from '@prisma/client'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
 
@@ -11,18 +8,6 @@ patchNestJsSwagger()
 
 // UserTestStatus enum schema
 export const UserTestStatusSchema = z.nativeEnum(UserTestStatus)
-
-const statusOf = z.nativeEnum(UserTestStatus, {
-  errorMap: () => ({ message: M.INVALID_STATUS })
-})
-const idOf = (key: string) =>
-  z.number({ invalid_type_error: key, required_error: key }).int(key).positive(key)
-const limitSchema = z
-  .number({ invalid_type_error: M.INVALID_LIMIT })
-  .int(M.INVALID_LIMIT)
-  .min(0, M.INVALID_LIMIT)
-  .nullable()
-  .optional()
 
 // TestInfo schema (simplified Test without timestamps, creatorId)
 export const TestInfoSchema = z.object({
@@ -56,82 +41,7 @@ export const UserTestWithTestSchema = z.object({
   test: TestInfoSchema
 })
 
-// Create UserTest schema
-export const CreateUserTestBodySchema = z
-  .object({
-    userId: idOf(M.INVALID_USER_ID),
-    testId: idOf(M.INVALID_TEST_ID),
-    status: statusOf.optional().default(UserTestStatus.NOT_STARTED),
-    limit: limitSchema
-  })
-  .strict()
-
-// Update UserTest schema
-export const UpdateUserTestBodySchema = z
-  .object({
-    status: statusOf.optional(),
-    limit: limitSchema
-  })
-  .strict()
-
-// Response schemas
-export const UserTestResSchema = z
-  .object({
-    data: UserTestSchema,
-    message: z.string()
-  })
-  .strict()
-
-export const UserTestListResSchema = paginatedResSchema(UserTestSchema).strict()
-
-// Response schema for my endpoint (with Test info)
-export const UserTestMyListResSchema = paginatedResSchema(UserTestWithTestSchema).strict()
-
-// Params and Query schemas
-export const GetUserTestByIdParamsSchema = z
-  .object({ id: checkIdSchema(M.INVALID_ID) })
-  .strict()
-
-const OrderSchema = z.enum(['asc', 'desc'], {
-  errorMap: () => ({ message: M.INVALID_ORDER })
-})
-const testTypeOf = z.nativeEnum(TestStatus, {
-  errorMap: () => ({ message: M.INVALID_TEST_TYPE })
-})
-
-export const GetUserTestListQuerySchema = z
-  .object({
-    currentPage: checkIdSchema(M.INVALID_PAGE).default(1),
-    pageSize: checkIdSchema(M.INVALID_PAGE_SIZE).default(10),
-    userId: checkIdSchema(M.INVALID_USER_ID).optional(),
-    testId: checkIdSchema(M.INVALID_TEST_ID).optional(),
-    status: statusOf.optional(),
-    testType: testTypeOf.optional(),
-    order: OrderSchema.optional().default('asc')
-  })
-  .strict()
-
-// The app's own tests: type is the test type, the user comes from the token
-export const GetUserTestMyListQuerySchema = z
-  .object({
-    currentPage: checkIdSchema(M.INVALID_PAGE).default(1),
-    pageSize: checkIdSchema(M.INVALID_PAGE_SIZE).default(10),
-    testId: checkIdSchema(M.INVALID_TEST_ID).optional(),
-    status: statusOf.optional(),
-    type: testTypeOf.optional(),
-    order: OrderSchema.optional().default('asc')
-  })
-  .strict()
-
 // Types
 export type UserTest = z.infer<typeof UserTestSchema>
 export type TestInfo = z.infer<typeof TestInfoSchema>
 export type UserTestWithTest = z.infer<typeof UserTestWithTestSchema>
-export type CreateUserTestBody = z.infer<typeof CreateUserTestBodySchema>
-export type UpdateUserTestBody = z.infer<typeof UpdateUserTestBodySchema>
-export type UserTestRes = z.infer<typeof UserTestResSchema>
-export type UserTestListRes = z.infer<typeof UserTestListResSchema>
-export type UserTestMyListRes = z.infer<typeof UserTestMyListResSchema>
-export type GetUserTestByIdParams = z.infer<typeof GetUserTestByIdParamsSchema>
-export type GetUserTestListQuery = z.infer<typeof GetUserTestListQuerySchema>
-export type GetUserTestMyListQuery = z.infer<typeof GetUserTestMyListQuerySchema>

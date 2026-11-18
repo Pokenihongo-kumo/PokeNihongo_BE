@@ -2,21 +2,6 @@ import { TextToSpeechService } from '@/3rdService/speech/text-to-speech.service'
 import { I18nService } from '@/i18n/i18n.service'
 import { QuestionBankMessage as M } from '@/i18n/message-keys'
 import { AnswerService } from '@/modules/answer/answer.service'
-import {
-  InvalidQuestionBankDataException,
-  NoQuestionBankDeletedException,
-  QuestionBankAlreadyExistsException,
-  QuestionBankNotFoundException,
-  QuestionBankPronunciationRequiredException
-} from '@/modules/question-bank/dto/question-bank.error'
-import {
-  CreateQuestionBankWithAnswersBody,
-  CreateQuestionBankWithMeaningsBody,
-  GetQuestionBankListQuery,
-  lacksPronunciation,
-  UpdateQuestionBankWithMeaningsBody
-} from '@/modules/question-bank/entities/question-bank.entity'
-import { QuestionBankRepo } from '@/modules/question-bank/question-bank.repo'
 import { toPaginationMeta } from '@/shared/utils/pagination'
 import {
   isNotFoundPrismaError,
@@ -24,6 +9,21 @@ import {
 } from '@/shared/utils/prisma-errors'
 import { HttpException, Injectable, Logger } from '@nestjs/common'
 import { QuestionType } from '@prisma/client'
+import {
+  InvalidQuestionBankDataException,
+  NoQuestionBankDeletedException,
+  QuestionBankAlreadyExistsException,
+  QuestionBankNotFoundException,
+  QuestionBankPronunciationRequiredException
+} from './dto/question-bank.error'
+import {
+  CreateQuestionBankWithAnswersBody,
+  CreateQuestionBankWithMeaningsBody,
+  GetQuestionBankListQuery,
+  UpdateQuestionBankWithMeaningsBody
+} from './dto/question-bank.zod-dto'
+import { lacksPronunciation } from './entities/question-bank.entity'
+import { QuestionBankRepo } from './question-bank.repo'
 
 const blankToNull = (value: string | null | undefined) =>
   value === undefined ? undefined : value?.trim() ? value : null

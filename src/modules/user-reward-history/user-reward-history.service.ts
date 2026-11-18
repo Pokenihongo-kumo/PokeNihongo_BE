@@ -3,19 +3,19 @@ import { UserRewardHistoryMessage } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { RewardRepo } from '@/modules/reward/reward.repo'
 import { TranslationService } from '@/modules/translation/translation.service'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
+import { RewardTarget, UserRewardSourceType } from '@prisma/client'
 import {
   InvalidUserRewardHistoryDataException,
   UserRewardHistoryNotFoundException
-} from '@/modules/user-reward-history/dto/user-reward-history.error'
+} from './dto/user-reward-history.error'
 import {
   CreateUserRewardHistoryBody,
   GetMyRewardHistoryQuery,
   GetUserRewardHistoryListQuery,
   UpdateUserRewardHistoryBody
-} from '@/modules/user-reward-history/entities/user-reward-history.entities'
-import { UserRewardHistoryRepository } from '@/modules/user-reward-history/user-reward-history.repo'
-import { HttpException, Injectable, Logger } from '@nestjs/common'
-import { RewardTarget, UserRewardSourceType } from '@prisma/client'
+} from './dto/user-reward-history.zod-dto'
+import { UserRewardHistoryRepository } from './user-reward-history.repo'
 
 @Injectable()
 export class UserRewardHistoryService {

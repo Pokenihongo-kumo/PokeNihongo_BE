@@ -5,9 +5,11 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
   CreateSeasonRankRewardBody,
-  SeasonRankReward,
-  USER_SEASON_HISTORY_FIELDS,
   UpdateSeasonRankRewardBody
+} from './dto/season-rank-reward.zod-dto'
+import {
+  SeasonRankReward,
+  USER_SEASON_HISTORY_FIELDS
 } from './entities/season-rank-reward.entity'
 
 @Injectable()

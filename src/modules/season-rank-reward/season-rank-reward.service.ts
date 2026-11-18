@@ -22,7 +22,7 @@ import {
   CreateSeasonRankRewardBody,
   UpdateSeasonRankRewardBody,
   UpdateWithListItemBody
-} from './entities/season-rank-reward.entity'
+} from './dto/season-rank-reward.zod-dto'
 import { SeasonRankRewardRepo } from './season-rank-reward.repo'
 
 @Injectable()

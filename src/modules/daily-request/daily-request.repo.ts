@@ -7,10 +7,9 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
   CreateDailyRequestBody,
-  DAILY_REQUEST_FIELDS,
-  DailyRequest,
   UpdateDailyRequestBody
-} from './entities/daily-request.entity'
+} from './dto/daily-request.zod-dto'
+import { DAILY_REQUEST_FIELDS, DailyRequest } from './entities/daily-request.entity'
 
 export type WhereDailyRequestType = {
   id?: number

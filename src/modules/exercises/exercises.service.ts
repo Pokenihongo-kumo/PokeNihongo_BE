@@ -20,10 +20,10 @@ import {
 } from './dto/exercises.error'
 import {
   CreateExercisesBody,
-  Exercises,
   GetExercisesListQuery,
   UpdateExercisesBody
-} from './entities/exercises.entity'
+} from './dto/exercises.zod-dto'
+import { Exercises } from './entities/exercises.entity'
 import { ExercisesRepo } from './exercises.repo'
 
 // A lesson has at most one exercise of each type: VOCABULARY, GRAMMAR, KANJI

@@ -12,7 +12,7 @@ import { AttendenceConfigAlreadyExistsException } from './dto/attendence-config.
 import {
   CreateAttendanceConfigBody,
   UpdateAttendanceConfigBody
-} from './entities/attendence-config.entity'
+} from './dto/attendence-config.zod-dto'
 
 @Injectable()
 export class AttendenceConfigService {

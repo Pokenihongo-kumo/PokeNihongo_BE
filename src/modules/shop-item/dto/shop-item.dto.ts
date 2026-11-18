@@ -12,7 +12,7 @@ import {
   UpdateShopItemResSchema,
   UpdateWithListItemBodySchema,
   UpdateWithListItemResSchema
-} from '../entities/shop-item.entity'
+} from './shop-item.zod-dto'
 
 // Request DTOs
 export class CreateShopItemBodyDTO extends createZodDto(CreateShopItemBodySchema) {}

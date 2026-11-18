@@ -8,7 +8,7 @@ import {
   UpdateSubscriptionPlanBodySchema,
   UpdateSubscriptionPlanResSchema,
   UpdateWithListItemResSchema
-} from '../entities/subscription-plan.entity'
+} from './subscription-plan.zod-dto'
 
 // Request DTOs
 export class CreateSubscriptionPlanBodyDTO extends createZodDto(

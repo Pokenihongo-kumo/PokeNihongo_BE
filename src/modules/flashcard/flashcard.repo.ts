@@ -9,13 +9,12 @@ import {
 } from '@prisma/client'
 import {
   CreateFlashcardDeckBody,
-  FlashcardContent,
-  FlashcardDeckStatus,
   GetFlashcardCardListQuery,
   GetFlashcardDeckListQuery,
   UpdateFlashcardCardBody,
   UpdateFlashcardDeckBody
-} from './entities/flashcard.entity'
+} from './dto/flashcard.zod-dto'
+import { FlashcardContent, FlashcardDeckStatus } from './entities/flashcard.entity'
 
 const CARD_RELATION_INCLUDE = {
   vocabulary: {

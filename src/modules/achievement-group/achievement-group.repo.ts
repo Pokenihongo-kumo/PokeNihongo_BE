@@ -5,12 +5,14 @@ import { parseQs } from '@/common/utils/qs-parser'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import { Achievement } from '../achievement/entities/achievement.entity'
-import { CreateTranslationBody } from '../translation/entities/translation.entity'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import {
-  ACHIEVEMENT_GROUP_FIELDS,
-  AchievementGroup,
   CreateAchievementGroupBody,
   UpdateAchievementGroupBody
+} from './dto/achievement-group.zod-dto'
+import {
+  ACHIEVEMENT_GROUP_FIELDS,
+  AchievementGroup
 } from './entities/achievement-group.entity'
 
 type AchievementGroupPrismaType = Omit<AchievementGroup, 'nameKey'> & {

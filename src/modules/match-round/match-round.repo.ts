@@ -6,12 +6,8 @@ import { parseQs } from '@/common/utils/qs-parser'
 import { Prisma, PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import { MatchRoundParticipant } from '../match-round-participant/entities/match-round-participant.entity'
-import {
-  CreateMatchRoundBody,
-  MATCH_FIELDS,
-  MatchRound,
-  UpdateMatchRoundBody
-} from './entities/match-round.entity'
+import { CreateMatchRoundBody, UpdateMatchRoundBody } from './dto/match-round.zod-dto'
+import { MATCH_FIELDS, MatchRound } from './entities/match-round.entity'
 
 @Injectable()
 export class MatchRoundRepo {

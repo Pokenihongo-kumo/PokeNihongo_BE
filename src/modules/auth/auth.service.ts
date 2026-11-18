@@ -6,29 +6,6 @@ import { RoleName } from '@/common/constants/role.constant'
 import { maskEmail } from '@/common/utils/mask'
 import { I18nService } from '@/i18n/i18n.service'
 import { AuthMessage } from '@/i18n/message-keys'
-import { AuthRepository } from '@/modules/auth/auth.repo'
-import {
-  EmailAlreadyExistsException,
-  EmailNotFoundException,
-  FailToLoginException,
-  InvalidOTPExceptionForEmail,
-  NeedDeviceVerificationException,
-  RefreshTokenAlreadyUsedException,
-  RegistrationTokenInvalidException,
-  UnauthorizedAccessException
-} from '@/modules/auth/dto/auth.error'
-import {
-  ChangePasswordBody,
-  ForgotPasswordBody,
-  LoginBody,
-  RefreshTokenBody,
-  RegisterBody,
-  ResetPasswordBody,
-  UpdateMeBody,
-  verifyForgotPasswordBody
-} from '@/modules/auth/entities/auth.entities'
-import { OtpPurpose } from '@/modules/auth/otp-value'
-import { OtpService } from '@/modules/auth/otp.service'
 import { RoleService } from '@/modules/role/role.service'
 import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
 import { UserCoreService } from '@/modules/user/user-core.service'
@@ -54,6 +31,29 @@ import { LevelService } from '../level/level.service'
 import { UserProgressService } from '../user-progress/user-progress.service'
 import { UserTestService } from '../user-test/user-test.service'
 import { WalletService } from '../wallet/wallet.service'
+import { AuthRepository } from './auth.repo'
+import {
+  EmailAlreadyExistsException,
+  EmailNotFoundException,
+  FailToLoginException,
+  InvalidOTPExceptionForEmail,
+  NeedDeviceVerificationException,
+  RefreshTokenAlreadyUsedException,
+  RegistrationTokenInvalidException,
+  UnauthorizedAccessException
+} from './dto/auth.error'
+import {
+  ChangePasswordBody,
+  ForgotPasswordBody,
+  LoginBody,
+  RefreshTokenBody,
+  RegisterBody,
+  ResetPasswordBody,
+  UpdateMeBody,
+  verifyForgotPasswordBody
+} from './dto/auth.zod-dto'
+import { OtpPurpose } from './otp-value'
+import { OtpService } from './otp.service'
 import {
   newRegistrationToken,
   REGISTRATION_TOKEN_TTL_SECONDS,

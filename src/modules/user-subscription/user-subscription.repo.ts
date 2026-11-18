@@ -10,8 +10,10 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
   CreateUserSubscriptionBody,
+  UpdateUserSubscriptionBody
+} from './dto/user-subscription.zod-dto'
+import {
   USER_SEASON_HISTORY_FIELDS,
-  UpdateUserSubscriptionBody,
   UserSubscription
 } from './entities/user-subscription.entity'
 

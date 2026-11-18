@@ -23,9 +23,9 @@ import {
   DeleteManyTestsBody,
   GetTestListQuery,
   RemoveTestSetsFromTestBody,
-  Test,
   UpdateTestWithMeaningsBody
-} from './entities/test.entity'
+} from './dto/test.zod-dto'
+import { Test } from './entities/test.entity'
 import { TestRepo } from './test.repo'
 
 // A test of one of these types only takes test sets of the matching type

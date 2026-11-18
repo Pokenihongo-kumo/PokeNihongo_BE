@@ -5,9 +5,11 @@ import { Prisma, PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
   CreateSubscriptionFeatureBody,
-  SubscriptionFeature,
-  USER_GACHA_PITY_FIELDS,
   UpdateSubscriptionFeatureBody
+} from './dto/subscription-feature.zod-dto'
+import {
+  SubscriptionFeature,
+  USER_GACHA_PITY_FIELDS
 } from './entities/subscription-feature.entity'
 
 @Injectable()

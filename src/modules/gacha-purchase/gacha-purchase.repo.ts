@@ -5,10 +5,9 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
   CreateGachaPurchaseBody,
-  GachaPurchase,
-  SHOP_PURCHASE_FIELDS,
   UpdateGachaPurchaseBody
-} from './entities/gacha-purchase.entity'
+} from './dto/gacha-purchase.zod-dto'
+import { GachaPurchase, SHOP_PURCHASE_FIELDS } from './entities/gacha-purchase.entity'
 
 @Injectable()
 export class GachaPurchaseRepo {

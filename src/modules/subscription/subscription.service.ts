@@ -18,14 +18,14 @@ import {
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { CreateTranslationBody } from '../translation/entities/translation.entity'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { SubscriptionAlreadyExistsException } from './dto/subscription.error'
 import {
   CreateSubscriptionBody,
   CreateSubscriptionBodyInput,
   UpdateSubscriptionBody,
   UpdateSubscriptionBodyInput
-} from './entities/subscription.entity'
+} from './dto/subscription.zod-dto'
 import { SubscriptionRepo } from './subscription.repo'
 
 @Injectable()

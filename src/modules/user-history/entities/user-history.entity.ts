@@ -1,7 +1,3 @@
-import { checkIdSchema } from '@/common/utils/id.validation'
-import { UserHistoryMessage } from '@/i18n/message-keys'
-import { paginatedResSchema } from '@/shared/utils/pagination'
-import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { TestStatus } from '@prisma/client'
 import { patchNestJsSwagger } from 'nestjs-zod'
@@ -42,36 +38,6 @@ export const AdminHistoryItemSchema = HistoryItemSchema.extend({
     .optional()
 })
 
-// History List Response Schema
-export const HistoryListResSchema = paginatedResSchema(HistoryItemSchema).strict()
-
-// Admin History List Response Schema (có thể có user info)
-export const AdminHistoryListResSchema =
-  paginatedResSchema(AdminHistoryItemSchema).strict()
-
-// History List Query Schema
-export const GetHistoryListQuerySchema = z
-  .object({
-    // A non-number reached Prisma as NaN (500); 0 or less gave an empty page
-    currentPage: checkIdSchema(UserHistoryMessage.INVALID_PAGE).default(1),
-    pageSize: checkIdSchema(UserHistoryMessage.INVALID_PAGE_SIZE).default(10),
-    type: HistoryTypeSchema.optional(),
-    status: z.string().optional()
-  })
-  .strict()
-
-// Admin History List Query Schema (có thêm userId để filter)
-export const GetAdminHistoryListQuerySchema = z
-  .object({
-    // A non-number reached Prisma as NaN (500); 0 or less gave an empty page
-    currentPage: checkIdSchema(UserHistoryMessage.INVALID_PAGE).default(1),
-    pageSize: checkIdSchema(UserHistoryMessage.INVALID_PAGE_SIZE).default(10),
-    type: HistoryTypeSchema.optional(),
-    status: z.string().optional(),
-    userId: checkIdSchema(UserHistoryMessage.INVALID_USER_ID).optional() // Admin có thể filter theo userId
-  })
-  .strict()
-
 // Recent Exercises Item Schema
 export const RecentExerciseItemSchema = z.object({
   exerciseId: z.number(),
@@ -94,24 +60,6 @@ export const HistoryExerciseItemSchema = z.object({
   updatedAt: z.date()
 })
 
-export const HistoryExercisesResSchema = resSchema(
-  z.object({
-    results: z.array(HistoryExerciseItemSchema),
-    allTime: z.number(), // Tổng thời gian của tất cả attempts (giây)
-    allAttempts: z.number(),
-    completedAttempts: z.number(),
-    failedAttempts: z.number(),
-    skippedAttempts: z.number(),
-    abandonedAttempts: z.number(),
-    pagination: z.object({
-      current: z.number(),
-      pageSize: z.number(),
-      totalPage: z.number(),
-      totalItem: z.number()
-    })
-  })
-).strict()
-
 // History Tests Item Schema
 export const HistoryTestItemSchema = z.object({
   attemptId: z.number(),
@@ -126,53 +74,10 @@ export const HistoryTestItemSchema = z.object({
   updatedAt: z.date()
 })
 
-export const HistoryTestsResSchema = resSchema(
-  z.object({
-    results: z.array(HistoryTestItemSchema),
-    allTime: z.number(), // Tổng thời gian của tất cả attempts (giây)
-    allAttempts: z.number(),
-    completedAttempts: z.number(),
-    failedAttempts: z.number(),
-    skippedAttempts: z.number(),
-    abandonedAttempts: z.number(),
-    pagination: z.object({
-      current: z.number(),
-      pageSize: z.number(),
-      totalPage: z.number(),
-      totalItem: z.number()
-    })
-  })
-).strict()
-
-// Recent Exercises Query Schema
-export const GetRecentExercisesQuerySchema = z
-  .object({
-    // A non-number reached Prisma as NaN (500); 0 or less gave an empty page
-    currentPage: checkIdSchema(UserHistoryMessage.INVALID_PAGE).default(1),
-    pageSize: checkIdSchema(UserHistoryMessage.INVALID_PAGE_SIZE).default(10),
-    status: z
-      .enum(['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED', 'FAILED', 'ABANDONED', 'SKIPPED'])
-      .optional()
-  })
-  .strict()
-
-// Recent Exercises Response Schema
-export const RecentExercisesResSchema = paginatedResSchema(
-  RecentExerciseItemSchema
-).strict()
-
 // Type exports
 export type HistoryType = z.infer<typeof HistoryTypeSchema>
 export type HistoryItem = z.infer<typeof HistoryItemSchema>
 export type AdminHistoryItem = z.infer<typeof AdminHistoryItemSchema>
-export type HistoryListRes = z.infer<typeof HistoryListResSchema>
-export type AdminHistoryListRes = z.infer<typeof AdminHistoryListResSchema>
-export type GetHistoryListQuery = z.infer<typeof GetHistoryListQuerySchema>
-export type GetAdminHistoryListQuery = z.infer<typeof GetAdminHistoryListQuerySchema>
 export type RecentExerciseItem = z.infer<typeof RecentExerciseItemSchema>
 export type HistoryExerciseItem = z.infer<typeof HistoryExerciseItemSchema>
-export type HistoryExercisesRes = z.infer<typeof HistoryExercisesResSchema>
 export type HistoryTestItem = z.infer<typeof HistoryTestItemSchema>
-export type HistoryTestsRes = z.infer<typeof HistoryTestsResSchema>
-export type GetRecentExercisesQuery = z.infer<typeof GetRecentExercisesQuerySchema>
-export type RecentExercisesRes = z.infer<typeof RecentExercisesResSchema>

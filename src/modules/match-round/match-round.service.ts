@@ -19,7 +19,7 @@ import { InjectQueue } from '@nestjs/bull'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { Queue } from 'bull'
 import { MatchRoundAlreadyExistsException } from './dto/match-round.error'
-import { CreateMatchRoundBody, UpdateMatchRoundBody } from './entities/match-round.entity'
+import { CreateMatchRoundBody, UpdateMatchRoundBody } from './dto/match-round.zod-dto'
 import { MatchRoundRepo } from './match-round.repo'
 
 @Injectable()

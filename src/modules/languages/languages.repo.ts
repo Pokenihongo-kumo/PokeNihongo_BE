@@ -2,11 +2,8 @@ import { PrismaService } from '@/shared/services/prisma.service'
 import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
 import { Prisma, Languages as PrismaLanguages } from '@prisma/client'
-import {
-  CreateLanguagesBody,
-  Languages,
-  UpdateLanguagesBody
-} from './entities/languages.entity'
+import { CreateLanguagesBody, UpdateLanguagesBody } from './dto/languages.zod-dto'
+import { Languages } from './entities/languages.entity'
 
 @Injectable()
 export class LanguagesRepo {

@@ -8,12 +8,8 @@ import { PrismaService } from 'src/shared/services/prisma.service'
 import { GachaItemRate } from '../gacha-item-rate/entities/gacha-item-rate.entity'
 import { GachaItem } from '../gacha-item/entities/gacha-item.entity'
 import { Pokemon } from '../pokemon/entities/pokemon.entity'
-import {
-  CreateGachaBannerBody,
-  GACHA_BANNER_FIELDS,
-  GachaBanner,
-  UpdateGachaBannerBody
-} from './entities/gacha-banner.entity'
+import { CreateGachaBannerBody, UpdateGachaBannerBody } from './dto/gacha-banner.zod-dto'
+import { GACHA_BANNER_FIELDS, GachaBanner } from './entities/gacha-banner.entity'
 
 type GachaBannerPrismaType = Omit<GachaBanner, 'nameKey'> & { name: string }
 

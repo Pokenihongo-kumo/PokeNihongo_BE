@@ -5,9 +5,9 @@ import { Prisma, PrismaClient, Meaning as PrismaMeaning } from '@prisma/client'
 import {
   CreateMeaningService,
   GetMeaningListQuery,
-  Meaning,
   UpdateMeaningBody
-} from './entities/meaning.entity'
+} from './dto/meaning.zod-dto'
+import { Meaning } from './entities/meaning.entity'
 
 @Injectable()
 export class MeaningRepo {

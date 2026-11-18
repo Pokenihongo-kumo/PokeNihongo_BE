@@ -3,9 +3,9 @@ import { Injectable } from '@nestjs/common'
 import {
   CreateUserSpeakingAttempt,
   GetUserSpeakingAttemptListQuery,
-  UpdateUserSpeakingAttempt,
-  UserSpeakingAttempt
-} from './entities/speaking.entities'
+  UpdateUserSpeakingAttempt
+} from './dto/speaking.zod-dto'
+import { UserSpeakingAttempt } from './entities/speaking.entities'
 
 @Injectable()
 export class SpeakingRepository {

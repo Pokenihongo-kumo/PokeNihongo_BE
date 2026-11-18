@@ -17,7 +17,7 @@ import {
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { CreateTranslationBody } from '../translation/entities/translation.entity'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import {
   LeaderboardSeasonAlreadyExistsException,
   LeaderboardSeasonHasActiveException,
@@ -30,7 +30,7 @@ import {
   CreateLeaderboardSeasonBodyInput,
   UpdateLeaderboardSeasonBody,
   UpdateLeaderboardSeasonBodyInput
-} from './entities/leaderboard-season.entity'
+} from './dto/leaderboard-season.zod-dto'
 import { LeaderboardSeasonRepo } from './leaderboard-season.repo'
 
 @Injectable()

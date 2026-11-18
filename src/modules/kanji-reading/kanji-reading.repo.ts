@@ -6,9 +6,9 @@ import { Kanji_Reading, Prisma } from '@prisma/client'
 import {
   CreateKanjiReadingBody,
   GetKanjiReadingListQuery,
-  KanjiReading,
   UpdateKanjiReadingBody
-} from './entities/kanji-reading.entity'
+} from './dto/kanji-reading.zod-dto'
+import { KanjiReading } from './entities/kanji-reading.entity'
 
 @Injectable()
 export class KanjiReadingRepo {

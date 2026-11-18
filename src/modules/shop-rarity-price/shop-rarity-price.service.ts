@@ -18,7 +18,7 @@ import {
 import {
   CreateShopRarityPriceBody,
   UpdateShopRarityPriceBody
-} from './entities/shop-rarity-price.entity'
+} from './dto/shop-rarity-price.zod-dto'
 import { ShopRarityPriceRepo } from './shop-rarity-price.repo'
 
 @Injectable()

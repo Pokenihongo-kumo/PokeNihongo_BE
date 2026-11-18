@@ -5,7 +5,7 @@ import {
   CreateLessonContentBody,
   GetLessonContentListQuery,
   UpdateLessonContentBody
-} from './entities/lesson-content.entities'
+} from './dto/lesson-content.zod-dto'
 
 @Injectable()
 export class LessonContentRepository {

@@ -4,9 +4,9 @@ import { Prisma, TestStatus as PrismaTestStatus } from '@prisma/client'
 import {
   CreateTestWithMeaningsBody,
   GetTestListQuery,
-  Test,
   UpdateTestWithMeaningsBody
-} from './entities/test.entity'
+} from './dto/test.zod-dto'
+import { Test } from './entities/test.entity'
 
 @Injectable()
 export class TestRepo {

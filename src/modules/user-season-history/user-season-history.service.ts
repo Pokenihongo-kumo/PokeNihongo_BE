@@ -24,7 +24,7 @@ import {
 import {
   CreateUserSeasonHistoryBody,
   UpdateUserSeasonHistoryBody
-} from './entities/user-season-history.entity'
+} from './dto/user-season-history.zod-dto'
 import { UserSeasonHistoryRepo } from './user-season-history.repo'
 
 @Injectable()

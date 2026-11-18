@@ -6,7 +6,7 @@ import {
   CreateLessonCategoryBody,
   GetLessonCategoryListQuery,
   UpdateLessonCategoryBody
-} from './entities/lesson-category.entity'
+} from './dto/lesson-category.zod-dto'
 
 @Injectable()
 export class LessonCategoryRepo {

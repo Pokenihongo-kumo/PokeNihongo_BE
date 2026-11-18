@@ -15,7 +15,7 @@ import {
 import {
   CreateUserGachaPityBody,
   UpdateUserGachaPityBody
-} from './entities/user-gacha-pityentity'
+} from './dto/user-gacha-pity.zod-dto'
 import { UserGachaPityRepo } from './user-gacha-pity.repo'
 
 @Injectable()

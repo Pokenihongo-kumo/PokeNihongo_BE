@@ -27,9 +27,11 @@ import {
 import {
   CreateMutiLessonContentBody,
   GetLessonContentListQuery,
-  GroupedLessonContent,
   LessonContentFullRes,
-  UpdateLessonContentBody,
+  UpdateLessonContentBody
+} from './dto/lesson-content.zod-dto'
+import {
+  GroupedLessonContent,
   UpdateLessonContentOrder
 } from './entities/lesson-content.entities'
 import { LessonContentRepository } from './lesson-content.repo'

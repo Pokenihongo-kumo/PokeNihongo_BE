@@ -29,7 +29,7 @@ import {
 import {
   CreateShopPurchaseBody,
   UpdateShopPurchaseBody
-} from './entities/shop-purchase.entity'
+} from './dto/shop-purchase.zod-dto'
 import { ShopPurchaseRepo } from './shop-purchase.repo'
 
 @Injectable()

@@ -3,7 +3,7 @@ import { PrismaService } from '@/shared/services/prisma.service'
 import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
-import { GetAnswerListQuery } from './entities/answer.entity'
+import { GetAnswerListQuery } from './dto/answer.zod-dto'
 
 @Injectable()
 export class AnswerRepo {

@@ -9,7 +9,7 @@ import {
   GetAdminHistoryListQuery,
   GetHistoryListQuery,
   GetRecentExercisesQuery
-} from './entities/user-history.entity'
+} from './dto/user-history.zod-dto'
 import { UserHistoryRepo } from './user-history.repo'
 
 @Injectable()

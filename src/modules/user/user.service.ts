@@ -6,7 +6,6 @@ import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboa
 import { LevelService } from '@/modules/level/level.service'
 import { MatchService } from '@/modules/match/match.service'
 import { UserPokemonService } from '@/modules/user-pokemon/user-pokemon.service'
-import { UserCoreService } from '@/modules/user/user-core.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   convertEloToRank,
@@ -24,11 +23,8 @@ import { UserProgressService } from '../user-progress/user-progress.service'
 import { UserSeasonHistoryRepo } from '../user-season-history/user-season-history.repo'
 import { WalletService } from '../wallet/wallet.service'
 import { EmailAlreadyExistsException, UserNotFoundException } from './dto/user.error'
-import {
-  CreateUserBody,
-  SetMainPokemonBody,
-  UpdateUserBody
-} from './entities/user.entity'
+import { CreateUserBody, SetMainPokemonBody, UpdateUserBody } from './dto/user.zod-dto'
+import { UserCoreService } from './user-core.service'
 import { UserRepo } from './user.repo'
 
 @Injectable()

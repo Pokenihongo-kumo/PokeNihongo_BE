@@ -6,8 +6,10 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
   CreateUserSeasonHistoryBody,
+  UpdateUserSeasonHistoryBody
+} from './dto/user-season-history.zod-dto'
+import {
   USER_SEASON_HISTORY_FIELDS,
-  UpdateUserSeasonHistoryBody,
   UserSeasonHistory
 } from './entities/user-season-history.entity'
 

@@ -1,18 +1,18 @@
 import { I18nService } from '@/i18n/i18n.service'
 import { UserAIConversationMessage as M } from '@/i18n/message-keys'
+import { toPaginationMeta } from '@/shared/utils/pagination'
+import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
 import {
   InvalidUserAIConversationDataException,
   UserAIConversationNotFoundException
-} from '@/modules/user-ai-conversation/dto/user-ai-conversation.error'
+} from './dto/user-ai-conversation.error'
 import {
   CreateUserAIConversationInput,
   GetUserAIConversationListQuery,
   UpdateUserAIConversationBody
-} from '@/modules/user-ai-conversation/entities/user-ai-conversation.entity'
-import { UserAIConversationRepo } from '@/modules/user-ai-conversation/user-ai-conversation.repo'
-import { toPaginationMeta } from '@/shared/utils/pagination'
-import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
-import { HttpException, Injectable, Logger } from '@nestjs/common'
+} from './dto/user-ai-conversation.zod-dto'
+import { UserAIConversationRepo } from './user-ai-conversation.repo'
 
 @Injectable()
 export class UserAIConversationService {

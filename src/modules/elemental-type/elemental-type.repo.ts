@@ -6,9 +6,9 @@ import { Injectable } from '@nestjs/common'
 import { ElementalType } from '@prisma/client'
 import {
   CreateElementalTypeBody,
-  ELEMENTAL_TYPE_FIELDS,
   UpdateElementalTypeBody
-} from './entities/elemental-type.entity'
+} from './dto/elemental-type.zod-dto'
+import { ELEMENTAL_TYPE_FIELDS } from './entities/elemental-type.entity'
 
 @Injectable()
 export class ElementalTypeRepo {

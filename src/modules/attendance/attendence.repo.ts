@@ -3,12 +3,8 @@ import { Injectable } from '@nestjs/common'
 
 import { parseQs } from '@/common/utils/qs-parser'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import {
-  ATTENDANCE_FIELDS,
-  Attendance,
-  CreateAttendanceBody,
-  UpdateAttendanceBody
-} from './entities/attendance.entity'
+import { CreateAttendanceBody, UpdateAttendanceBody } from './dto/attendance.zod-dto'
+import { ATTENDANCE_FIELDS, Attendance } from './entities/attendance.entity'
 
 @Injectable()
 export class AttendanceRepo {

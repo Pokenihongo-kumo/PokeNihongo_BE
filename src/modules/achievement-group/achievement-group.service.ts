@@ -15,7 +15,7 @@ import {
 import { PaginationQuery } from '@/shared/models/request.model'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { CreateTranslationBody } from '../translation/entities/translation.entity'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { AchievementGroupRepo } from './achievement-group.repo'
 import { AchievementGroupAlreadyExistsException } from './dto/achievement-group.error'
 import {
@@ -23,7 +23,7 @@ import {
   CreateAchievementGroupBodyInput,
   UpdateAchievementGroupBody,
   UpdateAchievementGroupBodyInput
-} from './entities/achievement-group.entity'
+} from './dto/achievement-group.zod-dto'
 
 @Injectable()
 export class AchievementGroupService {

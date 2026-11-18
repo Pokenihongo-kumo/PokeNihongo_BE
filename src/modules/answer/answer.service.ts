@@ -24,7 +24,7 @@ import {
   CreateMultipleAnswersBody,
   GetAnswerListQuery,
   UpdateAnswerBody
-} from './entities/answer.entity'
+} from './dto/answer.zod-dto'
 
 type TranslationInput = { language_code: string; value: string }
 type AnswerTranslations = CreateAnswerBody['translations']

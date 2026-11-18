@@ -1,7 +1,3 @@
-import { checkIdSchema } from '@/common/utils/id.validation'
-import { UserTestAnswerLogMessage as M } from '@/i18n/message-keys'
-import { paginatedResSchema } from '@/shared/utils/pagination'
-import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -20,61 +16,5 @@ export const UserTestAnswerLogSchema = z.object({
   updatedAt: z.date()
 })
 
-const idOf = (key: string) =>
-  z.number({ invalid_type_error: key, required_error: key }).int(key).positive(key)
-
-export const CreateUserTestAnswerLogBodySchema = z
-  .object({
-    userTestAttemptId: idOf(M.INVALID_ATTEMPT_ID),
-    questionBankId: idOf(M.INVALID_QUESTION_ID),
-    answerId: idOf(M.INVALID_ANSWER_ID)
-  })
-  .strict()
-
-export const UpdateUserTestAnswerLogBodySchema = UserTestAnswerLogSchema.pick({
-  isCorrect: true
-})
-  .partial()
-  .strict()
-
-export const UserTestAnswerLogResSchema = resSchema(UserTestAnswerLogSchema).strict()
-
-export const UserTestAnswerLogListResSchema = paginatedResSchema(
-  UserTestAnswerLogSchema
-).strict()
-
-export const GetUserTestAnswerLogByIdParamsSchema = z
-  .object({
-    id: checkIdSchema(M.INVALID_ID)
-  })
-  .strict()
-
-export const GetUserTestAnswerLogListQuerySchema = z
-  .object({
-    currentPage: checkIdSchema(M.INVALID_PAGE).default(1),
-    pageSize: checkIdSchema(M.INVALID_PAGE_SIZE).default(10),
-    userTestAttemptId: checkIdSchema(M.INVALID_ATTEMPT_ID).optional(),
-    questionBankId: checkIdSchema(M.INVALID_QUESTION_ID).optional(),
-    isCorrect: z
-      .enum(['true', 'false'], { errorMap: () => ({ message: M.INVALID_FLAG }) })
-      .transform((val) => val === 'true')
-      .optional()
-  })
-  .strict()
-
 // Types
 export type UserTestAnswerLog = z.infer<typeof UserTestAnswerLogSchema>
-export type CreateUserTestAnswerLogBody = z.infer<
-  typeof CreateUserTestAnswerLogBodySchema
->
-export type UpdateUserTestAnswerLogBody = z.infer<
-  typeof UpdateUserTestAnswerLogBodySchema
->
-export type UserTestAnswerLogRes = z.infer<typeof UserTestAnswerLogResSchema>
-export type UserTestAnswerLogListRes = z.infer<typeof UserTestAnswerLogListResSchema>
-export type GetUserTestAnswerLogByIdParams = z.infer<
-  typeof GetUserTestAnswerLogByIdParamsSchema
->
-export type GetUserTestAnswerLogListQuery = z.infer<
-  typeof GetUserTestAnswerLogListQuerySchema
->

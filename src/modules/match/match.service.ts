@@ -16,7 +16,7 @@ import {
   MatchAlreadyExistsException,
   NotHaveActiveLeaderboardSeasonException
 } from './dto/match.error'
-import { UpdateMatchBody } from './entities/match.entity'
+import { UpdateMatchBody } from './dto/match.zod-dto'
 import { MatchRepo } from './match.repo'
 
 @Injectable()

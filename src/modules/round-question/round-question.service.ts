@@ -3,7 +3,6 @@ import { I18nService } from '@/i18n/i18n.service'
 import { RoundQuestionMessage } from '@/i18n/message-keys'
 import { MatchService } from '@/modules/match/match.service'
 import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
-import { RoundQuestionTimeoutProcessor } from '@/modules/round-question/round-question-timeout.processor'
 import { UserCoreService } from '@/modules/user/user-core.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
@@ -27,7 +26,8 @@ import {
   AnswerQuestionBody,
   CreateRoundQuestionBody,
   UpdateRoundQuestionBody
-} from './entities/round-question.entity'
+} from './dto/round-question.zod-dto'
+import { RoundQuestionTimeoutProcessor } from './round-question-timeout.processor'
 import { RoundQuestionRepo } from './round-question.repo'
 
 @Injectable()

@@ -1,6 +1,6 @@
 import { HttpStatus } from '@nestjs/common'
+import { CreateQuestionBankWithAnswersBodySchema } from './dto/question-bank.zod-dto'
 import { QuestionBankService } from './question-bank.service'
-import { CreateQuestionBankWithAnswersBodySchema } from './entities/question-bank.entity'
 
 describe('QuestionBankService', () => {
   const repo = {

@@ -14,14 +14,14 @@ import {
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { CreateTranslationBody } from '../translation/entities/translation.entity'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { FeatureAlreadyExistsException } from './dto/feature.error'
 import {
   CreateFeatureBody,
   CreateFeatureBodyInput,
   UpdateFeatureBody,
   UpdateFeatureBodyInput
-} from './entities/feature.entity'
+} from './dto/feature.zod-dto'
 import { FeatureRepo } from './feature.repo'
 
 @Injectable()

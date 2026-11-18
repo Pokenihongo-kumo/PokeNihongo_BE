@@ -6,10 +6,9 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
   CreateGachaItemRateBody,
-  GACHA_ITEM_RATE_FIELDS,
-  GachaItemRate,
   UpdateGachaItemRateBody
-} from './entities/gacha-item-rate.entity'
+} from './dto/gacha-item-rate.zod-dto'
+import { GACHA_ITEM_RATE_FIELDS, GachaItemRate } from './entities/gacha-item-rate.entity'
 
 @Injectable()
 export class GachaItemRateRepo {

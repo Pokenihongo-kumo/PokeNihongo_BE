@@ -30,7 +30,7 @@ import {
   GachaPurchaseNotFoundException,
   NotEnoughBalanceException
 } from './dto/gacha-purchase.error'
-import { CreateGachaPurchaseBody } from './entities/gacha-purchase.entity'
+import { CreateGachaPurchaseBody } from './dto/gacha-purchase.zod-dto'
 import { GachaPurchaseRepo } from './gacha-purchase.repo'
 
 @Injectable()

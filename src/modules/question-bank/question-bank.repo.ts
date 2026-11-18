@@ -1,14 +1,14 @@
 import { pickLabelFromComposite } from '@/common/utils/prase.utils'
-import {
-  CreateQuestionBankWithMeaningsBody,
-  GetQuestionBankListQuery,
-  QuestionBank,
-  UpdateQuestionBankWithMeaningsBody
-} from '@/modules/question-bank/entities/question-bank.entity'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
 import { Prisma, QuestionBank as PrismaQuestionBank } from '@prisma/client'
+import {
+  CreateQuestionBankWithMeaningsBody,
+  GetQuestionBankListQuery,
+  UpdateQuestionBankWithMeaningsBody
+} from './dto/question-bank.zod-dto'
+import { QuestionBank } from './entities/question-bank.entity'
 
 type Tx = Prisma.TransactionClient
 type Meaning = { meaningKey?: string | null; translations: Record<string, string> }

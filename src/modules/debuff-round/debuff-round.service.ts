@@ -14,7 +14,7 @@ import {
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
-import { CreateTranslationBody } from '../translation/entities/translation.entity'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { DebuffRoundRepo } from './debuff-round.repo'
 import { DebuffRoundAlreadyExistsException } from './dto/debuff-round.error'
 import {
@@ -22,7 +22,7 @@ import {
   CreateDebuffRoundBodyInput,
   UpdateDebuffRoundBody,
   UpdateDebuffRoundBodyInput
-} from './entities/debuff-round.entity'
+} from './dto/debuff-round.zod-dto'
 
 @Injectable()
 export class DebuffRoundService {

@@ -7,14 +7,14 @@ import {
   EvolvePokemonResSchema,
   GetUserPokemonAddExpDetailResSchema,
   GetUserPokemonByPokemonIdParamsSchema,
-  GetUserPokemonListWithUserQuerySchema,
   GetUserPokemonByPokemonIdwithListOwnershipResSchema,
   GetUserPokemonDetailResSchema,
+  GetUserPokemonListWithUserQuerySchema,
   GetUserPokemonParamsSchema,
   GetUserPokemonStatsResSchema,
   UpdateUserPokemonBodySchema,
   UpdateUserPokemonResSchema
-} from '../entities/user-pokemon.entity'
+} from './user-pokemon.zod-dto'
 
 // Request DTOs
 export class CreateUserPokemonBodyDTO extends createZodDto(CreateUserPokemonBodySchema) {}

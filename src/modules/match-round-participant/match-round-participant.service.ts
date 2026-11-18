@@ -36,7 +36,7 @@ import {
   ChoosePokemonMatchRoundParticipantBody,
   CreateMatchRoundParticipantBody,
   UpdateMatchRoundParticipantBody
-} from './entities/match-round-participant.entity'
+} from './dto/match-round-participant.zod-dto'
 import { MatchRoundParticipantRepo } from './match-round-participant.repo'
 
 const TIME_CHOOSE_POKEMON_MS = 5000

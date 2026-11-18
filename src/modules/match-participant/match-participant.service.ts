@@ -24,7 +24,7 @@ import {
 import {
   CreateMatchParticipantBody,
   UpdateMatchParticipantBody
-} from './entities/match-participant.entity'
+} from './dto/match-participant.zod-dto'
 import { MatchParticipantRepo } from './match-participant.repo'
 
 const TIME_CHOOSE_POKEMON_MS = 5000

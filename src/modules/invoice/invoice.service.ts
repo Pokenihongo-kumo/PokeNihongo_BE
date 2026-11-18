@@ -35,7 +35,7 @@ import {
   InvoiceNotEnoughPokeCoinsException,
   InvoiceNotFoundException
 } from './dto/invoice.error'
-import { CreateInvoiceBody, UpdateInvoiceBody } from './entities/invoice.entity'
+import { CreateInvoiceBody, UpdateInvoiceBody } from './dto/invoice.zod-dto'
 import { InvoiceRepo } from './invoice.repo'
 
 @Injectable()

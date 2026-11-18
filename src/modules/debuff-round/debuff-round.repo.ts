@@ -4,13 +4,9 @@ import { Injectable } from '@nestjs/common'
 import { parseQs } from '@/common/utils/qs-parser'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import { CreateTranslationBody } from '../translation/entities/translation.entity'
-import {
-  CreateDebuffRoundBody,
-  DEBUFF_FIELDS,
-  DebuffRound,
-  UpdateDebuffRoundBody
-} from './entities/debuff-round.entity'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
+import { CreateDebuffRoundBody, UpdateDebuffRoundBody } from './dto/debuff-round.zod-dto'
+import { DEBUFF_FIELDS, DebuffRound } from './entities/debuff-round.entity'
 
 @Injectable()
 export class DebuffRoundRepo {

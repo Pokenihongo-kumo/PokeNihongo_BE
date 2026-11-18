@@ -6,23 +6,20 @@ import { VocabularyMessage as M } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { MeaningService } from '@/modules/meaning/meaning.service'
 import { TranslationService } from '@/modules/translation/translation.service'
+import { WordTypeService } from '@/modules/wordtype/wordtype.service'
+import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from '@/shared/helpers'
+import { Injectable, Logger } from '@nestjs/common'
+import * as XLSX from 'xlsx'
 import {
   InvalidVocabularyDataException,
   MeaningAlreadyExistsException,
   VocabularyAlreadyExistsException,
   VocabularyJapaneseTextInvalidException,
   VocabularyNotFoundException
-} from '@/modules/vocabulary/dto/vocabulary.error'
-import {
-  GetVocabularyListQuery,
-  UpdateVocabularyBody
-} from '@/modules/vocabulary/entities/vocabulary.entity'
-import { VocabularyHelperService } from '@/modules/vocabulary/vocabulary.helper.service'
-import { VocabularyRepo } from '@/modules/vocabulary/vocabulary.repo'
-import { WordTypeService } from '@/modules/wordtype/wordtype.service'
-import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from '@/shared/helpers'
-import { Injectable, Logger } from '@nestjs/common'
-import * as XLSX from 'xlsx'
+} from './dto/vocabulary.error'
+import { GetVocabularyListQuery, UpdateVocabularyBody } from './dto/vocabulary.zod-dto'
+import { VocabularyHelperService } from './vocabulary.helper.service'
+import { VocabularyRepo } from './vocabulary.repo'
 
 @Injectable()
 export class VocabularyService {

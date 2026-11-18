@@ -5,10 +5,9 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
   CreateShopPurchaseBody,
-  SHOP_PURCHASE_FIELDS,
-  ShopPurchase,
   UpdateShopPurchaseBody
-} from './entities/shop-purchase.entity'
+} from './dto/shop-purchase.zod-dto'
+import { SHOP_PURCHASE_FIELDS, ShopPurchase } from './entities/shop-purchase.entity'
 
 @Injectable()
 export class ShopPurchaseRepo {

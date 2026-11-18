@@ -19,7 +19,7 @@ import {
 import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { GachaItemRepo } from '../gacha-item/gacha-item.repo'
-import { CreateTranslationBody } from '../translation/entities/translation.entity'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import {
   GachaBannerActiveLimitExceededException,
   GachaBannerAlreadyExistsException,
@@ -31,7 +31,7 @@ import {
   CreateGachaBannerBodyInput,
   UpdateGachaBannerBody,
   UpdateGachaBannerBodyInput
-} from './entities/gacha-banner.entity'
+} from './dto/gacha-banner.zod-dto'
 import { GachaBannerRepo } from './gacha-banner.repo'
 
 // Constant: Số lượng banner ACTIVE tối đa được phép

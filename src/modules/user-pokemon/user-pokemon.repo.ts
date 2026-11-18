@@ -3,12 +3,8 @@ import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import {
-  CreateUserPokemonBody,
-  UpdateUserPokemonBody,
-  USER_POKEMON_FIELDS,
-  UserPokemon
-} from './entities/user-pokemon.entity'
+import { CreateUserPokemonBody, UpdateUserPokemonBody } from './dto/user-pokemon.zod-dto'
+import { USER_POKEMON_FIELDS, UserPokemon } from './entities/user-pokemon.entity'
 
 type UserPokemonWithRelations = UserPokemon & {
   user?: {

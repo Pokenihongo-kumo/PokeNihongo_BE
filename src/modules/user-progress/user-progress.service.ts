@@ -1,18 +1,18 @@
 import { I18nService } from '@/i18n/i18n.service'
 import { UserProgressMessage as M } from '@/i18n/message-keys'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
+import { ProgressStatus } from '@prisma/client'
 import {
   InvalidUserProgressDataException,
   UserProgressNotFoundException
-} from '@/modules/user-progress/dto/user-progress.error'
+} from './dto/user-progress.error'
 import {
   CreateUserProgressBody,
   GetUserProgressByIdParams,
   GetUserProgressListQuery,
   UpdateUserProgressBody
-} from '@/modules/user-progress/entities/user-progress.entity'
-import { UserProgressRepo } from '@/modules/user-progress/user-progress.repo'
-import { HttpException, Injectable, Logger } from '@nestjs/common'
-import { ProgressStatus } from '@prisma/client'
+} from './dto/user-progress.zod-dto'
+import { UserProgressRepo } from './user-progress.repo'
 
 @Injectable()
 export class UserProgressService {

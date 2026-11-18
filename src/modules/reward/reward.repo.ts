@@ -4,13 +4,9 @@ import { Injectable } from '@nestjs/common'
 import { parseQs } from '@/common/utils/qs-parser'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import { CreateTranslationBody } from '../translation/entities/translation.entity'
-import {
-  CreateRewardBody,
-  REWARD_FIELDS,
-  Reward,
-  UpdateRewardBody
-} from './entities/reward.entity'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
+import { CreateRewardBody, UpdateRewardBody } from './dto/reward.zod-dto'
+import { REWARD_FIELDS, Reward } from './entities/reward.entity'
 
 type RewardPrismaType = Omit<Reward, 'nameKey'> & { name: string }
 

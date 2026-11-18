@@ -5,10 +5,9 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
   CreateNotificationBody,
-  Notification,
-  USER_SEASON_HISTORY_FIELDS,
   UpdateNotificationBody
-} from './entities/notification.entity'
+} from './dto/notification.zod-dto'
+import { Notification, USER_SEASON_HISTORY_FIELDS } from './entities/notification.entity'
 
 @Injectable()
 export class NotificationRepo {

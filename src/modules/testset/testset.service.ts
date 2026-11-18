@@ -15,12 +15,12 @@ import {
 import {
   CreateTestSetWithMeaningsBody,
   GetTestSetListQuery,
-  TestSet,
   UpdateTestSetBody,
   UpdateTestSetWithMeaningsBody,
   UpsertQuestionBank,
   UpsertTestSetWithQuestionBanksBody
-} from './entities/testset.entity'
+} from './dto/testset.zod-dto'
+import { TestSet } from './entities/testset.entity'
 import { TestSetRepo, UpsertQuestion } from './testset.repo'
 
 const { GENERAL } = PrismaTestSetType

@@ -2,7 +2,7 @@ import { PrismaService } from '@/shared/services/prisma.service'
 import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
-import { GetLessonListQuery } from './entities/lesson.entity'
+import { GetLessonListQuery } from './dto/lesson.zod-dto'
 
 // Category, author and test returned with a lesson
 const withRelations = {

@@ -2,7 +2,8 @@ import { KanjiSortField, SortOrder } from '@/common/enum/enum'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
-import { CreateKanjiBody, Kanji, UpdateKanjiBody } from './entities/kanji.entity'
+import { CreateKanjiBody, UpdateKanjiBody } from './dto/kanji.zod-dto'
+import { Kanji } from './entities/kanji.entity'
 
 @Injectable()
 export class KanjiRepo {

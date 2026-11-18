@@ -6,9 +6,11 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
   CreateShopRarityPriceBody,
-  SHOP_RARITY_PRICE_FIELDS,
-  ShopRarityPrice,
   UpdateShopRarityPriceBody
+} from './dto/shop-rarity-price.zod-dto'
+import {
+  SHOP_RARITY_PRICE_FIELDS,
+  ShopRarityPrice
 } from './entities/shop-rarity-price.entity'
 
 @Injectable()

@@ -7,7 +7,7 @@ import {
   GetRewardByLeaderboardParamsSchema,
   UpdateInvoiceBodySchema,
   UpdateInvoiceResSchema
-} from '../entities/invoice.entity'
+} from './invoice.zod-dto'
 
 // Request DTOs
 export class CreateInvoiceBodyDTO extends createZodDto(CreateInvoiceBodySchema) {}

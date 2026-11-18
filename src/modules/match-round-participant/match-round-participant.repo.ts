@@ -9,9 +9,11 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
   CreateMatchRoundParticipantBody,
-  MATCH_PARTICIPANT_FIELDS,
-  MatchRoundParticipant,
   UpdateMatchRoundParticipantBody
+} from './dto/match-round-participant.zod-dto'
+import {
+  MATCH_PARTICIPANT_FIELDS,
+  MatchRoundParticipant
 } from './entities/match-round-participant.entity'
 
 @Injectable()

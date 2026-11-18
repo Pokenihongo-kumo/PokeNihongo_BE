@@ -19,7 +19,7 @@ import {
   CreateLessonBody,
   GetLessonListQuery,
   UpdateLessonBody
-} from './entities/lesson.entity'
+} from './dto/lesson.zod-dto'
 import { LessonRepo } from './lesson.repo'
 
 type Title = string | { language: string; value: string }[]

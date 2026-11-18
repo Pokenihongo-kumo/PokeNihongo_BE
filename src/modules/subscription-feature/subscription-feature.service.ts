@@ -20,7 +20,7 @@ import {
   CreateSubscriptionFeatureBody,
   UpdateSubscriptionFeatureBody,
   UpdateWithListItemBody
-} from './entities/subscription-feature.entity'
+} from './dto/subscription-feature.zod-dto'
 import { SubscriptionFeatureRepo } from './subscription-feature.repo'
 
 @Injectable()

@@ -1,33 +1,72 @@
+import { checkIdSchema } from '@/common/utils/id.validation'
+import { WalletTransactionMessage } from '@/i18n/message-keys'
+import { WalletSchema } from '@/modules/wallet/entities/wallet.entity'
+import { resSchema } from '@/shared/utils/res-schema'
 import { createZodDto } from 'nestjs-zod'
-import {
-  CreateWalletTransactionBodySchema,
-  CreateWalletTransactionResSchema,
-  GetWalletTransactionDetailResSchema,
-  GetWalletTransactionParamsSchema,
-  UpdateWalletTransactionBodySchema,
-  UpdateWalletTransactionResSchema
-} from '../entities/wallet-transaction.entity'
+import { z } from 'zod'
+import { WalletTransactionSchema } from '../entities/wallet-transaction.entity'
+
+export const CreateWalletTransactionBodySchema = WalletTransactionSchema.pick({
+  walletId: true,
+  userId: true,
+  purpose: true,
+  referenceId: true,
+  amount: true,
+  type: true,
+  source: true,
+  description: true
+}).strict()
+
+export type CreateWalletTransactionBody = z.infer<
+  typeof CreateWalletTransactionBodySchema
+>
 
 export class CreatedWalletTransactionBodyDTO extends createZodDto(
   CreateWalletTransactionBodySchema
 ) {}
 
+export const CreateWalletTransactionResSchema = resSchema(WalletTransactionSchema)
+
 export class CreateWalletTransactionResDTO extends createZodDto(
   CreateWalletTransactionResSchema
 ) {}
+
+export const UpdateWalletTransactionBodySchema = CreateWalletTransactionBodySchema
+
+export type UpdateWalletTransactionBody = z.infer<
+  typeof UpdateWalletTransactionBodySchema
+>
 
 export class UpdateWalletTransactionBodyDTO extends createZodDto(
   UpdateWalletTransactionBodySchema
 ) {}
 
+export const UpdateWalletTransactionResSchema = CreateWalletTransactionResSchema
+
 export class UpdateWalletTransactionResDTO extends createZodDto(
   UpdateWalletTransactionResSchema
 ) {}
+
+export const GetWalletTransactionParamsSchema = z
+  .object({
+    walletTransactionId: checkIdSchema(WalletTransactionMessage.INVALID_DATA)
+  })
+  .strict()
+
+export type GetWalletTransactionParams = z.infer<typeof GetWalletTransactionParamsSchema>
 
 export class GetWalletTransactionParamsDTO extends createZodDto(
   GetWalletTransactionParamsSchema
 ) {}
 
+export const GetWalletTransactionDetailResSchema = CreateWalletTransactionResSchema
+
+export type GetWalletTransactionDetailRes = z.infer<
+  typeof GetWalletTransactionDetailResSchema
+>
+
 export class GetWalletTransactionDetailResDTO extends createZodDto(
   GetWalletTransactionDetailResSchema
 ) {}
+
+export const GetWalletsWithUserResSchema = resSchema(z.array(WalletSchema))

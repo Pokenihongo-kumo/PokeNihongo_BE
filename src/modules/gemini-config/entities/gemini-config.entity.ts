@@ -1,6 +1,3 @@
-import { checkIdSchema } from '@/common/utils/id.validation'
-import { ENTITY_MESSAGE } from '@/i18n/message-keys'
-import { resSchema } from '@/shared/utils/res-schema'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -21,32 +18,8 @@ export const GeminiConfigSchema = z.object({
   updatedAt: z.date().optional()
 })
 
-export const CreateGeminiConfigBodySchema = GeminiConfigSchema.pick({
-  geminiConfigModelId: true,
-  prompt: true,
-  isActive: true
-}).strict()
-
-export const CreateGeminiConfigResSchema = resSchema(GeminiConfigSchema)
-
-export const UpdateGeminiConfigBodySchema =
-  CreateGeminiConfigBodySchema.partial().strict()
-
-export const UpdateGeminiConfigResSchema = CreateGeminiConfigResSchema
-
-export const GetParamsGeminiConfigSchema = z.object({
-  geminiConfigId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
-})
-
-export const GetGeminiConfigResSchema = resSchema(GeminiConfigSchema)
-
 //type
 export type GeminiConfig = z.infer<typeof GeminiConfigSchema>
-export type CreateGeminiConfigBody = z.infer<typeof CreateGeminiConfigBodySchema>
-export type UpdateGeminiConfigBody = z.infer<typeof UpdateGeminiConfigBodySchema>
-export type GetParamsGeminiConfig = z.infer<typeof GetParamsGeminiConfigSchema>
-export type GetGeminiConfigRes = z.infer<typeof GetGeminiConfigResSchema>
-
 //field
 type GeminiConfigFieldType = keyof z.infer<typeof GeminiConfigSchema>
 export const GEMINI_CONFIG_FIELDS = Object.keys(

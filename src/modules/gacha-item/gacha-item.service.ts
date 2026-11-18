@@ -29,7 +29,7 @@ import {
   CreateWithListItemBody,
   GetRamdomAmountGachaItemsBody,
   UpdateWithListGachaItemBody
-} from './entities/gacha-item.entity'
+} from './dto/gacha-item.zod-dto'
 import { GachaItemRepo } from './gacha-item.repo'
 
 const STAR_TYPE_TO_RARITY: Record<GachaStarType, RarityPokemonType> = {

@@ -4,9 +4,9 @@ import { TestSetStatus, TestStatus, UserTestStatus } from '@prisma/client'
 import {
   CreateUserTestBody,
   GetUserTestListQuery,
-  UpdateUserTestBody,
-  UserTest
-} from './entities/user-test.entity'
+  UpdateUserTestBody
+} from './dto/user-test.zod-dto'
+import { UserTest } from './entities/user-test.entity'
 
 @Injectable()
 export class UserTestRepo {

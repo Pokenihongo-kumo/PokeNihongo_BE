@@ -8,7 +8,7 @@ import {
   CreateGrammarBody,
   GetGrammarListQuery,
   UpdateGrammarBody
-} from './entities/grammar.entity'
+} from './dto/grammar.zod-dto'
 
 @Injectable()
 export class GrammarRepo {

@@ -1,20 +1,20 @@
 import { I18nService } from '@/i18n/i18n.service'
 import { UserTestAnswerLogMessage as M } from '@/i18n/message-keys'
+import { toPaginationMeta } from '@/shared/utils/pagination'
+import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
 import {
   AnswerLogRuleViolationException,
   AttemptNotOwnedException,
   InvalidUserTestAnswerLogDataException,
   UserTestAnswerLogNotFoundException
-} from '@/modules/user-test-answer-log/dto/user-test-answer-log.error'
+} from './dto/user-test-answer-log.error'
 import {
   CreateUserTestAnswerLogBody,
   GetUserTestAnswerLogListQuery,
   UpdateUserTestAnswerLogBody
-} from '@/modules/user-test-answer-log/entities/user-test-answer-log.entity'
-import { UserTestAnswerLogRepo } from '@/modules/user-test-answer-log/user-test-answer-log.repo'
-import { toPaginationMeta } from '@/shared/utils/pagination'
-import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
-import { HttpException, Injectable, Logger } from '@nestjs/common'
+} from './dto/user-test-answer-log.zod-dto'
+import { UserTestAnswerLogRepo } from './user-test-answer-log.repo'
 
 @Injectable()
 export class UserTestAnswerLogService {

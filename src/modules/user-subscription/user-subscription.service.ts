@@ -23,7 +23,7 @@ import {
 import {
   CreateUserSubscriptionBody,
   UpdateUserSubscriptionBody
-} from './entities/user-subscription.entity'
+} from './dto/user-subscription.zod-dto'
 import { UserSubscriptionRepo } from './user-subscription.repo'
 
 @Injectable()

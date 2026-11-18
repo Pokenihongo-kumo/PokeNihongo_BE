@@ -16,20 +16,22 @@ import {
 import {
   CreateFlashcardCardBody,
   CreateFlashcardDeckBody,
-  FlashcardCard,
-  FlashcardContent,
-  FlashcardDeckDetail,
-  FlashcardDeckSummary,
-  FlashcardImportContentTypeEnum,
-  FlashcardImportResult,
   FlashcardReviewActionBody,
-  FlashcardReviewItem,
   FlashcardReviewQuery,
   GetFlashcardCardListQuery,
   GetFlashcardDeckListQuery,
   ImportFlashcardCardsBody,
   UpdateFlashcardCardBody,
   UpdateFlashcardDeckBody
+} from './dto/flashcard.zod-dto'
+import {
+  FlashcardCard,
+  FlashcardContent,
+  FlashcardDeckDetail,
+  FlashcardDeckSummary,
+  FlashcardImportContentTypeEnum,
+  FlashcardImportResult,
+  FlashcardReviewItem
 } from './entities/flashcard.entity'
 import { FlashcardRepo } from './flashcard.repo'
 

@@ -1,6 +1,3 @@
-import { checkIdSchema } from '@/common/utils/id.validation'
-import { UserProgressMessage } from '@/i18n/message-keys'
-import { paginatedResSchema } from '@/shared/utils/pagination'
 import { z } from 'zod'
 
 // ProgressStatus enum
@@ -36,102 +33,12 @@ export const UserProgressSchema = z.object({
   lesson: LessonInfoSchema.optional()
 })
 
-// Create UserProgress schema
-export const CreateUserProgressBodySchema = z
-  .object({
-    userId: z.number(),
-    lessonId: z.number(),
-    status: ProgressStatusSchema.optional().default('NOT_STARTED'),
-    progressPercentage: z.number().min(0).max(100).optional().default(0)
-  })
-  .strict()
-
-// Update UserProgress schema
-export const UpdateUserProgressBodySchema = z
-  .object({
-    status: ProgressStatusSchema.optional(),
-    progressPercentage: z.number().min(0).max(100).optional()
-  })
-  .strict()
-
 // UserProgress with relations schema
 export const UserProgressWithRelationsSchema = UserProgressSchema.extend({
   lesson: LessonInfoSchema.optional()
 })
 
-// Response schemas
-export const UserProgressResSchema = z
-  .object({
-    data: UserProgressWithRelationsSchema,
-    message: z.string()
-  })
-  .strict()
-
-export const UserProgressListResSchema = paginatedResSchema(
-  UserProgressWithRelationsSchema
-).strict()
-
-// Params and Query schemas
-export const GetUserProgressByIdParamsSchema = z
-  .object({
-    id: checkIdSchema(UserProgressMessage.INVALID_ID)
-  })
-  .strict()
-
-export const UserProgressLessonParamsSchema = z
-  .object({
-    lessonId: checkIdSchema(UserProgressMessage.INVALID_LESSON_ID)
-  })
-  .strict()
-
-export const UserProgressUserParamsSchema = z
-  .object({
-    userId: checkIdSchema(UserProgressMessage.INVALID_USER_ID)
-  })
-  .strict()
-
-// A non-number used to reach Prisma as NaN (500), or turn a filter off
-export const GetUserProgressListQuerySchema = z
-  .object({
-    currentPage: checkIdSchema(UserProgressMessage.INVALID_PAGE).default(1),
-    pageSize: checkIdSchema(UserProgressMessage.INVALID_PAGE_SIZE).default(10),
-    userId: checkIdSchema(UserProgressMessage.INVALID_USER_ID).optional(),
-    lessonId: checkIdSchema(UserProgressMessage.INVALID_LESSON_ID).optional(),
-    lessonCategoryId: checkIdSchema(UserProgressMessage.INVALID_CATEGORY_ID).optional(),
-    status: ProgressStatusSchema.optional(),
-    progressPercentage: z.coerce
-      .number({ invalid_type_error: UserProgressMessage.INVALID_PERCENTAGE })
-      .int(UserProgressMessage.INVALID_PERCENTAGE)
-      .min(0, UserProgressMessage.INVALID_PERCENTAGE)
-      .max(100, UserProgressMessage.INVALID_PERCENTAGE)
-      .optional()
-  })
-  .strict()
-
-// Start lesson schema
-export const StartLessonBodySchema = z
-  .object({
-    lessonId: z.number()
-  })
-  .strict()
-
-// Complete lesson schema
-export const CompleteLessonBodySchema = z
-  .object({
-    lessonId: z.number(),
-    score: z.number().optional()
-  })
-  .strict()
-
 // Types
 export type ProgressStatus = z.infer<typeof ProgressStatusSchema>
 export type UserProgress = z.infer<typeof UserProgressSchema>
-export type CreateUserProgressBody = z.infer<typeof CreateUserProgressBodySchema>
-export type UpdateUserProgressBody = z.infer<typeof UpdateUserProgressBodySchema>
 export type UserProgressWithRelations = z.infer<typeof UserProgressWithRelationsSchema>
-export type UserProgressRes = z.infer<typeof UserProgressResSchema>
-export type UserProgressListRes = z.infer<typeof UserProgressListResSchema>
-export type GetUserProgressByIdParams = z.infer<typeof GetUserProgressByIdParamsSchema>
-export type GetUserProgressListQuery = z.infer<typeof GetUserProgressListQuerySchema>
-export type StartLessonBody = z.infer<typeof StartLessonBodySchema>
-export type CompleteLessonBody = z.infer<typeof CompleteLessonBodySchema>

@@ -5,10 +5,12 @@ import { PrismaService } from '@/shared/services/prisma.service'
 import { toPaginationMeta, toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
 import {
-  ATTENDANCE_CONFIG_FIELDS,
-  AttendanceConfig,
   CreateAttendanceConfigBody,
   UpdateAttendanceConfigBody
+} from './dto/attendence-config.zod-dto'
+import {
+  ATTENDANCE_CONFIG_FIELDS,
+  AttendanceConfig
 } from './entities/attendence-config.entity'
 
 @Injectable()

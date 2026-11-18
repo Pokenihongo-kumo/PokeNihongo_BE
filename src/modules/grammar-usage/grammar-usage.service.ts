@@ -17,7 +17,7 @@ import {
   GetGrammarUsageByIdParams,
   GetGrammarUsageListQuery,
   UpdateGrammarUsageBody
-} from './entities/grammar-usage.entity'
+} from './dto/grammar-usage.zod-dto'
 import { GrammarUsageRepo } from './grammar-usage.repo'
 
 @Injectable()

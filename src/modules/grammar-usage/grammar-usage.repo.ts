@@ -7,7 +7,7 @@ import {
   CreateGrammarUsageBody,
   GetGrammarUsageListQuery,
   UpdateGrammarUsageBody
-} from './entities/grammar-usage.entity'
+} from './dto/grammar-usage.zod-dto'
 
 @Injectable()
 export class GrammarUsageRepo {

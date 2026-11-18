@@ -11,7 +11,7 @@ import { GachaRollHistoryNotFoundException } from './dto/gacha-roll-history.erro
 import {
   CreateGachaRollHistoryBody,
   UpdateGachaRollHistoryBody
-} from './entities/gacha-roll-history.entity'
+} from './dto/gacha-roll-history.zod-dto'
 import { GachaRollHistoryRepo } from './gacha-roll-history.repo'
 
 @Injectable()

@@ -5,10 +5,10 @@ import { Prisma, TestSet as PrismaTestSet } from '@prisma/client'
 import {
   CreateTestSetWithMeaningsBody,
   GetTestSetListQuery,
-  TestSet,
   UpdateTestSetBody,
   UpdateTestSetWithMeaningsBody
-} from './entities/testset.entity'
+} from './dto/testset.zod-dto'
+import { TestSet } from './entities/testset.entity'
 
 type Tx = Prisma.TransactionClient
 type TextField = 'name' | 'description'

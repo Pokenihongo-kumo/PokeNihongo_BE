@@ -21,7 +21,7 @@ import {
   CreatePokemonFormData,
   UpdatePokemonBody,
   UpdatePokemonFormData
-} from './entities/pokemon.entity'
+} from './dto/pokemon.zod-dto'
 import { PokemonRepo } from './pokemon.repo'
 
 @Injectable()

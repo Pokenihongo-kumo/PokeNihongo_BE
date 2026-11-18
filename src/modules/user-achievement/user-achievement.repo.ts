@@ -6,8 +6,10 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
   CreateUserAchievementBody,
+  UpdateUserAchievementBody
+} from './dto/user-achievement.zod-dto'
+import {
   USER_GACHA_PITY_FIELDS,
-  UpdateUserAchievementBody,
   UserAchievement
 } from './entities/user-achievement.entity'
 

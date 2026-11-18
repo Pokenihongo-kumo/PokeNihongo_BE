@@ -6,6 +6,14 @@ import { ExercisesService } from '@/modules/exercises/exercises.service'
 import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
 import { TranslationHelperService } from '@/modules/translation/translation.helper.service'
 import { UserAnswerLogService } from '@/modules/user-answer-log/user-answer-log.service'
+import { UserProgressService } from '@/modules/user-progress/user-progress.service'
+import { UserCoreService } from '@/modules/user/user-core.service'
+import { MessageResDTO } from '@/shared/dtos/response.dto'
+import { toPaginationMeta } from '@/shared/utils/pagination'
+import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
+import { ProgressStatus, UserRewardSourceType } from '@prisma/client'
+import { RewardService } from '../reward/reward.service'
 import {
   AttemptNotOwnedException,
   ExerciseAttemptNotInProgressException,
@@ -15,21 +23,13 @@ import {
   LessonPrerequisiteNotMetException,
   ReviewInsufficientScoreException,
   UserExerciseAttemptNotFoundException
-} from '@/modules/user-exercise-attempt/dto/user-exercise-attempt.error'
+} from './dto/user-exercise-attempt.error'
 import {
   GetUserExerciseAttemptListQuery,
   LatestExerciseAttemptsByLessonRes,
   UpdateUserExerciseAttemptBody
-} from '@/modules/user-exercise-attempt/entities/user-exercise-attempt.entity'
-import { UserExerciseAttemptRepo } from '@/modules/user-exercise-attempt/user-exercise-attempt.repo'
-import { UserProgressService } from '@/modules/user-progress/user-progress.service'
-import { UserCoreService } from '@/modules/user/user-core.service'
-import { MessageResDTO } from '@/shared/dtos/response.dto'
-import { toPaginationMeta } from '@/shared/utils/pagination'
-import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
-import { HttpException, Injectable, Logger } from '@nestjs/common'
-import { ProgressStatus, UserRewardSourceType } from '@prisma/client'
-import { RewardService } from '../reward/reward.service'
+} from './dto/user-exercise-attempt.zod-dto'
+import { UserExerciseAttemptRepo } from './user-exercise-attempt.repo'
 
 @Injectable()
 export class UserExerciseAttemptService {

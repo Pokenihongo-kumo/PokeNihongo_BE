@@ -11,7 +11,7 @@ import { RoundQuestionsAnswerLogNotFoundException } from './dto/round-question-a
 import {
   CreateRoundQuestionsAnswerLogBody,
   UpdateRoundQuestionsAnswerLogBody
-} from './entities/round-question-answerlog.entity'
+} from './dto/round-question-answerlog.zod-dto'
 import { RoundQuestionsAnswerLogRepo } from './round-question-answerlog.repo'
 
 @Injectable()

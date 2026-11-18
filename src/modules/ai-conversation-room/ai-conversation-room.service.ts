@@ -1,19 +1,19 @@
 import { I18nService } from '@/i18n/i18n.service'
 import { AIConversationRoomMessage as M } from '@/i18n/message-keys'
-import { AIConversationRoomRepo } from '@/modules/ai-conversation-room/ai-conversation-room.repo'
+import { toPaginationMeta } from '@/shared/utils/pagination'
+import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
+import { AIConversationRoomRepo } from './ai-conversation-room.repo'
 import {
   AIConversationRoomNotFoundException,
   AIConversationTakenException,
   InvalidAIConversationRoomDataException
-} from '@/modules/ai-conversation-room/dto/ai-conversation-room.error'
+} from './dto/ai-conversation-room.error'
 import {
   CreateAIConversationRoomInput,
   GetAIConversationRoomListQuery,
   UpdateAIConversationRoomData
-} from '@/modules/ai-conversation-room/entities/ai-conversation-room.entity'
-import { toPaginationMeta } from '@/shared/utils/pagination'
-import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
-import { HttpException, Injectable, Logger } from '@nestjs/common'
+} from './dto/ai-conversation-room.zod-dto'
 
 @Injectable()
 export class AIConversationRoomService {

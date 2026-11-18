@@ -6,9 +6,9 @@ import { Injectable } from '@nestjs/common'
 import { Prisma, TypeEffectiveness } from '@prisma/client'
 import {
   CreateTypeEffectivenessBody,
-  TYPE_EFFECTIVENESS_FIELDS,
   UpdateTypeEffectivenessBody
-} from './entities/type-effectiveness.entity'
+} from './dto/type-effectiveness.zod-dto'
+import { TYPE_EFFECTIVENESS_FIELDS } from './entities/type-effectiveness.entity'
 
 // Every read returns both elemental types with these fields
 const TYPE_SELECT = {

@@ -5,8 +5,10 @@ import { parseQs } from '@/common/utils/qs-parser'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
   CreateUserDailyRequestBody,
+  UpdateUserDailyRequestBody
+} from './dto/user-daily-request.zod-dto'
+import {
   USER_DAILY_REQUEST_FIELDS,
-  UpdateUserDailyRequestBody,
   UserDailyRequest,
   UserDailyRequestDetail
 } from './entities/user-daily-request.entity'

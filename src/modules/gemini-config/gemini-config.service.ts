@@ -10,7 +10,7 @@ import { GeminiConfigAlreadyExistsException } from './dto/gemini-config.error'
 import {
   CreateGeminiConfigBody,
   UpdateGeminiConfigBody
-} from './entities/gemini-config.entity'
+} from './dto/gemini-config.zod-dto'
 import { GeminiConfigRepo, GeminiPresetRepo } from './gemini-config.repo'
 
 @Injectable()

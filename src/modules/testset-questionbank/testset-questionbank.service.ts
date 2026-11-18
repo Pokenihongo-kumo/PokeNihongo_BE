@@ -21,9 +21,9 @@ import {
   CreateMultipleTestSetQuestionBankBody,
   CreateTestSetQuestionBankBody,
   DeleteManyTestSetQuestionBankBody,
-  TestSetQuestionBank,
   UpdateTestSetQuestionBankBody
-} from './entities/testset-questionbank.entity'
+} from './dto/testset-questionbank.zod-dto'
+import { TestSetQuestionBank } from './entities/testset-questionbank.entity'
 import { TestSetQuestionBankRepo } from './testset-questionbank.repo'
 
 type TestSetRule = NonNullable<

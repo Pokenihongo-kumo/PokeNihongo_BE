@@ -7,7 +7,9 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
   CreateWalletTransactionBody,
-  UpdateWalletTransactionBody,
+  UpdateWalletTransactionBody
+} from './dto/wallet-transaction.zod-dto'
+import {
   WALLET_TRANSACTION_FIELDS,
   WalletTransaction
 } from './entities/wallet-transaction.entity'

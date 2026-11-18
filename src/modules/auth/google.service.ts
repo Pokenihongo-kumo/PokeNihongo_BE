@@ -1,7 +1,6 @@
 import envConfig from '@/config/env.config'
 import { I18nService } from '@/i18n/i18n.service'
 import { AuthMessage } from '@/i18n/message-keys'
-import { AuthRepository } from '@/modules/auth/auth.repo'
 import { RoleService } from '@/modules/role/role.service'
 import { UserProgressService } from '@/modules/user-progress/user-progress.service'
 import { UserTestService } from '@/modules/user-test/user-test.service'
@@ -12,12 +11,13 @@ import Redis from 'ioredis'
 import { AuthService } from 'src/modules/auth/auth.service'
 import { HashingService } from 'src/shared/services/hashing.service'
 import { v4 as uuidv4 } from 'uuid'
+import { AuthRepository } from './auth.repo'
 import {
   ExchangeCodeInvalidException,
   GoogleRedirectNotAllowedException,
   GoogleUserInfoException
 } from './dto/auth.error'
-import { GoogleExchangeBody, GoogleLinkQuery } from './entities/auth.entities'
+import { GoogleExchangeBody, GoogleLinkQuery } from './dto/auth.zod-dto'
 import { TAKE } from './registration-token'
 
 const STATE_TTL_SECONDS = 10 * 60

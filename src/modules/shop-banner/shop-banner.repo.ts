@@ -9,12 +9,8 @@ import {
 import { parseQs } from '@/common/utils/qs-parser'
 import { Prisma, PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import {
-  CreateShopBannerBody,
-  REWARD_FIELDS,
-  ShopBanner,
-  UpdateShopBannerBody
-} from './entities/shop-banner.entity'
+import { CreateShopBannerBody, UpdateShopBannerBody } from './dto/shop-banner.zod-dto'
+import { REWARD_FIELDS, ShopBanner } from './entities/shop-banner.entity'
 
 type ShopBannerPrismaType = Omit<ShopBanner, 'nameKey'> & { name: string }
 

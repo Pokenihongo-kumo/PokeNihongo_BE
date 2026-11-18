@@ -27,7 +27,7 @@ import {
   GetRamdomAmountShopItemBody,
   UpdateShopItemBody,
   UpdateWithListItemBody
-} from './entities/shop-item.entity'
+} from './dto/shop-item.zod-dto'
 import { ShopItemRepo } from './shop-item.repo'
 
 @Injectable()

@@ -5,9 +5,11 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
   CreateGachaRollHistoryBody,
-  GACHA_ROLL_HISTORY_FIELDS,
-  GachaRollHistory,
   UpdateGachaRollHistoryBody
+} from './dto/gacha-roll-history.zod-dto'
+import {
+  GACHA_ROLL_HISTORY_FIELDS,
+  GachaRollHistory
 } from './entities/gacha-roll-history.entity'
 
 @Injectable()

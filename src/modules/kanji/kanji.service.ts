@@ -13,8 +13,8 @@ import {
   KanjiCharacterInvalidException,
   KanjiNotFoundException
 } from './dto/kanji.error'
+import { GetKanjiListQuery } from './dto/kanji.zod-dto'
 import { UpdateKanjiWithMeaningsBody } from './dto/update-kanji-with-meanings.dto'
-import { GetKanjiListQuery } from './entities/kanji.entity'
 import { KanjiRepo } from './kanji.repo'
 
 // The meaning of kanji {id} lives in translations under kanji.{id}.meaning

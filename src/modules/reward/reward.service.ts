@@ -6,6 +6,7 @@ import { NotificationService } from '@/modules/notification/notification.service
 import { PokemonService } from '@/modules/pokemon/pokemon.service'
 import { TranslationService } from '@/modules/translation/translation.service'
 import { UserPokemonService } from '@/modules/user-pokemon/user-pokemon.service'
+import { CreateUserRewardHistoryBody } from '@/modules/user-reward-history/dto/user-reward-history.zod-dto'
 import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
 import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
 import { WalletService } from '@/modules/wallet/wallet.service'
@@ -28,8 +29,7 @@ import {
   UserRewardSourceType,
   WalletType
 } from '@prisma/client'
-import { CreateTranslationBody } from '../translation/entities/translation.entity'
-import { CreateUserRewardHistoryBody } from '../user-reward-history/entities/user-reward-history.entities'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { UserRewardHistoryService } from '../user-reward-history/user-reward-history.service'
 import { UserService } from '../user/user.service'
 import { RewardAlreadyExistsException } from './dto/reward.error'
@@ -38,7 +38,7 @@ import {
   CreateRewardBodyInput,
   UpdateRewardBody,
   UpdateRewardBodyInput
-} from './entities/reward.entity'
+} from './dto/reward.zod-dto'
 import { RewardRepo } from './reward.repo'
 
 @Injectable()

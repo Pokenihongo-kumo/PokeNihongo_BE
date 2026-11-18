@@ -16,7 +16,7 @@ import { SubscriptionPlanNotFoundException } from './dto/subscription-plan.error
 import {
   CreateSubscriptionPlanBody,
   UpdateSubscriptionPlanBody
-} from './entities/subscription-plan.entity'
+} from './dto/subscription-plan.zod-dto'
 import { SubscriptionPlanRepo } from './subscription-plan.repo'
 
 @Injectable()

@@ -16,10 +16,9 @@ import {
 import {
   CreateMeaningBody,
   GetMeaningListQuery,
-  Meaning,
-  MeaningWithTranslations,
   UpdateMeaningBody
-} from './entities/meaning.entity'
+} from './dto/meaning.zod-dto'
+import { Meaning, MeaningWithTranslations } from './entities/meaning.entity'
 import { MeaningRepo } from './meaning.repo'
 
 type TranslationItem = { language_code: string; value: string }

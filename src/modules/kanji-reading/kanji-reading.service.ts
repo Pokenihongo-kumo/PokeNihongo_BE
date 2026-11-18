@@ -16,9 +16,9 @@ import {
 import {
   CreateKanjiReadingBody,
   GetKanjiReadingListQuery,
-  KanjiReading,
   UpdateKanjiReadingBody
-} from './entities/kanji-reading.entity'
+} from './dto/kanji-reading.zod-dto'
+import { KanjiReading } from './entities/kanji-reading.entity'
 import { KanjiReadingRepo } from './kanji-reading.repo'
 
 @Injectable()

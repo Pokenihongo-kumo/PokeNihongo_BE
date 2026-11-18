@@ -15,7 +15,7 @@ import {
 import {
   CreateGachaItemRateBody,
   UpdateGachaItemRateBody
-} from './entities/gacha-item-rate.entity'
+} from './dto/gacha-item-rate.zod-dto'
 import { GachaItemRateRepo } from './gacha-item-rate.repo'
 
 @Injectable()

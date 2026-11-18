@@ -16,7 +16,7 @@ import {
   CreateGrammarBody,
   GetGrammarListQuery,
   UpdateGrammarBody
-} from './entities/grammar.entity'
+} from './dto/grammar.zod-dto'
 import { GrammarRepo } from './grammar.repo'
 
 @Injectable()
