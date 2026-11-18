@@ -9185,6 +9185,114 @@
         ]
       }
     },
+    "/season-rank-reward": {
+      "get": {
+        "operationId": "SeasonRankRewardController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "SeasonRankReward"
+        ]
+      },
+      "post": {
+        "operationId": "SeasonRankRewardController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSeasonRankRewardBodyDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "SeasonRankReward"
+        ]
+      }
+    },
+    "/season-rank-reward/{seasonRankRewardId}": {
+      "get": {
+        "operationId": "SeasonRankRewardController_findById",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "SeasonRankReward"
+        ]
+      },
+      "put": {
+        "operationId": "SeasonRankRewardController_update",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSeasonRankRewardBodyDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "SeasonRankReward"
+        ]
+      },
+      "delete": {
+        "operationId": "SeasonRankRewardController_delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "SeasonRankReward"
+        ]
+      }
+    },
+    "/season-rank-reward/list": {
+      "put": {
+        "operationId": "SeasonRankRewardController_updateByList",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWithListItemBodyDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "SeasonRankReward"
+        ]
+      }
+    },
     "/user-reward-history": {
       "post": {
         "operationId": "UserRewardHistoryController_create",
@@ -17190,114 +17298,6 @@
         ]
       }
     },
-    "/season-rank-reward": {
-      "get": {
-        "operationId": "SeasonRankRewardController_list",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "SeasonRankReward"
-        ]
-      },
-      "post": {
-        "operationId": "SeasonRankRewardController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateSeasonRankRewardBodyDTO"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "SeasonRankReward"
-        ]
-      }
-    },
-    "/season-rank-reward/{seasonRankRewardId}": {
-      "get": {
-        "operationId": "SeasonRankRewardController_findById",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "SeasonRankReward"
-        ]
-      },
-      "put": {
-        "operationId": "SeasonRankRewardController_update",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateSeasonRankRewardBodyDTO"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "SeasonRankReward"
-        ]
-      },
-      "delete": {
-        "operationId": "SeasonRankRewardController_delete",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "SeasonRankReward"
-        ]
-      }
-    },
-    "/season-rank-reward/list": {
-      "put": {
-        "operationId": "SeasonRankRewardController_updateByList",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateWithListItemBodyDTO"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "SeasonRankReward"
-        ]
-      }
-    },
     "/user-achievement": {
       "get": {
         "operationId": "UserAchievementController_list",
@@ -24959,6 +24959,84 @@
           }
         }
       },
+      "CreateSeasonRankRewardBodyDTO": {
+        "type": "object",
+        "properties": {
+          "seasonId": {
+            "type": "number"
+          },
+          "rankName": {
+            "type": "string",
+            "enum": [
+              "N5",
+              "N4",
+              "N3"
+            ],
+            "default": "N5"
+          },
+          "order": {
+            "type": "number",
+            "minimum": 1,
+            "exclusiveMinimum": false,
+            "nullable": true
+          }
+        },
+        "required": [
+          "seasonId",
+          "order"
+        ]
+      },
+      "UpdateWithListItemBodyDTO": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "featureId": {
+                  "type": "number"
+                },
+                "value": {
+                  "type": "string",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "featureId",
+                "value"
+              ]
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "UpdateSeasonRankRewardBodyDTO": {
+        "type": "object",
+        "properties": {
+          "seasonId": {
+            "type": "number"
+          },
+          "rankName": {
+            "type": "string",
+            "enum": [
+              "N5",
+              "N4",
+              "N3"
+            ],
+            "default": "N5"
+          },
+          "order": {
+            "type": "number",
+            "minimum": 1,
+            "exclusiveMinimum": false,
+            "nullable": true
+          }
+        }
+      },
       "CreateUserRewardHistorySwaggerDTO": {
         "type": "object",
         "properties": {
@@ -30381,34 +30459,6 @@
           "isActive"
         ]
       },
-      "UpdateWithListItemBodyDTO": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "type": "object",
-              "properties": {
-                "featureId": {
-                  "type": "number"
-                },
-                "value": {
-                  "type": "string",
-                  "nullable": true
-                }
-              },
-              "required": [
-                "featureId",
-                "value"
-              ]
-            }
-          }
-        },
-        "required": [
-          "items"
-        ]
-      },
       "UpdateShopItemBodyDTO": {
         "type": "object",
         "properties": {
@@ -31332,56 +31382,6 @@
           "pointsEarned": {
             "type": "number",
             "default": 100
-          }
-        }
-      },
-      "CreateSeasonRankRewardBodyDTO": {
-        "type": "object",
-        "properties": {
-          "seasonId": {
-            "type": "number"
-          },
-          "rankName": {
-            "type": "string",
-            "enum": [
-              "N5",
-              "N4",
-              "N3"
-            ],
-            "default": "N5"
-          },
-          "order": {
-            "type": "number",
-            "minimum": 1,
-            "exclusiveMinimum": false,
-            "nullable": true
-          }
-        },
-        "required": [
-          "seasonId",
-          "order"
-        ]
-      },
-      "UpdateSeasonRankRewardBodyDTO": {
-        "type": "object",
-        "properties": {
-          "seasonId": {
-            "type": "number"
-          },
-          "rankName": {
-            "type": "string",
-            "enum": [
-              "N5",
-              "N4",
-              "N3"
-            ],
-            "default": "N5"
-          },
-          "order": {
-            "type": "number",
-            "minimum": 1,
-            "exclusiveMinimum": false,
-            "nullable": true
           }
         }
       },

@@ -1,3 +1,4 @@
+import { SeasonRankRewardService } from '@/modules/season-rank-reward/season-rank-reward.service'
 import { RewardClaimStatus } from '@/common/constants/reward.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { UserSeasonHistoryMessage } from '@/i18n/message-keys'
@@ -35,7 +36,8 @@ export class UserSeasonHistoryService {
     private readonly rewardService: RewardService,
     private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
-    private readonly userCoreService: UserCoreService
+    private readonly userCoreService: UserCoreService,
+    private readonly seasonRankRewardService: SeasonRankRewardService
   ) {}
 
   async list(pagination: PaginationQuery, lang: string = 'vi') {
@@ -257,36 +259,37 @@ export class UserSeasonHistoryService {
         throw new UserCanNotClaimRewardsException()
       }
 
-      // 4. Check if user has rewards to claim
-      if (!userSeasonHistory.seasonRankRewardId) {
-        throw new UserNotHaveRewardsToClaimException()
-      }
-
-      // 5. Get season rank reward with all rewards
-      const seasonRankReward =
-        await this.userSeasonHistoryRepo.findSeasonRankRewardWithRewards(
-          userSeasonHistory.seasonRankRewardId
+      // 4. Rewards of the rank position (if any), plus the season rewards for
+      //    everyone (rank rewards with order null)
+      const seasonRankReward = userSeasonHistory.seasonRankRewardId
+        ? await this.userSeasonHistoryRepo.findSeasonRankRewardWithRewards(
+            userSeasonHistory.seasonRankRewardId
+          )
+        : null
+      const commonRewardIds = (
+        await this.seasonRankRewardService.findBySeasonWithRewardIds(
+          userSeasonHistory.seasonId
         )
+      )
+        .filter((srr) => srr.order === null)
+        .flatMap((srr) => srr.rewards.map((r) => r.id))
+      const rewardIds = [
+        ...(seasonRankReward?.rewards ?? []).map((r: any) => r.id),
+        ...commonRewardIds
+      ]
 
-      if (
-        !seasonRankReward ||
-        !seasonRankReward.rewards ||
-        seasonRankReward.rewards.length === 0
-      ) {
+      if (rewardIds.length === 0) {
         throw new UserNotHaveRewardsToClaimException()
       }
 
-      // 6. Extract reward IDs
-      const rewardIds = seasonRankReward.rewards.map((r: any) => r.id)
-
-      // 7. Convert and give rewards to user
+      // 5. Convert and give rewards to user
       const rewardResults = await this.rewardService.convertRewardsWithUser(
         rewardIds,
         userId,
         UserRewardSourceType.SEASON_REWARD
       )
 
-      // 8. Update status to COMPLETED (already collected)
+      // 6. Update status to COMPLETED (already collected)
       await this.userSeasonHistoryRepo.update({
         id,
         data: {

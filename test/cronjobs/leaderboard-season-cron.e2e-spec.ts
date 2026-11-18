@@ -1,5 +1,6 @@
 import { AppModule } from '@/app.module'
 import { HandleLeaderboardSeasonCronjob } from '@/cronjobs/handle-leaderboard-season.cronjob'
+import { UserSeasonHistoryService } from '@/modules/user-season-history/user-season-history.service'
 import { addDaysUTC0000, todayUTCWith0000 } from '@/shared/helpers'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { INestApplication } from '@nestjs/common'
@@ -17,7 +18,7 @@ import { loginAsTestAdmin, TEST_ADMIN } from '../support/test-admin'
 //   handlePrecreateNextSeason (02:00 UTC): create the next PREVIEW season of an
 //     ACTIVE season close to its end, once.
 // Behaviour is recorded as it is, including the odd parts (the next season is
-// activated in the same run; a season without participants resets no elo).
+// activated in the same run).
 // isRandomItemAgain=true picks rewards at random and is not covered.
 //
 // Finalizing changes the elo of every user in the test database: each test
@@ -27,6 +28,7 @@ describe('Leaderboard season cronjob (e2e)', () => {
   let app: INestApplication<App>
   let prisma: PrismaService
   let cron: HandleLeaderboardSeasonCronjob
+  let histories: UserSeasonHistoryService
   let roleId: number
   let levelId: number
   let seasonIdBefore = 0
@@ -53,12 +55,12 @@ describe('Leaderboard season cronjob (e2e)', () => {
     users.push(u.id)
     return u
   }
-  const reward = async (name: string) => {
+  const reward = async (name: string, rewardItem = 5) => {
     const r = await prisma.reward.create({
       data: {
         nameKey: `reward.${tag}.${name}`,
         rewardType: 'EVENT',
-        rewardItem: 5,
+        rewardItem,
         rewardTarget: 'SPARKLES'
       }
     })
@@ -131,6 +133,7 @@ describe('Leaderboard season cronjob (e2e)', () => {
     await app.init()
     prisma = app.get(PrismaService)
     cron = app.get(HandleLeaderboardSeasonCronjob)
+    histories = app.get(UserSeasonHistoryService)
     for (const [code, name] of [
       ['vi', 'Tiếng Việt'],
       ['en', 'English']
@@ -321,7 +324,7 @@ describe('Leaderboard season cronjob (e2e)', () => {
     expect(await eloOf([n3.id, outsider.id])).toEqual(eloAfterFirst)
   })
 
-  it('an ended season without participants: expired, no elo reset, no next season', async () => {
+  it('an ended season without participants: expired, elo reset all the same, no next season', async () => {
     const someone = await user('idle', 1700)
     const ended = await season('empty', {
       status: 'ACTIVE',
@@ -355,7 +358,8 @@ describe('Leaderboard season cronjob (e2e)', () => {
       [waiting.id]: { status: 'ACTIVE', hasOpened: true },
       [later.id]: { status: 'PREVIEW', hasOpened: false }
     })
-    expect(await eloOf([someone.id])).toEqual({ [someone.id]: 1700 })
+    // fix: elo is reset at every season end, with or without participants
+    expect(await eloOf([someone.id])).toEqual({ [someone.id]: 700 })
     expect(await seasonsMadeByCron()).toHaveLength(0)
   })
 
@@ -446,5 +450,77 @@ describe('Leaderboard season cronjob (e2e)', () => {
 
     await cron.handlePrecreateNextSeason()
     expect(await seasonsMadeByCron()).toHaveLength(1)
+  })
+
+  it('claim after finalize: rank reward plus the season reward for everyone', async () => {
+    const [rank, common] = [await reward('rank', 7), await reward('common', 3)]
+    const first = await user('first', 500)
+    const second = await user('second', 400) // N5 #2: no rank reward
+    for (const u of [first, second]) {
+      await prisma.wallet.create({ data: { userId: u.id, type: 'SPARKLES' } })
+    }
+    const ended = await season('claim', {
+      status: 'ACTIVE',
+      startDate: addDaysUTC0000(today(), -7),
+      endDate: today()
+    })
+    await prisma.seasonRankReward.create({
+      data: {
+        seasonId: ended.id,
+        rankName: 'N5',
+        order: 1,
+        rewards: { connect: [{ id: rank.id }] }
+      }
+    })
+    // order null: for everyone in the season, whatever the rank
+    await prisma.seasonRankReward.create({
+      data: {
+        seasonId: ended.id,
+        rankName: 'N4',
+        order: null,
+        rewards: { connect: [{ id: common.id }] }
+      }
+    })
+    for (const u of [first, second]) {
+      await prisma.userSeasonHistory.create({
+        data: { userId: u.id, seasonId: ended.id }
+      })
+    }
+
+    await cron.handleLeaderboardSeasonStatus()
+
+    const historyOf = (userId: number) =>
+      prisma.userSeasonHistory.findUniqueOrThrow({
+        where: { userId_seasonId: { userId, seasonId: ended.id } }
+      })
+    const sparkles = async (userId: number) =>
+      (
+        await prisma.wallet.findUniqueOrThrow({
+          where: { userId_type: { userId, type: 'SPARKLES' } }
+        })
+      ).balance
+    for (const u of [first, second]) {
+      const h = await historyOf(u.id)
+      await histories.getReward({ id: h.id, userId: u.id })
+      expect((await historyOf(u.id)).rewardsClaimed).toBe('COMPLETED')
+    }
+    // fix: the season reward for everyone used to be lost (second could not claim at all)
+    expect({
+      first: await sparkles(first.id),
+      second: await sparkles(second.id)
+    }).toEqual({
+      first: 10,
+      second: 3
+    })
+    const rewarded = await prisma.userRewardHistory.findMany({
+      where: { userId: { in: [first.id, second.id] } },
+      select: { userId: true, rewardId: true },
+      orderBy: [{ userId: 'asc' }, { rewardId: 'asc' }]
+    })
+    expect(rewarded).toEqual([
+      { userId: first.id, rewardId: rank.id },
+      { userId: first.id, rewardId: common.id },
+      { userId: second.id, rewardId: common.id }
+    ])
   })
 })
