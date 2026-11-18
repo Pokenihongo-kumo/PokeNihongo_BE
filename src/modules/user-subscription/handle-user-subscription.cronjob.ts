@@ -1,15 +1,15 @@
 import { MailService } from '@/3rdService/mail/mail.service'
 import { addTimeUTC } from '@/shared/helpers'
-import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable, Logger } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
+import { UserSubscriptionRepo } from './user-subscription.repo'
 
 @Injectable()
 export class HandleUserSubscriptionCronjob {
   private readonly logger = new Logger(HandleUserSubscriptionCronjob.name)
 
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly userSubscriptionRepo: UserSubscriptionRepo,
     private readonly mailService: MailService
   ) {}
 
@@ -21,21 +21,7 @@ export class HandleUserSubscriptionCronjob {
 
     try {
       // Find all ACTIVE subscriptions that have expired
-      const expiredSubscriptions = await this.prisma.userSubscription.findMany({
-        where: {
-          status: 'ACTIVE',
-          expiresAt: {
-            not: null,
-            lt: now // expiresAt < now (expired)
-          },
-          deletedAt: null
-        },
-        select: {
-          id: true,
-          userId: true,
-          expiresAt: true
-        }
-      })
+      const expiredSubscriptions = await this.userSubscriptionRepo.findExpiredActive(now)
 
       if (expiredSubscriptions.length === 0) {
         this.logger.log('[UserSubscription Cron] No expired subscriptions found')
@@ -47,14 +33,9 @@ export class HandleUserSubscriptionCronjob {
       )
 
       // Update all expired subscriptions to CANCELED status
-      const updateResult = await this.prisma.userSubscription.updateMany({
-        where: {
-          id: { in: expiredSubscriptions.map((s) => s.id) }
-        },
-        data: {
-          status: 'CANCELED'
-        }
-      })
+      const updateResult = await this.userSubscriptionRepo.cancelByIds(
+        expiredSubscriptions.map((s) => s.id)
+      )
 
       this.logger.log(
         `[UserSubscription Cron] Successfully canceled ${updateResult.count} subscription(s): ${expiredSubscriptions.map((s) => `userId=${s.userId}, id=${s.id}, expiresAt=${s.expiresAt?.toISOString()}`).join(' | ')}`
@@ -89,46 +70,11 @@ export class HandleUserSubscriptionCronjob {
         )
 
         // Find ACTIVE subscriptions expiring on the target day
-        const expiringSoonSubscriptions = await this.prisma.userSubscription.findMany({
-          where: {
-            status: 'ACTIVE',
-            expiresAt: {
-              not: null,
-              gte: startOfTargetDay,
-              lte: endOfTargetDay
-            },
-            deletedAt: null
-          },
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true
-              }
-            },
-            subscriptionPlan: {
-              select: {
-                id: true,
-                subscription: {
-                  select: {
-                    nameKey: true,
-                    nameTranslations: {
-                      where: {
-                        language: {
-                          code: 'vi'
-                        }
-                      },
-                      select: {
-                        value: true
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        })
+        const expiringSoonSubscriptions =
+          await this.userSubscriptionRepo.findActiveExpiringBetween(
+            startOfTargetDay,
+            endOfTargetDay
+          )
 
         if (expiringSoonSubscriptions.length === 0) {
           this.logger.log(

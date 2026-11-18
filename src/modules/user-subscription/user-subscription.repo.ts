@@ -1,5 +1,6 @@
 import {
   FeatureKeyType,
+  UserSubscriptionStatus,
   UserSubscriptionStatusType
 } from '@/common/constants/subscription.constant'
 import { parseQs } from '@/common/utils/qs-parser'
@@ -433,6 +434,88 @@ export class UserSubscriptionRepo {
         invoiceId,
         deletedAt: null
       }
+    })
+  }
+
+  // ---- Expiry cron (HandleUserSubscriptionCronjob) ----
+
+  findExpiredActive(now: Date) {
+    return this.prismaService.userSubscription.findMany({
+      where: {
+        status: 'ACTIVE',
+        expiresAt: {
+          not: null,
+          lt: now // expiresAt < now (expired)
+        },
+        deletedAt: null
+      },
+      select: {
+        id: true,
+        userId: true,
+        expiresAt: true
+      }
+    })
+  }
+
+  cancelByIds(ids: number[]) {
+    return this.prismaService.userSubscription.updateMany({
+      where: {
+        id: { in: ids }
+      },
+      data: {
+        status: 'CANCELED'
+      }
+    })
+  }
+
+  findActiveExpiringBetween(startOfTargetDay: Date, endOfTargetDay: Date) {
+    return this.prismaService.userSubscription.findMany({
+      where: {
+        status: 'ACTIVE',
+        expiresAt: {
+          not: null,
+          gte: startOfTargetDay,
+          lte: endOfTargetDay
+        },
+        deletedAt: null
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        },
+        subscriptionPlan: {
+          select: {
+            id: true,
+            subscription: {
+              select: {
+                nameKey: true,
+                nameTranslations: {
+                  where: {
+                    language: {
+                      code: 'vi'
+                    }
+                  },
+                  select: {
+                    value: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
+  }
+
+  // The invoice was cancelled: its subscription, if still waiting, failed
+  failPendingPayment(invoiceId: number, prismaTx: PrismaClient) {
+    return prismaTx.userSubscription.updateMany({
+      where: { invoiceId, status: UserSubscriptionStatus.PENDING_PAYMENT },
+      data: { status: UserSubscriptionStatus.PAYMENT_FAILED }
     })
   }
 }

@@ -12,6 +12,32 @@ import { UserTestStatus, TestSetStatus, TestStatus } from '@prisma/client'
 export class UserTestRepo {
   constructor(private readonly prisma: PrismaService) {}
 
+  // ---- Daily limit reset (cron in UserTestService) ----
+
+  // Active tests whose user rows carry a daily limit
+  findTestsWithResettableLimit() {
+    return this.prisma.test.findMany({
+      where: {
+        status: 'ACTIVE',
+        testType: {
+          notIn: ['MATCH_TEST', 'PLACEMENT_TEST_DONE']
+        }
+      },
+      select: {
+        id: true,
+        testType: true,
+        limit: true
+      }
+    })
+  }
+
+  resetLimitForTest(testId: number, limit: number | null) {
+    return this.prisma.userTest.updateMany({
+      where: { testId },
+      data: { limit }
+    })
+  }
+
   async create(data: CreateUserTestBodyType): Promise<UserTestType> {
     const result = await this.prisma.userTest.create({
       data: {

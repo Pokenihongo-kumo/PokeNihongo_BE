@@ -246,4 +246,18 @@ export class TypeEffectivenessService {
       message: this.i18nService.translate(TypeEffectivenessMessage.GET_SUCCESS, lang)
     }
   }
+
+  // ---- For other modules (module-boundary plan B7): repo results as is ----
+
+  findWeaknessesForDefenders(defenderIds: number[]) {
+    return this.typeEffectivenessRepo.findWeaknessesForDefenders(defenderIds)
+  }
+
+  findForDefenders(defenderIds: number[]) {
+    return this.typeEffectivenessRepo.findForDefenders(defenderIds)
+  }
+
+  findForDefendersWithTypes(defenderIds: number[]) {
+    return this.typeEffectivenessRepo.findForDefendersWithTypes(defenderIds)
+  }
 }

@@ -9,6 +9,7 @@ import {
   WalletTransactionType
 } from '@/common/constants/wallet-transaction.constant'
 import { walletType } from '@/common/constants/wallet.constant'
+import { PrismaClient } from '@prisma/client'
 import { I18nService } from '@/i18n/i18n.service'
 import { InvoiceMessage } from '@/i18n/message-keys'
 import { NotFoundRecordException } from '@/shared/error'
@@ -301,5 +302,60 @@ export class InvoiceService {
     ...args: Parameters<InvoiceRepo['findActiveByUserIdPlanIdAndStatus']>
   ) {
     return this.invoiceRepo.findActiveByUserIdPlanIdAndStatus(...args)
+  }
+
+  // ---- Cancelling a pending invoice (ADR D1 §3) ----
+
+  /**
+   * Cancels an invoice that is still PENDING, inside the caller's transaction.
+   * Shared by the expiration job and the PayOS cancel callback. Only the call
+   * that moves the invoice PENDING -> CANCELLED goes on: its subscription
+   * PENDING_PAYMENT -> PAYMENT_FAILED and the PokeCoin discount is given back.
+   * A paid invoice, or one another call already cancelled, is left alone, so
+   * the coins come back exactly once.
+   */
+  async cancelPending(
+    invoiceId: number,
+    prismaTx: PrismaClient
+  ): Promise<{ cancelled: boolean; refunded: number }> {
+    const { count } = await this.invoiceRepo.cancelIfPending(invoiceId, prismaTx)
+    if (count === 0) return { cancelled: false, refunded: 0 }
+
+    await this.userSubscriptionService.failPendingPayment(invoiceId, prismaTx)
+
+    const invoice = await this.invoiceRepo.getByIdOrThrow(invoiceId, prismaTx)
+    if (invoice.discountAmount <= 0) return { cancelled: true, refunded: 0 }
+
+    // The coins were taken from this wallet when the invoice was created
+    const wallet = await this.walletService.creditOrCreate(
+      {
+        userId: invoice.userId,
+        type: walletType.POKE_COINS,
+        amount: invoice.discountAmount
+      },
+      prismaTx
+    )
+    await this.walletTransactionService.record(
+      {
+        createdById: invoice.userId,
+        data: {
+          walletId: wallet.id,
+          userId: invoice.userId,
+          purpose: walletPurposeType.REFUND,
+          referenceId: invoice.id,
+          amount: invoice.discountAmount,
+          type: WalletTransactionType.INCREASE,
+          source: WalletTransactionSourceType.ADMIN_ADJUST,
+          description: null
+        }
+      },
+      prismaTx
+    )
+    return { cancelled: true, refunded: invoice.discountAmount }
+  }
+
+  // The expiration job: cancelPending in its own transaction
+  expirePending(invoiceId: number) {
+    return this.invoiceRepo.withTransaction((tx) => this.cancelPending(invoiceId, tx))
   }
 }

@@ -1,4 +1,4 @@
-import { InvoiceStatusType } from '@/common/constants/invoice.constant'
+import { InvoiceStatus, InvoiceStatusType } from '@/common/constants/invoice.constant'
 import { parseQs } from '@/common/utils/qs-parser'
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
@@ -245,5 +245,19 @@ export class InvoiceRepo {
         deletedAt: null
       }
     })
+  }
+
+  // ---- Cancelling a pending invoice (InvoiceService.cancelPending) ----
+
+  // PENDING -> CANCELLED; count 0 when it was not pending (paid, cancelled, gone)
+  cancelIfPending(id: number, prismaTx: PrismaClient) {
+    return prismaTx.invoice.updateMany({
+      where: { id, status: InvoiceStatus.PENDING },
+      data: { status: InvoiceStatus.CANCELLED }
+    })
+  }
+
+  getByIdOrThrow(id: number, prismaTx: PrismaClient) {
+    return prismaTx.invoice.findUniqueOrThrow({ where: { id } })
   }
 }

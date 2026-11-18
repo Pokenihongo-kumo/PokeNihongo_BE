@@ -19,7 +19,6 @@ import { WebsocketsModule } from 'src/websockets/websockets.module'
 import { SharedNotificationRepo } from './repositories/shared-notification.repo'
 import { SharedNotificationService } from './services/shared-notification.service'
 import { SharedUserSubscriptionService } from './services/user-subscription.service'
-import { InvoiceExpirationProcessor } from './workers/invoice-expiration.processor'
 
 const sharedServices = [
   PrismaService,
@@ -48,7 +47,6 @@ const sharedServices = [
     ...sharedServices,
     AccessTokenGuard,
     APIKeyGuard,
-    InvoiceExpirationProcessor, // Keep this if Invoice module doesn't exist yet
     {
       provide: APP_GUARD,
       useClass: AuthenticationGuard
