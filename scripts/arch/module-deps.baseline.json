@@ -1,8 +1,8 @@
 {
   "metrics": {
-    "crossModuleRepoImports": 41,
+    "crossModuleRepoImports": 16,
     "moduleForeignRepoProviders": 1,
-    "forwardRefModuleFiles": 9,
+    "forwardRefModuleFiles": 8,
     "injectForwardRefFiles": 6,
     "sharedModuleBusinessRepos": 0,
     "sharedModuleBusinessProviders": 0,
@@ -11,20 +11,8 @@
   },
   "details": {
     "crossModuleRepoImports": [
-      "3rdService/gemini/gemini.service.ts -> modules/gemini-config/gemini-config.repo.ts",
-      "modules/attendance/attendance.service.ts -> modules/attendence-config/attendence-config.repo.ts",
       "modules/gacha-banner/gacha-banner.service.ts -> modules/gacha-item/gacha-item.repo.ts",
       "modules/gacha-item/gacha-item.service.ts -> modules/gacha-banner/gacha-banner.repo.ts",
-      "modules/gacha-item/gacha-item.service.ts -> modules/gacha-item-rate/gacha-item-rate.repo.ts",
-      "modules/gacha-purchase/gacha-purchase.service.ts -> modules/gacha-banner/gacha-banner.repo.ts",
-      "modules/gacha-purchase/gacha-purchase.service.ts -> modules/gacha-roll-history/gacha-roll-history.repo.ts",
-      "modules/gacha-purchase/gacha-purchase.service.ts -> modules/user-gacha-pity/user-gacha-pity.repo.ts",
-      "modules/invoice/invoice.service.ts -> modules/subscription-plan/subscription-plan.repo.ts",
-      "modules/lesson-content/lesson-content.service.ts -> modules/grammar/grammar.repo.ts",
-      "modules/lesson-content/lesson-content.service.ts -> modules/lesson/lesson.repo.ts",
-      "modules/lesson-content/lesson-content.service.ts -> modules/user-exercise-attempt/user-exercise-attempt.repo.ts",
-      "modules/payment/payment.service.ts -> modules/subscription-plan/subscription-plan.repo.ts",
-      "modules/role/role.service.ts -> modules/permission/permission.repo.ts",
       "modules/shop-banner/shop-banner.service.ts -> modules/shop-item/shop-item.repo.ts",
       "modules/shop-banner/shop-banner.service.ts -> modules/shop-purchase/shop-purchase.repo.ts",
       "modules/shop-item/shop-item.service.ts -> modules/shop-banner/shop-banner.repo.ts",
@@ -33,25 +21,12 @@
       "modules/shop-purchase/shop-purchase.service.ts -> modules/shop-item/shop-item.repo.ts",
       "modules/shop-rarity-price/shop-rarity-price.service.ts -> modules/shop-banner/shop-banner.repo.ts",
       "modules/shop-rarity-price/shop-rarity-price.service.ts -> modules/shop-item/shop-item.repo.ts",
-      "modules/subscription-feature/subscription-feature.service.ts -> modules/feature/feature.repo.ts",
-      "modules/subscription-feature/subscription-feature.service.ts -> modules/subscription/subscription.repo.ts",
-      "modules/subscription/subscription.service.ts -> modules/subscription-plan/subscription-plan.repo.ts",
       "modules/test/test.module.ts -> modules/user-test-attempt/user-test-attempt.repo.ts",
       "modules/test/test.service.ts -> modules/user-test-attempt/user-test-attempt.repo.ts",
       "modules/test/test.service.ts -> modules/user-test/user-test.repo.ts",
-      "modules/user-achievement/user-achievement.service.ts -> modules/achievement-group/achievement-group.repo.ts",
-      "modules/user-achievement/user-achievement.service.ts -> modules/achievement/achievement.repo.ts",
-      "modules/user-daily-request/user-daily-request.service.ts -> modules/daily-request/daily-request.repo.ts",
-      "modules/user-exercise-attempt/user-exercise-attempt.service.ts -> modules/exercises/exercises.repo.ts",
       "modules/user-reward-history/user-reward-history.service.ts -> modules/reward/reward.repo.ts",
-      "modules/user-subscription/user-subscription.service.ts -> modules/subscription-plan/subscription-plan.repo.ts",
-      "modules/user-test-attempt/user-test-attempt.service.ts -> modules/lesson/lesson.repo.ts",
       "modules/user-test-attempt/user-test-attempt.service.ts -> modules/test/test.repo.ts",
-      "modules/user-test-attempt/user-test-attempt.service.ts -> modules/user-progress/user-progress.repo.ts",
-      "modules/user-test-attempt/user-test-attempt.service.ts -> modules/user-test/user-test.repo.ts",
-      "modules/user-test-attempt/user-test-attempt.service.ts -> modules/user/user.repo.ts",
-      "modules/user/user.service.ts -> modules/user-season-history/user-season-history.repo.ts",
-      "websockets/kaiwa.gateway.ts -> modules/gemini-config/gemini-config.repo.ts"
+      "modules/user/user.service.ts -> modules/user-season-history/user-season-history.repo.ts"
     ],
     "moduleForeignRepoProviders": [
       "modules/test/test.module.ts provides UserTestAttemptRepo"
@@ -64,8 +39,7 @@
       "modules/shop-item/shop-item.module.ts",
       "modules/shop-purchase/shop-purchase.module.ts",
       "modules/shop-rarity-price/shop-rarity-price.module.ts",
-      "modules/user-reward-history/user-reward-history.module.ts",
-      "websockets/websockets.module.ts"
+      "modules/user-reward-history/user-reward-history.module.ts"
     ],
     "injectForwardRefFiles": [
       "modules/gacha-item/gacha-item.service.ts",

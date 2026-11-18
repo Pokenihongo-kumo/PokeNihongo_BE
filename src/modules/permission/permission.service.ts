@@ -114,4 +114,12 @@ export class PermissionService {
       throw error
     }
   }
+
+  // ---- For other modules (module-boundary plan B8) ----
+  // Same arguments and results as the repo methods.
+
+  // The repo's list (the service's own list answers the HTTP route)
+  listPermissionRows(...args: Parameters<PermissionRepo['list']>) {
+    return this.permissionRepo.list(...args)
+  }
 }

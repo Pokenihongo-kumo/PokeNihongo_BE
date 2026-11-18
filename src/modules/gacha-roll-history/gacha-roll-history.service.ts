@@ -156,4 +156,12 @@ export class GachaRollHistoryService {
       throw error
     }
   }
+
+  // ---- For other modules (module-boundary plan B8) ----
+  // Same arguments and results as the repo methods.
+
+  // The repo's create (the service's own create answers the HTTP route)
+  createRollHistory(...args: Parameters<GachaRollHistoryRepo['create']>) {
+    return this.gachaRollHistoryRepo.create(...args)
+  }
 }

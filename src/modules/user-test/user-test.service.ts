@@ -448,4 +448,15 @@ export class UserTestService {
       this.logger.error('Error running automatic limit update:', error)
     }
   }
+
+  // ---- For other modules (module-boundary plan B8) ----
+  // Same arguments and results as the repo methods.
+
+  findByUserAndTest(...args: Parameters<UserTestRepo['findByUserAndTest']>) {
+    return this.userTestRepo.findByUserAndTest(...args)
+  }
+
+  decrementLimit(...args: Parameters<UserTestRepo['decrementLimit']>) {
+    return this.userTestRepo.decrementLimit(...args)
+  }
 }

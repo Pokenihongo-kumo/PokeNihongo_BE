@@ -14,7 +14,7 @@ import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { SubscriptionPlanNotFoundException } from '../subscription-plan/dto/subscription-plan.error'
-import { SubscriptionPlanRepo } from '../subscription-plan/subscription-plan.repo'
+import { SubscriptionPlanService } from '@/modules/subscription-plan/subscription-plan.service'
 import {
   UserHasSubscriptionWithStatusActiveException,
   UserHasSubscriptionWithStatusPendingPaymentException,
@@ -30,7 +30,7 @@ import { UserSubscriptionRepo } from './user-subscription.repo'
 export class UserSubscriptionService {
   constructor(
     private userSubscriptionRepo: UserSubscriptionRepo,
-    private readonly subscriptionPlanRepo: SubscriptionPlanRepo,
+    private readonly subscriptionPlanService: SubscriptionPlanService,
     private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
     private readonly prismaService: PrismaService
@@ -79,7 +79,9 @@ export class UserSubscriptionService {
   ) {
     try {
       // check xem goi plan co active ko
-      const isPlanExist = await this.subscriptionPlanRepo.getById(data.subscriptionPlanId)
+      const isPlanExist = await this.subscriptionPlanService.getById(
+        data.subscriptionPlanId
+      )
       if (!isPlanExist) {
         throw new SubscriptionPlanNotFoundException()
       }

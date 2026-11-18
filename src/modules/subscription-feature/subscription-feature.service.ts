@@ -9,8 +9,7 @@ import {
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
-import { FeatureRepo } from '../feature/feature.repo'
-import { SubscriptionRepo } from '../subscription/subscription.repo'
+import { SubscriptionService } from '@/modules/subscription/subscription.service'
 import {
   InvalidValueForCoinMultiplierExistsException,
   InvalidValueForXPMultiplierExistsException,
@@ -28,8 +27,7 @@ import { SubscriptionFeatureRepo } from './subscription-feature.repo'
 export class SubscriptionFeatureService {
   constructor(
     private subscriptionFeatureRepo: SubscriptionFeatureRepo,
-    private readonly subRepo: SubscriptionRepo,
-    private readonly featureRepo: FeatureRepo,
+    private readonly subscriptionService: SubscriptionService,
     private readonly i18nService: I18nService
   ) {}
 
@@ -205,7 +203,7 @@ export class SubscriptionFeatureService {
     lang: string = 'vi'
   ) {
     try {
-      const isExistSubscription = await this.subRepo.findById(subscriptionId)
+      const isExistSubscription = await this.subscriptionService.getById(subscriptionId)
       if (!isExistSubscription) {
         throw new NotFoundRecordException()
       }

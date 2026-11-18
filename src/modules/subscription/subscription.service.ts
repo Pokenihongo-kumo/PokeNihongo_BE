@@ -16,7 +16,7 @@ import { PaginationQueryType } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { InvoiceService } from '@/modules/invoice/invoice.service'
 import { LanguagesService } from '@/modules/languages/languages.service'
-import { SubscriptionPlanRepo } from '../subscription-plan/subscription-plan.repo'
+import { SubscriptionPlanService } from '@/modules/subscription-plan/subscription-plan.service'
 import { CreateTranslationBodyType } from '../translation/entities/translation.entity'
 import { TranslationService } from '@/modules/translation/translation.service'
 import { SubscriptionAlreadyExistsException } from './dto/subscription.error'
@@ -32,7 +32,7 @@ import { SubscriptionRepo } from './subscription.repo'
 export class SubscriptionService {
   constructor(
     private subscriptionRepo: SubscriptionRepo,
-    private subscriptionPlanRepo: SubscriptionPlanRepo,
+    private subscriptionPlanService: SubscriptionPlanService,
     private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
     private readonly translationService: TranslationService,
@@ -485,12 +485,12 @@ export class SubscriptionService {
 
     // Step 2: Get user's active subscription plan IDs
     const userActivePlanIds = userId
-      ? await this.subscriptionPlanRepo.getUserActivePlanIds(userId)
+      ? await this.subscriptionPlanService.getUserActivePlanIds(userId)
       : []
 
     // Step 3: Get purchase counts per subscription plan
     const planPurchaseCounts =
-      await this.subscriptionPlanRepo.getSubscriptionPurchaseCounts()
+      await this.subscriptionPlanService.getSubscriptionPurchaseCounts()
 
     // Step 3.5: Get user's pending invoices if userId provided
     const userPendingInvoices: Record<number, any> = {}
@@ -759,5 +759,13 @@ export class SubscriptionService {
       data: result,
       message: this.i18nService.translate(SubscriptionMessage.GET_SUCCESS, lang)
     }
+  }
+
+  // ---- For other modules (module-boundary plan B8) ----
+  // Same arguments and results as the repo methods.
+
+  // The repo's findById (the service's own findById answers the HTTP route)
+  getById(...args: Parameters<SubscriptionRepo['findById']>) {
+    return this.subscriptionRepo.findById(...args)
   }
 }

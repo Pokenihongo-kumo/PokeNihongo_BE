@@ -27,13 +27,13 @@ import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from '@/shared/h
 import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { LessonContentSortField, SortOrder } from '@/common/enum/enum'
 import { VocabularyService } from '../vocabulary/vocabulary.service'
-import { GrammarRepo } from '../grammar/grammar.repo'
+import { GrammarService } from '@/modules/grammar/grammar.service'
 import { KanjiService } from '../kanji/kanji.service'
 import { TranslationService } from '../translation/translation.service'
 import { LanguagesService } from '../languages/languages.service'
 import { MeaningService } from '../meaning/meaning.service'
-import { LessonRepo } from '../lesson/lesson.repo'
-import { UserExerciseAttemptRepo } from '../user-exercise-attempt/user-exercise-attempt.repo'
+import { LessonService } from '@/modules/lesson/lesson.service'
+import { UserExerciseAttemptService } from '@/modules/user-exercise-attempt/user-exercise-attempt.service'
 import { ExercisesService } from '../exercises/exercises.service'
 
 @Injectable()
@@ -43,13 +43,13 @@ export class LessonContentService {
   constructor(
     private readonly lessonContentRepository: LessonContentRepository,
     private readonly vocabularyService: VocabularyService,
-    private readonly grammarRepository: GrammarRepo,
+    private readonly grammarService: GrammarService,
     private readonly kanjiService: KanjiService,
     private readonly translationService: TranslationService,
     private readonly languagesService: LanguagesService,
     private readonly meaningService: MeaningService,
-    private readonly lessonRepository: LessonRepo,
-    private readonly userExerciseAttemptRepository: UserExerciseAttemptRepo,
+    private readonly lessonService: LessonService,
+    private readonly userExerciseAttemptService: UserExerciseAttemptService,
     private readonly exercisesService: ExercisesService
   ) {}
 
@@ -323,7 +323,7 @@ export class LessonContentService {
       )
 
       // Lấy thông tin lesson để lấy testId
-      const lesson = await this.lessonRepository.findById(lessonId)
+      const lesson = await this.lessonService.findById(lessonId)
       if (!lesson) {
         throw new LessonNotFoundException()
       }
@@ -529,7 +529,7 @@ export class LessonContentService {
           grammarContents.map(async (lc) => {
             try {
               // Lấy từng grammar theo ID
-              const grammar = await this.grammarRepository.findById(lc.contentId)
+              const grammar = await this.grammarService.findById(lc.contentId)
               if (!grammar) return null
 
               // Lấy usage đầu tiên để lấy translations
@@ -804,7 +804,7 @@ export class LessonContentService {
 
       // Lấy danh sách exercises đã COMPLETED
       const completedExerciseIds =
-        await this.userExerciseAttemptRepository.findCompletedExercisesByLesson(
+        await this.userExerciseAttemptService.findCompletedExercisesByLesson(
           userId,
           lessonId
         )

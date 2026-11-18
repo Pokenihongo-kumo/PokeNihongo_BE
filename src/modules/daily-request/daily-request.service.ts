@@ -479,4 +479,27 @@ export class DailyRequestService {
       throw error
     }
   }
+
+  // ---- For other modules (module-boundary plan B8) ----
+  // Same arguments and results as the repo methods.
+
+  checkDailyRequestIsStreak(
+    ...args: Parameters<DailyRequestRepo['checkDailyRequestIsStreak']>
+  ) {
+    return this.dailyRequestRepo.checkDailyRequestIsStreak(...args)
+  }
+
+  // The repo's findById (the service's own findById answers the HTTP route)
+  getById(...args: Parameters<DailyRequestRepo['findById']>) {
+    return this.dailyRequestRepo.findById(...args)
+  }
+
+  // The repo's list (the service's own list answers the HTTP route)
+  listRows(...args: Parameters<DailyRequestRepo['list']>) {
+    return this.dailyRequestRepo.list(...args)
+  }
+
+  findByType(...args: Parameters<DailyRequestRepo['findByType']>) {
+    return this.dailyRequestRepo.findByType(...args)
+  }
 }

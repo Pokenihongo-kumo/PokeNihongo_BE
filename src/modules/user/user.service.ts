@@ -737,4 +737,12 @@ export class UserService {
       message: this.i18nService.translate(AuthMessage.UPDATE_LEVEL_JLPT_SUCCESS, lang)
     }
   }
+
+  // ---- For other modules (module-boundary plan B8) ----
+  // Same arguments and results as the repo methods.
+
+  // The repo's update (the service's own update answers the HTTP route)
+  updateUserRow(...args: Parameters<UserRepo['update']>) {
+    return this.userRepo.update(...args)
+  }
 }

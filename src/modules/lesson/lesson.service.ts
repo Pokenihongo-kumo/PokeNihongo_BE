@@ -227,4 +227,15 @@ export class LessonService {
     return new InvalidLessonDataException()
   }
   //#endregion
+
+  // ---- For other modules (module-boundary plan B8) ----
+  // Same arguments and results as the repo methods.
+
+  findById(...args: Parameters<LessonRepo['findById']>) {
+    return this.lessonRepo.findById(...args)
+  }
+
+  findByTestId(...args: Parameters<LessonRepo['findByTestId']>) {
+    return this.lessonRepo.findByTestId(...args)
+  }
 }

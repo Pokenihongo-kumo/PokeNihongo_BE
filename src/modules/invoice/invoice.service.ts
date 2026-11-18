@@ -22,7 +22,7 @@ import { InjectQueue } from '@nestjs/bull'
 import { Injectable } from '@nestjs/common'
 import { Queue } from 'bull'
 import { SubscriptionPlanNotFoundException } from '../subscription-plan/dto/subscription-plan.error'
-import { SubscriptionPlanRepo } from '../subscription-plan/subscription-plan.repo'
+import { SubscriptionPlanService } from '@/modules/subscription-plan/subscription-plan.service'
 import {
   UserHasSubscriptionWithStatusActiveException,
   UserHasSubscriptionWithStatusPendingPaymentException
@@ -42,7 +42,7 @@ import { InvoiceRepo } from './invoice.repo'
 export class InvoiceService {
   constructor(
     private invoiceRepo: InvoiceRepo,
-    private readonly subscriptionPlanRepo: SubscriptionPlanRepo,
+    private readonly subscriptionPlanService: SubscriptionPlanService,
     private readonly userSubscriptionService: UserSubscriptionService,
     private readonly i18nService: I18nService,
     @InjectQueue(BullQueue.INVOICE_EXPIRATION)
@@ -80,7 +80,9 @@ export class InvoiceService {
   async createPending({ userId, data }: { userId: number; data: CreateInvoiceBodyType }) {
     try {
       // check xem goi plan co active ko
-      const isPlanExist = await this.subscriptionPlanRepo.getById(data.subscriptionPlanId)
+      const isPlanExist = await this.subscriptionPlanService.getById(
+        data.subscriptionPlanId
+      )
       if (!isPlanExist) {
         throw new SubscriptionPlanNotFoundException()
       }

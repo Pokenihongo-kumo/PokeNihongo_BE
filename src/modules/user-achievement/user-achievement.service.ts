@@ -12,8 +12,7 @@ import {
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { UserRewardSourceType } from '@prisma/client'
-import { AchievementGroupRepo } from '../achievement-group/achievement-group.repo'
-import { AchievementRepo } from '../achievement/achievement.repo'
+import { AchievementGroupService } from '@/modules/achievement-group/achievement-group.service'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { RewardService } from '../reward/reward.service'
 import { UserProgressService } from '../user-progress/user-progress.service'
@@ -31,8 +30,7 @@ import { UserAchievementRepo } from './user-achievement.repo'
 export class UserAchievementService {
   constructor(
     private userAchievementRepo: UserAchievementRepo,
-    private achievementGroupRepo: AchievementGroupRepo,
-    private achievementRepo: AchievementRepo,
+    private achievementGroupService: AchievementGroupService,
     private readonly languagesService: LanguagesService,
     private readonly i18nService: I18nService,
     private readonly userProgressService: UserProgressService,
@@ -161,7 +159,7 @@ export class UserAchievementService {
     // NOTE: even when achievementGroupId is provided we still return the groups list
     // and only apply achievementGroupId to which group's achievements are paginated by
     // the provided achCurrentPage/achPageSize. This prevents losing other groups.
-    const groupsPage: any = await this.achievementGroupRepo.list(
+    const groupsPage: any = await this.achievementGroupService.listGroupRows(
       pagination,
       langId ?? undefined,
       false

@@ -125,4 +125,11 @@ export class AttendenceConfigService {
       throw error
     }
   }
+
+  // ---- For other modules (module-boundary plan B8) ----
+  // Same arguments and results as the repo methods.
+
+  findByDateOfWeek(...args: Parameters<AttendenceConfigRepo['findByDateOfWeek']>) {
+    return this.attendenceConfigRepo.findByDateOfWeek(...args)
+  }
 }

@@ -12,7 +12,7 @@ import { PaginationQueryType } from '@/shared/models/request.model'
 import { forwardRef, Inject, Injectable } from '@nestjs/common'
 import { GachaStarType, RarityPokemon } from '@prisma/client'
 import { GachaBannerRepo } from '../gacha-banner/gacha-banner.repo'
-import { GachaItemRateRepo } from '../gacha-item-rate/gacha-item-rate.repo'
+import { GachaItemRateService } from '@/modules/gacha-item-rate/gacha-item-rate.service'
 import { PokemonService } from '@/modules/pokemon/pokemon.service'
 import {
   DuplicateStarTypeInListException,
@@ -54,7 +54,7 @@ export class GachaItemService {
     private gachaItemRepo: GachaItemRepo,
     @Inject(forwardRef(() => GachaBannerRepo))
     private gachaBannerRepo: GachaBannerRepo,
-    private gachaItemRateRepo: GachaItemRateRepo,
+    private gachaItemRateService: GachaItemRateService,
     private pokemonService: PokemonService,
     private readonly i18nService: I18nService
   ) {}
@@ -135,7 +135,7 @@ export class GachaItemService {
 
     // Batch fetch rates
     const rates = await Promise.all(
-      Array.from(starTypes).map((st) => this.gachaItemRateRepo.getByType(st))
+      Array.from(starTypes).map((st) => this.gachaItemRateService.getByType(st))
     )
     const rateMap = new Map<GachaStarType, number>()
     rates.forEach((r, i) => r && rateMap.set(Array.from(starTypes)[i], r.id))
@@ -245,7 +245,7 @@ export class GachaItemService {
 
         // Batch fetch rates
         const rates = await Promise.all(
-          Array.from(starTypes).map((st) => this.gachaItemRateRepo.getByType(st))
+          Array.from(starTypes).map((st) => this.gachaItemRateService.getByType(st))
         )
         const rateMap = new Map<GachaStarType, number>()
         rates.forEach((r, i) => r && rateMap.set(Array.from(starTypes)[i], r.id))
