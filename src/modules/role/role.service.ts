@@ -173,4 +173,10 @@ export class RoleService {
   getRoleById(roleId: number) {
     return this.roleCoreRepo.getRoleById(roleId)
   }
+
+  findActiveRoleWithPermission(
+    ...args: Parameters<RoleCoreRepo['findActiveRoleWithPermission']>
+  ) {
+    return this.roleCoreRepo.findActiveRoleWithPermission(...args)
+  }
 }

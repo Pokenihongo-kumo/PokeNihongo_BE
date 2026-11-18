@@ -1,5 +1,4 @@
-import { UserSubscriptionModule } from '@/modules/user-subscription/user-subscription.module'
-import { UserCoreModule } from '@/modules/user/user-core.module'
+import { RoleModule } from '@/modules/role/role.module'
 import { BullQueueModule } from '@/3rdService/bull/bull-queue.module'
 import { AccessTokenGuard } from '@/common/guards/access-token.guard'
 import { APIKeyGuard } from '@/common/guards/api-key.guard'
@@ -11,19 +10,13 @@ import { TokenService } from '@/shared/services/token.service'
 import { Global, Module } from '@nestjs/common'
 import { APP_GUARD } from '@nestjs/core'
 import { JwtModule } from '@nestjs/jwt'
-import { SharedUserSubscriptionService } from './services/user-subscription.service'
 
-const sharedServices = [
-  PrismaService,
-  HashingService,
-  TokenService,
-  SharedUserSubscriptionService
-]
+const sharedServices = [PrismaService, HashingService, TokenService]
+
 @Global()
 @Module({
   imports: [
-    UserSubscriptionModule,
-    UserCoreModule,
+    RoleModule, // AccessTokenGuard reads role permissions through RoleService
     JwtModule,
     BullQueueModule.forRoot() // Only keep forRoot() here - queues registered in domain modules
   ],

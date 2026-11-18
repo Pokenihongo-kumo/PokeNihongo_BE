@@ -1,3 +1,4 @@
+import { UserSubscriptionModule } from '@/modules/user-subscription/user-subscription.module'
 import { Module } from '@nestjs/common'
 import { UserTestController } from './user-test.controller'
 import { UserTestRepo } from './user-test.repo'
@@ -5,7 +6,7 @@ import { UserTestService } from './user-test.service'
 import { PrismaService } from '@/shared/services/prisma.service'
 
 @Module({
-  imports: [],
+  imports: [UserSubscriptionModule],
   controllers: [UserTestController],
   providers: [UserTestService, UserTestRepo, PrismaService],
   exports: [UserTestService, UserTestRepo]

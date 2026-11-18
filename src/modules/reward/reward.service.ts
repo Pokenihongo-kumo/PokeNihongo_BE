@@ -14,7 +14,7 @@ import {
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
 import { NotificationService } from '@/modules/notification/notification.service'
-import { SharedUserSubscriptionService } from '@/shared/services/user-subscription.service'
+import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
 import { HttpStatus, Injectable, Logger } from '@nestjs/common'
 import {
   RarityPokemon,
@@ -53,7 +53,7 @@ export class RewardService {
     private readonly pokemonService: PokemonService,
     private readonly userPokemonService: UserPokemonService,
     private readonly userRewardHistoryService: UserRewardHistoryService,
-    private readonly userSubService: SharedUserSubscriptionService,
+    private readonly userSubService: UserSubscriptionService,
     private readonly walletTransactionService: WalletTransactionService,
     private readonly sharedNotificationService: NotificationService
   ) {}

@@ -17,7 +17,7 @@ import {
   UserTestNotFoundException
 } from './dto/user-test.error'
 import { UserTestStatus, TestStatus } from '@prisma/client'
-import { SharedUserSubscriptionService } from '@/shared/services/user-subscription.service'
+import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
 import { FeatureKey, FeatureKeyType } from '@/common/constants/subscription.constant'
 
 @Injectable()
@@ -26,7 +26,7 @@ export class UserTestService {
 
   constructor(
     private readonly userTestRepo: UserTestRepo,
-    private readonly sharedUserSubscriptionService: SharedUserSubscriptionService,
+    private readonly sharedUserSubscriptionService: UserSubscriptionService,
     private readonly i18nService: I18nService
   ) {}
 

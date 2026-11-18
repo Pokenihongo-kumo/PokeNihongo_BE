@@ -1,3 +1,4 @@
+import { HTTPMethod } from '@/common/constants/role.constant'
 import { RoleName } from '@/common/constants/role.constant'
 import { Injectable } from '@nestjs/common'
 import { RoleType } from 'src/shared/models/shared-role.model'
@@ -58,6 +59,31 @@ export class RoleCoreRepo {
       where: {
         id: roleId,
         deletedAt: null
+      }
+    })
+  }
+
+  // Every request (AccessTokenGuard): the live, active role with its
+  // permissions matching this route; rejects when the role is missing
+  findActiveRoleWithPermission(
+    roleId: number,
+    path: string,
+    method: keyof typeof HTTPMethod
+  ) {
+    return this.prismaService.role.findUniqueOrThrow({
+      where: {
+        id: roleId,
+        deletedAt: null,
+        isActive: true
+      },
+      include: {
+        permissions: {
+          where: {
+            deletedAt: null,
+            path,
+            method
+          }
+        }
       }
     })
   }

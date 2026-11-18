@@ -1,3 +1,4 @@
+import { UserSubscriptionModule } from '@/modules/user-subscription/user-subscription.module'
 import { Module } from '@nestjs/common'
 import { GachaBannerModule } from '../gacha-banner/gacha-banner.module'
 import { GachaRollHistoryModule } from '../gacha-roll-history/gacha-roll-history.module'
@@ -11,6 +12,7 @@ import { GachaPurchaseService } from './gacha-purchase.service'
 
 @Module({
   imports: [
+    UserSubscriptionModule,
     GachaBannerModule,
     GachaRollHistoryModule,
     UserGachaPityModule,

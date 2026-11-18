@@ -19,7 +19,7 @@ import {
   ApiBody,
   ApiQuery
 } from '@nestjs/swagger'
-import { AccessTokenGuard } from '@/common/guards/access-token.guard'
+import { AuthenticationGuard } from '@/common/guards/authentication.guard'
 import { ExercisesService } from './exercises.service'
 import {
   CreateExercisesSwaggerDTO,
@@ -39,7 +39,7 @@ import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 
 @ApiTags('Exercises')
 @Controller('exercises')
-@UseGuards(AccessTokenGuard)
+@UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class ExercisesController {
   constructor(private readonly exercisesService: ExercisesService) {}
