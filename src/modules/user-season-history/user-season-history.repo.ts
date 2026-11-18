@@ -210,4 +210,31 @@ export class UserSeasonHistoryRepo {
       orderBy: { season: { endDate: 'desc' } }
     })
   }
+
+  // ---- Season cronjob: finalize (one transaction per call, as before) ----
+
+  setFinalResults(rows: { id: number; finalElo: number; finalRank: string }[]) {
+    return this.prismaService.$transaction(
+      rows.map((r) =>
+        this.prismaService.userSeasonHistory.update({
+          where: { id: r.id },
+          data: { finalElo: r.finalElo, finalRank: r.finalRank }
+        })
+      )
+    )
+  }
+
+  setRankRewardsClaimed(rows: { id: number; seasonRankRewardId: number | null }[]) {
+    return this.prismaService.$transaction(
+      rows.map((r) =>
+        this.prismaService.userSeasonHistory.update({
+          where: { id: r.id },
+          data: {
+            seasonRankRewardId: r.seasonRankRewardId,
+            rewardsClaimed: RewardClaimStatus.CLAIMED
+          }
+        })
+      )
+    )
+  }
 }

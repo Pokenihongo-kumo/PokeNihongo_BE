@@ -71,4 +71,10 @@ export class UserCoreService {
   touchActiveUserDevices(...args: Parameters<UserCoreRepo['touchActiveUserDevices']>) {
     return this.userCoreRepo.touchActiveUserDevices(...args)
   }
+
+  // ---- For the season cronjob: elo reset at season end ----
+
+  lowerEloOfAllUsers(...args: Parameters<UserCoreRepo['lowerEloOfAllUsers']>) {
+    return this.userCoreRepo.lowerEloOfAllUsers(...args)
+  }
 }

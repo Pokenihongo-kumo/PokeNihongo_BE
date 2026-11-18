@@ -2,7 +2,7 @@ import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 
 import { parseQs } from '@/common/utils/qs-parser'
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, RewardTarget } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { CreateRewardBody, UpdateRewardBody } from './dto/reward.zod-dto'
@@ -312,6 +312,15 @@ export class RewardRepo {
           select: { id: true, languageId: true, key: true, value: true }
         }
       }
+    })
+  }
+
+  // ---- Season cronjob: pool for re-randomized rank rewards ----
+
+  findIdsByTargets(targets: RewardTarget[]) {
+    return this.prismaService.reward.findMany({
+      where: { deletedAt: null, rewardTarget: { in: targets } },
+      select: { id: true }
     })
   }
 }

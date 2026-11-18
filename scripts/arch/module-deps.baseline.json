@@ -6,10 +6,10 @@
     "injectForwardRefFiles": 6,
     "sharedModuleBusinessRepos": 0,
     "sharedModuleBusinessProviders": 0,
-    "prismaOutsideRepoFiles": 1,
+    "prismaOutsideRepoFiles": 0,
     "httpSchemasInEntities": 0,
     "handWrittenEnvelopes": 2,
-    "prismaOutsideRepoCalls": 27
+    "prismaOutsideRepoCalls": 0
   },
   "details": {
     "crossModuleRepoImports": [
@@ -53,9 +53,7 @@
     ],
     "sharedModuleBusinessRepos": [],
     "sharedModuleBusinessProviders": [],
-    "prismaOutsideRepoFiles": [
-      "cronjobs/handle-leaderboard-season.cronjob.ts"
-    ],
+    "prismaOutsideRepoFiles": [],
     "httpSchemasInEntities": [],
     "handWrittenEnvelopes": [
       "modules/match-round/dto/match-round.zod-dto.ts",

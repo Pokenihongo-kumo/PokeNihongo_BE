@@ -290,4 +290,16 @@ export class SeasonRankRewardService {
       throw error
     }
   }
+
+  // ---- Season cronjob ----
+
+  findBySeasonWithRewardIds(
+    ...args: Parameters<SeasonRankRewardRepo['findBySeasonWithRewardIds']>
+  ) {
+    return this.seasonRankRewardRepo.findBySeasonWithRewardIds(...args)
+  }
+
+  createForSeason(...args: Parameters<SeasonRankRewardRepo['createForSeason']>) {
+    return this.seasonRankRewardRepo.createForSeason(...args)
+  }
 }

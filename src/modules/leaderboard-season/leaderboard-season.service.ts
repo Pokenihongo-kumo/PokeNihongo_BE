@@ -769,4 +769,68 @@ export class LeaderboardSeasonService {
   findByIdWithLangId(...args: Parameters<LeaderboardSeasonRepo['findByIdWithLangId']>) {
     return this.leaderboardSeasonRepo.findByIdWithLangId(...args)
   }
+
+  // ---- Season cronjob (status, finalize, precreate) ----
+
+  withTransaction(...args: Parameters<LeaderboardSeasonRepo['withTransaction']>) {
+    return this.leaderboardSeasonRepo.withTransaction(...args)
+  }
+
+  findEndedActiveIds(...args: Parameters<LeaderboardSeasonRepo['findEndedActiveIds']>) {
+    return this.leaderboardSeasonRepo.findEndedActiveIds(...args)
+  }
+
+  setStatus(...args: Parameters<LeaderboardSeasonRepo['setStatus']>) {
+    return this.leaderboardSeasonRepo.setStatus(...args)
+  }
+
+  findAllPreview(...args: Parameters<LeaderboardSeasonRepo['findAllPreview']>) {
+    return this.leaderboardSeasonRepo.findAllPreview(...args)
+  }
+
+  countActive(...args: Parameters<LeaderboardSeasonRepo['countActive']>) {
+    return this.leaderboardSeasonRepo.countActive(...args)
+  }
+
+  activate(...args: Parameters<LeaderboardSeasonRepo['activate']>) {
+    return this.leaderboardSeasonRepo.activate(...args)
+  }
+
+  findActiveForPrecreate(
+    ...args: Parameters<LeaderboardSeasonRepo['findActiveForPrecreate']>
+  ) {
+    return this.leaderboardSeasonRepo.findActiveForPrecreate(...args)
+  }
+
+  findTemplateForPrecreate(
+    ...args: Parameters<LeaderboardSeasonRepo['findTemplateForPrecreate']>
+  ) {
+    return this.leaderboardSeasonRepo.findTemplateForPrecreate(...args)
+  }
+
+  findFirstByNameKeyPrefix(
+    ...args: Parameters<LeaderboardSeasonRepo['findFirstByNameKeyPrefix']>
+  ) {
+    return this.leaderboardSeasonRepo.findFirstByNameKeyPrefix(...args)
+  }
+
+  findPreviewStartingAt(
+    ...args: Parameters<LeaderboardSeasonRepo['findPreviewStartingAt']>
+  ) {
+    return this.leaderboardSeasonRepo.findPreviewStartingAt(...args)
+  }
+
+  createSeason(...args: Parameters<LeaderboardSeasonRepo['createSeason']>) {
+    return this.leaderboardSeasonRepo.createSeason(...args)
+  }
+
+  setNameKeyWithTranslations(
+    ...args: Parameters<LeaderboardSeasonRepo['setNameKeyWithTranslations']>
+  ) {
+    return this.leaderboardSeasonRepo.setNameKeyWithTranslations(...args)
+  }
+
+  disablePrecreate(...args: Parameters<LeaderboardSeasonRepo['disablePrecreate']>) {
+    return this.leaderboardSeasonRepo.disablePrecreate(...args)
+  }
 }
