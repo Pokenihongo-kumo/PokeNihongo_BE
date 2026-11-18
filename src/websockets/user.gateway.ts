@@ -1,6 +1,5 @@
 import { I18nService } from '@/i18n/i18n.service'
 import { UserCoreService } from '@/modules/user/user-core.service'
-import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable, Logger } from '@nestjs/common'
 import {
   ConnectedSocket,
@@ -40,8 +39,7 @@ export class UserGateway {
   constructor(
     private readonly userCoreService: UserCoreService,
     private readonly i18nService: I18nService,
-    private readonly socketServerService: SocketServerService,
-    private readonly prisma: PrismaService
+    private readonly socketServerService: SocketServerService
 
     // private readonly matchRoundService: MatchRoundService
   ) {}
@@ -57,16 +55,10 @@ export class UserGateway {
 
     try {
       if (deviceId) {
-        await this.prisma.device.updateMany({
-          where: { id: deviceId, userId },
-          data: { isActive: true, lastActive: new Date() }
-        })
+        await this.userCoreService.markDeviceActive(deviceId, userId)
       } else {
         // Fallback: mark all devices of user as active
-        await this.prisma.device.updateMany({
-          where: { userId },
-          data: { isActive: true, lastActive: new Date() }
-        })
+        await this.userCoreService.markUserDevicesActive(userId)
       }
 
       this.logger.debug(
@@ -90,16 +82,10 @@ export class UserGateway {
 
     try {
       if (deviceId) {
-        await this.prisma.device.updateMany({
-          where: { id: deviceId, userId, isActive: true },
-          data: { lastActive: new Date() }
-        })
+        await this.userCoreService.touchActiveDevice(deviceId, userId)
       } else {
         // Fallback: mark all active devices of user as inactive
-        await this.prisma.device.updateMany({
-          where: { userId, isActive: true },
-          data: { lastActive: new Date() }
-        })
+        await this.userCoreService.touchActiveUserDevices(userId)
       }
 
       this.logger.debug(

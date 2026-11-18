@@ -13,7 +13,7 @@ import {
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
 import { PaginationQueryType } from '@/shared/models/request.model'
-import { SharedNotificationService } from '@/shared/services/shared-notification.service'
+import { NotificationService } from '@/modules/notification/notification.service'
 import { SharedUserSubscriptionService } from '@/shared/services/user-subscription.service'
 import { HttpStatus, Injectable, Logger } from '@nestjs/common'
 import {
@@ -55,7 +55,7 @@ export class RewardService {
     private readonly userRewardHistoryService: UserRewardHistoryService,
     private readonly userSubService: SharedUserSubscriptionService,
     private readonly walletTransactionService: WalletTransactionService,
-    private readonly sharedNotificationService: SharedNotificationService
+    private readonly sharedNotificationService: NotificationService
   ) {}
 
   private readonly logger = new Logger(RewardService.name)

@@ -53,4 +53,22 @@ export class UserCoreService {
   findElos(...args: Parameters<UserCoreRepo['findElos']>) {
     return this.userCoreRepo.findElos(...args)
   }
+
+  // ---- For other modules: Device presence on the /user socket (UserGateway) (B7) ----
+
+  markDeviceActive(...args: Parameters<UserCoreRepo['markDeviceActive']>) {
+    return this.userCoreRepo.markDeviceActive(...args)
+  }
+
+  markUserDevicesActive(...args: Parameters<UserCoreRepo['markUserDevicesActive']>) {
+    return this.userCoreRepo.markUserDevicesActive(...args)
+  }
+
+  touchActiveDevice(...args: Parameters<UserCoreRepo['touchActiveDevice']>) {
+    return this.userCoreRepo.touchActiveDevice(...args)
+  }
+
+  touchActiveUserDevices(...args: Parameters<UserCoreRepo['touchActiveUserDevices']>) {
+    return this.userCoreRepo.touchActiveUserDevices(...args)
+  }
 }
