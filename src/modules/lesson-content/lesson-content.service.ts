@@ -369,12 +369,10 @@ export class LessonContentService {
                 lc.contentId,
                 languageCode || 'vi'
               )
-              if (!vocab.data) return null
+              if (!vocab) return null
 
               // Lấy meanings từ repository
-              const meaningsData = await this.meaningService.findByVocabularyId(
-                vocab.data.id
-              )
+              const meaningsData = await this.meaningService.findByVocabularyId(vocab.id)
 
               // Lấy translations cho từng meaning
               const meanings = await Promise.all(
@@ -499,11 +497,11 @@ export class LessonContentService {
               )
 
               return {
-                id: vocab.data.id,
-                wordJp: vocab.data.wordJp,
-                reading: vocab.data.reading,
-                imageUrl: vocab.data.imageUrl,
-                audioUrl: vocab.data.audioUrl,
+                id: vocab.id,
+                wordJp: vocab.wordJp,
+                reading: vocab.reading,
+                imageUrl: vocab.imageUrl,
+                audioUrl: vocab.audioUrl,
                 meanings: meanings,
                 contentOrder: lc.contentOrder,
                 lessonContentId: lc.id
@@ -627,7 +625,7 @@ export class LessonContentService {
             try {
               // Lấy từng kanji theo ID
               const kanji = await this.kanjiService.findById(lc.contentId)
-              if (!kanji.data) return null
+              if (!kanji) return null
 
               // Helper chọn giá trị ưu tiên VI nếu không truyền lang
               const pickValue = (
@@ -640,16 +638,16 @@ export class LessonContentService {
 
               // Lấy translation cho meaning
               let meaningValue: string | Array<{ language: string; value: string }> = ''
-              if (kanji.data.meaningKey) {
+              if (kanji.meaningKey) {
                 if (languageId) {
                   const t = await this.translationService.findByKeyAndLanguage(
-                    kanji.data.meaningKey,
+                    kanji.meaningKey,
                     languageId
                   )
                   meaningValue = t?.value || ''
                 } else {
                   const all = await this.translationService.findByKey({
-                    key: kanji.data.meaningKey
+                    key: kanji.meaningKey
                   })
                   meaningValue = await Promise.all(
                     (all.translations || []).map(async (t) => {
@@ -689,23 +687,23 @@ export class LessonContentService {
 
               // Tách readings thành on và kun (lấy tất cả readings từ bảng Kanji_Reading)
               const onReadings =
-                kanji.data.readings
+                kanji.readings
                   ?.filter((r) => r.readingType === 'onyomi')
                   .map((r) => r.reading) || []
               const kunReadings =
-                kanji.data.readings
+                kanji.readings
                   ?.filter((r) => r.readingType === 'kunyomi')
                   .map((r) => r.reading) || []
 
               return {
-                id: kanji.data.id,
-                character: kanji.data.character,
+                id: kanji.id,
+                character: kanji.character,
                 meaning,
                 explanationMeaning,
                 onReading: onReadings.join(', '),
                 kunReading: kunReadings.join(', '),
-                strokeCount: kanji.data.strokeCount || undefined,
-                imageUrl: kanji.data.img,
+                strokeCount: kanji.strokeCount || undefined,
+                imageUrl: kanji.img,
                 contentOrder: lc.contentOrder,
                 lessonContentId: lc.id
               }

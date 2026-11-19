@@ -16,8 +16,7 @@ describe('KanjiService', () => {
   const service = new KanjiService(
     repo as never,
     readings as never,
-    { uploadFile: jest.fn() } as never,
-    { translate: (k: string) => k } as never
+    { uploadFile: jest.fn() } as never
   )
   const kanji = { id: 7, character: '龘', meaningKey: 'kanji.7.meaning', readings: [] }
 
@@ -46,10 +45,10 @@ describe('KanjiService', () => {
       currentPage: 1,
       pageSize: 10
     } as never)
-    expect(res.data.results[0].meaning).toBe('rồng bay')
+    expect(res.results[0].meaning).toBe('rồng bay')
 
     const list = await service.findMany({ currentPage: 1, pageSize: 10 } as never)
-    expect(list.data.results[0].meanings).toEqual([
+    expect(list.results[0].meanings).toEqual([
       { meaningKey: 'kanji.7.meaning', translations: { en: 'dragons', vi: 'rồng bay' } }
     ])
     // One query for the whole page

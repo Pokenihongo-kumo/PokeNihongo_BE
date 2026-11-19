@@ -9,10 +9,10 @@
     "prismaOutsideRepoFiles": 0,
     "httpSchemasInEntities": 0,
     "handWrittenEnvelopes": 2,
-    "serviceEnvelopeFiles": 64,
+    "serviceEnvelopeFiles": 63,
     "prismaOutsideRepoCalls": 0,
-    "serviceStatusCodes": 412,
-    "serviceMessages": 513
+    "serviceStatusCodes": 395,
+    "serviceMessages": 487
   },
   "details": {
     "crossModuleRepoImports": [
@@ -81,7 +81,6 @@
       "modules/gemini-config/gemini-config.service.ts",
       "modules/gemini/gemini.service.ts",
       "modules/invoice/invoice.service.ts",
-      "modules/kanji/kanji.service.ts",
       "modules/leaderboard-season/leaderboard-season.service.ts",
       "modules/lesson-content/lesson-content.service.ts",
       "modules/match-participant/match-participant.service.ts",

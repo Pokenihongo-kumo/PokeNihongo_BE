@@ -56,8 +56,7 @@ describe('VocabularyService', () => {
     {} as never,
     {} as never,
     {} as never,
-    {} as never,
-    { translate: (k: string) => k } as never
+    {} as never
   )
 
   it('isJapaneseText: kana or kanji, no Latin (accented or Greek letters passed before)', () => {
