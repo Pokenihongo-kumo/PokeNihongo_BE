@@ -1,7 +1,5 @@
 import { RoleName } from '@/common/constants/role.constant'
 import { ShopBannerStatus } from '@/common/constants/shop-banner.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { ShopBannerMessage } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { PokemonService } from '@/modules/pokemon/pokemon.service'
 import { TranslationService } from '@/modules/translation/translation.service'
@@ -19,7 +17,7 @@ import {
   todayUTCWith0000ByDate
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
-import { HttpStatus, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { ShopItemRepo } from '../shop-item/shop-item.repo'
 import { ShopPurchaseRepo } from '../shop-purchase/shop-purchase.repo'
 import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
@@ -41,7 +39,6 @@ import { ShopBannerRepo } from './shop-banner.repo'
 export class ShopBannerService {
   constructor(
     private shopBannerRepo: ShopBannerRepo,
-    private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
     private readonly translationService: TranslationService,
     private readonly shopPurchaseRepo: ShopPurchaseRepo,
@@ -229,16 +226,13 @@ export class ShopBannerService {
     return result
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreateShopBannerBodyInput
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({
+    data,
+    createdById
+  }: {
+    data: CreateShopBannerBodyInput
+    createdById: number
+  }) {
     let createdShopBanner: any = null
 
     try {
@@ -352,11 +346,7 @@ export class ShopBannerService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.CREATED,
-          data: result,
-          message: this.i18nService.translate(ShopBannerMessage.CREATE_SUCCESS, lang)
-        }
+        return result
       })
     } catch (error) {
       // Rollback: Delete shopBanner if created
@@ -385,18 +375,15 @@ export class ShopBannerService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateShopBannerBodyInput
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateShopBannerBodyInput
+    updatedById: number
+  }) {
     let existingShopBanner: any = null
 
     try {
@@ -524,11 +511,7 @@ export class ShopBannerService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.OK,
-          data: updatedShopBanner,
-          message: this.i18nService.translate(ShopBannerMessage.UPDATE_SUCCESS, lang)
-        }
+        return updatedShopBanner
       })
     } catch (error) {
       if (isNotFoundPrismaError(error)) {

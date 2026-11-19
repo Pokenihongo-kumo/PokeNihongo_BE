@@ -85,36 +85,36 @@ export class GachaBannerController {
 
   @Post()
   @ZodSerializerDto(CreateGachaBannerResDTO)
-  create(
+  async create(
     @Body() body: CreatedGachaBannerBodyInputDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.gachaBannerService.create(
-      {
+    return {
+      message: this.i18nService.translate(GachaBannerMessage.CREATE_SUCCESS, lang),
+      data: await this.gachaBannerService.create({
         data: body,
         createdById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Put(':gachaBannerId')
   @ZodSerializerDto(UpdateGachaBannerResDTO)
-  update(
+  async update(
     @Body() body: UpdateGachaBannerBodyInputDTO,
     @Param() params: GetGachaBannerParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.gachaBannerService.update(
-      {
+    return {
+      message: this.i18nService.translate(GachaBannerMessage.UPDATE_SUCCESS, lang),
+      data: await this.gachaBannerService.update({
         data: body,
         id: params.gachaBannerId,
         updatedById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':gachaBannerId')

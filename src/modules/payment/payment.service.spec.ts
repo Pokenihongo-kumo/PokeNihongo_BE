@@ -58,7 +58,7 @@ describe('PaymentService: paid webhook when the mail provider is down', () => {
     const onUnhandled = (reason: unknown) => unhandled.push(reason)
     process.on('unhandledRejection', onUnhandled)
     try {
-      await expect(service.handlePayOSWebhook({})).resolves.toMatchObject({ data: null })
+      await expect(service.handlePayOSWebhook({})).resolves.toBeUndefined()
       // let the fire-and-forget mail settle
       await new Promise((resolve) => setImmediate(resolve))
       await new Promise((resolve) => setImmediate(resolve))

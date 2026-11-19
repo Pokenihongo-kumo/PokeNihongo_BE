@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { RoleMessage } from 'src/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
@@ -19,71 +21,81 @@ import { MessageResDTO } from 'src/shared/dtos/response.dto'
 @Controller('roles')
 @ApiBearerAuth()
 export class RoleController {
-  constructor(private readonly roleService: RoleService) {}
+  constructor(
+    private readonly roleService: RoleService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseSchema)
-  list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return this.roleService.list(query, lang)
+  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(RoleMessage.GET_LIST_SUCCESS, lang),
+      data: await this.roleService.list(query)
+    }
   }
 
   @Get(':roleId')
   @ZodSerializerDto(GetRoleDetailResDTO)
-  findById(
+  async findById(
     @Param() params: GetRoleParamsDTO,
     @Query() query: PaginationQueryDTO,
     @I18nLang() lang: string
   ) {
-    return this.roleService.findById(params.roleId, query, lang)
+    return {
+      message: this.i18nService.translate(RoleMessage.GET_SUCCESS, lang),
+      data: await this.roleService.findById(params.roleId, query)
+    }
   }
 
   @Post()
   @ZodSerializerDto(CreateRoleResDTO)
-  create(
+  async create(
     @Body() body: CreateRoleBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.roleService.create(
-      {
+    return {
+      message: this.i18nService.translate(RoleMessage.CREATE_SUCCESS, lang),
+      data: await this.roleService.create({
         data: body,
         createdById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Put(':roleId')
   @ZodSerializerDto(UpdateRoleResDTO)
-  update(
+  async update(
     @Body() body: UpdateRoleBodyDTO,
     @Param() params: GetRoleParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.roleService.update(
-      {
+    return {
+      message: this.i18nService.translate(RoleMessage.UPDATE_SUCCESS, lang),
+      data: await this.roleService.update({
         data: body,
         id: params.roleId,
         updatedById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':roleId')
   @ZodSerializerDto(MessageResDTO)
-  delete(
+  async delete(
     @Param() params: GetRoleParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.roleService.delete(
-      {
-        id: params.roleId,
-        deletedById: userId
-      },
-      lang
-    )
+    await this.roleService.delete({
+      id: params.roleId,
+      deletedById: userId
+    })
+    return {
+      message: this.i18nService.translate(RoleMessage.DELETE_SUCCESS, lang),
+      data: null
+    }
   }
 }

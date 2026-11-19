@@ -1,7 +1,5 @@
 import { InvoiceStatus } from '@/common/constants/invoice.constant'
 import { RoleName } from '@/common/constants/role.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { SubscriptionMessage } from '@/i18n/message-keys'
 import { InvoiceService } from '@/modules/invoice/invoice.service'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { SubscriptionPlanService } from '@/modules/subscription-plan/subscription-plan.service'
@@ -17,7 +15,7 @@ import {
   todayUTCWith0000
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
-import { HttpStatus, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { SubscriptionAlreadyExistsException } from './dto/subscription.error'
 import {
@@ -33,7 +31,6 @@ export class SubscriptionService {
   constructor(
     private subscriptionRepo: SubscriptionRepo,
     private subscriptionPlanService: SubscriptionPlanService,
-    private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
     private readonly translationService: TranslationService,
     private readonly invoiceService: InvoiceService
@@ -179,16 +176,13 @@ export class SubscriptionService {
     return result
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreateSubscriptionBodyInput
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({
+    data,
+    createdById
+  }: {
+    data: CreateSubscriptionBodyInput
+    createdById: number
+  }) {
     let createdSubscription: any = null
 
     try {
@@ -280,11 +274,7 @@ export class SubscriptionService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.CREATED,
-          data: result,
-          message: this.i18nService.translate(SubscriptionMessage.CREATE_SUCCESS, lang)
-        }
+        return result
       })
     } catch (error) {
       // Rollback: Delete subscription if created
@@ -313,18 +303,15 @@ export class SubscriptionService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateSubscriptionBodyInput
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateSubscriptionBodyInput
+    updatedById: number
+  }) {
     let existingSubscription: any = null
 
     try {
@@ -409,11 +396,7 @@ export class SubscriptionService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.OK,
-          data: updatedSubscription,
-          message: this.i18nService.translate(SubscriptionMessage.UPDATE_SUCCESS, lang)
-        }
+        return updatedSubscription
       })
     } catch (error) {
       if (isNotFoundPrismaError(error)) {

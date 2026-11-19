@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { PokemonMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { IsPublic } from '@/common/decorators/auth.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
@@ -21,14 +23,20 @@ import {
 import { PokemonService } from './pokemon.service'
 @Controller('pokemon')
 export class PokemonController {
-  constructor(private readonly pokemonService: PokemonService) {}
+  constructor(
+    private readonly pokemonService: PokemonService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @IsPublic()
   @ApiQuery({ type: PaginationQueryDto })
   @ZodSerializerDto(PaginationResponseDTO)
-  list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return this.pokemonService.list(query, lang)
+  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(PokemonMessage.GET_LIST_SUCCESS, lang),
+      data: await this.pokemonService.list(query)
+    }
   }
 
   // @Get('starters')
@@ -51,81 +59,109 @@ export class PokemonController {
 
   @Get('start-evolution')
   @ZodSerializerDto(GetPokemonResDTO)
-  getListPokeWithStartEvolu(@I18nLang() lang: string) {
-    return this.pokemonService.getListPokeWithStartEvolu(lang)
+  async getListPokeWithStartEvolu(@I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(PokemonMessage.GET_LIST_SUCCESS, lang),
+      data: await this.pokemonService.getListPokeWithStartEvolu()
+    }
   }
 
   @Get(':pokemonId/weaknesses')
   @IsPublic()
   @ZodSerializerDto(GetPokemonWeaknessResDTO)
-  getWeaknesses(@Param() params: GetPokemonParamsDTO, @I18nLang() lang: string) {
-    return this.pokemonService.calculatePokemonWeaknesses(params.pokemonId, lang)
+  async getWeaknesses(@Param() params: GetPokemonParamsDTO, @I18nLang() lang: string) {
+    const { hasTypes, data } = await this.pokemonService.calculatePokemonWeaknesses(
+      params.pokemonId
+    )
+    // a Pokemon without types has no weakness to compute
+    return {
+      message: this.i18nService.translate(
+        hasTypes
+          ? PokemonMessage.CALCULATE_WEAKNESS_SUCCESS
+          : PokemonMessage.NO_TYPE_WEAKNESS,
+        lang
+      ),
+      data
+    }
   }
 
   @Get(':pokemonId/evolution-options')
   @IsPublic()
   @ZodSerializerDto(GetEvolutionOptionsResDTO)
-  getEvolutionOptions(@Param() params: GetPokemonParamsDTO, @I18nLang() lang: string) {
-    return this.pokemonService.getEvolutionOptions(params.pokemonId, lang)
+  async getEvolutionOptions(
+    @Param() params: GetPokemonParamsDTO,
+    @I18nLang() lang: string
+  ) {
+    return {
+      message: this.i18nService.translate(
+        PokemonMessage.GET_EVOLUTION_OPTIONS_SUCCESS,
+        lang
+      ),
+      data: await this.pokemonService.getEvolutionOptions(params.pokemonId)
+    }
   }
 
   @Get(':pokemonId')
   @IsPublic()
   @ZodSerializerDto(GetPokemonDetailResDTO)
-  findById(@Param() params: GetPokemonParamsDTO, @I18nLang() lang: string) {
-    return this.pokemonService.findById(params.pokemonId, lang)
+  async findById(@Param() params: GetPokemonParamsDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(PokemonMessage.GET_DETAIL_SUCCESS, lang),
+      data: await this.pokemonService.findById(params.pokemonId)
+    }
   }
 
   @Post()
   @IsPublic()
   @ZodSerializerDto(CreatePokemonResDTO)
-  create(
+  async create(
     @Body() body: CreatePokemonBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.pokemonService.create(
-      {
+    return {
+      message: this.i18nService.translate(PokemonMessage.CREATE_SUCCESS, lang),
+      data: await this.pokemonService.create({
         data: body,
         createdById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Put(':pokemonId')
   @IsPublic()
   @ZodSerializerDto(UpdatePokemonResDTO)
-  update(
+  async update(
     @Body() body: UpdatePokemonBodyDTO,
     @Param() params: GetPokemonParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.pokemonService.update(
-      {
+    return {
+      message: this.i18nService.translate(PokemonMessage.UPDATE_SUCCESS, lang),
+      data: await this.pokemonService.update({
         data: body,
         id: params.pokemonId,
         updatedById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':pokemonId')
   @ZodSerializerDto(MessageResDTO)
-  delete(
+  async delete(
     @Param() params: GetPokemonParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.pokemonService.delete(
-      {
-        id: params.pokemonId,
-        deletedById: userId
-      },
-      lang
-    )
+    await this.pokemonService.delete({
+      id: params.pokemonId,
+      deletedById: userId
+    })
+    return {
+      message: this.i18nService.translate(PokemonMessage.DELETE_SUCCESS, lang),
+      data: null
+    }
   }
 
   // @Post(':pokemonId/assign-types')

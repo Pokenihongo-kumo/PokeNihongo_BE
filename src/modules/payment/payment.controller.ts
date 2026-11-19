@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { PaymentMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { IsPublic } from '@/common/decorators/auth.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
@@ -17,7 +19,10 @@ import { PaymentService } from './payment.service'
 
 @Controller('payments')
 export class PaymentController {
-  constructor(private readonly paymentService: PaymentService) {}
+  constructor(
+    private readonly paymentService: PaymentService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Post('/payos')
   @ApiOperation({ summary: 'Tạo thanh toán PayOS' })
@@ -27,7 +32,12 @@ export class PaymentController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.paymentService.createPayOSPayment(paymentData, userId, lang)
+    // `success: true` was always in this response (no serializer on the route)
+    return {
+      success: true,
+      message: this.i18nService.translate(PaymentMessage.CREATE_SUCCESS, lang),
+      data: await this.paymentService.createPayOSPayment(paymentData, userId)
+    }
   }
 
   @Get('/payos/return')
@@ -74,6 +84,10 @@ export class PaymentController {
   @ApiOperation({ summary: 'PayOS webhook' })
   @ApiResponse({ status: 200, description: 'Webhook xử lý thành công' })
   async handlePayOSWebhook(@Body() body: unknown, @I18nLang() lang: string) {
-    return this.paymentService.handlePayOSWebhook(body, lang)
+    await this.paymentService.handlePayOSWebhook(body)
+    return {
+      message: this.i18nService.translate(PaymentMessage.UPDATE_SUCCESS, lang),
+      data: null
+    }
   }
 }

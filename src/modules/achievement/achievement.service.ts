@@ -1,6 +1,4 @@
 import { RoleName } from '@/common/constants/role.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { AchievementMessage } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { TranslationService } from '@/modules/translation/translation.service'
 import {
@@ -14,7 +12,7 @@ import {
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
 import { PrismaService } from '@/shared/services/prisma.service'
-import { HttpStatus, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { AchievementRepo } from './achievement.repo'
 import { AchievementAlreadyExistsException } from './dto/achievement.error'
@@ -29,7 +27,6 @@ import {
 export class AchievementService {
   constructor(
     private achievementRepo: AchievementRepo,
-    private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
     private readonly translationService: TranslationService,
     private readonly prismaService: PrismaService
@@ -204,16 +201,13 @@ export class AchievementService {
     return result
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreateAchievementBodyInput
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({
+    data,
+    createdById
+  }: {
+    data: CreateAchievementBodyInput
+    createdById: number
+  }) {
     let createdAchievement: any = null
 
     try {
@@ -329,11 +323,7 @@ export class AchievementService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.CREATED,
-          data: result,
-          message: this.i18nService.translate(AchievementMessage.CREATE_SUCCESS, lang)
-        }
+        return result
       })
     } catch (error) {
       // Rollback: Delete achievement if created
@@ -362,18 +352,15 @@ export class AchievementService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateAchievementBodyInput
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateAchievementBodyInput
+    updatedById: number
+  }) {
     let existingAchievement: any = null
 
     try {
@@ -490,11 +477,7 @@ export class AchievementService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.OK,
-          data: updatedAchievement,
-          message: this.i18nService.translate(AchievementMessage.UPDATE_SUCCESS, lang)
-        }
+        return updatedAchievement
       })
     } catch (error) {
       if (isNotFoundPrismaError(error)) {

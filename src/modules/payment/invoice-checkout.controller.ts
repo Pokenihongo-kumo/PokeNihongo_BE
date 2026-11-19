@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { InvoiceMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { CreateInvoiceBodyDTO } from '@/modules/invoice/dto/invoice.dto'
@@ -9,14 +11,20 @@ import { PaymentService } from './payment.service'
 // the route, body and response are unchanged.
 @Controller('invoice')
 export class InvoiceCheckoutController {
-  constructor(private readonly paymentService: PaymentService) {}
+  constructor(
+    private readonly paymentService: PaymentService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Post()
-  create(
+  async create(
     @Body() body: CreateInvoiceBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.paymentService.checkoutNewInvoice({ userId, data: body }, lang)
+    return {
+      message: this.i18nService.translate(InvoiceMessage.CREATE_SUCCESS, lang),
+      data: await this.paymentService.checkoutNewInvoice({ userId, data: body })
+    }
   }
 }

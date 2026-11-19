@@ -1,6 +1,4 @@
 import { RoleName } from '@/common/constants/role.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { AchievementGroupMessage } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { TranslationService } from '@/modules/translation/translation.service'
 import {
@@ -14,7 +12,7 @@ import {
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
 import { PrismaService } from '@/shared/services/prisma.service'
-import { HttpStatus, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { AchievementGroupRepo } from './achievement-group.repo'
 import { AchievementGroupAlreadyExistsException } from './dto/achievement-group.error'
@@ -29,7 +27,6 @@ import {
 export class AchievementGroupService {
   constructor(
     private achievementGroupRepo: AchievementGroupRepo,
-    private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
     private readonly translationService: TranslationService,
     private readonly prismaService: PrismaService
@@ -80,10 +77,7 @@ export class AchievementGroupService {
       }
     }
 
-    return {
-      data,
-      message: this.i18nService.translate(AchievementGroupMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   async findById(id: number, roleName: string, lang: string = 'vi') {
@@ -91,10 +85,7 @@ export class AchievementGroupService {
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     if (!langId) {
-      return {
-        data: null,
-        message: this.i18nService.translate(AchievementGroupMessage.GET_SUCCESS, lang)
-      }
+      return null
     }
 
     const achievementGroup = await this.achievementGroupRepo.findByIdWithLangId(
@@ -171,26 +162,16 @@ export class AchievementGroupService {
       })
     )
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: {
-        ...result,
-        achievements: achievements
-      },
-      message: this.i18nService.translate(AchievementGroupMessage.GET_SUCCESS, lang)
-    }
+    return { ...result, achievements: achievements }
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreateAchievementGroupBodyInput
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({
+    data,
+    createdById
+  }: {
+    data: CreateAchievementGroupBodyInput
+    createdById: number
+  }) {
     let createdAchievementGroup: any = null
 
     try {
@@ -268,14 +249,7 @@ export class AchievementGroupService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.CREATED,
-          data: result,
-          message: this.i18nService.translate(
-            AchievementGroupMessage.CREATE_SUCCESS,
-            lang
-          )
-        }
+        return result
       })
     } catch (error) {
       // Rollback: Delete achievementGroup if created
@@ -304,18 +278,15 @@ export class AchievementGroupService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateAchievementGroupBodyInput
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateAchievementGroupBodyInput
+    updatedById: number
+  }) {
     let existingAchievementGroup: any = null
 
     try {
@@ -385,14 +356,7 @@ export class AchievementGroupService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.OK,
-          data: updatedAchievementGroup,
-          message: this.i18nService.translate(
-            AchievementGroupMessage.UPDATE_SUCCESS,
-            lang
-          )
-        }
+        return updatedAchievementGroup
       })
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
@@ -408,10 +372,7 @@ export class AchievementGroupService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
       const existingAchievementGroup = await this.achievementGroupRepo.findById(id)
       if (!existingAchievementGroup) {
@@ -426,11 +387,7 @@ export class AchievementGroupService {
         this.translationService.deleteByKey(existingAchievementGroup.nameKey)
       ])
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(AchievementGroupMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()

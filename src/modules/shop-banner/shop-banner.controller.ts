@@ -102,36 +102,36 @@ export class ShopBannerController {
 
   @Post()
   @ZodSerializerDto(CreateShopBannerResDTO)
-  create(
+  async create(
     @Body() body: CreatedShopBannerBodyInputDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.shopBannerService.create(
-      {
+    return {
+      message: this.i18nService.translate(ShopBannerMessage.CREATE_SUCCESS, lang),
+      data: await this.shopBannerService.create({
         data: body,
         createdById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Put(':shopBannerId')
   @ZodSerializerDto(UpdateShopBannerResDTO)
-  update(
+  async update(
     @Body() body: UpdateShopBannerBodyInputDTO,
     @Param() params: GetShopBannerParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.shopBannerService.update(
-      {
+    return {
+      message: this.i18nService.translate(ShopBannerMessage.UPDATE_SUCCESS, lang),
+      data: await this.shopBannerService.update({
         data: body,
         id: params.shopBannerId,
         updatedById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':shopBannerId')

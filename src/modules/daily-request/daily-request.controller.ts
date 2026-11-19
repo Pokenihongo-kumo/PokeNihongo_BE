@@ -86,36 +86,36 @@ export class DailyRequestController {
 
   @Post()
   @ZodSerializerDto(CreateDailyRequestResDTO)
-  create(
+  async create(
     @Body() body: CreateDailyRequestBodyInputDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.dailyRequestService.create(
-      {
+    return {
+      message: this.i18nService.translate(DailyRequestMessage.CREATE_SUCCESS, lang),
+      data: await this.dailyRequestService.create({
         data: body,
         createdById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Put(':dailyRequestId')
   @ZodSerializerDto(UpdateDailyRequestResDTO)
-  update(
+  async update(
     @Body() body: UpdateDailyRequestBodyInputDTO,
     @Param() params: GetDailyRequestParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.dailyRequestService.update(
-      {
+    return {
+      message: this.i18nService.translate(DailyRequestMessage.UPDATE_SUCCESS, lang),
+      data: await this.dailyRequestService.update({
         data: body,
         id: params.dailyRequestId,
         updatedById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':dailyRequestId')

@@ -1,6 +1,5 @@
 import { FeatureKey } from '@/common/constants/subscription.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { NotificationMessage, RewardMessage } from '@/i18n/message-keys'
+import { NotificationMessage } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { NotificationService } from '@/modules/notification/notification.service'
 import { PokemonService } from '@/modules/pokemon/pokemon.service'
@@ -21,7 +20,7 @@ import {
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
-import { HttpStatus, Injectable, Logger } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import {
   RarityPokemon,
   RewardTarget,
@@ -44,7 +43,6 @@ import { RewardRepo } from './reward.repo'
 export class RewardService {
   constructor(
     private rewardRepo: RewardRepo,
-    private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
     private readonly translationService: TranslationService,
     private readonly userService: UserService,
@@ -219,16 +217,13 @@ export class RewardService {
     return result
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreateRewardBodyInput
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({
+    data,
+    createdById
+  }: {
+    data: CreateRewardBodyInput
+    createdById: number
+  }) {
     // Every write runs in this transaction: a failure leaves no reward behind
     try {
       return await this.rewardRepo.withTransaction(async (prismaTx) => {
@@ -304,11 +299,7 @@ export class RewardService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.CREATED,
-          data: result,
-          message: this.i18nService.translate(RewardMessage.CREATE_SUCCESS, lang)
-        }
+        return result
       })
     } catch (error) {
       if (isUniqueConstraintPrismaError(error)) {
@@ -324,18 +315,15 @@ export class RewardService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateRewardBodyInput
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateRewardBodyInput
+    updatedById: number
+  }) {
     let existingReward: any = null
 
     try {
@@ -403,11 +391,7 @@ export class RewardService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.OK,
-          data: updatedReward,
-          message: this.i18nService.translate(RewardMessage.UPDATE_SUCCESS, lang)
-        }
+        return updatedReward
       })
     } catch (error) {
       if (isNotFoundPrismaError(error)) {

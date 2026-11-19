@@ -12,7 +12,7 @@ import { UserCoreService } from '@/modules/user/user-core.service'
 import { MailService } from '@/modules/mail/mail.service'
 import { BullAction, BullQueue } from '@/common/constants/bull-action.constant'
 import { I18nService } from '@/i18n/i18n.service'
-import { InvoiceMessage, PaymentMessage, SendMailMessage } from '@/i18n/message-keys'
+import { PaymentMessage, SendMailMessage } from '@/i18n/message-keys'
 import { CreateInvoiceBody } from '@/modules/invoice/dto/invoice.zod-dto'
 import { SubscriptionPlanService } from '@/modules/subscription-plan/subscription-plan.service'
 import { NotFoundRecordException } from '@/shared/error'
@@ -54,22 +54,17 @@ export class PaymentService {
 
   // POST /invoice: the pending invoice is committed first, then its payment
   // link is opened (the order the invoice module used to follow itself)
-  async checkoutNewInvoice(
-    { userId, data }: { userId: number; data: CreateInvoiceBody },
-    lang: string = 'vi'
-  ) {
+  async checkoutNewInvoice({
+    userId,
+    data
+  }: {
+    userId: number
+    data: CreateInvoiceBody
+  }) {
     const invoice = await this.invoiceService.createPending({ userId, data })
     try {
-      const paymentResult = await this.createPayOSPayment(
-        { invoiceId: invoice.id },
-        userId,
-        lang
-      )
-      return {
-        statusCode: 201,
-        data: { invoice, payment: paymentResult.data },
-        message: this.i18nService.translate(InvoiceMessage.CREATE_SUCCESS, lang)
-      }
+      const payment = await this.createPayOSPayment({ invoiceId: invoice.id }, userId)
+      return { invoice, payment }
     } catch (error) {
       if (isNotFoundPrismaError(error) || isForeignKeyConstraintPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -79,11 +74,7 @@ export class PaymentService {
   }
 
   // Create PayOS payment
-  async createPayOSPayment(
-    paymentData: CreatePayOSPaymentDto,
-    userId: number,
-    lang: string = 'vi'
-  ) {
+  async createPayOSPayment(paymentData: CreatePayOSPaymentDto, userId: number) {
     try {
       const { invoiceId, buyerName, buyerEmail, buyerPhone } = paymentData
       console.log('create -payment')
@@ -170,7 +161,7 @@ export class PaymentService {
         const open = await this.paymentRepo.findLatestPendingByInvoice(invoice.id)
         // still being created by the other request: the client retries
         if (!open?.payosCheckoutUrl) throw new PaymentLinkInProgressException()
-        return this.paymentLinkResult(open, lang)
+        return this.paymentLinkResult(open)
       }
 
       // 10. Create the PayOS link; if it fails, free the slot for a retry
@@ -218,18 +209,14 @@ export class PaymentService {
       }
 
       return {
-        success: true,
-        message: this.i18nService.translate(PaymentMessage.CREATE_SUCCESS, lang),
-        data: {
-          payment,
-          payosData: {
-            orderCode: payosResponse.orderCode,
-            checkoutUrl: payosResponse.checkoutUrl,
-            qrCode: payosResponse.qrCode,
-            paymentLinkId: payosResponse.paymentLinkId,
-            expiredAt: payosResponse.expiredAt,
-            amount: payosResponse.amount
-          }
+        payment,
+        payosData: {
+          orderCode: payosResponse.orderCode,
+          checkoutUrl: payosResponse.checkoutUrl,
+          qrCode: payosResponse.qrCode,
+          paymentLinkId: payosResponse.paymentLinkId,
+          expiredAt: payosResponse.expiredAt,
+          amount: payosResponse.amount
         }
       }
     } catch (error) {
@@ -255,23 +242,19 @@ export class PaymentService {
   }
 
   // The open link of an invoice, as POST /payments/payos answers it
-  private paymentLinkResult(payment: Payment, lang: string) {
+  private paymentLinkResult(payment: Payment) {
     const expiredAtMs = payment.expiredAt
       ? new Date(payment.expiredAt).getTime()
       : undefined
     return {
-      success: true,
-      message: this.i18nService.translate(PaymentMessage.CREATE_SUCCESS, lang),
-      data: {
-        payment,
-        payosData: {
-          orderCode: payment.payosOrderId ? Number(payment.payosOrderId) : undefined,
-          checkoutUrl: payment.payosCheckoutUrl,
-          qrCode: payment.payosQrCode,
-          paymentLinkId: payment.payosPaymentLinkId,
-          expiredAt: expiredAtMs ? Math.floor(expiredAtMs / 1000) : undefined,
-          amount: payment.amount
-        }
+      payment,
+      payosData: {
+        orderCode: payment.payosOrderId ? Number(payment.payosOrderId) : undefined,
+        checkoutUrl: payment.payosCheckoutUrl,
+        qrCode: payment.payosQrCode,
+        paymentLinkId: payment.payosPaymentLinkId,
+        expiredAt: expiredAtMs ? Math.floor(expiredAtMs / 1000) : undefined,
+        amount: payment.amount
       }
     }
   }
@@ -299,7 +282,7 @@ export class PaymentService {
    * throws); otherwise 200, also for unknown orders (PayOS sends a test event
    * when the webhook URL is confirmed).
    */
-  async handlePayOSWebhook(body: unknown, lang: string = 'vi') {
+  async handlePayOSWebhook(body: unknown) {
     const data = await this.paymentGateway.verifyWebhook(body)
     const payment = await this.paymentRepo.findPaymentByPayOSOrderId(
       String(data.orderCode)
@@ -307,10 +290,7 @@ export class PaymentService {
     if (payment && data.code === '00' && Number(data.amount) === Number(payment.amount)) {
       await this.grantPaidPayment(payment)
     }
-    return {
-      data: null,
-      message: this.i18nService.translate(PaymentMessage.UPDATE_SUCCESS, lang)
-    }
+    return
   }
 
   // Return/cancel: look the order up at PayOS, apply its state, pick the redirect

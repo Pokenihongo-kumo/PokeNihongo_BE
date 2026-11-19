@@ -9,10 +9,10 @@
     "prismaOutsideRepoFiles": 0,
     "httpSchemasInEntities": 0,
     "handWrittenEnvelopes": 2,
-    "serviceEnvelopeFiles": 20,
+    "serviceEnvelopeFiles": 6,
     "prismaOutsideRepoCalls": 0,
-    "serviceStatusCodes": 68,
-    "serviceMessages": 101
+    "serviceStatusCodes": 11,
+    "serviceMessages": 19
   },
   "details": {
     "crossModuleRepoImports": [
@@ -63,25 +63,11 @@
       "shared/models/response.model.ts"
     ],
     "serviceEnvelopeFiles": [
-      "modules/achievement-group/achievement-group.service.ts",
-      "modules/achievement/achievement.service.ts",
-      "modules/daily-request/daily-request.service.ts",
-      "modules/feature/feature.service.ts",
-      "modules/flashcard/flashcard.service.ts",
-      "modules/gacha-banner/gacha-banner.service.ts",
       "modules/gemini-config/gemini-config.service.ts",
-      "modules/gemini/gemini.service.ts",
       "modules/lesson-content/lesson-content.service.ts",
       "modules/payment/payment.service.ts",
-      "modules/permission/permission.service.ts",
       "modules/pokemon/pokemon.service.ts",
-      "modules/reward/reward.service.ts",
-      "modules/role/role.service.ts",
-      "modules/shop-banner/shop-banner.service.ts",
-      "modules/speaking/speaking.service.ts",
-      "modules/subscription/subscription.service.ts",
       "modules/upload/upload.service.ts",
-      "modules/user-srs-review/user-srs-review.service.ts",
       "modules/vocabulary/vocabulary.service.ts"
     ]
   }
