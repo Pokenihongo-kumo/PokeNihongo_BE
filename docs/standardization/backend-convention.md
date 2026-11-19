@@ -7,8 +7,8 @@ Viết từ code đang chạy trên `dev` @ `706e231`: **Level** (kiểu A: mess
 ```text
 src/modules/<feature>/
   <feature>.module.ts
-  <feature>.controller.ts     # route, auth, validation, serializer; không Prisma, không nghiệp vụ
-  <feature>.service.ts        # nghiệp vụ, transaction, map lỗi, envelope { data, message }
+  <feature>.controller.ts     # route, auth, validation, serializer, message thành công; không Prisma, không nghiệp vụ
+  <feature>.service.ts        # nghiệp vụ, transaction, map lỗi; trả kết quả có type, không envelope
   <feature>.repo.ts           # class <Feature>Repo: query Prisma, mapping persistence
   <feature>.service.spec.ts   # unit test logic riêng của feature
   dto/<feature>.zod-dto.ts    # hợp đồng HTTP: body/query/params/res schema + type + class XDTO
@@ -66,8 +66,21 @@ src/modules/<feature>/
 
 ## 5. Service
 
-- Giữ envelope `{ data, message }` (và `statusCode` khi đang có) ở service — bỏ envelope khỏi service là giai đoạn 5.
-- Message thành công dịch bằng `I18nService.translate(key, lang)`, `lang` từ `@I18nLang()` (cùng `resolveLanguage` với filter).
+- Service trả kết quả nghiệp vụ có type (entity, `{ results, pagination }`, `void`) và ném exception khi lỗi; không dựng `{ statusCode, message, data }`, không nhận `lang` chỉ để dịch message (giai đoạn 5; mẫu: Level, WordType). `lang` chỉ còn khi dữ liệu trả về phụ thuộc ngôn ngữ (WordType `findAll` dịch `name`).
+- Controller dịch message thành công bằng `I18nService.translate(key, lang)`, `lang` từ `@I18nLang()` (cùng `resolveLanguage` với filter), và trả `{ message, data }`; route chỉ có message trả `{ message }` (hoặc `data: null` khi snapshot cũ có `data: null`). `TransformInterceptor` đặt `statusCode` = HTTP status; `ZodSerializerInterceptor` (đăng ký trước, bọc ngoài) kiểm envelope sau đó. Wire format không đổi: contract snapshot phải giữ nguyên.
+
+  ```ts
+  @Get(':id')
+  @ZodSerializerDto(WordTypeResDTO)
+  async findById(@Param() params: GetWordTypeByIdParamsDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(WordTypeMessage.GET_SUCCESS, lang),
+      data: await this.wordTypeService.findById(params.id)
+    }
+  }
+  ```
+
+- Module chưa chuyển vẫn trả envelope từ service (interceptor nhận cả hai). `arch:deps` đếm `serviceEnvelopeFiles`/`serviceStatusCodes`/`serviceMessages` trong `*.service.ts` và không cho tăng. Khi chuyển một module: method dùng bởi module khác cũng trả kết quả trần, sửa chỗ gọi (`r.data.id` → `r.id`).
 - Log bằng Nest `Logger` của class; không `console.*`. Việc best-effort (Level `autoLinkLevels`) log lỗi rõ ràng, có test chứng minh không làm hỏng thao tác chính.
 
 ## 6. Test

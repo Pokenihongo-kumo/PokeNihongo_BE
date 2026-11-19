@@ -18,13 +18,7 @@ describe('WordTypeService write errors', () => {
     update: jest.fn(),
     delete: jest.fn()
   }
-  const i18n = { translate: (key: string) => key }
-  const service = new WordTypeService(
-    repo as never,
-    {} as never,
-    {} as never,
-    i18n as never
-  )
+  const service = new WordTypeService(repo as never, {} as never, {} as never)
   const statusOf = (promise: Promise<unknown>) =>
     promise.then(
       () => undefined,

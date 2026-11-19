@@ -1,6 +1,4 @@
 import { LevelTypeType } from '@/common/constants/level.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { LevelMessage } from '@/i18n/message-keys'
 import { NotFoundRecordException } from '@/shared/error'
 import { PaginationQuery } from '@/shared/models/request.model'
 import {
@@ -20,40 +18,21 @@ import { LevelRepo } from './level.repo'
 export class LevelService {
   private readonly logger = new Logger(LevelService.name)
 
-  constructor(
-    private readonly levelRepo: LevelRepo,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly levelRepo: LevelRepo) {}
 
-  async list(pagination: PaginationQuery, lang: string = 'vi') {
-    const data = await this.levelRepo.list(pagination)
-    return {
-      data,
-      message: this.i18nService.translate(LevelMessage.GET_LIST_SUCCESS, lang)
-    }
+  list(pagination: PaginationQuery) {
+    return this.levelRepo.list(pagination)
   }
 
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const level = await this.levelRepo.findById(id)
     if (!level) {
       throw new NotFoundRecordException()
     }
-    return {
-      data: level,
-      message: this.i18nService.translate(LevelMessage.GET_SUCCESS, lang)
-    }
+    return level
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreateLevelBody
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({ data, createdById }: { data: CreateLevelBody; createdById: number }) {
     try {
       // Tạo level trước
       const result = await this.levelRepo.create({
@@ -64,10 +43,7 @@ export class LevelService {
       // Sau khi tạo thành công, tự động liên kết với các level liền kề
       await this.autoLinkLevels(result.id, data.levelNumber, data.levelType)
 
-      return {
-        data: result,
-        message: this.i18nService.translate(LevelMessage.CREATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isUniqueConstraintPrismaError(error)) {
         throw new LevelAlreadyExistsException()
@@ -79,18 +55,15 @@ export class LevelService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateLevelBody
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateLevelBody
+    updatedById: number
+  }) {
     try {
       const existLevel = await this.levelRepo.findById(id)
       if (!existLevel) {
@@ -122,10 +95,7 @@ export class LevelService {
         await this.autoLinkLevels(id, newLevelNumber, newLevelType)
       }
 
-      return {
-        data: level,
-        message: this.i18nService.translate(LevelMessage.UPDATE_SUCCESS, lang)
-      }
+      return level
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -140,19 +110,12 @@ export class LevelService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }): Promise<void> {
     try {
       await this.levelRepo.delete({
         id,
         deletedById
       })
-      return {
-        data: null,
-        message: this.i18nService.translate(LevelMessage.DELETE_SUCCESS, lang)
-      }
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
