@@ -15,11 +15,13 @@
 //   httpSchemasInEntities    request/response schemas exported from entities/
 //                            (schema-dto-layout plan S-R2: they belong in dto/)
 //   handWrittenEnvelopes     `statusCode: z.` outside resSchema/paginatedResSchema (S-R4)
-//   serviceEnvelopeFiles     *.service.ts files with `statusCode:` or `message:`: a service
+//   serviceEnvelopeFiles     *.service.ts files with `statusCode:` or message text: a service
 //                            building the HTTP envelope (phase 5: the controller adds the
 //                            translated message, TransformInterceptor the statusCode)
 //   serviceStatusCodes       those `statusCode:` (regex matches; relative measure only)
-//   serviceMessages          those `message:` properties (same)
+//   serviceMessages          `message:` properties whose value is message text: a
+//                            translation, a string or a MESSAGE constant (same); a copied
+//                            data field such as `message: row.message` is not counted
 //
 // Owner of a file: src/modules/<name>/... -> modules/<name>; any other file ->
 // its top folder under src (shared, cronjobs, websockets, infrastructure, ...).
@@ -220,7 +222,12 @@ export function measure() {
 
     if (rel.endsWith('.service.ts')) {
       const codes = text.match(/\bstatusCode\s*:/g)?.length ?? 0
-      const messages = text.match(/^\s+message\s*:/gm)?.length ?? 0
+      // message text the service writes (a translation, a string or a MESSAGE
+      // constant), not a copied field such as `message: row.message`
+      const messages =
+        text.match(
+          /^\s+message\s*:\s*(?:this\.i18nService\.translate\(|['"`]|[A-Z][A-Z_]*\.)/gm
+        )?.length ?? 0
       if (codes + messages > 0) details.serviceEnvelopeFiles.push(rel)
       serviceStatusCodes += codes
       serviceMessages += messages

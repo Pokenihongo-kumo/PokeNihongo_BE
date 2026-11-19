@@ -53,18 +53,18 @@ export class AchievementGroupController {
 
   @Post()
   @ZodSerializerDto(CreateAchievementGroupResDTO)
-  create(
+  async create(
     @Body() body: CreateAchievementGroupBodyInputDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.achievementGroupService.create(
-      {
+    return {
+      message: this.i18nService.translate(AchievementGroupMessage.CREATE_SUCCESS, lang),
+      data: await this.achievementGroupService.create({
         data: body,
         createdById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Get(':achievementGroupId')
@@ -86,20 +86,20 @@ export class AchievementGroupController {
 
   @Put(':achievementGroupId')
   @ZodSerializerDto(UpdateAchievementGroupResDTO)
-  update(
+  async update(
     @Body() body: UpdateAchievementGroupBodyInputDTO,
     @Param() params: GetAchievementGroupParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.achievementGroupService.update(
-      {
+    return {
+      message: this.i18nService.translate(AchievementGroupMessage.UPDATE_SUCCESS, lang),
+      data: await this.achievementGroupService.update({
         data: body,
         id: params.achievementGroupId,
         updatedById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':achievementGroupId')

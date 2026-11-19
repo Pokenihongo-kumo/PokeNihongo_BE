@@ -1,6 +1,4 @@
 import { RoleName } from '@/common/constants/role.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { AchievementGroupMessage } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { TranslationService } from '@/modules/translation/translation.service'
 import {
@@ -14,7 +12,7 @@ import {
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
 import { PrismaService } from '@/shared/services/prisma.service'
-import { HttpStatus, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { AchievementGroupRepo } from './achievement-group.repo'
 import { AchievementGroupAlreadyExistsException } from './dto/achievement-group.error'
@@ -29,7 +27,6 @@ import {
 export class AchievementGroupService {
   constructor(
     private achievementGroupRepo: AchievementGroupRepo,
-    private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
     private readonly translationService: TranslationService,
     private readonly prismaService: PrismaService
@@ -168,16 +165,13 @@ export class AchievementGroupService {
     return { ...result, achievements: achievements }
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreateAchievementGroupBodyInput
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({
+    data,
+    createdById
+  }: {
+    data: CreateAchievementGroupBodyInput
+    createdById: number
+  }) {
     let createdAchievementGroup: any = null
 
     try {
@@ -255,14 +249,7 @@ export class AchievementGroupService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.CREATED,
-          data: result,
-          message: this.i18nService.translate(
-            AchievementGroupMessage.CREATE_SUCCESS,
-            lang
-          )
-        }
+        return result
       })
     } catch (error) {
       // Rollback: Delete achievementGroup if created
@@ -291,18 +278,15 @@ export class AchievementGroupService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateAchievementGroupBodyInput
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateAchievementGroupBodyInput
+    updatedById: number
+  }) {
     let existingAchievementGroup: any = null
 
     try {
@@ -372,14 +356,7 @@ export class AchievementGroupService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.OK,
-          data: updatedAchievementGroup,
-          message: this.i18nService.translate(
-            AchievementGroupMessage.UPDATE_SUCCESS,
-            lang
-          )
-        }
+        return updatedAchievementGroup
       })
     } catch (error) {
       if (isNotFoundPrismaError(error)) {

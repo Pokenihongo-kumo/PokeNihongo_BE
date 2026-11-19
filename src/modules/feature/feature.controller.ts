@@ -53,18 +53,18 @@ export class FeatureController {
 
   @Post()
   @ZodSerializerDto(CreateFeatureResDTO)
-  create(
+  async create(
     @Body() body: CreatedFeatureBodyInputDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.FeatureService.create(
-      {
+    return {
+      message: this.i18nService.translate(FeatureMessage.CREATE_SUCCESS, lang),
+      data: await this.FeatureService.create({
         data: body,
         createdById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Get(':featureId')
@@ -82,20 +82,20 @@ export class FeatureController {
 
   @Put(':featureId')
   @ZodSerializerDto(UpdateFeatureResDTO)
-  update(
+  async update(
     @Body() body: UpdateFeatureBodyInputDTO,
     @Param() params: GetFeatureParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.FeatureService.update(
-      {
+    return {
+      message: this.i18nService.translate(FeatureMessage.UPDATE_SUCCESS, lang),
+      data: await this.FeatureService.update({
         data: body,
         id: params.featureId,
         updatedById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':featureId')

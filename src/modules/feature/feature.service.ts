@@ -1,6 +1,4 @@
 import { RoleName } from '@/common/constants/role.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { FeatureMessage } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { TranslationService } from '@/modules/translation/translation.service'
 import {
@@ -13,7 +11,7 @@ import {
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
-import { HttpStatus, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { FeatureAlreadyExistsException } from './dto/feature.error'
 import {
@@ -28,7 +26,6 @@ import { FeatureRepo } from './feature.repo'
 export class FeatureService {
   constructor(
     private featureRepo: FeatureRepo,
-    private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
     private readonly translationService: TranslationService
   ) {}
@@ -163,16 +160,13 @@ export class FeatureService {
     return result
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreateFeatureBodyInput
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({
+    data,
+    createdById
+  }: {
+    data: CreateFeatureBodyInput
+    createdById: number
+  }) {
     let createdFeature: any = null
 
     try {
@@ -245,11 +239,7 @@ export class FeatureService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.CREATED,
-          data: result,
-          message: this.i18nService.translate(FeatureMessage.CREATE_SUCCESS, lang)
-        }
+        return result
       })
     } catch (error) {
       // Rollback: Delete feature if created
@@ -278,18 +268,15 @@ export class FeatureService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateFeatureBodyInput
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateFeatureBodyInput
+    updatedById: number
+  }) {
     let existingFeature: any = null
 
     try {
@@ -357,11 +344,7 @@ export class FeatureService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.OK,
-          data: updatedFeature,
-          message: this.i18nService.translate(FeatureMessage.UPDATE_SUCCESS, lang)
-        }
+        return updatedFeature
       })
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
