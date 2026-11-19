@@ -77,7 +77,7 @@ exports[`Kaiwa socket (e2e) join, one spoken turn, empty audio, leave: stored me
     "role": "USER",
   },
   {
-    "hasAudio": "raced",
+    "hasAudio": true,
     "message": "これはテスト用の回答です。",
     "role": "AI",
   },
@@ -98,7 +98,7 @@ exports[`Kaiwa socket (e2e) join, one spoken turn, empty audio, leave: turn 1`] 
     "to": "client",
   },
   "client message-audio-updated": {
-    "count": "1 (user) + AI if not raced",
+    "count": 2,
     "payload": {
       "audioUrl": "string",
       "conversationId": "string",

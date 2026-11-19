@@ -56,7 +56,7 @@ describe('Kaiwa socket (e2e)', () => {
     return client
   }
   // the turn ends in fire-and-forget promises: wait until events stop
-  const settle = async (quietMs = 700, maxMs = 15000) => {
+  const settle = async (quietMs = 1000, maxMs = 15000) => {
     const start = Date.now()
     let seen = -1
     let since = Date.now()
@@ -183,15 +183,10 @@ describe('Kaiwa socket (e2e)', () => {
     await gateway.handleUserAudioChunk(client as never, wav())
     await settle()
     const turn = take()
-    // Known bug (fixed separately): the AI audio is uploaded with the AI
-    // message id read before its insert resolves, so when TTS is faster than
-    // the insert the upload is skipped (no audioUrl, one message-audio-updated
-    // instead of two). With the fake TTS both happen.
-    const turnSummary = summary(turn) as Record<string, { count: number | string }>
-    const audioUpdates = turnSummary['client message-audio-updated'].count as number
-    expect([1, 2]).toContain(audioUpdates)
-    turnSummary['client message-audio-updated'].count = '1 (user) + AI if not raced'
-    expect(turnSummary).toMatchSnapshot('turn')
+    // message-audio-updated twice: the user's audio and the AI's (the AI upload
+    // used to read the message id before its insert resolved and was skipped
+    // whenever TTS was faster)
+    expect(summary(turn)).toMatchSnapshot('turn')
     // the awaited steps keep their order
     const order = turn.map((e) => e.event)
     const at = (event: string) => order.indexOf(event)
@@ -208,14 +203,8 @@ describe('Kaiwa socket (e2e)', () => {
       orderBy: { id: 'asc' }
     })
     expect(
-      rows.map((r) => ({
-        role: r.role,
-        message: r.message,
-        // the AI row's audio depends on the race above
-        hasAudio: r.role === 'AI' ? 'raced' : !!r.audioUrl
-      }))
+      rows.map((r) => ({ role: r.role, message: r.message, hasAudio: !!r.audioUrl }))
     ).toMatchSnapshot('stored messages')
-    expect(!!rows.find((r) => r.role === 'AI')?.audioUrl).toBe(audioUpdates === 2)
     const room = await prisma.aIConversationRoom.findUnique({ where: { conversationId } })
     expect({
       title: room?.title ?? null,
