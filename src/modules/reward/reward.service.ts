@@ -8,7 +8,6 @@ import { TranslationService } from '@/modules/translation/translation.service'
 import { UserPokemonService } from '@/modules/user-pokemon/user-pokemon.service'
 import { CreateUserRewardHistoryBody } from '@/modules/user-reward-history/dto/user-reward-history.zod-dto'
 import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
-import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
 import { WalletService } from '@/modules/wallet/wallet.service'
 import {
   InvalidForeignKeyConstraintException,
@@ -54,7 +53,6 @@ export class RewardService {
     private readonly userPokemonService: UserPokemonService,
     private readonly userRewardHistoryService: UserRewardHistoryService,
     private readonly userSubService: UserSubscriptionService,
-    private readonly walletTransactionService: WalletTransactionService,
     private readonly sharedNotificationService: NotificationService
   ) {}
 
@@ -702,37 +700,20 @@ export class RewardService {
           0
         )
         const finalAmount = totalCoins * valueIncrease
-        const coinsResult = await this.walletService.addBalanceToWalletWithType({
+        // Balance and its wallet transaction in one transaction
+        const coinsResult = await this.walletService.credit({
           userId,
           type: WalletType.POKE_COINS,
-          amount: finalAmount
+          amount: finalAmount,
+          createdById: userId,
+          purpose: 'REWARD',
+          referenceId: sourceId ?? null,
+          source: this.mapToWalletSourceType(sourceType),
+          description: `Received ${finalAmount} POKE_COINS from ${sourceType}`
         })
 
         // Accumulate or set result
-        results.pokeCoins = coinsResult
-
-        // ✅ Create wallet transaction
-        if (coinsResult) {
-          try {
-            await this.walletTransactionService.record({
-              createdById: userId,
-              data: {
-                walletId: coinsResult.id,
-                userId,
-                purpose: 'REWARD',
-                referenceId: sourceId ?? null,
-                amount: finalAmount,
-                type: 'INCREASE',
-                source: this.mapToWalletSourceType(sourceType) as any,
-                description: `Received ${finalAmount} POKE_COINS from ${sourceType}`
-              }
-            })
-          } catch (error) {
-            this.logger.warn(
-              `Failed to create wallet transaction for POKE_COINS: ${error?.message ?? error}`
-            )
-          }
-        }
+        results.pokeCoins = coinsResult?.wallet ?? null
 
         this.logger.log(
           `Appending history entries for POKE_COINS rewards for user: ${userId} with sourceId: ${sourceId}`
@@ -766,37 +747,20 @@ export class RewardService {
         )
         const finalAmount = totalSparkles * valueIncrease
 
-        const sparklesResult = await this.walletService.addBalanceToWalletWithType({
+        // Balance and its wallet transaction in one transaction
+        const sparklesResult = await this.walletService.credit({
           userId,
           type: WalletType.SPARKLES,
-          amount: finalAmount
+          amount: finalAmount,
+          createdById: userId,
+          purpose: 'REWARD',
+          referenceId: sourceId ?? null,
+          source: this.mapToWalletSourceType(sourceType),
+          description: `Received ${finalAmount} SPARKLES from ${sourceType}`
         })
 
         // Accumulate or set result
-        results.sparkles = sparklesResult
-
-        // ✅ Create wallet transaction
-        if (sparklesResult) {
-          try {
-            await this.walletTransactionService.record({
-              createdById: userId,
-              data: {
-                walletId: sparklesResult.id,
-                userId,
-                purpose: 'REWARD',
-                referenceId: sourceId ?? null,
-                amount: finalAmount,
-                type: 'INCREASE',
-                source: this.mapToWalletSourceType(sourceType) as any,
-                description: `Received ${finalAmount} SPARKLES from ${sourceType}`
-              }
-            })
-          } catch (error) {
-            this.logger.warn(
-              `Failed to create wallet transaction for SPARKLES: ${error?.message ?? error}`
-            )
-          }
-        }
+        results.sparkles = sparklesResult?.wallet ?? null
 
         this.logger.log(
           `Appending history entries for SPARKLES rewards for user: ${userId} with sourceId: ${sourceId}`
@@ -896,34 +860,18 @@ export class RewardService {
 
           // Add coins to user wallet
           const finalCoinValue = coinValue * valueIncrease
-          const updatedWallet = await this.walletService.addBalanceToWalletWithType({
+          // Balance and its wallet transaction in one transaction
+          const credited = await this.walletService.credit({
             userId,
             type: WalletType.SPARKLES,
-            amount: finalCoinValue
+            amount: finalCoinValue,
+            createdById: userId,
+            purpose: 'REWARD',
+            referenceId: sourceId ?? null,
+            source: this.mapToWalletSourceType(sourceType),
+            description: `Converted duplicate Pokemon #${pokemonId} (${pokemon.nameJp}) to ${finalCoinValue} SPARKLES`
           })
-
-          // ✅ Create wallet transaction for converted pokemon
-          if (updatedWallet) {
-            try {
-              await this.walletTransactionService.record({
-                createdById: userId,
-                data: {
-                  walletId: updatedWallet.id,
-                  userId,
-                  purpose: 'REWARD',
-                  referenceId: sourceId ?? null,
-                  amount: finalCoinValue,
-                  type: 'INCREASE',
-                  source: this.mapToWalletSourceType(sourceType) as any,
-                  description: `Converted duplicate Pokemon #${pokemonId} (${pokemon.nameJp}) to ${finalCoinValue} SPARKLES`
-                }
-              })
-            } catch (error) {
-              this.logger.warn(
-                `Failed to create wallet transaction for converted pokemon: ${error?.message ?? error}`
-              )
-            }
-          }
+          const updatedWallet = credited?.wallet ?? null
 
           results.pokemons.push({
             action: 'converted_to_coins',

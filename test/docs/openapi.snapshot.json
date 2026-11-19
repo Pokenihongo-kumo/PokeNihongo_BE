@@ -1245,6 +1245,88 @@
         ]
       }
     },
+    "/wallet-transaction": {
+      "get": {
+        "operationId": "WalletTransactionController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "WalletTransaction"
+        ]
+      }
+    },
+    "/wallet-transaction/{walletTransactionId}": {
+      "get": {
+        "operationId": "WalletTransactionController_findById",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "WalletTransaction"
+        ]
+      },
+      "put": {
+        "operationId": "WalletTransactionController_update",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWalletTransactionBodyDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "WalletTransaction"
+        ]
+      },
+      "delete": {
+        "operationId": "WalletTransactionController_delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "WalletTransaction"
+        ]
+      }
+    },
     "/gemini-config/promt": {
       "get": {
         "operationId": "GeminiConfigController_list",
@@ -9608,88 +9690,6 @@
         "summary": "Xóa lịch sử nhận thưởng",
         "tags": [
           "User Reward History"
-        ]
-      }
-    },
-    "/wallet-transaction": {
-      "get": {
-        "operationId": "WalletTransactionController_list",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "WalletTransaction"
-        ]
-      }
-    },
-    "/wallet-transaction/{walletTransactionId}": {
-      "get": {
-        "operationId": "WalletTransactionController_findById",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "WalletTransaction"
-        ]
-      },
-      "put": {
-        "operationId": "WalletTransactionController_update",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateWalletTransactionBodyDTO"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "WalletTransaction"
-        ]
-      },
-      "delete": {
-        "operationId": "WalletTransactionController_delete",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "WalletTransaction"
         ]
       }
     },
@@ -19185,6 +19185,68 @@
           "type"
         ]
       },
+      "UpdateWalletTransactionBodyDTO": {
+        "type": "object",
+        "properties": {
+          "walletId": {
+            "type": "number"
+          },
+          "userId": {
+            "type": "number"
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "GACHA",
+              "SUBSCRIPTION",
+              "SHOP",
+              "DAILY_REQUEST",
+              "REWARD",
+              "REFUND"
+            ]
+          },
+          "referenceId": {
+            "type": "number",
+            "nullable": true
+          },
+          "amount": {
+            "type": "number"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "INCREASE",
+              "DECREASE"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "DAILY_CHECKIN",
+              "EVENT_REWARD",
+              "RANK_REWARD",
+              "LESSON_PURCHASE",
+              "SHOP_PURCHASE",
+              "SUBSCRIPTION_DISCOUNT",
+              "ADMIN_ADJUST"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "walletId",
+          "userId",
+          "purpose",
+          "referenceId",
+          "amount",
+          "type",
+          "source",
+          "description"
+        ]
+      },
       "CreateGeminiConfigModelSwaggerDTO": {
         "type": "object",
         "properties": {
@@ -25364,68 +25426,6 @@
             "description": "Dữ liệu bổ sung (JSON)"
           }
         }
-      },
-      "UpdateWalletTransactionBodyDTO": {
-        "type": "object",
-        "properties": {
-          "walletId": {
-            "type": "number"
-          },
-          "userId": {
-            "type": "number"
-          },
-          "purpose": {
-            "type": "string",
-            "enum": [
-              "GACHA",
-              "SUBSCRIPTION",
-              "SHOP",
-              "DAILY_REQUEST",
-              "REWARD",
-              "REFUND"
-            ]
-          },
-          "referenceId": {
-            "type": "number",
-            "nullable": true
-          },
-          "amount": {
-            "type": "number"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "INCREASE",
-              "DECREASE"
-            ]
-          },
-          "source": {
-            "type": "string",
-            "enum": [
-              "DAILY_CHECKIN",
-              "EVENT_REWARD",
-              "RANK_REWARD",
-              "LESSON_PURCHASE",
-              "SHOP_PURCHASE",
-              "SUBSCRIPTION_DISCOUNT",
-              "ADMIN_ADJUST"
-            ]
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "walletId",
-          "userId",
-          "purpose",
-          "referenceId",
-          "amount",
-          "type",
-          "source",
-          "description"
-        ]
       },
       "CreateElementalTypeBodyDTO": {
         "type": "object",

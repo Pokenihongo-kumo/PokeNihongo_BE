@@ -6,7 +6,6 @@ import { AttendenceConfigModule } from '../attendence-config/attendence-config.m
 import { LanguagesModule } from '../languages/languages.module'
 import { TranslationModule } from '../translation/translation.module'
 import { UserDailyRequestModule } from '../user-daily-request/user-daily-request.module'
-import { WalletTransactionModule } from '../wallet-transaction/wallet-transaction.module'
 import { WalletModule } from '../wallet/wallet.module'
 import { AttendanceController } from './attendance.controller'
 import { AttendanceService } from './attendance.service'
@@ -21,8 +20,7 @@ import { AttendanceRepo } from './attendence.repo'
     LanguagesModule,
     TranslationModule,
     UserDailyRequestModule,
-    WalletModule,
-    WalletTransactionModule
+    WalletModule
   ],
   controllers: [AttendanceController],
   providers: [AttendanceService, AttendanceRepo]

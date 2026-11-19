@@ -8,7 +8,6 @@ import { TranslationModule } from '../translation/translation.module'
 import { UserPokemonModule } from '../user-pokemon/user-pokemon.module'
 import { UserRewardHistoryModule } from '../user-reward-history/user-reward-history.module'
 import { UserModule } from '../user/user.module'
-import { WalletTransactionModule } from '../wallet-transaction/wallet-transaction.module'
 import { WalletModule } from '../wallet/wallet.module'
 import { RewardController } from './reward.controller'
 import { RewardRepo } from './reward.repo'
@@ -25,8 +24,7 @@ import { RewardService } from './reward.service'
     WalletModule,
     PokemonModule,
     UserPokemonModule,
-    forwardRef(() => UserRewardHistoryModule),
-    WalletTransactionModule
+    forwardRef(() => UserRewardHistoryModule)
   ],
   controllers: [RewardController],
   providers: [RewardService, RewardRepo],

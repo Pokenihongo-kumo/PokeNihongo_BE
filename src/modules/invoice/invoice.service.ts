@@ -5,15 +5,13 @@ import {
 } from '@/common/constants/subscription.constant'
 import {
   walletPurposeType,
-  WalletTransactionSourceType,
-  WalletTransactionType
+  WalletTransactionSourceType
 } from '@/common/constants/wallet-transaction.constant'
 import { walletType } from '@/common/constants/wallet.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { InvoiceMessage } from '@/i18n/message-keys'
 import { SubscriptionPlanService } from '@/modules/subscription-plan/subscription-plan.service'
 import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
-import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
 import { WalletService } from '@/modules/wallet/wallet.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
@@ -47,8 +45,7 @@ export class InvoiceService {
     private readonly i18nService: I18nService,
     @InjectQueue(BullQueue.INVOICE_EXPIRATION)
     private readonly invoiceExpirationQueue: Queue,
-    private readonly walletService: WalletService,
-    private readonly walletTransactionService: WalletTransactionService
+    private readonly walletService: WalletService
   ) {}
 
   async list(pagination: PaginationQuery, lang: string = 'vi') {
@@ -167,33 +164,27 @@ export class InvoiceService {
 
         // Nếu có discount > 0: trừ coin và tạo wallet transaction, cập nhật invoice.walletTransactionId
         if (discountAmount > 0) {
-          const updatedWallet =
-            await this.walletService.minusBalanceToWalletWithTypeUserId(
-              { userId, type: walletType.POKE_COINS, amount: discountAmount },
-              tx
-            )
-          if (!updatedWallet) {
-            throw new InvoiceNotEnoughPokeCoinsException()
-          }
-
-          const wtx = await this.walletTransactionService.record(
+          const debited = await this.walletService.debit(
             {
+              userId,
+              type: walletType.POKE_COINS,
+              amount: discountAmount,
               createdById: userId,
-              data: {
-                walletId: updatedWallet.id,
-                userId,
-                purpose: walletPurposeType.SUBSCRIPTION,
-                referenceId: createdInvoice.id,
-                amount: discountAmount,
-                type: WalletTransactionType.DECREASE,
-                source: WalletTransactionSourceType.SUBSCRIPTION_DISCOUNT,
-                description: null
-              }
+              purpose: walletPurposeType.SUBSCRIPTION,
+              referenceId: createdInvoice.id,
+              source: WalletTransactionSourceType.SUBSCRIPTION_DISCOUNT
             },
             tx
           )
+          if (!debited) {
+            throw new InvoiceNotEnoughPokeCoinsException()
+          }
 
-          await this.invoiceRepo.updateWalletTransaction(createdInvoice.id, wtx.id, tx)
+          await this.invoiceRepo.updateWalletTransaction(
+            createdInvoice.id,
+            debited.transaction.id,
+            tx
+          )
         }
 
         return createdInvoice
@@ -329,29 +320,18 @@ export class InvoiceService {
     if (invoice.discountAmount <= 0) return { cancelled: true, refunded: 0 }
 
     // The coins were taken from this wallet when the invoice was created
-    const wallet = await this.walletService.creditOrCreate(
+    await this.walletService.credit(
       {
         userId: invoice.userId,
         type: walletType.POKE_COINS,
-        amount: invoice.discountAmount
-      },
-      prismaTx
-    )
-    await this.walletTransactionService.record(
-      {
+        amount: invoice.discountAmount,
         createdById: invoice.userId,
-        data: {
-          walletId: wallet.id,
-          userId: invoice.userId,
-          purpose: walletPurposeType.REFUND,
-          referenceId: invoice.id,
-          amount: invoice.discountAmount,
-          type: WalletTransactionType.INCREASE,
-          source: WalletTransactionSourceType.ADMIN_ADJUST,
-          description: null
-        }
+        purpose: walletPurposeType.REFUND,
+        referenceId: invoice.id,
+        source: WalletTransactionSourceType.ADMIN_ADJUST
       },
-      prismaTx
+      prismaTx,
+      { createIfMissing: true }
     )
     return { cancelled: true, refunded: invoice.discountAmount }
   }
