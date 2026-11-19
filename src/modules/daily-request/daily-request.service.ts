@@ -1,5 +1,3 @@
-import { I18nService } from '@/i18n/i18n.service'
-import { DailyRequestMessage } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { TranslationService } from '@/modules/translation/translation.service'
 import {
@@ -12,7 +10,7 @@ import {
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
-import { HttpStatus, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { DailyRequestRepo } from './daily-request.repo'
 import { DailyRequestAlreadyExistsException } from './dto/daily-request.error'
@@ -27,7 +25,6 @@ import {
 export class DailyRequestService {
   constructor(
     private dailyRequestRepo: DailyRequestRepo,
-    private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
     private readonly translationService: TranslationService
   ) {}
@@ -131,16 +128,13 @@ export class DailyRequestService {
     return resultRes
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreateDailyRequestBodyInput
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({
+    data,
+    createdById
+  }: {
+    data: CreateDailyRequestBodyInput
+    createdById: number
+  }) {
     let createdDailyRequest: any = null
 
     try {
@@ -248,11 +242,7 @@ export class DailyRequestService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.CREATED,
-          data: result,
-          message: this.i18nService.translate(DailyRequestMessage.CREATE_SUCCESS, lang)
-        }
+        return result
       })
     } catch (error) {
       // Rollback: Xóa daily request đã tạo nếu có lỗi
@@ -281,18 +271,15 @@ export class DailyRequestService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateDailyRequestBodyInput
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateDailyRequestBodyInput
+    updatedById: number
+  }) {
     let existingDailyRequest: any = null
 
     try {
@@ -407,11 +394,7 @@ export class DailyRequestService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.OK,
-          data: updatedDailyRequest,
-          message: this.i18nService.translate(DailyRequestMessage.UPDATE_SUCCESS, lang)
-        }
+        return updatedDailyRequest
       })
     } catch (error) {
       // --- 8. Xử lý lỗi ---

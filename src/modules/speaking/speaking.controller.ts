@@ -1,3 +1,4 @@
+import { SPEAKING_MESSAGE } from './dto/speaking.error'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import {
@@ -105,8 +106,11 @@ export class SpeakingController {
   async createUserSpeakingAttempt(
     @Body() body: CreateUserSpeakingAttemptDTO,
     @ActiveUser('userId') userId: number
-  ): Promise<MessageResDTO> {
-    return this.speakingService.createUserSpeakingAttempt(body, userId)
+  ) {
+    return {
+      message: SPEAKING_MESSAGE.CREATE_SUCCESS,
+      data: await this.speakingService.createUserSpeakingAttempt(body, userId)
+    }
   }
 
   @Get()
@@ -122,8 +126,11 @@ export class SpeakingController {
   async getUserSpeakingAttempts(
     @Query() query: GetUserSpeakingAttemptListQueryDTO,
     @I18nLang() lang: string
-  ): Promise<MessageResDTO> {
-    return this.speakingService.getUserSpeakingAttempts(query)
+  ) {
+    return {
+      message: SPEAKING_MESSAGE.GET_LIST_SUCCESS,
+      data: await this.speakingService.getUserSpeakingAttempts(query)
+    }
   }
 
   @Get('my-attempts')
@@ -135,10 +142,11 @@ export class SpeakingController {
     type: UserSpeakingAttemptListResponseSwaggerDTO
   })
   @ZodSerializerDto(UserSpeakingAttemptListResDTO)
-  async getMySpeakingAttempts(
-    @ActiveUser('userId') userId: number
-  ): Promise<MessageResDTO> {
-    return this.speakingService.getUserSpeakingAttemptsByUserId(userId)
+  async getMySpeakingAttempts(@ActiveUser('userId') userId: number) {
+    return {
+      message: SPEAKING_MESSAGE.GET_LIST_SUCCESS,
+      data: await this.speakingService.getUserSpeakingAttemptsByUserId(userId)
+    }
   }
 
   @Get('statistics')
@@ -150,10 +158,11 @@ export class SpeakingController {
     type: SpeakingStatisticsResponseSwaggerDTO
   })
   @ZodSerializerDto(SpeakingStatisticsResDTO)
-  async getSpeakingStatistics(
-    @ActiveUser('userId') userId: number
-  ): Promise<MessageResDTO> {
-    return this.speakingService.getSpeakingStatistics(userId)
+  async getSpeakingStatistics(@ActiveUser('userId') userId: number) {
+    return {
+      message: SPEAKING_MESSAGE.GET_STATS_SUCCESS,
+      data: await this.speakingService.getSpeakingStatistics(userId)
+    }
   }
 
   @Get(':id')
@@ -165,11 +174,11 @@ export class SpeakingController {
     type: UserSpeakingAttemptResponseSwaggerDTO
   })
   @ZodSerializerDto(UserSpeakingAttemptResDTO)
-  async getUserSpeakingAttemptById(
-    @Param('id') id: string,
-    @I18nLang() lang: string
-  ): Promise<MessageResDTO> {
-    return this.speakingService.getUserSpeakingAttemptById(Number(id))
+  async getUserSpeakingAttemptById(@Param('id') id: string, @I18nLang() lang: string) {
+    return {
+      message: SPEAKING_MESSAGE.GET_SUCCESS,
+      data: await this.speakingService.getUserSpeakingAttemptById(Number(id))
+    }
   }
 
   @Put(':id')
@@ -184,8 +193,11 @@ export class SpeakingController {
   async updateUserSpeakingAttempt(
     @Param('id') id: string,
     @Body() body: UpdateUserSpeakingAttemptDTO
-  ): Promise<MessageResDTO> {
-    return this.speakingService.updateUserSpeakingAttempt(Number(id), body)
+  ) {
+    return {
+      message: SPEAKING_MESSAGE.UPDATE_SUCCESS,
+      data: await this.speakingService.updateUserSpeakingAttempt(Number(id), body)
+    }
   }
 
   @Delete(':id')
@@ -198,8 +210,11 @@ export class SpeakingController {
     type: UserSpeakingAttemptResponseSwaggerDTO
   })
   @ZodSerializerDto(UserSpeakingAttemptResDTO)
-  async deleteUserSpeakingAttempt(@Param('id') id: string): Promise<MessageResDTO> {
-    return this.speakingService.deleteUserSpeakingAttempt(Number(id))
+  async deleteUserSpeakingAttempt(@Param('id') id: string) {
+    return {
+      message: SPEAKING_MESSAGE.DELETE_SUCCESS,
+      data: await this.speakingService.deleteUserSpeakingAttempt(Number(id))
+    }
   }
 
   @Post('evaluate')
@@ -250,7 +265,10 @@ export class SpeakingController {
     @UploadedFile() audioFile: Express.Multer.File,
     @Body() body: EvaluateSpeakingRequestDTO,
     @ActiveUser('userId') userId: number
-  ): Promise<MessageResDTO> {
-    return this.speakingService.evaluateSpeaking(body, userId, audioFile)
+  ) {
+    return {
+      message: SPEAKING_MESSAGE.EVALUATE_SUCCESS,
+      data: await this.speakingService.evaluateSpeaking(body, userId, audioFile)
+    }
   }
 }

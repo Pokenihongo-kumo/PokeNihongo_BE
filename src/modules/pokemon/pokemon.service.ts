@@ -61,7 +61,7 @@ export class PokemonService {
     }
   }
 
-  async list(pagination: PaginationQuery, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.pokemonRepo.list(pagination)
 
     // Optimize: Calculate weaknesses for all Pokemon in batch
@@ -118,14 +118,10 @@ export class PokemonService {
       data.results = pokemonWithWeaknesses
     }
 
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(PokemonMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const pokemon = await this.pokemonRepo.findById(id)
     if (!pokemon) {
       throw new PokemonNotFoundException()
@@ -135,25 +131,12 @@ export class PokemonService {
     const weaknesses = await this.getWeaknessesForPokemon(pokemon.types)
 
     return {
-      statusCode: 200,
-      data: {
-        ...pokemon,
-        weaknesses
-      },
-      message: this.i18nService.translate(PokemonMessage.GET_DETAIL_SUCCESS, lang)
+      ...pokemon,
+      weaknesses
     }
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreatePokemonBody
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({ data, createdById }: { data: CreatePokemonBody; createdById: number }) {
     try {
       // Normalize data to standard format
       let pokemonData = this.normalizeCreateData(data)
@@ -179,11 +162,7 @@ export class PokemonService {
         }
       }
 
-      return {
-        statusCode: 201,
-        data: result,
-        message: this.i18nService.translate(PokemonMessage.CREATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isUniqueConstraintPrismaError(error)) {
         throw new PokemonAlreadyExistsException()
@@ -195,20 +174,17 @@ export class PokemonService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById,
-      imageFile
-    }: {
-      id: number
-      data: UpdatePokemonBody | UpdatePokemonFormData
-      updatedById: number
-      imageFile?: Express.Multer.File
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById,
+    imageFile
+  }: {
+    id: number
+    data: UpdatePokemonBody | UpdatePokemonFormData
+    updatedById: number
+    imageFile?: Express.Multer.File
+  }) {
     try {
       // Normalize data
       let pokemonData = this.normalizeUpdateData(data)
@@ -288,11 +264,7 @@ export class PokemonService {
         updatedById,
         data: pokemonData
       })
-      return {
-        statusCode: 200,
-        data: pokemon,
-        message: this.i18nService.translate(PokemonMessage.UPDATE_SUCCESS, lang)
-      }
+      return pokemon
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new PokemonNotFoundException()
@@ -307,10 +279,7 @@ export class PokemonService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
       const existPokemon = await this.pokemonRepo.findById(id)
       if (!existPokemon) {
@@ -337,11 +306,7 @@ export class PokemonService {
         id,
         deletedById
       })
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(PokemonMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new PokemonNotFoundException()
@@ -462,7 +427,7 @@ export class PokemonService {
   }
 
   // Calculate Pokemon weaknesses based on its types
-  async calculatePokemonWeaknesses(pokemonId: number, lang: string = 'vi') {
+  async calculatePokemonWeaknesses(pokemonId: number) {
     // Get Pokemon with its types
     const pokemon = await this.pokemonRepo.findById(pokemonId)
     if (!pokemon) {
@@ -471,7 +436,7 @@ export class PokemonService {
 
     if (!pokemon.types || pokemon.types.length === 0) {
       return {
-        statusCode: 200,
+        hasTypes: false,
         data: {
           pokemon: {
             id: pokemon.id,
@@ -479,8 +444,7 @@ export class PokemonService {
             nameTranslations: pokemon.nameTranslations
           },
           weaknesses: []
-        },
-        message: this.i18nService.translate(PokemonMessage.NO_TYPE_WEAKNESS, lang)
+        }
       }
     }
 
@@ -535,7 +499,7 @@ export class PokemonService {
     )
 
     return {
-      statusCode: 200,
+      hasTypes: true,
       data: {
         pokemon: {
           id: pokemon.id,
@@ -547,8 +511,7 @@ export class PokemonService {
           ...w.type,
           effectiveness_multiplier: w.multiplier
         }))
-      },
-      message: this.i18nService.translate(PokemonMessage.CALCULATE_WEAKNESS_SUCCESS, lang)
+      }
     }
   }
 
@@ -605,7 +568,7 @@ export class PokemonService {
   } /**
    * Get available evolution options for a Pokemon
    */
-  async getEvolutionOptions(pokemonId: number, lang: string = 'vi') {
+  async getEvolutionOptions(pokemonId: number) {
     try {
       const pokemon = await this.pokemonRepo.findById(pokemonId)
       if (!pokemon) {
@@ -615,14 +578,7 @@ export class PokemonService {
       // Get evolution options (nextPokemons)
       const evolutionOptions = pokemon.nextPokemons || []
 
-      return {
-        statusCode: 200,
-        data: evolutionOptions,
-        message: this.i18nService.translate(
-          PokemonMessage.GET_EVOLUTION_OPTIONS_SUCCESS,
-          lang
-        )
-      }
+      return evolutionOptions
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new PokemonNotFoundException()
@@ -631,14 +587,10 @@ export class PokemonService {
     }
   }
 
-  async getListPokeWithStartEvolu(lang: string = 'vi') {
+  async getListPokeWithStartEvolu() {
     const data = await this.pokemonRepo.getPokemonsWithoutPreviousEvolution()
 
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(PokemonMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   // ---- Catalog lookups for other modules (module-boundary plan B3) ----

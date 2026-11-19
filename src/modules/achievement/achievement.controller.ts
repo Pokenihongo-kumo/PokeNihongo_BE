@@ -53,18 +53,18 @@ export class AchievementController {
 
   @Post()
   @ZodSerializerDto(CreateAchievementResDTO)
-  create(
+  async create(
     @Body() body: CreateAchievementBodyInputDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.achievementService.create(
-      {
+    return {
+      message: this.i18nService.translate(AchievementMessage.CREATE_SUCCESS, lang),
+      data: await this.achievementService.create({
         data: body,
         createdById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Get(':achievementId')
@@ -82,20 +82,20 @@ export class AchievementController {
 
   @Put(':achievementId')
   @ZodSerializerDto(UpdateAchievementResDTO)
-  update(
+  async update(
     @Body() body: UpdateAchievementBodyInputDTO,
     @Param() params: GetAchievementParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.achievementService.update(
-      {
+    return {
+      message: this.i18nService.translate(AchievementMessage.UPDATE_SUCCESS, lang),
+      data: await this.achievementService.update({
         data: body,
         id: params.achievementId,
         updatedById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':achievementId')

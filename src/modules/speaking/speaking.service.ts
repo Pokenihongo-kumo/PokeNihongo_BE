@@ -1,7 +1,6 @@
 import { SpeechToTextService } from '@/modules/speech/speech-to-text.service'
 import { TextToSpeechService } from '@/modules/speech/text-to-speech.service'
 import { UploadService } from '@/modules/upload/upload.service'
-import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common'
 import {
   AudioProcessingException,
@@ -31,21 +30,14 @@ export class SpeakingService {
     private readonly uploadService: UploadService
   ) {}
 
-  async createUserSpeakingAttempt(
-    data: CreateUserSpeakingAttempt,
-    userId: number
-  ): Promise<MessageResDTO> {
+  async createUserSpeakingAttempt(data: CreateUserSpeakingAttempt, userId: number) {
     try {
       const userSpeakingAttempt = await this.speakingRepo.create({
         ...data,
         userId
       })
 
-      return {
-        statusCode: 201,
-        data: userSpeakingAttempt,
-        message: SPEAKING_MESSAGE.CREATE_SUCCESS
-      }
+      return userSpeakingAttempt
     } catch (error) {
       this.logger.error('Error creating user speaking attempt:', error)
       if (
@@ -59,54 +51,32 @@ export class SpeakingService {
     }
   }
 
-  async getUserSpeakingAttemptById(id: number): Promise<MessageResDTO> {
+  async getUserSpeakingAttemptById(id: number) {
     const userSpeakingAttempt = await this.speakingRepo.findById(id)
 
     if (!userSpeakingAttempt) {
       throw UserSpeakingAttemptNotFoundException
     }
 
-    return {
-      statusCode: 200,
-      data: userSpeakingAttempt,
-      message: SPEAKING_MESSAGE.GET_SUCCESS
-    }
+    return userSpeakingAttempt
   }
 
-  async getUserSpeakingAttempts(
-    query: GetUserSpeakingAttemptListQuery
-  ): Promise<MessageResDTO> {
+  async getUserSpeakingAttempts(query: GetUserSpeakingAttemptListQuery) {
     const { data, total } = await this.speakingRepo.findMany(query)
     const { currentPage, pageSize } = query
     const totalPage = Math.ceil(total / pageSize)
 
     return {
-      statusCode: 200,
-      data: {
-        results: data,
-        pagination: {
-          current: currentPage,
-          pageSize,
-          totalPage,
-          totalItem: total
-        }
-      },
-      message: SPEAKING_MESSAGE.GET_LIST_SUCCESS
+      results: data,
+      pagination: { current: currentPage, pageSize, totalPage, totalItem: total }
     }
   }
 
-  async updateUserSpeakingAttempt(
-    id: number,
-    data: UpdateUserSpeakingAttempt
-  ): Promise<MessageResDTO> {
+  async updateUserSpeakingAttempt(id: number, data: UpdateUserSpeakingAttempt) {
     try {
       const userSpeakingAttempt = await this.speakingRepo.update(id, data)
 
-      return {
-        statusCode: 200,
-        data: userSpeakingAttempt,
-        message: SPEAKING_MESSAGE.UPDATE_SUCCESS
-      }
+      return userSpeakingAttempt
     } catch (error) {
       this.logger.error('Error updating user speaking attempt:', error)
       if (
@@ -120,15 +90,11 @@ export class SpeakingService {
     }
   }
 
-  async deleteUserSpeakingAttempt(id: number): Promise<MessageResDTO> {
+  async deleteUserSpeakingAttempt(id: number) {
     try {
       const userSpeakingAttempt = await this.speakingRepo.delete(id)
 
-      return {
-        statusCode: 200,
-        data: userSpeakingAttempt,
-        message: SPEAKING_MESSAGE.DELETE_SUCCESS
-      }
+      return userSpeakingAttempt
     } catch (error) {
       this.logger.error('Error deleting user speaking attempt:', error)
       if (error instanceof HttpException || error.message?.includes('không tồn tại')) {
@@ -138,31 +104,23 @@ export class SpeakingService {
     }
   }
 
-  async getUserSpeakingAttemptsByUserId(userId: number): Promise<MessageResDTO> {
+  async getUserSpeakingAttemptsByUserId(userId: number) {
     const userSpeakingAttempts = await this.speakingRepo.findByUserId(userId)
 
-    return {
-      statusCode: 200,
-      data: userSpeakingAttempts,
-      message: SPEAKING_MESSAGE.GET_LIST_SUCCESS
-    }
+    return userSpeakingAttempts
   }
 
-  async getSpeakingStatistics(userId?: number): Promise<MessageResDTO> {
+  async getSpeakingStatistics(userId?: number) {
     const statistics = await this.speakingRepo.getStatistics(userId)
 
-    return {
-      statusCode: 200,
-      data: statistics,
-      message: SPEAKING_MESSAGE.GET_STATS_SUCCESS
-    }
+    return statistics
   }
 
   async evaluateSpeaking(
     data: EvaluateSpeakingRequest,
     userId: number,
     audioFile?: Express.Multer.File
-  ): Promise<MessageResDTO> {
+  ) {
     try {
       // Đảm bảo questionBankId là number (có thể là string từ multipart/form-data)
       const questionBankId =
@@ -232,20 +190,16 @@ export class SpeakingService {
       })
 
       return {
-        statusCode: 200,
-        data: {
-          userSpeakingAttempt,
-          evaluation: {
-            accuracy: evaluation.accuracy,
-            pronunciation: evaluation.pronunciation,
-            fluency: evaluation.fluency,
-            overallScore: evaluation.overallScore,
-            confidence: evaluation.confidence,
-            transcription: evaluation.transcription,
-            feedback: evaluation.feedback
-          }
-        },
-        message: SPEAKING_MESSAGE.EVALUATE_SUCCESS
+        userSpeakingAttempt,
+        evaluation: {
+          accuracy: evaluation.accuracy,
+          pronunciation: evaluation.pronunciation,
+          fluency: evaluation.fluency,
+          overallScore: evaluation.overallScore,
+          confidence: evaluation.confidence,
+          transcription: evaluation.transcription,
+          feedback: evaluation.feedback
+        }
       }
     } catch (error) {
       this.logger.error('Error evaluating speaking:', error)

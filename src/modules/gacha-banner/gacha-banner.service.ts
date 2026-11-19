@@ -1,7 +1,5 @@
 import { GachaStarType } from '@/common/constants/gacha.constant'
 import { RoleName } from '@/common/constants/role.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { GachaBannerMessage } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { TranslationService } from '@/modules/translation/translation.service'
 import {
@@ -17,7 +15,7 @@ import {
   todayUTCWith0000ByDate
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
-import { HttpStatus, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { GachaItemRepo } from '../gacha-item/gacha-item.repo'
 import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import {
@@ -41,7 +39,6 @@ const MAX_ACTIVE_BANNERS = 2
 export class GachaBannerService {
   constructor(
     private gachaBannerRepo: GachaBannerRepo,
-    private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
     private readonly translationService: TranslationService,
     private readonly gachaItemRepo: GachaItemRepo
@@ -207,16 +204,13 @@ export class GachaBannerService {
     return result
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreateGachaBannerBodyInput
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({
+    data,
+    createdById
+  }: {
+    data: CreateGachaBannerBodyInput
+    createdById: number
+  }) {
     let createdGachaBanner: any = null
 
     try {
@@ -325,11 +319,7 @@ export class GachaBannerService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.CREATED,
-          data: result,
-          message: this.i18nService.translate(GachaBannerMessage.CREATE_SUCCESS, lang)
-        }
+        return result
       })
     } catch (error) {
       // Rollback: Delete gachaBanner if created
@@ -358,18 +348,15 @@ export class GachaBannerService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateGachaBannerBodyInput
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateGachaBannerBodyInput
+    updatedById: number
+  }) {
     let existingGachaBanner: any = null
 
     try {
@@ -547,11 +534,7 @@ export class GachaBannerService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.OK,
-          data: updatedGachaBanner,
-          message: this.i18nService.translate(GachaBannerMessage.UPDATE_SUCCESS, lang)
-        }
+        return updatedGachaBanner
       })
     } catch (error) {
       if (isNotFoundPrismaError(error)) {

@@ -101,18 +101,18 @@ export class RewardController {
 
   @Post()
   @ZodSerializerDto(CreateRewardResDTO)
-  create(
+  async create(
     @Body() body: CreatedRewardBodyInputDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.rewardService.create(
-      {
+    return {
+      message: this.i18nService.translate(RewardMessage.CREATE_SUCCESS, lang),
+      data: await this.rewardService.create({
         data: body,
         createdById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Get('admin/:rewardId')
@@ -140,20 +140,20 @@ export class RewardController {
 
   @Put(':rewardId')
   @ZodSerializerDto(UpdateRewardResDTO)
-  update(
+  async update(
     @Body() body: UpdateRewardBodyInputDTO,
     @Param() params: GetRewardParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.rewardService.update(
-      {
+    return {
+      message: this.i18nService.translate(RewardMessage.UPDATE_SUCCESS, lang),
+      data: await this.rewardService.update({
         data: body,
         id: params.rewardId,
         updatedById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':rewardId')

@@ -83,10 +83,7 @@ export class FeatureService {
       }
     }
 
-    return {
-      data,
-      message: this.i18nService.translate(FeatureMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   async findById(id: number, roleName: string, lang: string = 'vi') {
@@ -94,10 +91,7 @@ export class FeatureService {
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     if (!langId) {
-      return {
-        data: null,
-        message: this.i18nService.translate(FeatureMessage.GET_SUCCESS, lang)
-      }
+      return null
     }
 
     const feature = await this.featureRepo.findByIdWithLangId(id, isAdmin, langId)
@@ -131,14 +125,10 @@ export class FeatureService {
       : null
 
     return {
-      statusCode: HttpStatus.OK,
-      data: {
-        ...transformed,
-        nameTranslation: currentNameTranslation?.value ?? null,
-        descriptionTranslation: currentDescriptionTranslation?.value ?? null,
-        ...(isAdmin ? { nameTranslations, descriptionTranslations } : {})
-      },
-      message: this.i18nService.translate(FeatureMessage.GET_SUCCESS, lang)
+      ...transformed,
+      nameTranslation: currentNameTranslation?.value ?? null,
+      descriptionTranslation: currentDescriptionTranslation?.value ?? null,
+      ...(isAdmin ? { nameTranslations, descriptionTranslations } : {})
     }
   }
 
@@ -170,11 +160,7 @@ export class FeatureService {
       }))
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: result,
-      message: this.i18nService.translate(FeatureMessage.GET_SUCCESS, lang)
-    }
+    return result
   }
 
   async create(
@@ -391,10 +377,7 @@ export class FeatureService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
       const existingFeature = await this.featureRepo.findById(id)
       if (!existingFeature) {
@@ -409,11 +392,7 @@ export class FeatureService {
         this.translationService.deleteByKey(existingFeature.nameKey)
       ])
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(FeatureMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()

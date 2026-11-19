@@ -25,11 +25,7 @@ export class GeminiConfigService {
   async list(pagination: PaginationQuery, lang: string = 'vi') {
     await this.getLang(lang)
     const data = await this.geminiConfigRepo.list(pagination)
-    return {
-      statusCode: HttpStatus.OK,
-      data,
-      message: this.i18nService.translate('GET_SUCCESS', lang)
-    }
+    return data
   }
 
   async findById(id: number, lang: string = 'vi') {
@@ -38,11 +34,7 @@ export class GeminiConfigService {
     if (!geminiConfig) {
       throw new NotFoundRecordException()
     }
-    return {
-      statusCode: HttpStatus.OK,
-      data: geminiConfig,
-      message: this.i18nService.translate('GET_SUCCESS', lang)
-    }
+    return geminiConfig
   }
 
   // removed legacy findByConfigType; use service-config mapping APIs instead
@@ -69,11 +61,7 @@ export class GeminiConfigService {
         createdById,
         data
       })
-      return {
-        statusCode: HttpStatus.CREATED,
-        data: geminiConfig,
-        message: this.i18nService.translate('CREATE_SUCCESS', lang)
-      }
+      return geminiConfig
     } catch (error) {
       if (isUniqueConstraintPrismaError(error)) {
         throw new GeminiConfigAlreadyExistsException()
@@ -107,11 +95,7 @@ export class GeminiConfigService {
         updatedById,
         data
       })
-      return {
-        statusCode: HttpStatus.OK,
-        data: updatedGeminiConfig,
-        message: this.i18nService.translate('UPDATE_SUCCESS', lang)
-      }
+      return updatedGeminiConfig
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -133,11 +117,7 @@ export class GeminiConfigService {
         id,
         deletedById
       })
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate('DELETE_SUCCESS', lang)
-      }
+      return null
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -159,21 +139,13 @@ export class GeminiConfigService {
   async listModels(lang: string = 'vi') {
     await this.getLang(lang)
     const data = await this.geminiConfigRepo.listModels()
-    return {
-      statusCode: HttpStatus.OK,
-      data,
-      message: this.i18nService.translate('GET_SUCCESS', lang)
-    }
+    return data
   }
 
   async seedDefaultModels(lang: string = 'vi') {
     await this.getLang(lang)
     const data = await this.geminiConfigRepo.seedDefaultModels()
-    return {
-      statusCode: HttpStatus.OK,
-      data,
-      message: this.i18nService.translate('UPDATE_SUCCESS', lang)
-    }
+    return data
   }
 
   async listDistinctModelNames(fromActiveOnly: boolean = true, lang: string = 'vi') {
@@ -205,22 +177,14 @@ export class GeminiConfigService {
   async listConfigModels(pagination: PaginationQuery, lang: string = 'vi') {
     await this.getLang(lang)
     const data = await this.geminiConfigRepo.listConfigModels(pagination)
-    return {
-      statusCode: HttpStatus.OK,
-      data,
-      message: this.i18nService.translate('GET_SUCCESS', lang)
-    }
+    return data
   }
 
   async findConfigModelById(id: number, lang: string = 'vi') {
     await this.getLang(lang)
     const item = await this.geminiConfigRepo.findConfigModelById(id)
     if (!item) throw new NotFoundRecordException()
-    return {
-      statusCode: HttpStatus.OK,
-      data: item,
-      message: this.i18nService.translate('GET_SUCCESS', lang)
-    }
+    return item
   }
 
   async createConfigModel(
@@ -230,11 +194,7 @@ export class GeminiConfigService {
     try {
       await this.getLang(lang)
       const created = await this.geminiConfigRepo.createConfigModel({ data, createdById })
-      return {
-        statusCode: HttpStatus.OK,
-        data: created,
-        message: this.i18nService.translate('CREATE_SUCCESS', lang)
-      }
+      return created
     } catch (error) {
       if (isUniqueConstraintPrismaError(error)) {
         throw new GeminiConfigAlreadyExistsException()
@@ -254,11 +214,7 @@ export class GeminiConfigService {
         data,
         updatedById
       })
-      return {
-        statusCode: HttpStatus.OK,
-        data: updated,
-        message: this.i18nService.translate('UPDATE_SUCCESS', lang)
-      }
+      return updated
     } catch (error) {
       if (isNotFoundPrismaError(error)) throw new NotFoundRecordException()
       if (isUniqueConstraintPrismaError(error))
@@ -287,11 +243,7 @@ export class GeminiConfigService {
         data: { extraParams: nextExtra },
         updatedById
       })
-      return {
-        statusCode: HttpStatus.OK,
-        data: updated,
-        message: this.i18nService.translate('UPDATE_SUCCESS', lang)
-      }
+      return updated
     } catch (error) {
       if (isNotFoundPrismaError(error)) throw new NotFoundRecordException()
       throw error
@@ -305,11 +257,7 @@ export class GeminiConfigService {
     try {
       await this.getLang(lang)
       await this.geminiConfigRepo.deleteConfigModel({ id, deletedById })
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate('DELETE_SUCCESS', lang)
-      }
+      return null
     } catch (error) {
       if (isNotFoundPrismaError(error)) throw new NotFoundRecordException()
       throw error
@@ -347,11 +295,7 @@ export class GeminiConfigService {
   async updateServiceConfig(id: number, geminiConfigId: number) {
     try {
       const updated = await this.geminiConfigRepo.updateServiceConfig(id, geminiConfigId)
-      return {
-        statusCode: HttpStatus.OK,
-        data: updated,
-        message: this.i18nService.translate('UPDATE_SUCCESS', 'vi')
-      }
+      return updated
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -406,21 +350,13 @@ export class GeminiConfigService {
       data: { presetId: upserted.id },
       updatedById
     })
-    return {
-      statusCode: HttpStatus.OK,
-      data: { updated, preset: upserted },
-      message: this.i18nService.translate('UPDATE_SUCCESS', lang)
-    }
+    return { updated, preset: upserted }
   }
 
   async listPresets(lang: string = 'vi') {
     await this.getLang(lang)
     const data = await this.geminiPresetRepo.listPresets()
-    return {
-      statusCode: HttpStatus.OK,
-      data,
-      message: this.i18nService.translate('GET_SUCCESS', lang)
-    }
+    return data
   }
 
   async seedDefaultPresets(lang: string = 'vi') {
@@ -437,10 +373,6 @@ export class GeminiConfigService {
       })
     }
     const data = await this.geminiPresetRepo.listPresets()
-    return {
-      statusCode: HttpStatus.OK,
-      data,
-      message: this.i18nService.translate('UPDATE_SUCCESS', lang)
-    }
+    return data
   }
 }

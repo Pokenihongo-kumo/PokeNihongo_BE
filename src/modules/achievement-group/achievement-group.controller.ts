@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { AchievementGroupMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { AuthenticationGuard } from '@/common/guards/authentication.guard'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
@@ -31,16 +33,22 @@ import {
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class AchievementGroupController {
-  constructor(private readonly achievementGroupService: AchievementGroupService) {}
+  constructor(
+    private readonly achievementGroupService: AchievementGroupService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseSchema)
-  list(
+  async list(
     @Query() query: PaginationQueryDTO,
     @I18nLang() lang: string,
     @ActiveUser('roleName') roleName: string
   ) {
-    return this.achievementGroupService.list(query, lang, roleName)
+    return {
+      message: this.i18nService.translate(AchievementGroupMessage.GET_LIST_SUCCESS, lang),
+      data: await this.achievementGroupService.list(query, lang, roleName)
+    }
   }
 
   @Post()
@@ -61,16 +69,19 @@ export class AchievementGroupController {
 
   @Get(':achievementGroupId')
   @ZodSerializerDto(GetAchievementGroupDetailResDTO)
-  findById(
+  async findById(
     @Param() params: GetAchievementGroupParamsDTO,
     @I18nLang() lang: string,
     @ActiveUser('roleName') roleName: string
   ) {
-    return this.achievementGroupService.findById(
-      params.achievementGroupId,
-      roleName,
-      lang
-    )
+    return {
+      message: this.i18nService.translate(AchievementGroupMessage.GET_SUCCESS, lang),
+      data: await this.achievementGroupService.findById(
+        params.achievementGroupId,
+        roleName,
+        lang
+      )
+    }
   }
 
   @Put(':achievementGroupId')
@@ -93,17 +104,18 @@ export class AchievementGroupController {
 
   @Delete(':achievementGroupId')
   @ZodSerializerDto(MessageResDTO)
-  delete(
+  async delete(
     @Param() params: GetAchievementGroupParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.achievementGroupService.delete(
-      {
-        id: params.achievementGroupId,
-        deletedById: userId
-      },
-      lang
-    )
+    await this.achievementGroupService.delete({
+      id: params.achievementGroupId,
+      deletedById: userId
+    })
+    return {
+      message: this.i18nService.translate(AchievementGroupMessage.DELETE_SUCCESS, lang),
+      data: null
+    }
   }
 }

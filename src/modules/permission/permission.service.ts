@@ -1,7 +1,5 @@
 import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
-import { I18nService } from 'src/i18n/i18n.service'
-import { PermissionMessage } from 'src/i18n/message-keys'
 import { PermissionAlreadyExistsException } from 'src/modules/permission/permission.error'
 import {
   CreatePermissionBody,
@@ -13,49 +11,34 @@ import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared
 
 @Injectable()
 export class PermissionService {
-  constructor(
-    private permissionRepo: PermissionRepo,
-    private i18nService: I18nService
-  ) {}
+  constructor(private permissionRepo: PermissionRepo) {}
 
-  async list(pagination: PaginationQuery, lang: string) {
+  async list(pagination: PaginationQuery) {
     const data = await this.permissionRepo.list(pagination)
-    return {
-      data,
-      message: this.i18nService.translate(PermissionMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
-  async findById(id: number, lang: string) {
+  async findById(id: number) {
     const permission = await this.permissionRepo.findById(id)
     if (!permission) {
       throw new NotFoundRecordException()
     }
-    return {
-      data: permission,
-      message: this.i18nService.translate(PermissionMessage.GET_SUCCESS, lang)
-    }
+    return permission
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreatePermissionBody
-      createdById: number
-    },
-    lang: string
-  ) {
+  async create({
+    data,
+    createdById
+  }: {
+    data: CreatePermissionBody
+    createdById: number
+  }) {
     try {
       const result = await this.permissionRepo.create({
         createdById,
         data
       })
-      return {
-        data: result,
-        message: this.i18nService.translate(PermissionMessage.CREATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isUniqueConstraintPrismaError(error)) {
         throw new PermissionAlreadyExistsException()
@@ -64,28 +47,22 @@ export class PermissionService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdatePermissionBody
-      updatedById: number
-    },
-    lang: string
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdatePermissionBody
+    updatedById: number
+  }) {
     try {
       const permission = await this.permissionRepo.update({
         id,
         updatedById,
         data
       })
-      return {
-        data: permission,
-        message: this.i18nService.translate(PermissionMessage.UPDATE_SUCCESS, lang)
-      }
+      return permission
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -97,16 +74,13 @@ export class PermissionService {
     }
   }
 
-  async delete({ id, deletedById }: { id: number; deletedById: number }, lang: string) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
       await this.permissionRepo.delete({
         id,
         deletedById
       })
-      return {
-        data: null,
-        message: this.i18nService.translate(PermissionMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()

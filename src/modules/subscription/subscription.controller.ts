@@ -55,18 +55,18 @@ export class SubscriptionController {
 
   @Post()
   @ZodSerializerDto(CreateSubscriptionResDTO)
-  create(
+  async create(
     @Body() body: CreatedSubscriptionBodyInputDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.subscriptionService.create(
-      {
+    return {
+      message: this.i18nService.translate(SubscriptionMessage.CREATE_SUCCESS, lang),
+      data: await this.subscriptionService.create({
         data: body,
         createdById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Get(':subscriptionId')
@@ -84,20 +84,20 @@ export class SubscriptionController {
 
   @Put(':subscriptionId')
   @ZodSerializerDto(UpdateSubscriptionResDTO)
-  update(
+  async update(
     @Body() body: UpdateSubscriptionBodyInputDTO,
     @Param() params: GetSubscriptionParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.subscriptionService.update(
-      {
+    return {
+      message: this.i18nService.translate(SubscriptionMessage.UPDATE_SUCCESS, lang),
+      data: await this.subscriptionService.update({
         data: body,
         id: params.subscriptionId,
         updatedById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':subscriptionId')

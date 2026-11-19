@@ -1,3 +1,4 @@
+import { I18nService } from '@/i18n/i18n.service'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
 import { PaginationResponseSchema } from '@/shared/models/response.model'
@@ -62,15 +63,19 @@ import { SchemaIntrospectService } from './schema-introspect.service'
 export class GeminiConfigController {
   constructor(
     private readonly geminiConfigService: GeminiConfigService,
-    private readonly schemaIntrospectService: SchemaIntrospectService
+    private readonly schemaIntrospectService: SchemaIntrospectService,
+    private readonly i18nService: I18nService
   ) {}
 
   @Get('promt')
   @ZodSerializerDto(PaginationResponseSchema)
   @ApiOperation({ summary: 'Danh sách Gemini Configs (có phân trang + lọc)' })
   @ApiQuery({ type: GeminiConfigListQuerySwaggerDTO })
-  list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return this.geminiConfigService.list(query, lang)
+  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate('GET_SUCCESS', lang),
+      data: await this.geminiConfigService.list(query, lang)
+    }
   }
 
   // Removed legacy endpoints: findByConfigType and seedDefault (moved/replaced by new architecture)
@@ -78,29 +83,41 @@ export class GeminiConfigController {
   @Get('models')
   @ApiOperation({ summary: 'Danh sách Gemini Models (bảng GeminiModel)' })
   @ApiQuery({ type: GeminiModelListQuerySwaggerDTO })
-  listModels(@I18nLang() lang: string) {
-    return this.geminiConfigService.listModels(lang)
+  async listModels(@I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate('GET_SUCCESS', lang),
+      data: await this.geminiConfigService.listModels(lang)
+    }
   }
 
   // Presets
   @Get('presets')
   @ApiOperation({ summary: 'Danh sách presets cấu hình model' })
-  listPresets(@I18nLang() lang: string) {
-    return this.geminiConfigService.listPresets(lang)
+  async listPresets(@I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate('GET_SUCCESS', lang),
+      data: await this.geminiConfigService.listPresets(lang)
+    }
   }
 
   @Post('presets/seed-default')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Seed các preset mặc định vào DB' })
-  seedPresets(@I18nLang() lang: string) {
-    return this.geminiConfigService.seedDefaultPresets(lang)
+  async seedPresets(@I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate('UPDATE_SUCCESS', lang),
+      data: await this.geminiConfigService.seedDefaultPresets(lang)
+    }
   }
 
   @Post('models/seed-default')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Seed default Gemini models vào bảng GeminiModel' })
-  seedDefaultModels(@I18nLang() lang: string) {
-    return this.geminiConfigService.seedDefaultModels(lang)
+  async seedDefaultModels(@I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate('UPDATE_SUCCESS', lang),
+      data: await this.geminiConfigService.seedDefaultModels(lang)
+    }
   }
 
   // GeminiConfigModel endpoints (static paths first to avoid conflict with ":geminiConfigId")
@@ -110,8 +127,11 @@ export class GeminiConfigController {
     summary: 'Danh sách Gemini Config Models (GeminiConfigModel) có phân trang + lọc'
   })
   @ApiQuery({ type: GeminiConfigModelListQuerySwaggerDTO })
-  listConfigModels(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return this.geminiConfigService.listConfigModels(query as any, lang)
+  async listConfigModels(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate('GET_SUCCESS', lang),
+      data: await this.geminiConfigService.listConfigModels(query as any, lang)
+    }
   }
 
   @Get('admin/schema')
@@ -163,8 +183,11 @@ export class GeminiConfigController {
     description: 'ID của GeminiConfigModel'
   })
   @ZodSerializerDto(GeminiConfigModelResDTO)
-  getConfigModelById(@Param('id') id: number, @I18nLang() lang: string) {
-    return this.geminiConfigService.findConfigModelById(Number(id), lang)
+  async getConfigModelById(@Param('id') id: number, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate('GET_SUCCESS', lang),
+      data: await this.geminiConfigService.findConfigModelById(Number(id), lang)
+    }
   }
 
   @Post('config-models')
@@ -172,15 +195,18 @@ export class GeminiConfigController {
   @ApiOperation({ summary: 'Tạo Gemini Config Model' })
   @ApiBody({ type: CreateGeminiConfigModelSwaggerDTO })
   @ZodSerializerDto(GeminiConfigModelResDTO)
-  createConfigModel(
+  async createConfigModel(
     @Body() body: CreateGeminiConfigModelBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.geminiConfigService.createConfigModel(
-      { data: body, createdById: userId },
-      lang
-    )
+    return {
+      message: this.i18nService.translate('CREATE_SUCCESS', lang),
+      data: await this.geminiConfigService.createConfigModel(
+        { data: body, createdById: userId },
+        lang
+      )
+    }
   }
 
   @Put('config-models/:id')
@@ -193,16 +219,19 @@ export class GeminiConfigController {
   })
   @ApiBody({ type: UpdateGeminiConfigModelSwaggerDTO })
   @ZodSerializerDto(GeminiConfigModelResDTO)
-  updateConfigModel(
+  async updateConfigModel(
     @Param('id') id: number,
     @Body() body: UpdateGeminiConfigModelBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.geminiConfigService.updateConfigModel(
-      { id: Number(id), data: body, updatedById: userId },
-      lang
-    )
+    return {
+      message: this.i18nService.translate('UPDATE_SUCCESS', lang),
+      data: await this.geminiConfigService.updateConfigModel(
+        { id: Number(id), data: body, updatedById: userId },
+        lang
+      )
+    }
   }
 
   @Patch('config-models/:id/policy')
@@ -211,7 +240,7 @@ export class GeminiConfigController {
   })
   @ApiParam({ name: 'id', type: Number, required: true })
   @ApiBody({ type: UpdateConfigModelPolicyBodySwaggerDTO })
-  setConfigModelPolicy(
+  async setConfigModelPolicy(
     @Param('id') id: number,
     @Body() body: { policy?: any; purpose?: string; entities?: any[] },
     @ActiveUser('userId') userId: number,
@@ -219,10 +248,13 @@ export class GeminiConfigController {
   ) {
     // Nếu body có "policy" key thì dùng luôn, nếu không thì wrap toàn bộ body thành policy
     const policy = body?.policy || (body?.purpose || body?.entities ? body : {})
-    return this.geminiConfigService.updateConfigModelPolicy(
-      { id: Number(id), policy, updatedById: userId },
-      lang
-    )
+    return {
+      message: this.i18nService.translate('UPDATE_SUCCESS', lang),
+      data: await this.geminiConfigService.updateConfigModelPolicy(
+        { id: Number(id), policy, updatedById: userId },
+        lang
+      )
+    }
   }
 
   @Patch('config-models/:id/preset')
@@ -231,16 +263,19 @@ export class GeminiConfigController {
   })
   @ApiParam({ name: 'id', type: Number, required: true })
   @ApiBody({ type: ApplyPresetBodySwaggerDTO })
-  applyPreset(
+  async applyPreset(
     @Param('id') id: number,
     @Body() body: { presetKey: string },
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.geminiConfigService.applyPresetToConfigModel(
-      { id: Number(id), presetKey: body?.presetKey, updatedById: userId },
-      lang
-    )
+    return {
+      message: this.i18nService.translate('UPDATE_SUCCESS', lang),
+      data: await this.geminiConfigService.applyPresetToConfigModel(
+        { id: Number(id), presetKey: body?.presetKey, updatedById: userId },
+        lang
+      )
+    }
   }
 
   @Delete('config-models/:id')
@@ -251,15 +286,18 @@ export class GeminiConfigController {
     required: true,
     description: 'ID của GeminiConfigModel'
   })
-  deleteConfigModel(
+  async deleteConfigModel(
     @Param('id') id: number,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.geminiConfigService.deleteConfigModel(
-      { id: Number(id), deletedById: userId },
-      lang
-    )
+    return {
+      message: this.i18nService.translate('DELETE_SUCCESS', lang),
+      data: await this.geminiConfigService.deleteConfigModel(
+        { id: Number(id), deletedById: userId },
+        lang
+      )
+    }
   }
 
   // Base GeminiConfig endpoints (dynamic path placed AFTER static routes)
@@ -273,25 +311,31 @@ export class GeminiConfigController {
     example: 1
   })
   @ZodSerializerDto(GetGeminiConfigResDTO)
-  findById(@Param() params: GetParamsGeminiConfigDTO, @I18nLang() lang: string) {
-    return this.geminiConfigService.findById(params.geminiConfigId, lang)
+  async findById(@Param() params: GetParamsGeminiConfigDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate('GET_SUCCESS', lang),
+      data: await this.geminiConfigService.findById(params.geminiConfigId, lang)
+    }
   }
 
   @Post('promt')
   @ZodSerializerDto(CreateGeminiConfigResDTO)
   @ApiBody({ type: CreateGeminiConfigSwaggerDTO })
-  create(
+  async create(
     @Body() body: CreateGeminiConfigBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.geminiConfigService.create(
-      {
-        data: body,
-        createdById: userId
-      },
-      lang
-    )
+    return {
+      message: this.i18nService.translate('CREATE_SUCCESS', lang),
+      data: await this.geminiConfigService.create(
+        {
+          data: body,
+          createdById: userId
+        },
+        lang
+      )
+    }
   }
 
   @Put('promt/:geminiConfigId')
@@ -304,20 +348,23 @@ export class GeminiConfigController {
     example: 1
   })
   @ApiBody({ type: UpdateGeminiConfigSwaggerDTO })
-  update(
+  async update(
     @Body() body: UpdateGeminiConfigBodyDTO,
     @Param() params: GetParamsGeminiConfigDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.geminiConfigService.update(
-      {
-        data: body,
-        id: params.geminiConfigId,
-        updatedById: userId
-      },
-      lang
-    )
+    return {
+      message: this.i18nService.translate('UPDATE_SUCCESS', lang),
+      data: await this.geminiConfigService.update(
+        {
+          data: body,
+          id: params.geminiConfigId,
+          updatedById: userId
+        },
+        lang
+      )
+    }
   }
 
   @Delete('promt/:geminiConfigId')
@@ -329,17 +376,20 @@ export class GeminiConfigController {
     description: 'ID của GeminiConfig',
     example: 1
   })
-  delete(
+  async delete(
     @Param() params: GetParamsGeminiConfigDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.geminiConfigService.delete(
-      {
-        id: params.geminiConfigId,
-        deletedById: userId
-      },
-      lang
-    )
+    return {
+      message: this.i18nService.translate('DELETE_SUCCESS', lang),
+      data: await this.geminiConfigService.delete(
+        {
+          id: params.geminiConfigId,
+          deletedById: userId
+        },
+        lang
+      )
+    }
   }
 }
