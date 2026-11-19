@@ -5,18 +5,12 @@ import {
   RoundStatus
 } from '@/common/constants/match.constant'
 import { MatchingSocketMessage } from '@/i18n/message-keys'
-import { DebuffRoundService } from '@/modules/debuff-round/debuff-round.service'
 import { MatchRoundService } from '@/modules/match-round/match-round.service'
 import { MatchService } from '@/modules/match/match.service'
-import { PokemonService } from '@/modules/pokemon/pokemon.service'
-import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
-import { RoundQuestionService } from '@/modules/round-question/round-question.service'
 import { UserPokemonService } from '@/modules/user-pokemon/user-pokemon.service'
-import { UserCoreService } from '@/modules/user/user-core.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   addTimeUTC,
-  convertEloToRank,
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
@@ -36,11 +30,10 @@ import {
   CreateMatchRoundParticipantBody,
   UpdateMatchRoundParticipantBody
 } from './dto/match-round-participant.zod-dto'
+import { TIME_CHOOSE_POKEMON_MS } from './match-round-participant.constants'
 import { MatchRoundParticipantRepo } from './match-round-participant.repo'
+import { RoundStartService } from './round-start.service'
 
-const TIME_CHOOSE_POKEMON_MS = 5000
-const TIME_LIMIT_ANSWER_QUESTION_MS = 5000
-const QUESTIONS_PER_ROUND = 5
 @Injectable()
 export class MatchRoundParticipantService {
   private readonly logger = new Logger(MatchRoundParticipantService.name)
@@ -49,15 +42,11 @@ export class MatchRoundParticipantService {
     private matchRoundParticipantRepo: MatchRoundParticipantRepo,
     private readonly matchRoundService: MatchRoundService,
     private readonly userPokemonService: UserPokemonService,
-    private readonly questionBankService: QuestionBankService,
-    private readonly pokemonService: PokemonService,
     private readonly matchService: MatchService,
-    private readonly userCoreService: UserCoreService,
-    private readonly roundQuestionService: RoundQuestionService,
-    private readonly debuffRoundService: DebuffRoundService,
     private readonly matchingGateway: MatchingGateway,
     @InjectQueue(BullQueue.MATCH_ROUND_PARTICIPANT_TIMEOUT)
-    private readonly matchRoundParticipantTimeoutQueue: Queue
+    private readonly matchRoundParticipantTimeoutQueue: Queue,
+    private readonly roundStart: RoundStartService
   ) {}
 
   async list(pagination: PaginationQuery) {
@@ -354,10 +343,7 @@ export class MatchRoundParticipantService {
       )
       // Nếu all selected -> generate questions + debuff + moveToNextRound TRƯỚC khi fetch & socket
       if (allSelectedNow) {
-        await this.handleQuestionsAndDebuffForCompletedSelection(
-          existMatchRound,
-          freshParticipants.map((p) => p.id)
-        )
+        await this.handleQuestionsAndDebuffForCompletedSelection(existMatchRound)
 
         // CRITICAL: Only check allPending when BOTH users have selected
         // This prevents premature round starting when only one user selected
@@ -454,306 +440,17 @@ export class MatchRoundParticipantService {
   }
 
   /**
-   * Chuyển sang round tiếp theo khi round hiện tại đã hoàn thành
-   */
-  private async moveToNextRound(currentMatchRound: any): Promise<void> {
-    try {
-      // Cập nhật status của round hiện tại thành PENDING
-      await this.matchRoundService.setRoundPending(currentMatchRound.id)
-
-      const nextRoundMap = {
-        [MatchRoundNumber.ONE]: MatchRoundNumber.TWO,
-        [MatchRoundNumber.TWO]: MatchRoundNumber.THREE,
-        [MatchRoundNumber.THREE]: null
-      }
-
-      const nextRoundNumber = nextRoundMap[currentMatchRound.roundNumber]
-
-      if (!nextRoundNumber) {
-        this.logger.log(
-          `Match ${currentMatchRound.matchId} has completed all rounds (Round THREE finished)`
-        )
-        return
-      }
-
-      // Tìm round tiếp theo
-      const nextRound = await this.matchRoundService.findByMatchIdAndRoundNumber(
-        currentMatchRound.matchId,
-        nextRoundNumber
-      )
-
-      if (!nextRound) {
-        this.logger.warn(
-          `Next round ${nextRoundNumber} not found for match ${currentMatchRound.matchId}`
-        )
-        return
-      }
-
-      // Lấy participants của round tiếp theo
-      const nextRoundParticipants = await this.matchRoundParticipantRepo.findMany({
-        where: {
-          matchRoundId: nextRound.id,
-          deletedAt: null
-        },
-        orderBy: {
-          orderSelected: 'asc'
-        }
-      })
-
-      const firstParticipant = nextRoundParticipants[0]
-
-      if (firstParticipant) {
-        // Set endTimeSelected
-        await this.matchRoundParticipantRepo.update({
-          id: firstParticipant.id,
-          data: {
-            endTimeSelected: addTimeUTC(new Date(), TIME_CHOOSE_POKEMON_MS) // 30 seconds
-          }
-        })
-
-        // Tạo Bull job
-        await this.matchRoundParticipantTimeoutQueue.add(
-          BullAction.CHECK_POKEMON_SELECTION_TIMEOUT,
-          {
-            matchRoundParticipantId: firstParticipant.id
-          },
-          {
-            delay: TIME_CHOOSE_POKEMON_MS // 30 seconds
-          }
-        )
-
-        this.logger.log(
-          `Moved to round ${nextRoundNumber} - Set endTime and Bull job for participant ${firstParticipant.id}`
-        )
-      }
-    } catch (error) {
-      this.logger.error(
-        `Error moving to next round for match ${currentMatchRound.matchId}`,
-        error
-      )
-    }
-  }
-
-  /**
    * Khi cả round đã chọn xong Pokemon: tạo 10 câu hỏi giống nhau cho cả 2 participants, áp dụng debuff, rồi auto start Round ONE nếu tất cả rounds PENDING.
    */
   private async handleQuestionsAndDebuffForCompletedSelection(
-    matchRoundWithParticipants: any,
-    matchRoundParticipantIds: number[]
+    matchRoundWithParticipants: any
   ) {
     try {
       const matchId = matchRoundWithParticipants.match.id
       const roundId = matchRoundWithParticipants.id
-      const participants = matchRoundWithParticipants.match.participants
-
-      // Lấy user ELO cho mỗi participant qua bảng user
-      const users = await this.userCoreService.findElos(participants.map((p) => p.userId))
-      const eloMap = new Map(users.map((u) => [u.id, u.eloscore || 0]))
-
-      const participantElos = participants.map((p) => eloMap.get(p.userId) || 0)
-      const avgElo = participantElos.reduce((a, b) => a + b, 0) / participantElos.length
-
-      // Determine ranks
-      const ranks = participants.map((p) => ({
-        participantId: p.id,
-        userId: p.userId,
-        rank: convertEloToRank(eloMap.get(p.userId) || 0)
-      }))
-      const distinctRanks: string[] = Array.from(
-        new Set(ranks.map((r) => r.rank))
-      ) as string[]
-
-      // Helper: map rank to levelN field (assume same naming)
-      const sortedRanks = distinctRanks
-        .filter((r) => r && r !== 'Unranked')
-        .sort() as string[]
-      const baseRank: string | undefined = sortedRanks[0]
-      let higherRank: string | null = null
-      if (sortedRanks.length > 1) {
-        higherRank = sortedRanks[1] || null
-      }
-
-      // Lấy 10 câu hỏi: nếu cùng rank -> toàn bộ lấy theo rank đó
-      // Nếu khác rank -> tính phần trăm cho rank cao hơn dựa vào avgElo vượt ngưỡng rank thấp
-      let higherPercent = 0
-      if (higherRank) {
-        // Lấy maxElo của rank thấp hơn từ convertEloToRank thresholds (hardcode tạm)
-        const rankThresholds = [
-          { rank: 'N5', maxElo: 1000 },
-          { rank: 'N4', maxElo: 2000 },
-          { rank: 'N3', maxElo: 3000 }
-        ]
-        const lowMax = rankThresholds.find((t) => t.rank === baseRank)?.maxElo || 0
-        const diff = Math.max(0, avgElo - lowMax)
-        const rawPercent = Math.floor(diff / 10) // 277 -> 27
-        higherPercent = Math.min(50, Math.max(10, Math.floor(rawPercent / 10) * 10)) // tens rounding (27 -> 20)
-      }
-
-      const totalQuestions = QUESTIONS_PER_ROUND
-      const higherCount = higherRank
-        ? Math.round((totalQuestions * higherPercent) / 100)
-        : 0
-      const baseCount = totalQuestions - higherCount
-
-      // Helper: map rank to levelN field
-      const rankToLevel = (rank?: string | null): number | undefined => {
-        if (!rank) return undefined
-        if (rank.startsWith('N')) {
-          const n = parseInt(rank.substring(1), 10)
-          return isNaN(n) ? undefined : n
-        }
-        return undefined
-      }
-
-      // Use QuestionBankRepo to fetch random questions
-      const baseLevelN = rankToLevel(baseRank)
-      const finalBase = baseLevelN
-        ? await this.questionBankService.getRandomQuestions(baseCount, baseLevelN)
-        : []
-
-      let finalHigher: any[] = []
-      if (higherCount > 0 && higherRank) {
-        const higherLevelN = rankToLevel(higherRank)
-        if (higherLevelN) {
-          finalHigher = await this.questionBankService.getRandomQuestions(
-            higherCount,
-            higherLevelN
-          )
-        }
-      }
-
-      const combined = [...finalBase, ...finalHigher].sort(() => Math.random() - 0.5)
-
-      // Bulk create for each participant with identical order & points
-      for (const participantId of matchRoundParticipantIds) {
-        let orderNumber = 1
-        for (const q of combined) {
-          await this.roundQuestionService.createQuestionRow({
-            matchRoundParticipantId: participantId,
-            questionBankId: q.id,
-            timeLimitMs: TIME_LIMIT_ANSWER_QUESTION_MS,
-            basePoints: 100,
-            orderNumber: orderNumber
-          })
-          orderNumber++
-        }
-      }
-
-      await this.matchRoundParticipantRepo.setQuestionsTotal(
-        matchRoundParticipantIds,
-        combined.length
-      )
-
-      // Debuff logic: xác định pokemon bị debuff -> participant chứa pokemon đó
-      const selectedPokemons =
-        await this.matchRoundParticipantRepo.findPicksInRound(roundId)
-      if (selectedPokemons.length === 2) {
-        const [p1, p2] = selectedPokemons
-        if (p1.selectedUserPokemon?.pokemonId && p2.selectedUserPokemon?.pokemonId) {
-          try {
-            const debuffResult = await this.debuffRoundService.findLiveDebuffs()
-            const debuffRow = debuffResult.length
-              ? debuffResult[Math.floor(Math.random() * debuffResult.length)]
-              : null
-
-            // Use PokemonRepo to calculate debuffed pokemon accurately
-            let debuffedParticipantId: number | null = null
-            try {
-              const debuffCalc = await this.pokemonService.calculateDebuffedPokemon(
-                p1.selectedUserPokemon.pokemonId,
-                p2.selectedUserPokemon.pokemonId
-              )
-              const debuffedPokemonId = debuffCalc.debuffedPokemonId
-              // Find which participant has the debuffed pokemon
-              if (p1.selectedUserPokemon.pokemonId === debuffedPokemonId) {
-                debuffedParticipantId = p1.id
-              } else if (p2.selectedUserPokemon.pokemonId === debuffedPokemonId) {
-                debuffedParticipantId = p2.id
-              }
-            } catch (calcError) {
-              this.logger.warn(`Failed to calculate debuff pokemon: ${calcError.message}`)
-              // Fallback to simple heuristic
-              if (p1.selectedUserPokemon.pokemonId < p2.selectedUserPokemon.pokemonId) {
-                debuffedParticipantId = p1.id
-              } else {
-                debuffedParticipantId = p2.id
-              }
-            }
-
-            if (debuffRow && debuffedParticipantId) {
-              // Persist debuff assignment on the participant (so later includes expose participant.debuff)
-              try {
-                await this.matchRoundParticipantRepo.assignDebuff(
-                  debuffedParticipantId,
-                  debuffRow.id,
-                  QUESTIONS_PER_ROUND
-                )
-              } catch (assignErr) {
-                this.logger.warn(
-                  `[MatchRoundParticipant] Failed to assign debuffId=${debuffRow.id} to participant ${debuffedParticipantId}: ${assignErr.message}`
-                )
-              }
-              const questionsOfDebuffed =
-                await this.roundQuestionService.findQuestionsOfParticipant(
-                  debuffedParticipantId
-                )
-              if (questionsOfDebuffed.length > 0) {
-                if (debuffRow.typeDebuff === 'ADD_QUESTION') {
-                  // Thêm valueDebuff câu hỏi rank cao hơn 1 bậc nếu có
-                  const extraRank = higherRank || baseRank
-                  const extraLevelN = rankToLevel(extraRank)
-                  if (extraLevelN) {
-                    const extraPool = await this.questionBankService.getRandomQuestions(
-                      debuffRow.valueDebuff || 1,
-                      extraLevelN
-                    )
-                    let nextOrder = questionsOfDebuffed.length + 1
-                    for (const extra of extraPool) {
-                      await this.roundQuestionService.createQuestionRow({
-                        matchRoundParticipantId: debuffedParticipantId,
-                        questionBankId: extra.id,
-                        timeLimitMs: TIME_LIMIT_ANSWER_QUESTION_MS,
-                        basePoints: 0,
-                        orderNumber: nextOrder++,
-                        debuffId: debuffRow.id
-                      })
-                    }
-                  }
-                  // ✅ CRITICAL FIX: Update questionsTotal to reflect additional questions added by debuff
-                  const debuffValueDebuff = debuffRow.valueDebuff || 1
-                  await this.matchRoundParticipantRepo.addQuestionsTotal(
-                    debuffedParticipantId,
-                    debuffValueDebuff
-                  )
-                  this.logger.log(
-                    `[MatchRoundParticipant] Updated questionsTotal for participant ${debuffedParticipantId}: +${debuffValueDebuff} extra questions from ADD_QUESTION debuff`
-                  )
-                } else if (debuffRow.typeDebuff === 'DECREASE_POINT') {
-                  const target =
-                    questionsOfDebuffed[
-                      Math.floor(Math.random() * questionsOfDebuffed.length)
-                    ]
-                  await this.roundQuestionService.setDebuffAndPoints(
-                    target.id,
-                    debuffRow.id,
-                    Math.max(10, target.basePoints - (debuffRow.valueDebuff || 0))
-                  )
-                } else if (debuffRow.typeDebuff === 'DISCOMFORT_VISION') {
-                  const target =
-                    questionsOfDebuffed[
-                      Math.floor(Math.random() * questionsOfDebuffed.length)
-                    ]
-                  await this.roundQuestionService.setDebuff(target.id, debuffRow.id)
-                }
-              }
-            }
-          } catch (debuffError) {
-            this.logger.warn(
-              `[MatchRoundParticipant] Debuff application failed: ${debuffError.message}`
-            )
-          }
-        }
-      }
+      // questions + debuff (once per round); on error stop here, as before
+      const generated = await this.roundStart.generateQuestionsAndDebuff(roundId, matchId)
+      if (!generated) return
 
       // Cập nhật status round participant về PENDING nếu chưa
       await this.matchRoundParticipantRepo.setLiveRoundParticipantsPending(roundId)
@@ -821,7 +518,7 @@ export class MatchRoundParticipantService {
           this.logger.log(
             `[MatchRoundParticipant] Calling moveToNextRound for round ${currentRound.roundNumber} of match ${matchId}`
           )
-          await this.moveToNextRound(currentRound)
+          await this.roundStart.moveToNextRound(currentRound)
         } else {
           this.logger.warn(
             `[MatchRoundParticipant] Could not fetch currentRound ${roundId} to move to next`

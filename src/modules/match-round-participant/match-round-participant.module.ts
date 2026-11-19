@@ -14,6 +14,7 @@ import { UserPokemonModule } from '../user-pokemon/user-pokemon.module'
 import { MatchRoundParticipantController } from './match-round-participant.controller'
 import { MatchRoundParticipantRepo } from './match-round-participant.repo'
 import { MatchRoundParticipantService } from './match-round-participant.service'
+import { RoundStartService } from './round-start.service'
 
 @Module({
   imports: [
@@ -36,7 +37,8 @@ import { MatchRoundParticipantService } from './match-round-participant.service'
   providers: [
     MatchRoundParticipantService,
     MatchRoundParticipantRepo,
-    MatchRoundParticipantTimeoutProcessor
+    MatchRoundParticipantTimeoutProcessor,
+    RoundStartService
   ],
   exports: [MatchRoundParticipantService, MatchRoundParticipantRepo]
 })
