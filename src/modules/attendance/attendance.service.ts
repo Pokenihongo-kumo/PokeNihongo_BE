@@ -1,5 +1,5 @@
 import { PaginationQuery } from '@/shared/models/request.model'
-import { HttpStatus, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 
 import { dailyRequestType } from '@/common/constants/achievement.constant'
 import {
@@ -20,12 +20,7 @@ import { AttendancesStatus } from '@/common/constants/attendance.constant'
 import { WeekDayType } from '@/common/constants/attendence-config.constant'
 import { NotificationType } from '@/common/constants/notification.constant'
 import { FeatureKey } from '@/common/constants/subscription.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import {
-  AttendanceMessage,
-  ENTITY_MESSAGE,
-  NotificationMessage
-} from '@/i18n/message-keys'
+import { NotificationMessage } from '@/i18n/message-keys'
 import { AttendenceConfigService } from '@/modules/attendence-config/attendence-config.service'
 import { NotificationService } from '@/modules/notification/notification.service'
 import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
@@ -42,60 +37,27 @@ export class AttendanceService {
     private attendanceRepo: AttendanceRepo,
     private attendenceConfigService: AttendenceConfigService,
     private userCoreService: UserCoreService,
-    private readonly i18nService: I18nService,
     private readonly userDailyRequestService: UserDailyRequestService,
     private readonly walletService: WalletService,
     private readonly userSubService: UserSubscriptionService,
     private readonly sharedNotificationService: NotificationService
   ) {}
 
-  async list(pagination: PaginationQuery, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.attendanceRepo.list(pagination)
-    return {
-      statusCode: HttpStatus.OK,
-      data,
-      message: this.i18nService.translate(AttendanceMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const attendance = await this.attendanceRepo.findById(id)
     if (!attendance) {
       throw new NotFoundRecordException()
     }
-    return {
-      statusCode: HttpStatus.OK,
-      data: attendance,
-      message: this.i18nService.translate(AttendanceMessage.GET_SUCCESS, lang)
-    }
-  }
-
-  async findByUser(userId: number, date: Date = new Date()) {
-    console.log(date)
-
-    const attendances = await this.findStreakDate(userId, date, true)
-    const userInfo = await this.userCoreService.findUnique({ id: userId })
-    if (!userInfo) {
-      throw new NotFoundRecordException()
-    }
-    const data = {
-      user: userInfo,
-      attendances: attendances.attendances,
-      count: attendances.count
-    }
-    return {
-      statusCode: HttpStatus.OK,
-      data,
-      message: ENTITY_MESSAGE.GET_SUCCESS
-    }
+    return attendance
   }
 
   // New: return attendance records of the week containing the given date (Mon-Sun)
-  async findByUserWeek(
-    userId: number,
-    date: Date = todayUTCWith0000(),
-    lang: string = 'vi'
-  ) {
+  async findByUserWeek(userId: number, date: Date = todayUTCWith0000()) {
     const [weekly, totalStreak, userInfo] = await Promise.all([
       this.findWeekAttendances(userId, date, true),
       this.findMaxStreakFromToday(userId),
@@ -111,11 +73,7 @@ export class AttendanceService {
       count: weekly.count,
       totalStreak
     }
-    return {
-      statusCode: HttpStatus.OK,
-      data,
-      message: this.i18nService.translate(AttendanceMessage.GET_SUCCESS, lang)
-    }
+    return data
   }
 
   async create({ createdById }: { createdById: number }, lang: string = 'vi') {
@@ -223,11 +181,7 @@ export class AttendanceService {
         lang
       )
 
-      return {
-        statusCode: HttpStatus.CREATED,
-        data: attendance,
-        message: this.i18nService.translate(AttendanceMessage.CREATE_SUCCESS, lang)
-      }
+      return attendance
     } catch (error) {
       if (isUniqueConstraintPrismaError(error)) {
         throw new AttendancegAlreadyExistsException()
@@ -236,29 +190,22 @@ export class AttendanceService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateAttendanceBody
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateAttendanceBody
+    updatedById: number
+  }) {
     try {
       const updatedAttendanceg = await this.attendanceRepo.update({
         id,
         updatedById,
         data
       })
-      return {
-        statusCode: HttpStatus.OK,
-        data: updatedAttendanceg,
-        message: this.i18nService.translate(AttendanceMessage.UPDATE_SUCCESS, lang)
-      }
+      return updatedAttendanceg
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -270,20 +217,13 @@ export class AttendanceService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
       await this.attendanceRepo.delete({
         id,
         deletedById
       })
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(AttendanceMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()

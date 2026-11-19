@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { UserTestAnswerLogMessage as M } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import {
   CreateUserTestAnswerLogBodyDTO,
@@ -41,7 +43,10 @@ import { UserTestAnswerLogService } from './user-test-answer-log.service'
 @ApiTags('User Test Answer Log')
 @Controller('user-test-answer-log')
 export class UserTestAnswerLogController {
-  constructor(private readonly userTestAnswerLogService: UserTestAnswerLogService) {}
+  constructor(
+    private readonly userTestAnswerLogService: UserTestAnswerLogService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Post()
   @ApiBearerAuth()
@@ -53,8 +58,11 @@ export class UserTestAnswerLogController {
     type: UserTestAnswerLogResponseSwaggerDTO
   })
   @ZodSerializerDto(UserTestAnswerLogResDTO)
-  create(@Body() body: CreateUserTestAnswerLogBodyDTO, @I18nLang() lang: string) {
-    return this.userTestAnswerLogService.create(body, lang)
+  async create(@Body() body: CreateUserTestAnswerLogBodyDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(M.CREATE_SUCCESS, lang),
+      data: await this.userTestAnswerLogService.create(body)
+    }
   }
 
   @Post('upsert')
@@ -70,12 +78,15 @@ export class UserTestAnswerLogController {
     type: UserTestAnswerLogResponseSwaggerDTO
   })
   @ZodSerializerDto(UserTestAnswerLogResDTO)
-  upsert(
+  async upsert(
     @Body() body: CreateUserTestAnswerLogBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userTestAnswerLogService.upsert(body, userId, lang)
+    return {
+      message: this.i18nService.translate(M.CREATE_SUCCESS, lang),
+      data: await this.userTestAnswerLogService.upsert(body, userId)
+    }
   }
 
   @Get()
@@ -88,8 +99,14 @@ export class UserTestAnswerLogController {
   })
   @ApiQuery({ type: GetUserTestAnswerLogListQuerySwaggerDTO })
   @ZodSerializerDto(UserTestAnswerLogListResDTO)
-  findAll(@Query() query: GetUserTestAnswerLogListQueryDTO, @I18nLang() lang: string) {
-    return this.userTestAnswerLogService.findAll(query, lang)
+  async findAll(
+    @Query() query: GetUserTestAnswerLogListQueryDTO,
+    @I18nLang() lang: string
+  ) {
+    return {
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
+      data: await this.userTestAnswerLogService.findAll(query)
+    }
   }
 
   @Get(':id')
@@ -101,8 +118,14 @@ export class UserTestAnswerLogController {
     type: UserTestAnswerLogResponseSwaggerDTO
   })
   @ZodSerializerDto(UserTestAnswerLogResDTO)
-  findOne(@Param() params: GetUserTestAnswerLogByIdParamsDTO, @I18nLang() lang: string) {
-    return this.userTestAnswerLogService.findOne(params.id, lang)
+  async findOne(
+    @Param() params: GetUserTestAnswerLogByIdParamsDTO,
+    @I18nLang() lang: string
+  ) {
+    return {
+      message: this.i18nService.translate(M.GET_SUCCESS, lang),
+      data: await this.userTestAnswerLogService.findOne(params.id)
+    }
   }
 
   @Put(':id')
@@ -115,12 +138,15 @@ export class UserTestAnswerLogController {
     type: UserTestAnswerLogResponseSwaggerDTO
   })
   @ZodSerializerDto(UserTestAnswerLogResDTO)
-  update(
+  async update(
     @Param() params: GetUserTestAnswerLogByIdParamsDTO,
     @Body() body: UpdateUserTestAnswerLogBodyDTO,
     @I18nLang() lang: string
   ) {
-    return this.userTestAnswerLogService.update(params.id, body, lang)
+    return {
+      message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
+      data: await this.userTestAnswerLogService.update(params.id, body)
+    }
   }
 
   @Delete(':id')
@@ -133,7 +159,13 @@ export class UserTestAnswerLogController {
     type: UserTestAnswerLogResponseSwaggerDTO
   })
   @ZodSerializerDto(UserTestAnswerLogResDTO)
-  remove(@Param() params: GetUserTestAnswerLogByIdParamsDTO, @I18nLang() lang: string) {
-    return this.userTestAnswerLogService.remove(params.id, lang)
+  async remove(
+    @Param() params: GetUserTestAnswerLogByIdParamsDTO,
+    @I18nLang() lang: string
+  ) {
+    return {
+      message: this.i18nService.translate(M.DELETE_SUCCESS, lang),
+      data: await this.userTestAnswerLogService.remove(params.id)
+    }
   }
 }

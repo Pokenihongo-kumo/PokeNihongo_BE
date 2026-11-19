@@ -11,7 +11,6 @@ function createService() {
   }
   const userTestAnswerLogService = { findByUserTestAttemptId: jest.fn() }
   const testRepo = { findByIdWithTestSetsAndQuestions: jest.fn() }
-  const i18nService = { translate: jest.fn((key: string) => key) }
   const service = new UserTestAttemptService(
     repo as any,
     {} as any,
@@ -22,7 +21,6 @@ function createService() {
     {} as any,
     {} as any,
     {} as any,
-    i18nService as any,
     {} as any,
     {} as any,
     {} as any,
@@ -42,17 +40,15 @@ async function expectHttpError(promise: Promise<unknown>, status: HttpStatus) {
   return (error as HttpException).getResponse()
 }
 
-const completedAttempt = { data: { id: 1, userId: 7, status: 'COMPLETED', testId: 3 } }
+const completedAttempt = { id: 1, userId: 7, status: 'COMPLETED', testId: 3 }
 const oneCorrectOfFive = {
-  data: {
-    results: [
-      { questionBankId: 1, answerId: 2, isCorrect: true },
-      { questionBankId: 2, answerId: 3, isCorrect: false },
-      { questionBankId: 3, answerId: 4, isCorrect: false },
-      { questionBankId: 4, answerId: 5, isCorrect: false },
-      { questionBankId: 5, answerId: 6, isCorrect: false }
-    ]
-  }
+  results: [
+    { questionBankId: 1, answerId: 2, isCorrect: true },
+    { questionBankId: 2, answerId: 3, isCorrect: false },
+    { questionBankId: 3, answerId: 4, isCorrect: false },
+    { questionBankId: 4, answerId: 5, isCorrect: false },
+    { questionBankId: 5, answerId: 6, isCorrect: false }
+  ]
 }
 
 describe('UserTestAttemptService', () => {

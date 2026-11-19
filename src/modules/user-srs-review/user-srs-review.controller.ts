@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { SrsReviewMessage as M } from '@/i18n/message-keys'
 import {
   Controller,
   Get,
@@ -33,7 +35,10 @@ import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 @ApiBearerAuth()
 @Controller('user-srs-review')
 export class SrsReviewController {
-  constructor(private readonly srsService: SrsReviewService) {}
+  constructor(
+    private readonly srsService: SrsReviewService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Danh sách SRS của user' })
@@ -41,12 +46,15 @@ export class SrsReviewController {
   @ApiResponse({ status: 200, type: SrsReviewSwaggerDTO, isArray: true })
   // The service answers the whole envelope (this used to wrap it in a second
   // one with message 'GET_SUCCESS')
-  list(
+  async list(
     @ActiveUser('userId') userId: number,
     @Query() query: ListSrsQueryDto,
     @I18nLang() lang: string
   ) {
-    return this.srsService.list(userId, query, lang)
+    return {
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
+      data: await this.srsService.list(userId, query)
+    }
   }
 
   @Get('my')
@@ -58,17 +66,23 @@ export class SrsReviewController {
     @Query() query: ListSrsTodayQueryDto,
     @I18nLang() lang: string
   ) {
-    return this.srsService.listToday(userId, query, lang)
+    return {
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
+      data: await this.srsService.listToday(userId, query, lang)
+    }
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Lấy SRS theo contentType + contentId' })
-  getOne(
+  async getOne(
     @ActiveUser('userId') userId: number,
     @Param() params: SrsReviewIdParamsDto,
     @I18nLang() lang: string
   ) {
-    return this.srsService.getDetailBySrsId(userId, params.id, lang)
+    return {
+      message: this.i18nService.translate(M.GET_SUCCESS, lang),
+      data: await this.srsService.getDetailBySrsId(userId, params.id, lang)
+    }
   }
 
   @Post('upsert')
@@ -76,23 +90,29 @@ export class SrsReviewController {
   @ApiOperation({ summary: 'Tạo hoặc cập nhật SRS cho 1 nội dung' })
   @ApiBody({ type: UpsertSrsReviewSwaggerDTO })
   @ApiResponse({ status: 200, type: SrsReviewSwaggerDTO })
-  upsert(
+  async upsert(
     @ActiveUser('userId') userId: number,
     @Body() body: UpsertSrsReviewDto,
     @I18nLang() lang: string
   ) {
-    return this.srsService.upsert(userId, body, lang)
+    return {
+      message: this.i18nService.translate(M.UPSERT_SUCCESS, lang),
+      data: await this.srsService.upsert(userId, body)
+    }
   }
 
   @Patch(':id/read')
   @ApiOperation({ summary: 'Đánh dấu đã đọc SRS review (theo id)' })
   @ApiParam({ name: 'id', description: 'ID của SRS review', example: 1 })
   @ApiResponse({ status: 200, type: SrsReviewSwaggerDTO })
-  markRead(
+  async markRead(
     @ActiveUser('userId') userId: number,
     @Param() params: SrsReviewIdParamsDto,
     @I18nLang() lang: string
   ) {
-    return this.srsService.markRead(userId, params.id, lang)
+    return {
+      message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
+      data: await this.srsService.markRead(userId, params.id)
+    }
   }
 }

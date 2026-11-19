@@ -10,6 +10,8 @@ import { ZodSerializerDto } from 'nestjs-zod'
 import { UserHistoryService } from './user-history.service'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
+import { I18nService } from '@/i18n/i18n.service'
+import { UserHistoryMessage } from '@/i18n/message-keys'
 import {
   GetHistoryListQueryDTO,
   GetAdminHistoryListQueryDTO,
@@ -33,7 +35,10 @@ import {
 @ApiTags('User History')
 @Controller('user-history')
 export class UserHistoryController {
-  constructor(private readonly userHistoryService: UserHistoryService) {}
+  constructor(
+    private readonly userHistoryService: UserHistoryService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @ApiBearerAuth()
@@ -50,7 +55,10 @@ export class UserHistoryController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userHistoryService.findHistory(userId, query, lang)
+    return {
+      message: this.i18nService.translate(UserHistoryMessage.GET_LIST_SUCCESS, lang),
+      data: await this.userHistoryService.findHistory(userId, query, lang)
+    }
   }
 
   @Get('admin/all')
@@ -71,7 +79,10 @@ export class UserHistoryController {
     @Query() query: GetAdminHistoryListQueryDTO,
     @I18nLang() lang: string
   ) {
-    return this.userHistoryService.findAllHistory(query, lang)
+    return {
+      message: this.i18nService.translate(UserHistoryMessage.GET_LIST_SUCCESS, lang),
+      data: await this.userHistoryService.findAllHistory(query, lang)
+    }
   }
 
   @Get('recent-exercises')
@@ -89,7 +100,10 @@ export class UserHistoryController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userHistoryService.findRecentExercises(userId, query, lang)
+    return {
+      message: this.i18nService.translate(UserHistoryMessage.GET_LIST_SUCCESS, lang),
+      data: await this.userHistoryService.findRecentExercises(userId, query, lang)
+    }
   }
 
   @Get('history-exercises')
@@ -102,7 +116,10 @@ export class UserHistoryController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userHistoryService.findHistoryExercises(userId, query, lang)
+    return {
+      message: this.i18nService.translate(UserHistoryMessage.GET_LIST_SUCCESS, lang),
+      data: await this.userHistoryService.findHistoryExercises(userId, query, lang)
+    }
   }
 
   @Get('history-tests')
@@ -115,6 +132,9 @@ export class UserHistoryController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userHistoryService.findHistoryTests(userId, query, lang)
+    return {
+      message: this.i18nService.translate(UserHistoryMessage.GET_LIST_SUCCESS, lang),
+      data: await this.userHistoryService.findHistoryTests(userId, query, lang)
+    }
   }
 }

@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { UserTestMessage as M } from '@/i18n/message-keys'
 import {
   Controller,
   Get,
@@ -44,7 +46,10 @@ import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 @ApiTags('UserTest')
 @Controller('user-test')
 export class UserTestController {
-  constructor(private readonly userTestService: UserTestService) {}
+  constructor(
+    private readonly userTestService: UserTestService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Post()
   @ApiBearerAuth()
@@ -55,7 +60,10 @@ export class UserTestController {
     type: UserTestResponseSwaggerDTO
   })
   async create(@Body() body: CreateUserTestBodyDTO, @I18nLang() lang: string) {
-    return this.userTestService.create(body, lang)
+    return {
+      message: this.i18nService.translate(M.CREATE_SUCCESS, lang),
+      data: await this.userTestService.create(body)
+    }
   }
 
   @Get()
@@ -69,7 +77,10 @@ export class UserTestController {
   })
   @ZodSerializerDto(UserTestListResDTO)
   async findAll(@Query() query: GetUserTestListQueryDTO, @I18nLang() lang: string) {
-    return this.userTestService.findAll(query, lang)
+    return {
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
+      data: await this.userTestService.findAll(query, lang)
+    }
   }
 
   @Get('my')
@@ -88,7 +99,14 @@ export class UserTestController {
     @I18nLang() lang: string
   ) {
     const { type, ...rest } = query
-    return this.userTestService.findAll({ ...rest, userId, testType: type }, lang, true)
+    return {
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
+      data: await this.userTestService.findAll(
+        { ...rest, userId, testType: type },
+        lang,
+        true
+      )
+    }
   }
 
   @Get(':id')
@@ -100,7 +118,10 @@ export class UserTestController {
     type: UserTestResponseSwaggerDTO
   })
   async findOne(@Param() { id }: GetUserTestByIdParamsDTO, @I18nLang() lang: string) {
-    return this.userTestService.findOne(id, lang)
+    return {
+      message: this.i18nService.translate(M.GET_SUCCESS, lang),
+      data: await this.userTestService.findOne(id)
+    }
   }
 
   @Put(':id')
@@ -116,7 +137,10 @@ export class UserTestController {
     @Body() body: UpdateUserTestBodyDTO,
     @I18nLang() lang: string
   ) {
-    return this.userTestService.update(id, body, lang)
+    return {
+      message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
+      data: await this.userTestService.update(id, body)
+    }
   }
 
   @Delete(':id')
@@ -128,7 +152,8 @@ export class UserTestController {
     description: 'Xóa UserTest thành công'
   })
   async delete(@Param() { id }: GetUserTestByIdParamsDTO, @I18nLang() lang: string) {
-    return this.userTestService.delete(id, lang)
+    await this.userTestService.delete(id)
+    return { message: this.i18nService.translate(M.DELETE_SUCCESS, lang) }
   }
 
   @Post('init-all')
@@ -140,7 +165,18 @@ export class UserTestController {
     description: 'Khởi tạo UserTest thành công'
   })
   async initAllUsersTests(@I18nLang() lang: string) {
-    return this.userTestService.initAllUsersTests(lang)
+    const result = await this.userTestService.initAllUsersTests()
+    const message =
+      result.outcome === 'done'
+        ? this.i18nService.translate(M.INIT_ALL_SUCCESS, lang, {
+            tests: result.data.totalTests,
+            users: result.data.totalUsers
+          })
+        : this.i18nService.translate(
+            result.outcome === 'no-users' ? M.INIT_ALL_NO_USERS : M.INIT_ALL_NO_TESTS,
+            lang
+          )
+    return { message, data: result.data }
   }
 
   @Post('auto-update-limit')

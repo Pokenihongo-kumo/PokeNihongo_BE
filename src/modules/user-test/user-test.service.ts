@@ -1,6 +1,4 @@
 import { FeatureKey, FeatureKeyType } from '@/common/constants/subscription.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { UserTestMessage as M } from '@/i18n/message-keys'
 import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
 import { toPaginationMeta } from '@/shared/utils/pagination'
 import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
@@ -26,8 +24,7 @@ export class UserTestService {
 
   constructor(
     private readonly userTestRepo: UserTestRepo,
-    private readonly sharedUserSubscriptionService: UserSubscriptionService,
-    private readonly i18nService: I18nService
+    private readonly sharedUserSubscriptionService: UserSubscriptionService
   ) {}
 
   private getDefaultUserTestStatus(test: {
@@ -55,7 +52,7 @@ export class UserTestService {
     }
   }
 
-  async create(body: CreateUserTestBody, lang: string = 'vi') {
+  async create(body: CreateUserTestBody) {
     try {
       // Kiểm tra xem đã tồn tại UserTest cho user và test này chưa
       const existingUserTest = await this.userTestRepo.findByUserAndTest(
@@ -68,11 +65,7 @@ export class UserTestService {
 
       const userTest = await this.userTestRepo.create(body)
 
-      return {
-        statusCode: 201,
-        data: userTest,
-        message: this.i18nService.translate(M.CREATE_SUCCESS, lang)
-      }
+      return userTest
     } catch (error) {
       throw this.toUserTestError(error)
     }
@@ -131,22 +124,14 @@ export class UserTestService {
         })
       )
       return {
-        statusCode: 200,
-        message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-        data: {
-          results: userTestsWithTestInfo,
-          pagination: toPaginationMeta(query.currentPage, query.pageSize, result.total)
-        }
+        results: userTestsWithTestInfo,
+        pagination: toPaginationMeta(query.currentPage, query.pageSize, result.total)
       }
     }
 
     return {
-      statusCode: 200,
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: {
-        results: processedItems,
-        pagination: toPaginationMeta(query.currentPage, query.pageSize, result.total)
-      }
+      results: processedItems,
+      pagination: toPaginationMeta(query.currentPage, query.pageSize, result.total)
     }
   }
 
@@ -223,36 +208,25 @@ export class UserTestService {
     return { userTests: updatedUserTests, testCache }
   }
 
-  async findOne(id: number, lang: string = 'vi') {
+  async findOne(id: number) {
     const userTest = await this.userTestRepo.findById(id)
     if (!userTest) throw new UserTestNotFoundException()
-    return {
-      statusCode: 200,
-      data: userTest,
-      message: this.i18nService.translate(M.GET_SUCCESS, lang)
-    }
+    return userTest
   }
 
-  async update(id: number, data: UpdateUserTestBody, lang: string = 'vi') {
+  async update(id: number, data: UpdateUserTestBody) {
     try {
       const userTest = await this.userTestRepo.update(id, data)
-      return {
-        statusCode: 200,
-        data: userTest,
-        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
-      }
+      return userTest
     } catch (error) {
       throw this.toUserTestError(error)
     }
   }
 
-  async delete(id: number, lang: string = 'vi') {
+  async delete(id: number) {
     try {
       await this.userTestRepo.delete(id)
-      return {
-        statusCode: 200,
-        message: this.i18nService.translate(M.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       throw this.toUserTestError(error)
     }
@@ -331,7 +305,7 @@ export class UserTestService {
    * Add tất cả Test có status = ACTIVE (trừ MATCH_TEST)
    * SUBSCRIPTION_TEST -> status NOT_STARTED, các test khác -> status ACTIVE
    */
-  async initAllUsersTests(lang: string = 'vi'): Promise<any> {
+  async initAllUsersTests() {
     try {
       this.logger.log('Starting initialization of user tests for all users')
 
@@ -341,8 +315,7 @@ export class UserTestService {
       if (users.length === 0) {
         this.logger.warn('No users found in the system')
         return {
-          statusCode: 200,
-          message: this.i18nService.translate(M.INIT_ALL_NO_USERS, lang),
+          outcome: 'no-users' as const,
           data: {
             totalUsers: 0,
             totalTestsAdded: 0
@@ -356,8 +329,7 @@ export class UserTestService {
       if (tests.length === 0) {
         this.logger.warn('No active tests found in the system')
         return {
-          statusCode: 200,
-          message: this.i18nService.translate(M.INIT_ALL_NO_TESTS, lang),
+          outcome: 'no-tests' as const,
           data: {
             totalUsers: users.length,
             totalTestsAdded: 0
@@ -395,11 +367,7 @@ export class UserTestService {
       )
 
       return {
-        statusCode: 200,
-        message: this.i18nService.translate(M.INIT_ALL_SUCCESS, lang, {
-          tests: tests.length,
-          users: users.length
-        }),
+        outcome: 'done' as const,
         data: {
           totalUsers: users.length,
           totalTests: tests.length,

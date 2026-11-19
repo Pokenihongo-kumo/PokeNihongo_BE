@@ -17,7 +17,6 @@ function createService() {
     findByLessonId: jest.fn(),
     getExercisesByIdHaveQuestionBanks: jest.fn()
   }
-  const i18nService = { translate: jest.fn((key: string) => key) }
   const rewardService = { convertRewardsWithUser: jest.fn() }
   const service = new UserExerciseAttemptService(
     repo as any,
@@ -27,7 +26,6 @@ function createService() {
     exercisesService as any,
     {} as any,
     {} as any,
-    i18nService as any,
     rewardService as any
   )
   return {
@@ -92,7 +90,7 @@ describe('UserExerciseAttemptService', () => {
         results: [{ id: 11 }, { id: 12 }]
       })
       deps.userAnswerLogService.findByUserExerciseAttemptId.mockResolvedValue({
-        data: { results: logs }
+        results: logs
       })
       return deps
     }
@@ -118,7 +116,7 @@ describe('UserExerciseAttemptService', () => {
         3
       )
       expect(res).toMatchObject({
-        message: M.ALL_CORRECT,
+        outcome: 'all-correct',
         data: { status: 'COMPLETED', score: 100, allCorrect: true }
       })
     })
@@ -133,7 +131,7 @@ describe('UserExerciseAttemptService', () => {
       expect(repo.update).toHaveBeenCalledWith({ id: 1 }, { status: 'FAILED' })
       expect(rewardService.convertRewardsWithUser).not.toHaveBeenCalled()
       expect(res).toMatchObject({
-        message: M.SUBMITTED_INCOMPLETE,
+        outcome: 'incomplete',
         data: { status: 'FAILED', score: 50, unansweredQuestionIds: [12], rewards: null }
       })
     })
@@ -144,7 +142,7 @@ describe('UserExerciseAttemptService', () => {
       const res = await service.submitExerciseCompletion(1, 7)
 
       expect(res).toMatchObject({
-        message: M.SUBMITTED_NO_ANSWER,
+        outcome: 'no-answer',
         data: { answeredQuestions: 0, unansweredQuestionIds: [11, 12] }
       })
     })
@@ -162,13 +160,16 @@ describe('UserExerciseAttemptService', () => {
     it('throws 403 with the translated key when the score is below 80% and nothing was completed', async () => {
       const { service, repo, userAnswerLogService, exercisesService } = createService()
       jest.spyOn(service, 'findOne').mockResolvedValue({
-        data: { id: 1, userId: 7, status: 'COMPLETED', exerciseId: 3 }
+        id: 1,
+        userId: 7,
+        status: 'COMPLETED',
+        exerciseId: 3
       } as any)
       exercisesService.getExercisesByIdHaveQuestionBanks.mockResolvedValue({
         testSet: { testSetQuestionBanks: [{}, {}, {}, {}, {}] }
       })
       userAnswerLogService.findByUserExerciseAttemptId.mockResolvedValue({
-        data: { results: [{ questionBankId: 1, answerId: 2, isCorrect: true }] }
+        results: [{ questionBankId: 1, answerId: 2, isCorrect: true }]
       })
       repo.hasCompletedAttempt.mockResolvedValue(false)
 
