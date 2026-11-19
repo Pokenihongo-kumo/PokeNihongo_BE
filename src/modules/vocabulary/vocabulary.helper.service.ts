@@ -431,7 +431,7 @@ export class VocabularyHelperService {
    */
   private async getLanguageId(languageCode: string): Promise<number> {
     const language = await this.languagesService.findByCode({ code: languageCode })
-    return language.data.id
+    return language.id
   }
 
   /**

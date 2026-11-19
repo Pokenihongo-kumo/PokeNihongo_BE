@@ -441,7 +441,7 @@ export class UserHistoryService {
         const languageRecord = await this.languagesService.findByCode({
           code: normalizedLang
         })
-        languageId = languageRecord?.data?.id
+        languageId = languageRecord?.id
       } catch (error) {
         this.logger.warn(`Failed to find language for code ${normalizedLang}:`, error)
       }
@@ -641,7 +641,7 @@ export class UserHistoryService {
         const languageRecord = await this.languagesService.findByCode({
           code: normalizedLang
         })
-        languageId = languageRecord?.data?.id
+        languageId = languageRecord?.id
       } catch (error) {
         this.logger.warn(`Failed to find language for code ${normalizedLang}:`, error)
       }
@@ -794,7 +794,7 @@ export class UserHistoryService {
         const languageRecord = await this.languagesService.findByCode({
           code: normalizedLang
         })
-        languageId = languageRecord?.data?.id
+        languageId = languageRecord?.id
       } catch (error) {
         this.logger.warn(`Failed to find language for code ${normalizedLang}:`, error)
       }

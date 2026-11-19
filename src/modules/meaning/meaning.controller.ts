@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { MeaningMessage } from '@/i18n/message-keys'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import {
   CreateMeaningBodyDTO,
@@ -41,7 +43,10 @@ import { MeaningService } from './meaning.service'
 @ApiTags('Meaning')
 @Controller('meaning')
 export class MeaningController {
-  constructor(private readonly meaningService: MeaningService) {}
+  constructor(
+    private readonly meaningService: MeaningService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @ApiBearerAuth()
@@ -82,8 +87,11 @@ export class MeaningController {
     type: MeaningListSwaggerResponseDTO
   })
   @ZodSerializerDto(MeaningListResDTO)
-  findMany(@Query() query: GetMeaningListQueryDTO, @I18nLang() lang: string) {
-    return this.meaningService.findMany(query, lang)
+  async findMany(@Query() query: GetMeaningListQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(MeaningMessage.GET_LIST_SUCCESS, lang),
+      data: await this.meaningService.findMany(query)
+    }
   }
 
   @Get(':vocabularyId')
@@ -102,11 +110,14 @@ export class MeaningController {
     description: 'Lấy tất cả nghĩa theo từ vựng thành công',
     type: [MeaningSwaggerResponseDTO]
   })
-  findByVocabularyId(
+  async findByVocabularyId(
     @Param() params: GetMeaningsByVocabularyParamsDTO,
     @I18nLang() lang: string
   ) {
-    return this.meaningService.getByVocabularyId(params.vocabularyId, lang)
+    return {
+      message: this.i18nService.translate(MeaningMessage.GET_SUCCESS, lang),
+      data: await this.meaningService.getByVocabularyId(params.vocabularyId)
+    }
   }
 
   @Post()
@@ -129,8 +140,11 @@ export class MeaningController {
     description: 'Dữ liệu nghĩa không hợp lệ'
   })
   @ZodSerializerDto(MeaningResDTO)
-  create(@Body() body: CreateMeaningBodyDTO, @I18nLang() lang: string) {
-    return this.meaningService.createMeaning(body, lang)
+  async create(@Body() body: CreateMeaningBodyDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(MeaningMessage.CREATE_SUCCESS, lang),
+      data: await this.meaningService.createMeaning(body)
+    }
   }
 
   @Put(':id')
@@ -162,12 +176,15 @@ export class MeaningController {
     description: 'Nghĩa không tồn tại'
   })
   @ZodSerializerDto(MeaningResDTO)
-  update(
+  async update(
     @Param() params: GetMeaningByIdParamsDTO,
     @Body() body: UpdateMeaningBodyDTO,
     @I18nLang() lang: string
   ) {
-    return this.meaningService.update(params.id, body, lang)
+    return {
+      message: this.i18nService.translate(MeaningMessage.UPDATE_SUCCESS, lang),
+      data: await this.meaningService.update(params.id, body)
+    }
   }
 
   @Delete(':id')

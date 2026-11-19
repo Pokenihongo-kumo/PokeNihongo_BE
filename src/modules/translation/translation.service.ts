@@ -1,5 +1,3 @@
-import { I18nService } from '@/i18n/i18n.service'
-import { TranslationMessage } from '@/i18n/message-keys'
 import { toPaginationMeta } from '@/shared/utils/pagination'
 import {
   isForeignKeyConstraintPrismaError,
@@ -28,73 +26,47 @@ import { TranslationRepo } from './translation.repo'
 export class TranslationService {
   private readonly logger = new Logger(TranslationService.name)
 
-  constructor(
-    private readonly translationRepository: TranslationRepo,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly translationRepository: TranslationRepo) {}
 
   //#region HTTP routes (envelope + translated message)
-  async findMany(params: GetTranslationListQuery, lang: string = 'vi') {
+  async findMany(params: GetTranslationListQuery) {
     const result = await this.translationRepository.findMany(params)
     return {
-      statusCode: 200,
-      message: this.i18nService.translate(TranslationMessage.GET_LIST_SUCCESS, lang),
-      data: {
-        results: result.data,
-        pagination: toPaginationMeta(params.page, params.limit, result.total)
-      }
+      results: result.data,
+      pagination: toPaginationMeta(params.page, params.limit, result.total)
     }
   }
 
   // { results, pagination } like every list (was { data[], total, page, limit, totalPages })
-  async findByLanguage(params: GetTranslationsByLanguageQuery, lang: string = 'vi') {
+  async findByLanguage(params: GetTranslationsByLanguageQuery) {
     const result = await this.translationRepository.findByLanguage(params.languageId, {
       page: params.page,
       limit: params.limit
     })
     return {
-      statusCode: 200,
-      message: this.i18nService.translate(TranslationMessage.GET_LIST_SUCCESS, lang),
-      data: {
-        results: result.data,
-        pagination: toPaginationMeta(params.page, params.limit, result.total)
-      }
+      results: result.data,
+      pagination: toPaginationMeta(params.page, params.limit, result.total)
     }
   }
 
-  async getByKey(params: GetTranslationsByKeyQuery, lang: string = 'vi') {
-    return {
-      data: await this.findByKey(params),
-      message: this.i18nService.translate(TranslationMessage.GET_SUCCESS, lang)
-    }
+  async getByKey(params: GetTranslationsByKeyQuery) {
+    return await this.findByKey(params)
   }
 
-  async getById(id: number, lang: string = 'vi') {
-    return {
-      data: await this.findById(id),
-      message: this.i18nService.translate(TranslationMessage.GET_SUCCESS, lang)
-    }
+  async getById(id: number) {
+    return await this.findById(id)
   }
 
-  async createTranslation(data: CreateTranslationBody, lang: string = 'vi') {
-    return {
-      data: await this.create(data),
-      message: this.i18nService.translate(TranslationMessage.CREATE_SUCCESS, lang)
-    }
+  async createTranslation(data: CreateTranslationBody) {
+    return await this.create(data)
   }
 
-  async createTranslations(data: CreateTranslationBody[], lang: string = 'vi') {
-    return {
-      data: await this.createMany(data),
-      message: this.i18nService.translate(TranslationMessage.CREATE_SUCCESS, lang)
-    }
+  async createTranslations(data: CreateTranslationBody[]) {
+    return await this.createMany(data)
   }
 
-  async updateTranslation(id: number, data: UpdateTranslationBody, lang: string = 'vi') {
-    return {
-      data: await this.update(id, data),
-      message: this.i18nService.translate(TranslationMessage.UPDATE_SUCCESS, lang)
-    }
+  async updateTranslation(id: number, data: UpdateTranslationBody) {
+    return await this.update(id, data)
   }
   //#endregion
 

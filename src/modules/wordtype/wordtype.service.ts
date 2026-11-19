@@ -60,7 +60,7 @@ export class WordTypeService implements OnModuleInit {
       let languageId: number | undefined
       try {
         const language = await this.languagesService.findByCode({ code: lang })
-        languageId = language?.data?.id
+        languageId = language?.id
       } catch {
         languageId = undefined
       }
@@ -359,12 +359,12 @@ export class WordTypeService implements OnModuleInit {
             code: langCode
           })
 
-          if (!languages.data?.results || languages.data.results.length === 0) {
+          if (!languages?.results || languages.results.length === 0) {
             this.logger.warn(`Language ${langCode} not found, skipping translation`)
             continue
           }
 
-          const language = languages.data.results[0]
+          const language = languages.results[0]
 
           // Kiểm tra translation đã tồn tại chưa
           const existingTranslation = await this.translationService.findByKeyAndLanguage(

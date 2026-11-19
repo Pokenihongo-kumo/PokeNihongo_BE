@@ -1,5 +1,3 @@
-import { I18nService } from '@/i18n/i18n.service'
-import { KanjiReadingMessage } from '@/i18n/message-keys'
 import { toPaginationMeta } from '@/shared/utils/pagination'
 import {
   isForeignKeyConstraintPrismaError,
@@ -25,97 +23,65 @@ import { KanjiReadingRepo } from './kanji-reading.repo'
 export class KanjiReadingService {
   private readonly logger = new Logger(KanjiReadingService.name)
 
-  constructor(
-    private readonly kanjiReadingRepository: KanjiReadingRepo,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly kanjiReadingRepository: KanjiReadingRepo) {}
 
   //#region HTTP routes (envelope + translated message)
-  async findMany(params: GetKanjiReadingListQuery, lang: string = 'vi') {
+  async findMany(params: GetKanjiReadingListQuery) {
     const result = await this.kanjiReadingRepository.findMany(params)
     return {
-      statusCode: 200,
-      message: this.i18nService.translate(KanjiReadingMessage.GET_LIST_SUCCESS, lang),
-      data: {
-        results: result.data,
-        pagination: toPaginationMeta(params.page, params.limit, result.total)
-      }
+      results: result.data,
+      pagination: toPaginationMeta(params.page, params.limit, result.total)
     }
   }
 
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const reading = await this.kanjiReadingRepository.findById(id)
     if (!reading) {
       throw new KanjiReadingNotFoundException()
     }
-    return {
-      data: reading,
-      message: this.i18nService.translate(KanjiReadingMessage.GET_SUCCESS, lang)
-    }
+    return reading
   }
 
-  async findByKanjiId(kanjiId: number, lang: string = 'vi') {
-    return {
-      data: await this.kanjiReadingRepository.findByKanjiId(kanjiId),
-      message: this.i18nService.translate(KanjiReadingMessage.GET_LIST_SUCCESS, lang)
-    }
+  async findByKanjiId(kanjiId: number) {
+    return await this.kanjiReadingRepository.findByKanjiId(kanjiId)
   }
 
-  async findByReadingType(readingType: string, lang: string = 'vi') {
-    return {
-      data: await this.kanjiReadingRepository.findByReadingType(readingType),
-      message: this.i18nService.translate(KanjiReadingMessage.GET_LIST_SUCCESS, lang)
-    }
+  async findByReadingType(readingType: string) {
+    return await this.kanjiReadingRepository.findByReadingType(readingType)
   }
 
-  async createReading(data: CreateKanjiReadingBody, lang: string = 'vi') {
-    return {
-      data: await this.create(data),
-      message: this.i18nService.translate(KanjiReadingMessage.CREATE_SUCCESS, lang)
-    }
+  async createReading(data: CreateKanjiReadingBody) {
+    return await this.create(data)
   }
 
-  async updateReading(id: number, data: UpdateKanjiReadingBody, lang: string = 'vi') {
-    return {
-      data: await this.update(id, data),
-      message: this.i18nService.translate(KanjiReadingMessage.UPDATE_SUCCESS, lang)
-    }
+  async updateReading(id: number, data: UpdateKanjiReadingBody) {
+    return await this.update(id, data)
   }
 
-  async delete(id: number, lang: string = 'vi') {
+  async delete(id: number) {
     try {
       if (!(await this.kanjiReadingRepository.findById(id))) {
         throw new KanjiReadingNotFoundException()
       }
       await this.kanjiReadingRepository.delete(id)
-      return {
-        message: this.i18nService.translate(KanjiReadingMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       throw this.toKanjiReadingError(error)
     }
   }
 
-  async deleteByKanjiId(kanjiId: number, lang: string = 'vi') {
+  async deleteByKanjiId(kanjiId: number) {
     await this.kanjiReadingRepository.deleteByKanjiId(kanjiId)
-    return {
-      message: this.i18nService.translate(KanjiReadingMessage.DELETE_SUCCESS, lang)
-    }
+    return
   }
 
-  async getStats(lang: string = 'vi') {
-    return {
-      data: await this.kanjiReadingRepository.getStats(),
-      message: this.i18nService.translate(KanjiReadingMessage.GET_STATS_SUCCESS, lang)
-    }
+  async getStats() {
+    return await this.kanjiReadingRepository.getStats()
   }
 
-  async getReadingTypeStats(lang: string = 'vi') {
+  async getReadingTypeStats() {
     const stats = await this.kanjiReadingRepository.getStats()
-    return {
-      data: stats.byReadingType,
-      message: this.i18nService.translate(KanjiReadingMessage.GET_STATS_SUCCESS, lang)
-    }
+    return stats.byReadingType
   }
   //#endregion
 

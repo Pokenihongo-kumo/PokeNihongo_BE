@@ -12,11 +12,7 @@ const prismaError = (code: string, meta?: Record<string, unknown>) =>
 describe('MeaningService', () => {
   const repo = { create: jest.fn(), findByVocabularyId: jest.fn() }
   const translationHelper = { getTranslationsByKey: jest.fn() }
-  const service = new MeaningService(
-    repo as never,
-    translationHelper as never,
-    { translate: (k: string) => k } as never
-  )
+  const service = new MeaningService(repo as never, translationHelper as never)
 
   beforeAll(() => {
     jest.spyOn(service['logger'], 'error').mockImplementation(() => undefined)

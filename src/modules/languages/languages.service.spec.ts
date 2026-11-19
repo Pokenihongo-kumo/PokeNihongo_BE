@@ -17,10 +17,7 @@ describe('LanguagesService', () => {
     delete: jest.fn(),
     deleteByCode: jest.fn()
   }
-  const service = new LanguagesService(
-    repo as never,
-    { translate: (k: string) => k } as never
-  )
+  const service = new LanguagesService(repo as never)
   const failure = (promise: Promise<unknown>) =>
     promise.then(
       () => undefined,

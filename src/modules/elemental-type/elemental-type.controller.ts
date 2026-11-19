@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { ElementalTypeMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { IsPublic } from '@/common/decorators/auth.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
@@ -19,77 +21,90 @@ import { ElementalTypeService } from './elemental-type.service'
 
 @Controller('elemental-type')
 export class ElementalTypeController {
-  constructor(private readonly elementalTypeService: ElementalTypeService) {}
+  constructor(
+    private readonly elementalTypeService: ElementalTypeService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @IsPublic()
   @ZodSerializerDto(PaginationResponseSchema)
-  list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return this.elementalTypeService.list(query, lang)
+  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(ElementalTypeMessage.GET_LIST_SUCCESS, lang),
+      data: await this.elementalTypeService.list(query)
+    }
   }
 
   @Get('active')
   @IsPublic()
   // Was PaginationResponseSchema while the data is an array: always 500
   @ZodSerializerDto(GetActiveElementalTypesResDTO)
-  getAllActiveTypes(@I18nLang() lang: string) {
-    return this.elementalTypeService.getAllActiveTypes(lang)
+  async getAllActiveTypes(@I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(ElementalTypeMessage.GET_LIST_SUCCESS, lang),
+      data: await this.elementalTypeService.getAllActiveTypes()
+    }
   }
 
   @Get(':elementId')
   @IsPublic()
   @ZodSerializerDto(GetElementalTypeDetailResDTO)
-  findById(@Param() params: GetElementalTypeParamsDTO, @I18nLang() lang: string) {
-    return this.elementalTypeService.findById(params.elementId, lang)
+  async findById(@Param() params: GetElementalTypeParamsDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(ElementalTypeMessage.GET_SUCCESS, lang),
+      data: await this.elementalTypeService.findById(params.elementId)
+    }
   }
 
   @Post()
   @ZodSerializerDto(CreateElementalTypeResDTO)
-  create(
+  async create(
     @Body() body: CreateElementalTypeBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.elementalTypeService.create(
-      {
+    return {
+      message: this.i18nService.translate(ElementalTypeMessage.CREATE_SUCCESS, lang),
+      data: await this.elementalTypeService.create({
         data: body,
         createdById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Put(':elementId')
   @ZodSerializerDto(UpdateElementalTypeResDTO)
-  update(
+  async update(
     @Body() body: UpdateElementalTypeBodyDTO,
     @Param() params: GetElementalTypeParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.elementalTypeService.update(
-      {
+    return {
+      message: this.i18nService.translate(ElementalTypeMessage.UPDATE_SUCCESS, lang),
+      data: await this.elementalTypeService.update({
         data: body,
         id: params.elementId,
         updatedById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':elementId')
   @ZodSerializerDto(MessageResDTO)
-  delete(
+  async delete(
     @Param() params: GetElementalTypeParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.elementalTypeService.delete(
-      {
-        id: params.elementId,
-        deletedById: userId
-      },
-      lang
-    )
+    await this.elementalTypeService.delete({
+      id: params.elementId,
+      deletedById: userId
+    })
+    return {
+      message: this.i18nService.translate(ElementalTypeMessage.DELETE_SUCCESS, lang),
+      data: null
+    }
   }
 }
