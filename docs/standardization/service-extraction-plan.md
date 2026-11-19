@@ -1,6 +1,6 @@
 # Plan tách service/gateway/worker nhiều trách nhiệm (giai đoạn 6)
 
-Trạng thái: **proposal** (chờ duyệt D-X1–D-X4). Viết từ code `dev` @ `f0df082a` (2026-11-19), chỉ đọc code. Chi tiết hóa giai đoạn 6 trong [BACKEND_STANDARDIZATION_PLAN.md](../../BACKEND_STANDARDIZATION_PLAN.md).
+Trạng thái: **design-approved** (D-X1–D-X4 chốt 2026-11-19). Viết từ code `dev` @ `f0df082a` (2026-11-19), chỉ đọc code. Chi tiết hóa giai đoạn 6 trong [BACKEND_STANDARDIZATION_PLAN.md](../../BACKEND_STANDARDIZATION_PLAN.md).
 
 ## 1. Mục tiêu
 
