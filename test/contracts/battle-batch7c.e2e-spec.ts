@@ -568,6 +568,52 @@ describe('Battle batch 7c contract (e2e)', () => {
     await prisma.match.update({ where: { id: matchId }, data: { status: 'COMPLETED' } })
   })
 
+  it('the match ends on a question timeout: match-completed carries the same winner as an answer', async () => {
+    await prisma.user.updateMany({
+      where: { id: { in: [users.a, users.b] } },
+      data: { eloscore: 0 }
+    })
+    const matchId = await startMatch()
+    await pickAll(matchId)
+    for (const roundNumber of ['ONE', 'TWO', 'THREE']) {
+      const [start] = await jobsNamed(BullAction.START_ROUND)
+      await takeJobs()
+      await startRound(start)
+      await answerAll(matchId, roundNumber, 'a', true)
+      if (roundNumber !== 'THREE') {
+        await answerAll(matchId, roundNumber, 'b', false)
+        continue
+      }
+      // round three: B answers all but the last question, which times out
+      const bQuestions = await questionsOf(matchId, roundNumber, 'b')
+      const last = bQuestions.pop()!
+      for (const q of bQuestions) {
+        await as('b')
+          .put(`/round-question/answer/${q.id}`)
+          .send({ answerId: q.wrong, timeAnswerMs: 1000 })
+      }
+      takeEvents()
+      await realQuestionTimeout.call(
+        app.get(RoundQuestionTimeoutProcessor),
+        fakeJob({
+          roundQuestionId: last.id,
+          matchRoundParticipantId: last.matchRoundParticipantId
+        })
+      )
+    }
+    const { order, shapes } = takeEvents()
+    const completed = {
+      count: order.filter((e) => e === 'match-completed').length,
+      shape: shapes['match-completed']
+    }
+    expect({
+      matchStatus: (await prisma.match.findUniqueOrThrow({ where: { id: matchId } }))
+        .status,
+      completed
+    }).toMatchSnapshot()
+    await takeJobs()
+  })
+
   it('errors', async () => {
     expect({
       answerBadId: await both((l) =>

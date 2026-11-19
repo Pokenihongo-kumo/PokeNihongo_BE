@@ -1768,8 +1768,8 @@ export class KaiwaGateway implements OnGatewayDisconnect {
 
       // Lưu AI response vào database (audioUrl sẽ được update sau khi có TTS)
       // Tạm thời lưu không có audioUrl, sẽ update sau khi upload TTS audio
-      let aiMessageId: number | null = null
-      this.userAIConversationService
+      // The AI audio upload awaits this id: TTS can finish before the insert does
+      const aiMessageSaved: Promise<number | null> = this.userAIConversationService
         .create({
           userId,
           conversationId: client.data.conversationId,
@@ -1778,16 +1778,17 @@ export class KaiwaGateway implements OnGatewayDisconnect {
           audioUrl: null // Sẽ update sau khi có TTS audio
         })
         .then((result) => {
-          // Lưu message ID để update audioUrl sau
-          aiMessageId = result?.id || null
+          const aiMessageId = result?.id || null
           this.logger.log(
             `[Kaiwa] [${requestId}] Saved AI message (ID: ${aiMessageId}), waiting for TTS audio...`
           )
+          return aiMessageId
         })
         .catch((err) => {
           this.logger.warn(
             `[Kaiwa] [${requestId}] Failed to save AI message: ${err.message}`
           )
+          return null
         })
 
       // Update room với lastMessage từ AI (async, không block)
@@ -2041,7 +2042,7 @@ export class KaiwaGateway implements OnGatewayDisconnect {
               await this.uploadAndUpdateMessageAudio(
                 result.audioContent,
                 'OGG', // AI audio luôn là OGG_OPUS
-                aiMessageId,
+                await aiMessageSaved,
                 'AI',
                 userId,
                 client.data.conversationId,
