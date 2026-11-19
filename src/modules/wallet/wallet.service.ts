@@ -308,14 +308,7 @@ export class WalletService {
   // ---- For other modules (module-boundary plan B4) ----
   // Same arguments (a caller's transaction client included) and results as the
   // repo methods, so callers keep their transactions and write order.
-
-  // Adds without a wallet-transaction row: only the gacha roll payout (duplicates
-  // turned into SPARKLES) still uses it; every other movement goes through credit/debit
-  addBalanceToWalletWithType(
-    ...args: Parameters<WalletRepo['addBalanceToWalletWithType']>
-  ) {
-    return this.walletRepo.addBalanceToWalletWithType(...args)
-  }
+  // Balance changes go through debit/credit only (they write the ledger row)
 
   checkEnoughBalance(...args: Parameters<WalletRepo['checkEnoughBalance']>) {
     return this.walletRepo.checkEnoughBalance(...args)

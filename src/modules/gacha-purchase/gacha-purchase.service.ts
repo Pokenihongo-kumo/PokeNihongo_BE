@@ -323,15 +323,21 @@ export class GachaPurchaseService {
             await this.userPokemonService.addPokemonByGacha(item, prismaTx)
           }
         }
-        // 8. Bulk add SPARKLES
+        // 8. Bulk add SPARKLES for duplicates, recorded like the debit above
+        // (purpose GACHA, same source, referencing the purchase)
         if (addSparklesList.length > 0) {
           const totalSparkles = addSparklesList.reduce((a, b) => a + b, 0)
 
-          await this.walletService.addBalanceToWalletWithType(
+          await this.walletService.credit(
             {
               userId,
               type: walletType.SPARKLES,
-              amount: totalSparkles
+              amount: totalSparkles,
+              createdById: userId,
+              purpose: walletPurposeType.GACHA,
+              referenceId: purchase.id,
+              source: WalletTransactionSourceType.SHOP_PURCHASE,
+              description: `Gacha duplicates payout ${purchase.id}`
             },
             prismaTx
           )
