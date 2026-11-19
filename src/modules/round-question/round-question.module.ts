@@ -7,6 +7,7 @@ import { RoundQuestionTimeoutProcessor } from '@/modules/round-question/round-qu
 import { WebsocketsModule } from '@/websockets/websockets.module'
 import { Module } from '@nestjs/common'
 import { RoundQuestionController } from './round-question.controller'
+import { RoundCompletionService } from './round-completion.service'
 import { RoundQuestionRepo } from './round-question.repo'
 import { RoundQuestionService } from './round-question.service'
 
@@ -24,7 +25,12 @@ import { RoundQuestionService } from './round-question.service'
     UserCoreModule
   ],
   controllers: [RoundQuestionController],
-  providers: [RoundQuestionService, RoundQuestionRepo, RoundQuestionTimeoutProcessor],
+  providers: [
+    RoundQuestionService,
+    RoundQuestionRepo,
+    RoundQuestionTimeoutProcessor,
+    RoundCompletionService
+  ],
   exports: [RoundQuestionService, RoundQuestionRepo, RoundQuestionTimeoutProcessor]
 })
 export class RoundQuestionModule {}

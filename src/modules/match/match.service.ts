@@ -486,12 +486,6 @@ export class MatchService {
     return this.matchRepo.findCompletedWithDetails(...args)
   }
 
-  // ---- For other modules: Completing a match (RoundQuestionTimeoutProcessor) (B7) ----
-
-  completeWithWinnerFull(...args: Parameters<MatchRepo['completeWithWinnerFull']>) {
-    return this.matchRepo.completeWithWinnerFull(...args)
-  }
-
   // ---- For other modules: The pick flow (match-round-participant) (B7) ----
 
   findWithPlayers(...args: Parameters<MatchRepo['findWithPlayers']>) {
