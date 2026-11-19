@@ -186,15 +186,20 @@ export class AttendanceService {
         }),
 
         // Cộng coin vào ví SPARKLES + lịch sử wallet transaction (cùng transaction)
-        this.walletService.credit({
-          userId: createdById,
-          type: walletType.SPARKLES,
-          amount: totalCoin * valueIncrease,
-          createdById,
-          purpose: walletPurposeType.DAILY_REQUEST,
-          source: WalletTransactionSourceType.DAILY_CHECKIN,
-          description: `Daily attendance reward: ${data.coin} base + ${data.bonusCoin} bonus`
-        })
+        this.walletService.credit(
+          {
+            userId: createdById,
+            type: walletType.SPARKLES,
+            amount: totalCoin * valueIncrease,
+            createdById,
+            purpose: walletPurposeType.DAILY_REQUEST,
+            source: WalletTransactionSourceType.DAILY_CHECKIN,
+            description: `Daily attendance reward: ${data.coin} base + ${data.bonusCoin} bonus`
+          },
+          undefined,
+          // a user without the wallet gets it with the coins
+          { createIfMissing: true }
+        )
       ])
 
       // Tạo notification cho attendance

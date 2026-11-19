@@ -701,16 +701,21 @@ export class RewardService {
         )
         const finalAmount = totalCoins * valueIncrease
         // Balance and its wallet transaction in one transaction
-        const coinsResult = await this.walletService.credit({
-          userId,
-          type: WalletType.POKE_COINS,
-          amount: finalAmount,
-          createdById: userId,
-          purpose: 'REWARD',
-          referenceId: sourceId ?? null,
-          source: this.mapToWalletSourceType(sourceType),
-          description: `Received ${finalAmount} POKE_COINS from ${sourceType}`
-        })
+        const coinsResult = await this.walletService.credit(
+          {
+            userId,
+            type: WalletType.POKE_COINS,
+            amount: finalAmount,
+            createdById: userId,
+            purpose: 'REWARD',
+            referenceId: sourceId ?? null,
+            source: this.mapToWalletSourceType(sourceType),
+            description: `Received ${finalAmount} POKE_COINS from ${sourceType}`
+          },
+          undefined,
+          // a user without this wallet gets it with the reward
+          { createIfMissing: true }
+        )
 
         // Accumulate or set result
         results.pokeCoins = coinsResult?.wallet ?? null
@@ -748,16 +753,21 @@ export class RewardService {
         const finalAmount = totalSparkles * valueIncrease
 
         // Balance and its wallet transaction in one transaction
-        const sparklesResult = await this.walletService.credit({
-          userId,
-          type: WalletType.SPARKLES,
-          amount: finalAmount,
-          createdById: userId,
-          purpose: 'REWARD',
-          referenceId: sourceId ?? null,
-          source: this.mapToWalletSourceType(sourceType),
-          description: `Received ${finalAmount} SPARKLES from ${sourceType}`
-        })
+        const sparklesResult = await this.walletService.credit(
+          {
+            userId,
+            type: WalletType.SPARKLES,
+            amount: finalAmount,
+            createdById: userId,
+            purpose: 'REWARD',
+            referenceId: sourceId ?? null,
+            source: this.mapToWalletSourceType(sourceType),
+            description: `Received ${finalAmount} SPARKLES from ${sourceType}`
+          },
+          undefined,
+          // a user without this wallet gets it with the reward
+          { createIfMissing: true }
+        )
 
         // Accumulate or set result
         results.sparkles = sparklesResult?.wallet ?? null
@@ -861,16 +871,21 @@ export class RewardService {
           // Add coins to user wallet
           const finalCoinValue = coinValue * valueIncrease
           // Balance and its wallet transaction in one transaction
-          const credited = await this.walletService.credit({
-            userId,
-            type: WalletType.SPARKLES,
-            amount: finalCoinValue,
-            createdById: userId,
-            purpose: 'REWARD',
-            referenceId: sourceId ?? null,
-            source: this.mapToWalletSourceType(sourceType),
-            description: `Converted duplicate Pokemon #${pokemonId} (${pokemon.nameJp}) to ${finalCoinValue} SPARKLES`
-          })
+          const credited = await this.walletService.credit(
+            {
+              userId,
+              type: WalletType.SPARKLES,
+              amount: finalCoinValue,
+              createdById: userId,
+              purpose: 'REWARD',
+              referenceId: sourceId ?? null,
+              source: this.mapToWalletSourceType(sourceType),
+              description: `Converted duplicate Pokemon #${pokemonId} (${pokemon.nameJp}) to ${finalCoinValue} SPARKLES`
+            },
+            undefined,
+            // a user without this wallet gets it with the reward
+            { createIfMissing: true }
+          )
           const updatedWallet = credited?.wallet ?? null
 
           results.pokemons.push({
