@@ -4,8 +4,7 @@ import { HttpStatus, Injectable } from '@nestjs/common'
 import { dailyRequestType } from '@/common/constants/achievement.constant'
 import {
   walletPurposeType,
-  WalletTransactionSourceType,
-  WalletTransactionType
+  WalletTransactionSourceType
 } from '@/common/constants/wallet-transaction.constant'
 import { walletType } from '@/common/constants/wallet.constant'
 import { NotFoundRecordException } from 'src/shared/error'
@@ -31,7 +30,6 @@ import { AttendenceConfigService } from '@/modules/attendence-config/attendence-
 import { NotificationService } from '@/modules/notification/notification.service'
 import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
 import { UserCoreService } from '@/modules/user/user-core.service'
-import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
 import { WalletService } from '@/modules/wallet/wallet.service'
 import { AttendanceRepo } from './attendence.repo'
 import { AttendancegAlreadyExistsException } from './dto/attendance.error'
@@ -47,7 +45,6 @@ export class AttendanceService {
     private readonly i18nService: I18nService,
     private readonly userDailyRequestService: UserDailyRequestService,
     private readonly walletService: WalletService,
-    private readonly walletTransactionService: WalletTransactionService,
     private readonly userSubService: UserSubscriptionService,
     private readonly sharedNotificationService: NotificationService
   ) {}
@@ -172,7 +169,7 @@ export class AttendanceService {
           createdById
         )
 
-      const [attendance, , , wallet] = await Promise.all([
+      const [attendance] = await Promise.all([
         this.attendanceRepo.create({
           createdById,
           data: data
@@ -188,30 +185,17 @@ export class AttendanceService {
           progressAdd: 1
         }),
 
-        // Cộng coin vào ví SPARKLES
-        this.walletService.addBalanceToWalletWithType({
+        // Cộng coin vào ví SPARKLES + lịch sử wallet transaction (cùng transaction)
+        this.walletService.credit({
           userId: createdById,
           type: walletType.SPARKLES,
-          amount: totalCoin * valueIncrease
+          amount: totalCoin * valueIncrease,
+          createdById,
+          purpose: walletPurposeType.DAILY_REQUEST,
+          source: WalletTransactionSourceType.DAILY_CHECKIN,
+          description: `Daily attendance reward: ${data.coin} base + ${data.bonusCoin} bonus`
         })
       ])
-
-      // Lưu lịch sử wallet transaction
-      if (wallet) {
-        await this.walletTransactionService.record({
-          createdById,
-          data: {
-            walletId: wallet.id,
-            userId: createdById,
-            purpose: walletPurposeType.DAILY_REQUEST,
-            referenceId: null,
-            amount: totalCoin * valueIncrease,
-            type: WalletTransactionType.INCREASE,
-            source: WalletTransactionSourceType.DAILY_CHECKIN,
-            description: `Daily attendance reward: ${data.coin} base + ${data.bonusCoin} bonus`
-          }
-        })
-      }
 
       // Tạo notification cho attendance
       await this.sharedNotificationService.create(

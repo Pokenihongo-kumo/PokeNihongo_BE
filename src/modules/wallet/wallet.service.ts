@@ -1,7 +1,10 @@
-import { walletType } from '@/common/constants/wallet.constant'
+import { WalletTransactionType } from '@/common/constants/wallet-transaction.constant'
+import { walletType, WalletTypeType } from '@/common/constants/wallet.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { WalletMessage } from '@/i18n/message-keys'
 import { UserCoreService } from '@/modules/user/user-core.service'
+import { CreateWalletTransactionBody } from '@/modules/wallet-transaction/dto/wallet-transaction.zod-dto'
+import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
@@ -10,9 +13,19 @@ import {
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable, Logger } from '@nestjs/common'
+import { PrismaClient } from '@prisma/client'
 import { WalletAlreadyExistsException } from './dto/wallet.error'
 import { CreateWalletBody, UpdateWalletBody } from './dto/wallet.zod-dto'
 import { WalletRepo } from './wallet.repo'
+
+// One balance change and the wallet-transaction row that records it
+export type WalletMovement = {
+  userId: number
+  type: WalletTypeType
+  amount: number
+  createdById?: number | null
+} & Pick<CreateWalletTransactionBody, 'purpose' | 'source'> &
+  Partial<Pick<CreateWalletTransactionBody, 'referenceId' | 'description'>>
 
 @Injectable()
 export class WalletService {
@@ -21,8 +34,88 @@ export class WalletService {
     private walletRepo: WalletRepo,
     private readonly i18nService: I18nService,
     // user ids only, from the tier-0 user core (no cycle with UserModule)
-    private readonly userCoreService: UserCoreService
+    private readonly userCoreService: UserCoreService,
+    private readonly walletTransactionService: WalletTransactionService
   ) {}
+
+  // Takes `amount` from the wallet only when the balance covers it (conditional
+  // update, safe under concurrent debits) and records the DECREASE in the same
+  // transaction. null when there is no wallet or not enough balance: nothing
+  // changed, the caller throws its own error (which rolls its transaction back)
+  debit(movement: WalletMovement, prismaTx?: PrismaClient) {
+    return this.inTransaction(prismaTx, async (tx) => {
+      const wallet = await this.walletRepo.minusBalanceToWalletWithTypeUserId(
+        { userId: movement.userId, type: movement.type, amount: movement.amount },
+        tx
+      )
+      if (!wallet) return null
+      const transaction = await this.record(movement, wallet.id, 'DECREASE', tx)
+      return { wallet, transaction }
+    })
+  }
+
+  // Adds `amount` and records the INCREASE in the same transaction. null when the
+  // user has no wallet of this type (nothing changed), unless `createIfMissing`
+  // (a refund lands even if the wallet was never created)
+  credit(
+    movement: WalletMovement,
+    prismaTx?: PrismaClient,
+    { createIfMissing = false }: { createIfMissing?: boolean } = {}
+  ) {
+    return this.inTransaction(prismaTx, async (tx) => {
+      const balance = {
+        userId: movement.userId,
+        type: movement.type,
+        amount: movement.amount
+      }
+      const wallet = createIfMissing
+        ? await this.walletRepo.creditOrCreate(balance, tx)
+        : await this.walletRepo.addBalanceToWalletWithType(balance, tx)
+      if (!wallet) return null
+      const transaction = await this.record(movement, wallet.id, 'INCREASE', tx)
+      return { wallet, transaction }
+    })
+  }
+
+  private record(
+    {
+      userId,
+      amount,
+      createdById,
+      purpose,
+      referenceId,
+      source,
+      description
+    }: WalletMovement,
+    walletId: number,
+    type: keyof typeof WalletTransactionType,
+    tx: PrismaClient
+  ) {
+    return this.walletTransactionService.record(
+      {
+        createdById,
+        data: {
+          walletId,
+          userId,
+          purpose,
+          referenceId: referenceId ?? null,
+          amount,
+          type: WalletTransactionType[type],
+          source,
+          description: description ?? null
+        }
+      },
+      tx
+    )
+  }
+
+  // The caller's transaction, or a new one so the balance and its record stay together
+  private inTransaction<T>(
+    prismaTx: PrismaClient | undefined,
+    work: (tx: PrismaClient) => Promise<T>
+  ) {
+    return prismaTx ? work(prismaTx) : this.walletRepo.withTransaction(work)
+  }
 
   // Generate wallets for all users (create missing wallet types per user)
   async generateWalletForAllUsers(
@@ -216,6 +309,8 @@ export class WalletService {
   // Same arguments (a caller's transaction client included) and results as the
   // repo methods, so callers keep their transactions and write order.
 
+  // Adds without a wallet-transaction row: only the gacha roll payout (duplicates
+  // turned into SPARKLES) still uses it; every other movement goes through credit/debit
   addBalanceToWalletWithType(
     ...args: Parameters<WalletRepo['addBalanceToWalletWithType']>
   ) {
@@ -228,16 +323,5 @@ export class WalletService {
 
   findByUserIdAndType(...args: Parameters<WalletRepo['findByUserIdAndType']>) {
     return this.walletRepo.findByUserIdAndType(...args)
-  }
-
-  // Debits only when the balance covers it (A1 T7); null otherwise
-  minusBalanceToWalletWithTypeUserId(
-    ...args: Parameters<WalletRepo['minusBalanceToWalletWithTypeUserId']>
-  ) {
-    return this.walletRepo.minusBalanceToWalletWithTypeUserId(...args)
-  }
-
-  creditOrCreate(...args: Parameters<WalletRepo['creditOrCreate']>) {
-    return this.walletRepo.creditOrCreate(...args)
   }
 }

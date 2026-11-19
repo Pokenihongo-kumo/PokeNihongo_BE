@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common'
 import { SubscriptionPlanModule } from '../subscription-plan/subscription-plan.module'
 import { UserSubscriptionModule } from '../user-subscription/user-subscription.module'
-import { WalletTransactionModule } from '../wallet-transaction/wallet-transaction.module'
 import { WalletModule } from '../wallet/wallet.module'
 import { InvoiceExpirationProcessor } from './invoice-expiration.processor'
 import { InvoiceController } from './invoice.controller'
@@ -11,12 +10,7 @@ import { InvoiceService } from './invoice.service'
 // POST /invoice is in the payment module (InvoiceCheckoutController): invoice
 // does not depend on payment
 @Module({
-  imports: [
-    SubscriptionPlanModule,
-    UserSubscriptionModule,
-    WalletModule,
-    WalletTransactionModule
-  ],
+  imports: [SubscriptionPlanModule, UserSubscriptionModule, WalletModule],
   controllers: [InvoiceController],
   providers: [InvoiceService, InvoiceRepo, InvoiceExpirationProcessor],
   exports: [InvoiceService, InvoiceRepo]

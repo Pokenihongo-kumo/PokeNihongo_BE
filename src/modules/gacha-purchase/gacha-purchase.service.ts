@@ -3,7 +3,6 @@ import { GachaBannerStatus } from '@/common/constants/shop-banner.constant'
 import { FeatureKey } from '@/common/constants/subscription.constant'
 import {
   WalletTransactionSourceType,
-  WalletTransactionType,
   walletPurposeType
 } from '@/common/constants/wallet-transaction.constant'
 import { walletType } from '@/common/constants/wallet.constant'
@@ -13,7 +12,6 @@ import { GachaBannerService } from '@/modules/gacha-banner/gacha-banner.service'
 import { GachaRollHistoryService } from '@/modules/gacha-roll-history/gacha-roll-history.service'
 import { UserGachaPityService } from '@/modules/user-gacha-pity/user-gacha-pity.service'
 import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
-import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
 import { WalletService } from '@/modules/wallet/wallet.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
@@ -43,7 +41,6 @@ export class GachaPurchaseService {
     private readonly gachaRollHistoryService: GachaRollHistoryService,
     private readonly userGachaPityService: UserGachaPityService,
     private readonly walletService: WalletService,
-    private readonly walletTransactionService: WalletTransactionService,
     private readonly userPokemonService: UserPokemonService,
     private readonly userSubService: UserSubscriptionService
     // private readonly pokemonRepo: PokemonRepo
@@ -122,47 +119,40 @@ export class GachaPurchaseService {
       const result = await this.gachaPurchaseRepo.withTransaction(async (prismaTx) => {
         // xem có tăng không
 
-        const [purchase, updatedWallet, valueIncrease] = await Promise.all([
-          this.gachaPurchaseRepo.create(
-            {
-              createdById: userId,
-              data: {
-                userId,
-                bannerId: data.bannerId,
-                walletTransId: null,
-                rollCount: data.rollCount,
-                totalCost: totalCost
-              }
-            },
-            prismaTx
-          ),
-          this.walletService.minusBalanceToWalletWithTypeUserId(
-            { userId, type: walletType.SPARKLES, amount: totalCost },
-            prismaTx
-          ),
+        const valueIncrease =
           await this.userSubService.getValueConvertByfeatureKeyAndUserId(
             FeatureKey.COIN_MULTIPLIER,
             userId
           )
-        ])
-        if (!updatedWallet) throw new NotEnoughBalanceException()
-        // 2. Create Wallet Transaction referencing the purchase
-        const walletTrans = await this.walletTransactionService.record(
+        const purchase = await this.gachaPurchaseRepo.create(
           {
             createdById: userId,
             data: {
-              walletId: updatedWallet.id,
               userId,
-              purpose: walletPurposeType.GACHA,
-              referenceId: purchase.id,
-              amount: totalCost,
-              type: WalletTransactionType.DECREASE,
-              source: WalletTransactionSourceType.SHOP_PURCHASE,
-              description: `Gacha purchase ${purchase.id}`
+              bannerId: data.bannerId,
+              walletTransId: null,
+              rollCount: data.rollCount,
+              totalCost: totalCost
             }
           },
           prismaTx
         )
+        // 2. Debit + wallet transaction referencing the purchase
+        const debited = await this.walletService.debit(
+          {
+            userId,
+            type: walletType.SPARKLES,
+            amount: totalCost,
+            createdById: userId,
+            purpose: walletPurposeType.GACHA,
+            referenceId: purchase.id,
+            source: WalletTransactionSourceType.SHOP_PURCHASE,
+            description: `Gacha purchase ${purchase.id}`
+          },
+          prismaTx
+        )
+        if (!debited) throw new NotEnoughBalanceException()
+        const walletTrans = debited.transaction
 
         // 3. Update purchase with walletTransId
         const [finalPurchase] = await Promise.all([

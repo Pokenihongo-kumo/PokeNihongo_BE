@@ -1,13 +1,11 @@
 import {
   walletPurposeType,
-  WalletTransactionSourceType,
-  WalletTransactionType
+  WalletTransactionSourceType
 } from '@/common/constants/wallet-transaction.constant'
 import { walletType } from '@/common/constants/wallet.constant'
 import { I18nService } from '@/i18n/i18n.service'
 import { ShopPurchaseMessage } from '@/i18n/message-keys'
 import { PokemonService } from '@/modules/pokemon/pokemon.service'
-import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
 import { WalletService } from '@/modules/wallet/wallet.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
@@ -41,7 +39,6 @@ export class ShopPurchaseService {
     @Inject(forwardRef(() => ShopBannerRepo))
     private readonly shopBannerRepo: ShopBannerRepo,
     private readonly walletService: WalletService,
-    private readonly walletTransactionService: WalletTransactionService,
     private readonly userPokemonService: UserPokemonService,
     private readonly pokemonService: PokemonService
   ) {}
@@ -119,47 +116,37 @@ export class ShopPurchaseService {
 
       // 4) transaction
       const result = await this.shopPurchaseRepo.withTransaction(async (prismaTx) => {
-        // 4.1) tao lich su mua hang (tam thoi chua co walletTransId) va tru tien no
-        const [purchase, updatedWallet] = await Promise.all([
-          this.shopPurchaseRepo.create(
-            {
-              createdById: userId,
-              data: {
-                userId,
-                shopItemId: data.shopItemId,
-                walletTransId: null,
-                quantity: data.quantity,
-                totalPrice
-              }
-            },
-            prismaTx
-          ),
-          this.walletService.minusBalanceToWalletWithTypeUserId(
-            { userId, type: walletType.SPARKLES, amount: totalPrice },
-            prismaTx
-          )
-        ])
-
-        // ko du la chui
-        if (!updatedWallet) throw new NotEnoughBalanceException()
-
-        // 4.3) Create Wallet Transaction referencing the purchase
-        const walletTrans = await this.walletTransactionService.record(
+        // 4.1) tao lich su mua hang (tam thoi chua co walletTransId)
+        const purchase = await this.shopPurchaseRepo.create(
           {
             createdById: userId,
             data: {
-              walletId: updatedWallet.id,
               userId,
-              purpose: walletPurposeType.SHOP,
-              referenceId: purchase.id,
-              amount: totalPrice,
-              type: WalletTransactionType.DECREASE,
-              source: WalletTransactionSourceType.SHOP_PURCHASE,
-              description: `Shop purchase ${purchase.id}`
+              shopItemId: data.shopItemId,
+              walletTransId: null,
+              quantity: data.quantity,
+              totalPrice
             }
           },
           prismaTx
         )
+
+        // 4.2) tru tien + ghi wallet transaction tham chieu purchase; ko du la chui
+        const debited = await this.walletService.debit(
+          {
+            userId,
+            type: walletType.SPARKLES,
+            amount: totalPrice,
+            createdById: userId,
+            purpose: walletPurposeType.SHOP,
+            referenceId: purchase.id,
+            source: WalletTransactionSourceType.SHOP_PURCHASE,
+            description: `Shop purchase ${purchase.id}`
+          },
+          prismaTx
+        )
+        if (!debited) throw new NotEnoughBalanceException()
+        const walletTrans = debited.transaction
 
         // 4.4) Update purchase with walletTransId
         // Add Pokemon to user inventory (level 1, nickname null, isMain false)
@@ -232,62 +219,35 @@ export class ShopPurchaseService {
       const result = await this.shopPurchaseRepo.withTransaction(async (prismaTx) => {
         // 4.1) If total changed: refund old, then charge new
         if (newTotal !== oldTotal) {
-          // nhet lai tien cu ve vi
-          const walletAfterRefund = await this.walletService.addBalanceToWalletWithType(
-            { userId: existing.userId, type: walletType.SPARKLES, amount: oldTotal },
-            prismaTx
-          )
-          if (!walletAfterRefund) throw new NotEnoughBalanceException()
-
-          // Log refund transaction (INCREASE)
-          await this.walletTransactionService.record(
-            {
-              createdById: userId,
-              data: {
-                walletId: walletAfterRefund.id,
-                userId: existing.userId,
-                purpose: walletPurposeType.SHOP,
-                referenceId: id,
-                amount: oldTotal,
-                type: WalletTransactionType.INCREASE,
-                source: WalletTransactionSourceType.SHOP_PURCHASE,
-                description: `Refund previous total for purchase ${id}`
-              }
-            },
-            prismaTx
-          )
-
-          //check coi du tien ko
-          if ((walletAfterRefund as any).balance < newTotal) {
-            // Optional: check current wallet if needed; here we guard via balance on returned entity
-            throw new NotEnoughBalanceException()
+          const movement = {
+            userId: existing.userId,
+            type: walletType.SPARKLES,
+            createdById: userId,
+            purpose: walletPurposeType.SHOP,
+            referenceId: id,
+            source: WalletTransactionSourceType.SHOP_PURCHASE
           }
-
-          // tru tien ra
-          const walletAfterCharge =
-            await this.walletService.minusBalanceToWalletWithTypeUserId(
-              { userId: existing.userId, type: walletType.SPARKLES, amount: newTotal },
-              prismaTx
-            )
-          if (!walletAfterCharge) throw new NotEnoughBalanceException()
-
-          // Log charge transaction (DECREASE)
-          await this.walletTransactionService.record(
+          // nhet lai tien cu ve vi (INCREASE)
+          const refunded = await this.walletService.credit(
             {
-              createdById: userId,
-              data: {
-                walletId: walletAfterCharge.id,
-                userId: existing.userId,
-                purpose: walletPurposeType.SHOP,
-                referenceId: id,
-                amount: newTotal,
-                type: WalletTransactionType.DECREASE,
-                source: WalletTransactionSourceType.SHOP_PURCHASE,
-                description: `Charge new total for purchase ${id}`
-              }
+              ...movement,
+              amount: oldTotal,
+              description: `Refund previous total for purchase ${id}`
             },
             prismaTx
           )
+          if (!refunded) throw new NotEnoughBalanceException()
+
+          // tru tien moi (DECREASE); ko du tien thi null
+          const charged = await this.walletService.debit(
+            {
+              ...movement,
+              amount: newTotal,
+              description: `Charge new total for purchase ${id}`
+            },
+            prismaTx
+          )
+          if (!charged) throw new NotEnoughBalanceException()
         }
 
         // 4.2) Update purchase record
@@ -330,34 +290,21 @@ export class ShopPurchaseService {
       if (!existShopPurchase) throw new ShopPurchaseNotFoundException()
 
       await this.shopPurchaseRepo.withTransaction(async (prismaTx) => {
-        // 1) Refund full amount to wallet
-        const walletAfterRefund = await this.walletService.addBalanceToWalletWithType(
+        // 1) Refund full amount to wallet + log refund transaction
+        const refunded = await this.walletService.credit(
           {
             userId: existShopPurchase.userId,
             type: walletType.SPARKLES,
-            amount: existShopPurchase.totalPrice
-          },
-          prismaTx
-        )
-        if (!walletAfterRefund) throw new NotFoundRecordException()
-
-        // 2) Log refund transaction
-        await this.walletTransactionService.record(
-          {
+            amount: existShopPurchase.totalPrice,
             createdById: userId,
-            data: {
-              walletId: walletAfterRefund.id,
-              userId: existShopPurchase.userId,
-              purpose: walletPurposeType.SHOP,
-              referenceId: id,
-              amount: existShopPurchase.totalPrice,
-              type: WalletTransactionType.INCREASE,
-              source: WalletTransactionSourceType.SHOP_PURCHASE,
-              description: `Refund on delete purchase ${id}`
-            }
+            purpose: walletPurposeType.SHOP,
+            referenceId: id,
+            source: WalletTransactionSourceType.SHOP_PURCHASE,
+            description: `Refund on delete purchase ${id}`
           },
           prismaTx
         )
+        if (!refunded) throw new NotFoundRecordException()
 
         // 3) Soft delete purchase
         await this.shopPurchaseRepo.delete(id, false, prismaTx)
