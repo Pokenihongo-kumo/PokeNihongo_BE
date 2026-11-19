@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { GrammarUsageMessage } from '@/i18n/message-keys'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import {
   Body,
@@ -48,7 +50,10 @@ import {
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class GrammarUsageController {
-  constructor(private readonly grammarUsageService: GrammarUsageService) {}
+  constructor(
+    private readonly grammarUsageService: GrammarUsageService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -67,7 +72,10 @@ export class GrammarUsageController {
     @Body() body: CreateGrammarUsageBodyDTO,
     @I18nLang() lang: string
   ) {
-    return await this.grammarUsageService.createGrammarUsage(body, lang)
+    return {
+      message: this.i18nService.translate(GrammarUsageMessage.CREATE_SUCCESS, lang),
+      data: await this.grammarUsageService.createGrammarUsage(body)
+    }
   }
 
   @Get()
@@ -83,7 +91,10 @@ export class GrammarUsageController {
     @Query() query: GetGrammarUsageListQueryDTO,
     @I18nLang() lang: string
   ) {
-    return await this.grammarUsageService.getGrammarUsageList(query, lang)
+    return {
+      message: this.i18nService.translate(GrammarUsageMessage.GET_LIST_SUCCESS, lang),
+      data: await this.grammarUsageService.getGrammarUsageList(query)
+    }
   }
 
   @Get(':id')
@@ -99,7 +110,10 @@ export class GrammarUsageController {
     @Param() params: GetGrammarUsageByIdParamsDTO,
     @I18nLang() lang: string
   ) {
-    return await this.grammarUsageService.getGrammarUsageById(params, lang)
+    return {
+      message: this.i18nService.translate(GrammarUsageMessage.GET_SUCCESS, lang),
+      data: await this.grammarUsageService.getGrammarUsageById(params)
+    }
   }
 
   @Put(':id')
@@ -118,7 +132,10 @@ export class GrammarUsageController {
     @Body() body: UpdateGrammarUsageBodyDTO,
     @I18nLang() lang: string
   ) {
-    return await this.grammarUsageService.updateGrammarUsage(params.id, body, lang)
+    return {
+      message: this.i18nService.translate(GrammarUsageMessage.UPDATE_SUCCESS, lang),
+      data: await this.grammarUsageService.updateGrammarUsage(params.id, body)
+    }
   }
 
   @Delete(':id')
@@ -131,6 +148,9 @@ export class GrammarUsageController {
     @Param() params: GetGrammarUsageByIdParamsDTO,
     @I18nLang() lang: string
   ) {
-    return await this.grammarUsageService.deleteGrammarUsage(params.id, lang)
+    await this.grammarUsageService.deleteGrammarUsage(params.id)
+    return {
+      message: this.i18nService.translate(GrammarUsageMessage.DELETE_SUCCESS, lang)
+    }
   }
 }

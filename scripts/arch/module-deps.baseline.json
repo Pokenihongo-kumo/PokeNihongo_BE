@@ -9,10 +9,10 @@
     "prismaOutsideRepoFiles": 0,
     "httpSchemasInEntities": 0,
     "handWrittenEnvelopes": 2,
-    "serviceEnvelopeFiles": 74,
+    "serviceEnvelopeFiles": 71,
     "prismaOutsideRepoCalls": 0,
-    "serviceStatusCodes": 462,
-    "serviceMessages": 586
+    "serviceStatusCodes": 459,
+    "serviceMessages": 568
   },
   "details": {
     "crossModuleRepoImports": [
@@ -82,12 +82,9 @@
       "modules/gacha-roll-history/gacha-roll-history.service.ts",
       "modules/gemini-config/gemini-config.service.ts",
       "modules/gemini/gemini.service.ts",
-      "modules/grammar-usage/grammar-usage.service.ts",
-      "modules/grammar/grammar.service.ts",
       "modules/invoice/invoice.service.ts",
       "modules/kanji/kanji.service.ts",
       "modules/leaderboard-season/leaderboard-season.service.ts",
-      "modules/lesson-category/lesson-category.service.ts",
       "modules/lesson-content/lesson-content.service.ts",
       "modules/lesson/lesson.service.ts",
       "modules/match-participant/match-participant.service.ts",

@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { LessonCategoryMessage } from '@/i18n/message-keys'
 import {
   Body,
   Controller,
@@ -47,7 +49,10 @@ import {
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class LessonCategoryController {
-  constructor(private readonly lessonCategoryService: LessonCategoryService) {}
+  constructor(
+    private readonly lessonCategoryService: LessonCategoryService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -66,7 +71,10 @@ export class LessonCategoryController {
     @Body() body: CreateLessonCategoryBodyDTO,
     @I18nLang() lang: string
   ) {
-    return await this.lessonCategoryService.createLessonCategory(body, lang)
+    return {
+      message: this.i18nService.translate(LessonCategoryMessage.CREATE_SUCCESS, lang),
+      data: await this.lessonCategoryService.createLessonCategory(body)
+    }
   }
 
   @Post('create-defaults')
@@ -74,7 +82,19 @@ export class LessonCategoryController {
   @ApiOperation({ summary: 'Tạo các danh mục bài học mặc định' })
   @ApiResponse({ status: 201, description: 'Tạo danh mục bài học mặc định thành công' })
   async createDefaultLessonCategories(@I18nLang() lang: string) {
-    return await this.lessonCategoryService.createDefaultLessonCategories(lang)
+    const results = await this.lessonCategoryService.createDefaultLessonCategories()
+    // the page fields of this route's old answer are kept
+    return {
+      data: results,
+      page: 1,
+      limit: results.length,
+      total: results.length,
+      totalPages: 1,
+      message: this.i18nService.translate(
+        LessonCategoryMessage.CREATE_DEFAULT_SUCCESS,
+        lang
+      )
+    }
   }
 
   @Put(':id')
@@ -93,7 +113,10 @@ export class LessonCategoryController {
     @Body() body: UpdateLessonCategoryBodyDTO,
     @I18nLang() lang: string
   ) {
-    return await this.lessonCategoryService.updateLessonCategory(params.id, body, lang)
+    return {
+      message: this.i18nService.translate(LessonCategoryMessage.UPDATE_SUCCESS, lang),
+      data: await this.lessonCategoryService.updateLessonCategory(params.id, body)
+    }
   }
 
   @Delete(':id')
@@ -107,7 +130,10 @@ export class LessonCategoryController {
     @Param() params: GetLessonCategoryByIdParamsDTO,
     @I18nLang() lang: string
   ) {
-    return await this.lessonCategoryService.deleteLessonCategory(params.id, lang)
+    await this.lessonCategoryService.deleteLessonCategory(params.id)
+    return {
+      message: this.i18nService.translate(LessonCategoryMessage.DELETE_SUCCESS, lang)
+    }
   }
 
   @Get()
@@ -122,7 +148,10 @@ export class LessonCategoryController {
     @Query() query: GetLessonCategoryListQueryDTO,
     @I18nLang() lang: string
   ) {
-    return await this.lessonCategoryService.getLessonCategoryList(query, lang)
+    return {
+      message: this.i18nService.translate(LessonCategoryMessage.GET_LIST_SUCCESS, lang),
+      data: await this.lessonCategoryService.getLessonCategoryList(query, lang)
+    }
   }
 
   @Get('by-id/:id')
@@ -139,7 +168,10 @@ export class LessonCategoryController {
     @Param() params: GetLessonCategoryByIdParamsDTO,
     @I18nLang() lang: string
   ) {
-    return await this.lessonCategoryService.getLessonCategoryById(params, lang)
+    return {
+      message: this.i18nService.translate(LessonCategoryMessage.GET_SUCCESS, lang),
+      data: await this.lessonCategoryService.getLessonCategoryById(params, lang)
+    }
   }
 
   @Get('by-slug/:slug')
@@ -152,6 +184,9 @@ export class LessonCategoryController {
   @ApiResponse({ status: 404, description: 'Không tìm thấy danh mục bài học' })
   @ZodSerializerDto(LessonCategoryResponseDTO)
   async getLessonCategoryBySlug(@Param('slug') slug: string, @I18nLang() lang: string) {
-    return await this.lessonCategoryService.getLessonCategoryBySlug(slug, lang)
+    return {
+      message: this.i18nService.translate(LessonCategoryMessage.GET_SUCCESS, lang),
+      data: await this.lessonCategoryService.getLessonCategoryBySlug(slug, lang)
+    }
   }
 }

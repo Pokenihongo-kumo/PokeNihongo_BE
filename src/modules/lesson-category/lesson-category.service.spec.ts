@@ -21,8 +21,7 @@ describe('LessonCategoryService', () => {
   const service = new LessonCategoryService(
     repo as never,
     translations as never,
-    languages as never,
-    { translate: (k: string) => k } as never
+    languages as never
   )
 
   beforeAll(() => {
@@ -36,14 +35,14 @@ describe('LessonCategoryService', () => {
     languages.getIdByCode.mockResolvedValue(9)
     translations.findByKeyAndLanguage.mockResolvedValue({ value: 'Reading Practice' })
 
-    const { data } = await service.getLessonCategoryById({ id: 4 }, 'en')
+    const data = await service.getLessonCategoryById({ id: 4 }, 'en')
 
     expect(languages.getIdByCode).toHaveBeenCalledWith('en')
     expect(translations.findByKeyAndLanguage).toHaveBeenCalledWith('category.reading', 9)
     expect(data).toMatchObject({ id: 4, name: 'Reading Practice' })
 
     languages.getIdByCode.mockResolvedValue(null)
-    expect((await service.getLessonCategoryById({ id: 4 }, 'ja')).data.name).toBe(
+    expect((await service.getLessonCategoryById({ id: 4 }, 'ja')).name).toBe(
       'category.reading'
     )
   })
