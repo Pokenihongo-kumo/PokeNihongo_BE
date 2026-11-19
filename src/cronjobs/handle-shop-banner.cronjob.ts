@@ -168,28 +168,22 @@ export class HandleShopBannerCronjob {
               `[ShopBanner Precreate] Randomizing items for banner ${newBanner.id}`
             )
 
-            const randomResult = await this.shopItemService.getRandomListItem(
-              {
-                shopBannerId: newBanner.id,
-                amount: banner.max
-              },
-              'vi'
-            )
+            const randomResult = await this.shopItemService.getRandomListItem({
+              shopBannerId: newBanner.id,
+              amount: banner.max
+            })
 
             // Filter bỏ thuộc tính pokemon và isHas (không có trong schema)
-            const itemsToCreate = randomResult.data.map((item: any) => {
+            const itemsToCreate = randomResult.map((item: any) => {
               const { pokemon, isHas, ...rest } = item
               return rest
             })
 
             // Gọi createByList
-            await this.shopItemService.createByList(
-              {
-                userId: banner.createdById ?? 1,
-                data: { items: itemsToCreate }
-              },
-              'vi'
-            )
+            await this.shopItemService.createByList({
+              userId: banner.createdById ?? 1,
+              data: { items: itemsToCreate }
+            })
           } else {
             // Copy items từ banner cũ
             this.logger.log(
@@ -204,13 +198,10 @@ export class HandleShopBannerCronjob {
               isActive: item.isActive
             }))
 
-            await this.shopItemService.createByList(
-              {
-                userId: banner.createdById ?? 1,
-                data: { items: itemsToCreate }
-              },
-              'vi'
-            )
+            await this.shopItemService.createByList({
+              userId: banner.createdById ?? 1,
+              data: { items: itemsToCreate }
+            })
           }
 
           this.logger.log(

@@ -85,10 +85,7 @@ export class GachaBannerService {
     )
 
     if (allTranslations.length === 0) {
-      return {
-        data,
-        message: this.i18nService.translate(GachaBannerMessage.GET_LIST_SUCCESS, lang)
-      }
+      return data
     }
 
     const converted = await this.convertTranslationsToLangCodes(allTranslations)
@@ -114,11 +111,8 @@ export class GachaBannerService {
     })
 
     return {
-      data: {
-        ...data,
-        results
-      },
-      message: this.i18nService.translate(GachaBannerMessage.GET_LIST_SUCCESS, lang)
+      ...data,
+      results
     }
   }
 
@@ -153,11 +147,8 @@ export class GachaBannerService {
     })
 
     return {
-      data: {
-        ...data,
-        results
-      },
-      message: this.i18nService.translate(GachaBannerMessage.GET_LIST_SUCCESS, lang)
+      ...data,
+      results
     }
   }
 
@@ -166,10 +157,7 @@ export class GachaBannerService {
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     if (!langId) {
-      return {
-        data: null,
-        message: this.i18nService.translate(GachaBannerMessage.GET_SUCCESS, lang)
-      }
+      return null
     }
 
     const gachaBanner = await this.gachaBannerRepo.findByIdWithLangId(id, langId, isAdmin)
@@ -216,11 +204,7 @@ export class GachaBannerService {
       amount1StarCurrent
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: result,
-      message: this.i18nService.translate(GachaBannerMessage.GET_SUCCESS, lang)
-    }
+    return result
   }
 
   async create(
@@ -583,10 +567,7 @@ export class GachaBannerService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
       const existingGachaBanner = await this.gachaBannerRepo.findById(id)
       if (!existingGachaBanner) {
@@ -601,11 +582,7 @@ export class GachaBannerService {
         this.translationService.deleteByKey(existingGachaBanner.nameKey)
       ])
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(GachaBannerMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -620,11 +597,7 @@ export class GachaBannerService {
       const langId = await this.languagesService.getIdByCode(lang)
 
       if (!langId) {
-        return {
-          statusCode: HttpStatus.OK,
-          data: [],
-          message: this.i18nService.translate(GachaBannerMessage.GET_LIST_SUCCESS, lang)
-        }
+        return []
       }
 
       // Lấy tất cả gacha banners có status = ACTIVE và trong khoảng thời gian hợp lệ
@@ -662,11 +635,7 @@ export class GachaBannerService {
       })
       // console.log(enrichedBanners)
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: enrichedBanners,
-        message: this.i18nService.translate(GachaBannerMessage.GET_LIST_SUCCESS, lang)
-      }
+      return enrichedBanners
     } catch (error) {
       throw error
     }

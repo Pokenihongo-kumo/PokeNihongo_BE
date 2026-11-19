@@ -6,8 +6,6 @@ import {
   walletPurposeType
 } from '@/common/constants/wallet-transaction.constant'
 import { walletType } from '@/common/constants/wallet.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { GachaPurchaseMessage } from '@/i18n/message-keys'
 import { GachaBannerService } from '@/modules/gacha-banner/gacha-banner.service'
 import { GachaRollHistoryService } from '@/modules/gacha-roll-history/gacha-roll-history.service'
 import { UserGachaPityService } from '@/modules/user-gacha-pity/user-gacha-pity.service'
@@ -35,7 +33,6 @@ import { GachaPurchaseRepo } from './gacha-purchase.repo'
 export class GachaPurchaseService {
   constructor(
     private gachaPurchaseRepo: GachaPurchaseRepo,
-    private readonly i18nService: I18nService,
     private readonly gachaBannerService: GachaBannerService,
     // private readonly gachaItemRepo: GachaItemRepo,
     private readonly gachaRollHistoryService: GachaRollHistoryService,
@@ -46,33 +43,22 @@ export class GachaPurchaseService {
     // private readonly pokemonRepo: PokemonRepo
   ) {}
 
-  async list(pagination: PaginationQuery, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.gachaPurchaseRepo.list(pagination)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(GachaPurchaseMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   // Helper method to calculate weaknesses for a Pokemon (copied from PokemonService)
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const gachaPurchase = await this.gachaPurchaseRepo.findById(id)
     if (!gachaPurchase) {
       throw new GachaPurchaseNotFoundException()
     }
 
-    return {
-      statusCode: 200,
-      data: gachaPurchase,
-      message: this.i18nService.translate(GachaPurchaseMessage.GET_LIST_SUCCESS, lang)
-    }
+    return gachaPurchase
   }
 
-  async create(
-    { userId, data }: { userId: number; data: CreateGachaPurchaseBody },
-    lang: string = 'vi'
-  ) {
+  async create({ userId, data }: { userId: number; data: CreateGachaPurchaseBody }) {
     try {
       //tìm ra gachabanner và pity user
 
@@ -390,11 +376,7 @@ export class GachaPurchaseService {
         return { finalPurchase, parseItems }
       })
 
-      return {
-        statusCode: 201,
-        data: result.parseItems,
-        message: this.i18nService.translate(GachaPurchaseMessage.CREATE_SUCCESS, lang)
-      }
+      return result.parseItems
     } catch (error) {
       if (isNotFoundPrismaError(error)) throw new NotFoundRecordException()
       if (isForeignKeyConstraintPrismaError(error)) throw new NotFoundRecordException()
@@ -402,13 +384,9 @@ export class GachaPurchaseService {
     }
   }
 
-  async getByUser(userId: number, lang: string = 'vi') {
+  async getByUser(userId: number) {
     const data = await this.gachaPurchaseRepo.findByUserId(userId)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(GachaPurchaseMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   rollGacha(

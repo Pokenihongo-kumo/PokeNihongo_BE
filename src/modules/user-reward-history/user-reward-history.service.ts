@@ -1,5 +1,3 @@
-import { I18nService } from '@/i18n/i18n.service'
-import { UserRewardHistoryMessage } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { RewardRepo } from '@/modules/reward/reward.repo'
 import { TranslationService } from '@/modules/translation/translation.service'
@@ -25,8 +23,7 @@ export class UserRewardHistoryService {
     private readonly userRewardHistoryRepository: UserRewardHistoryRepository,
     private readonly rewardRepo: RewardRepo,
     private readonly translationService: TranslationService,
-    private readonly languagesService: LanguagesService,
-    private readonly i18nService: I18nService
+    private readonly languagesService: LanguagesService
   ) {}
 
   // Reusable builder for history payload
@@ -78,7 +75,7 @@ export class UserRewardHistoryService {
     }
   }
 
-  async create(body: CreateUserRewardHistoryBody, lang: string = 'vi') {
+  async create(body: CreateUserRewardHistoryBody) {
     try {
       // Nếu có rewardId, lấy thông tin reward và lưu vào meta
       let meta = body.meta
@@ -104,11 +101,7 @@ export class UserRewardHistoryService {
         ...body,
         meta
       })
-      return {
-        statusCode: 201,
-        data: history,
-        message: this.i18nService.translate(UserRewardHistoryMessage.CREATE_SUCCESS, lang)
-      }
+      return history
     } catch (error) {
       this.logger.error('Error creating user reward history:', error)
       if (error instanceof HttpException) {
@@ -118,24 +111,17 @@ export class UserRewardHistoryService {
     }
   }
 
-  async findAll(query: GetUserRewardHistoryListQuery, lang: string = 'vi') {
+  async findAll(query: GetUserRewardHistoryListQuery) {
     const { currentPage, pageSize } = query
     const result = await this.userRewardHistoryRepository.findMany(query)
 
     return {
-      statusCode: 200,
-      message: this.i18nService.translate(
-        UserRewardHistoryMessage.GET_LIST_SUCCESS,
-        lang
-      ),
-      data: {
-        results: result.items,
-        pagination: {
-          current: currentPage,
-          pageSize,
-          totalPage: Math.ceil(result.total / pageSize),
-          totalItem: result.total
-        }
+      results: result.items,
+      pagination: {
+        current: currentPage,
+        pageSize,
+        totalPage: Math.ceil(result.total / pageSize),
+        totalItem: result.total
       }
     }
   }
@@ -241,35 +227,25 @@ export class UserRewardHistoryService {
     )
 
     return {
-      statusCode: 200,
-      message: this.i18nService.translate(
-        UserRewardHistoryMessage.GET_LIST_SUCCESS,
-        languageCode
-      ),
-      data: {
-        results: resultsWithTranslation,
-        pagination: {
-          current: result.page,
-          pageSize: result.limit,
-          totalPage: Math.ceil(result.total / result.limit),
-          totalItem: result.total
-        }
+      results: resultsWithTranslation,
+      pagination: {
+        current: result.page,
+        pageSize: result.limit,
+        totalPage: Math.ceil(result.total / result.limit),
+        totalItem: result.total
       }
     }
   }
 
-  async findOne(id: number, lang: string = 'vi') {
+  async findOne(id: number) {
     const history = await this.userRewardHistoryRepository.findUnique(id)
     if (!history) {
       throw new UserRewardHistoryNotFoundException()
     }
-    return {
-      data: history,
-      message: this.i18nService.translate(UserRewardHistoryMessage.GET_SUCCESS, lang)
-    }
+    return history
   }
 
-  async update(id: number, body: UpdateUserRewardHistoryBody, lang: string = 'vi') {
+  async update(id: number, body: UpdateUserRewardHistoryBody) {
     try {
       const existing = await this.userRewardHistoryRepository.findUnique(id)
       if (!existing) {
@@ -277,10 +253,7 @@ export class UserRewardHistoryService {
       }
 
       const history = await this.userRewardHistoryRepository.update(id, body)
-      return {
-        data: history,
-        message: this.i18nService.translate(UserRewardHistoryMessage.UPDATE_SUCCESS, lang)
-      }
+      return history
     } catch (error) {
       this.logger.error(`Error updating user reward history ${id}:`, error)
       if (error instanceof HttpException) {
@@ -290,7 +263,7 @@ export class UserRewardHistoryService {
     }
   }
 
-  async remove(id: number, lang: string = 'vi') {
+  async remove(id: number) {
     try {
       const existing = await this.userRewardHistoryRepository.findUnique(id)
       if (!existing) {
@@ -298,10 +271,7 @@ export class UserRewardHistoryService {
       }
 
       const history = await this.userRewardHistoryRepository.delete(id)
-      return {
-        data: history,
-        message: this.i18nService.translate(UserRewardHistoryMessage.DELETE_SUCCESS, lang)
-      }
+      return history
     } catch (error) {
       this.logger.error(`Error deleting user reward history ${id}:`, error)
       if (error instanceof HttpException) {

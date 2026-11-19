@@ -8,8 +8,6 @@ import {
   WalletTransactionSourceType
 } from '@/common/constants/wallet-transaction.constant'
 import { walletType } from '@/common/constants/wallet.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { InvoiceMessage } from '@/i18n/message-keys'
 import { SubscriptionPlanService } from '@/modules/subscription-plan/subscription-plan.service'
 import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
 import { WalletService } from '@/modules/wallet/wallet.service'
@@ -42,33 +40,24 @@ export class InvoiceService {
     private invoiceRepo: InvoiceRepo,
     private readonly subscriptionPlanService: SubscriptionPlanService,
     private readonly userSubscriptionService: UserSubscriptionService,
-    private readonly i18nService: I18nService,
     @InjectQueue(BullQueue.INVOICE_EXPIRATION)
     private readonly invoiceExpirationQueue: Queue,
     private readonly walletService: WalletService
   ) {}
 
-  async list(pagination: PaginationQuery, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.invoiceRepo.list(pagination)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(InvoiceMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   // Helper method to calculate weaknesses for a Pokemon (copied from PokemonService)
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const invoice = await this.invoiceRepo.findById(id)
     if (!invoice) {
       throw new InvoiceNotFoundException()
     }
 
-    return {
-      statusCode: 200,
-      data: invoice,
-      message: this.i18nService.translate(InvoiceMessage.GET_LIST_SUCCESS, lang)
-    }
+    return invoice
   }
   // A pending invoice (with its PENDING_PAYMENT subscription and the PokeCoin
   // discount taken), committed before any payment link exists. POST /invoice
@@ -213,18 +202,15 @@ export class InvoiceService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      userId
-    }: {
-      id: number
-      data: UpdateInvoiceBody
-      userId?: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    userId
+  }: {
+    id: number
+    data: UpdateInvoiceBody
+    userId?: number
+  }) {
     try {
       // Update invoice trong transaction
       const invoice = await this.invoiceRepo.withTransaction(async (tx) => {
@@ -238,11 +224,7 @@ export class InvoiceService {
         )
       })
 
-      return {
-        statusCode: 200,
-        data: invoice,
-        message: this.i18nService.translate(InvoiceMessage.UPDATE_SUCCESS, lang)
-      }
+      return invoice
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new InvoiceNotFoundException()
@@ -255,7 +237,7 @@ export class InvoiceService {
     }
   }
 
-  async delete({ id, userId }: { id: number; userId?: number }, lang: string = 'vi') {
+  async delete({ id, userId }: { id: number; userId?: number }) {
     try {
       const existInvoice = await this.invoiceRepo.findById(id)
       if (!existInvoice) {
@@ -263,11 +245,7 @@ export class InvoiceService {
       }
 
       await this.invoiceRepo.delete(id)
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(InvoiceMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new InvoiceNotFoundException()

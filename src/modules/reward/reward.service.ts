@@ -140,10 +140,7 @@ export class RewardService {
   async list(pagination: PaginationQuery, lang: string = 'vi') {
     const langId = await this.languagesService.getIdByCode(lang)
     const data = await this.rewardRepo.list(pagination, langId ?? undefined)
-    return {
-      data,
-      message: this.i18nService.translate(RewardMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   async getListWithAllLang(pagination: PaginationQuery, lang: string = 'vi') {
@@ -166,20 +163,14 @@ export class RewardService {
       }))
     }))
 
-    return {
-      data: { ...data, results },
-      message: this.i18nService.translate(RewardMessage.GET_LIST_SUCCESS, lang)
-    }
+    return { ...data, results }
   }
 
   async findById(id: number, lang: string = 'vi') {
     const langId = await this.languagesService.getIdByCode(lang)
 
     if (!langId) {
-      return {
-        data: null,
-        message: this.i18nService.translate(RewardMessage.GET_SUCCESS, lang)
-      }
+      return null
     }
 
     const reward = await this.rewardRepo.findByIdWithLangId(id, langId)
@@ -194,11 +185,7 @@ export class RewardService {
       descriptionTranslation: (reward as any).descriptionTranslations?.[0]?.value ?? null
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: result,
-      message: this.i18nService.translate(RewardMessage.GET_SUCCESS, lang)
-    }
+    return result
   }
 
   async findByIdWithAllLang(id: number, lang: string = 'vi') {
@@ -229,11 +216,7 @@ export class RewardService {
       }))
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: result,
-      message: this.i18nService.translate(RewardMessage.GET_SUCCESS, lang)
-    }
+    return result
   }
 
   async create(
@@ -440,10 +423,7 @@ export class RewardService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
       const existingReward = await this.rewardRepo.findDelId(id)
       if (!existingReward) {
@@ -462,11 +442,7 @@ export class RewardService {
         await this.rewardRepo.delete({ id, deletedById }, false)
       }
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(RewardMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -1052,18 +1028,13 @@ export class RewardService {
     rewardIds: number[]
     userId: number
     sourceType: UserRewardSourceType
-    lang?: string
   }) {
     const data = await this.convertRewardsWithUser(
       params.rewardIds,
       params.userId,
       params.sourceType
     )
-    return {
-      statusCode: HttpStatus.OK,
-      data,
-      message: 'Convert rewards successfully'
-    }
+    return data
   }
 
   // ---- Season cronjob ----

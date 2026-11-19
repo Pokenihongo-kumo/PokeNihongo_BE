@@ -1,6 +1,4 @@
 import { GachaPityType } from '@/common/constants/gacha.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { UserGachaPityMessage } from '@/i18n/message-keys'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
@@ -20,39 +18,24 @@ import { UserGachaPityRepo } from './user-gacha-pity.repo'
 
 @Injectable()
 export class UserGachaPityService {
-  constructor(
-    private userGachaPityRepo: UserGachaPityRepo,
+  constructor(private userGachaPityRepo: UserGachaPityRepo) {}
 
-    private readonly i18nService: I18nService
-  ) {}
-
-  async list(pagination: PaginationQuery, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.userGachaPityRepo.list(pagination)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(UserGachaPityMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   // Helper method to calculate weaknesses for a Pokemon (copied from PokemonService)
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const userGachaPity = await this.userGachaPityRepo.findById(id)
     if (!userGachaPity) {
       throw new UserGachaPityNotFoundException()
     }
 
-    return {
-      statusCode: 200,
-      data: userGachaPity,
-      message: this.i18nService.translate(UserGachaPityMessage.GET_LIST_SUCCESS, lang)
-    }
+    return userGachaPity
   }
 
-  async create(
-    { userId, data }: { userId: number; data: CreateUserGachaPityBody },
-    lang: string = 'vi'
-  ) {
+  async create({ userId, data }: { userId: number; data: CreateUserGachaPityBody }) {
     try {
       // check coi co truyen userId ko, neu ko thi lay cua created_by
       data.userId = data.userId || userId
@@ -72,11 +55,7 @@ export class UserGachaPityService {
           ...data
         }
       })
-      return {
-        statusCode: 201,
-        data: result,
-        message: this.i18nService.translate(UserGachaPityMessage.CREATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -88,18 +67,15 @@ export class UserGachaPityService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      userId
-    }: {
-      id: number
-      data: UpdateUserGachaPityBody
-      userId?: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    userId
+  }: {
+    id: number
+    data: UpdateUserGachaPityBody
+    userId?: number
+  }) {
     try {
       //check coi thang user nay co pity nao dang pending ko, co thi ko dc tao them
       const existingPity = await this.userGachaPityRepo.findById(id)
@@ -123,11 +99,7 @@ export class UserGachaPityService {
         data: data,
         updatedById: userId
       })
-      return {
-        statusCode: 200,
-        data: userGachaPity,
-        message: this.i18nService.translate(UserGachaPityMessage.UPDATE_SUCCESS, lang)
-      }
+      return userGachaPity
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UserGachaPityNotFoundException()
@@ -140,7 +112,7 @@ export class UserGachaPityService {
     }
   }
 
-  async delete({ id, userId }: { id: number; userId?: number }, lang: string = 'vi') {
+  async delete({ id, userId }: { id: number; userId?: number }) {
     try {
       const existUserGachaPity = await this.userGachaPityRepo.findById(id)
       if (!existUserGachaPity) {
@@ -148,11 +120,7 @@ export class UserGachaPityService {
       }
 
       await this.userGachaPityRepo.delete(id)
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(UserGachaPityMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UserGachaPityNotFoundException()
@@ -161,7 +129,7 @@ export class UserGachaPityService {
     }
   }
 
-  async getUserPityNow(userId: number, lang: string = 'vi') {
+  async getUserPityNow(userId: number) {
     const userGachaPity = await this.userGachaPityRepo.findStatusByUserId(
       userId,
       GachaPityType.PENDING
@@ -178,18 +146,10 @@ export class UserGachaPityService {
         }
       })
       // GET route: 200 even when the pity row is created on first read
-      return {
-        statusCode: 200,
-        data: created,
-        message: this.i18nService.translate(UserGachaPityMessage.CREATE_SUCCESS, lang)
-      }
+      return { created: true, data: created }
     }
 
-    return {
-      statusCode: 200,
-      data: userGachaPity,
-      message: this.i18nService.translate(UserGachaPityMessage.GET_LIST_SUCCESS, lang)
-    }
+    return { created: false, data: userGachaPity }
   }
 
   // ---- For other modules (module-boundary plan B8) ----

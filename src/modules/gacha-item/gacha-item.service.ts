@@ -1,7 +1,5 @@
 import { RarityPokemonType } from '@/common/constants/pokemon.constant'
 import { GachaBannerStatus } from '@/common/constants/shop-banner.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { GachaItemMessage } from '@/i18n/message-keys'
 import { GachaItemRateService } from '@/modules/gacha-item-rate/gacha-item-rate.service'
 import { PokemonService } from '@/modules/pokemon/pokemon.service'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
@@ -55,29 +53,20 @@ export class GachaItemService {
     @Inject(forwardRef(() => GachaBannerRepo))
     private gachaBannerRepo: GachaBannerRepo,
     private gachaItemRateService: GachaItemRateService,
-    private pokemonService: PokemonService,
-    private readonly i18nService: I18nService
+    private pokemonService: PokemonService
   ) {}
 
-  async list(pagination: PaginationQuery, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.gachaItemRepo.list(pagination)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(GachaItemMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const gachaItem = await this.gachaItemRepo.findById(id)
     if (!gachaItem) {
       throw new GachaItemNotFoundException()
     }
-    return {
-      statusCode: 200,
-      data: gachaItem,
-      message: this.i18nService.translate(GachaItemMessage.GET_DETAIL_SUCCESS, lang)
-    }
+    return gachaItem
   }
 
   private async validateGachaBannerForCreate(bannerId: number) {
@@ -117,11 +106,7 @@ export class GachaItemService {
   /**
    * OPTIMIZED: Batch queries instead of loop
    */
-  async createByList(
-    createdById: number,
-    data: CreateWithListItemBody,
-    lang: string = 'vi'
-  ) {
+  async createByList(createdById: number, data: CreateWithListItemBody) {
     const { bannerId, items } = data
     const banner = await this.validateGachaBannerForCreate(bannerId)
 
@@ -207,11 +192,7 @@ export class GachaItemService {
         createdById,
         items: itemsToCreate
       })
-      return {
-        statusCode: 200,
-        data: created,
-        message: this.i18nService.translate(GachaItemMessage.CREATE_SUCCESS, lang)
-      }
+      return created
     } catch (error) {
       if (isForeignKeyConstraintPrismaError(error))
         throw new InvalidGachaBannerException()
@@ -222,11 +203,7 @@ export class GachaItemService {
   /**
    * OPTIMIZED: Use deleteMany instead of loop
    */
-  async updateByList(
-    updatedById: number,
-    data: UpdateWithListGachaItemBody,
-    lang: string = 'vi'
-  ) {
+  async updateByList(updatedById: number, data: UpdateWithListGachaItemBody) {
     try {
       const created = await this.gachaItemRepo.withTransaction(async (prismaTx) => {
         const { bannerId, items } = data
@@ -344,11 +321,7 @@ export class GachaItemService {
         )
       })
 
-      return {
-        statusCode: 200,
-        data: created,
-        message: this.i18nService.translate(GachaItemMessage.UPDATE_SUCCESS, lang)
-      }
+      return created
     } catch (error) {
       if (isForeignKeyConstraintPrismaError(error))
         throw new InvalidGachaBannerException()
@@ -356,7 +329,7 @@ export class GachaItemService {
     }
   }
 
-  async getRandomListItem(data: GetRamdomAmountGachaItemsBody, lang: string = 'vi') {
+  async getRandomListItem(data: GetRamdomAmountGachaItemsBody) {
     const { bannerId, items } = data
     const banner = await this.gachaBannerRepo.findById(bannerId)
     if (!banner) throw new InvalidGachaBannerException()
@@ -386,21 +359,13 @@ export class GachaItemService {
       results.push({ starType: item.starType, pokemons })
     }
 
-    return {
-      statusCode: 200,
-      data: { bannerId, items: results },
-      message: this.i18nService.translate(GachaItemMessage.GET_LIST_SUCCESS, lang)
-    }
+    return { bannerId, items: results }
   }
 
-  async delete(id: number, lang: string = 'vi') {
+  async delete(id: number) {
     try {
       await this.gachaItemRepo.delete(id)
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(GachaItemMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) throw new GachaItemNotFoundException()
       throw error
@@ -417,11 +382,7 @@ export class GachaItemService {
     lang: string
   }) {
     const data = await this.gachaItemRepo.getListPokemonWithGachaBannerId(bannerId, query)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(GachaItemMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   async getListItemsByBannerId({
@@ -434,10 +395,6 @@ export class GachaItemService {
     lang: string
   }) {
     const data = await this.gachaItemRepo.getListItemsByBannerId(bannerId, query)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(GachaItemMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 }

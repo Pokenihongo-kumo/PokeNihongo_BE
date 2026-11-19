@@ -209,16 +209,13 @@ export class HandleGachaBannerCronjob {
               })
             }
 
-            const randomResult = await this.gachaItemService.getRandomListItem(
-              {
-                bannerId: newBanner.id,
-                items: randomItems
-              },
-              'vi'
-            )
+            const randomResult = await this.gachaItemService.getRandomListItem({
+              bannerId: newBanner.id,
+              items: randomItems
+            })
 
             // Prepare items để tạo
-            const itemsToCreate = randomResult.data.items.flatMap((item: any) =>
+            const itemsToCreate = randomResult.items.flatMap((item: any) =>
               item.pokemons.map((pokemon: any) => ({
                 starType: item.starType,
                 pokemons: [pokemon.id]
@@ -240,14 +237,10 @@ export class HandleGachaBannerCronjob {
             }, [])
 
             // Gọi createByList
-            await this.gachaItemService.createByList(
-              banner.createdById ?? 1,
-              {
-                bannerId: newBanner.id,
-                items: groupedItems
-              },
-              'vi'
-            )
+            await this.gachaItemService.createByList(banner.createdById ?? 1, {
+              bannerId: newBanner.id,
+              items: groupedItems
+            })
           } else {
             // Copy items từ banner cũ
             this.logger.log(
@@ -271,14 +264,10 @@ export class HandleGachaBannerCronjob {
               })
             )
 
-            await this.gachaItemService.createByList(
-              banner.createdById ?? 1,
-              {
-                bannerId: newBanner.id,
-                items: itemsToCreate
-              },
-              'vi'
-            )
+            await this.gachaItemService.createByList(banner.createdById ?? 1, {
+              bannerId: newBanner.id,
+              items: itemsToCreate
+            })
           }
 
           this.logger.log(
