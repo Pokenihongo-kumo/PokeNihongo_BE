@@ -11,15 +11,7 @@ describe('ExercisesService', () => {
     countRewards: jest.fn(),
     getLessonRewardIds: jest.fn()
   }
-  const service = new ExercisesService(
-    repo as never,
-    {} as never,
-    {} as never,
-    {
-      translate: (k: string, _l: string, args?: object) =>
-        args ? `${k} ${JSON.stringify(args)}` : k
-    } as never
-  )
+  const service = new ExercisesService(repo as never, {} as never, {} as never)
   const body = {
     exerciseType: 'VOCABULARY' as const,
     lessonId: 3,

@@ -65,7 +65,7 @@ export class UserTestAttemptService {
     try {
       // 1. Lấy thông tin Test
       const testRes = await this.testService.findOne(testId, 'vi')
-      if (!testRes || !testRes.data) {
+      if (!testRes) {
         throw new TestNotFoundException()
       }
 
@@ -156,12 +156,12 @@ export class UserTestAttemptService {
 
       // 2. Lấy thông tin Test để biết các TestSets
       const testRes = await this.testService.findOne(attempt.testId, 'vi')
-      if (!testRes || !testRes.data) {
+      if (!testRes) {
         throw new TestNotFoundException()
       }
 
       // Lấy testType từ testRes
-      const testType = (testRes.data as any).testType
+      const testType = (testRes as any).testType
 
       // 3. Lấy tất cả TestSets của Test
       const test = await this.userTestAttemptRepository.findTestWithTestSetIds(
@@ -311,11 +311,11 @@ export class UserTestAttemptService {
 
       // 3. Lấy thông tin Test để biết testType
       const testRes = await this.testService.findOne(attempt.testId, 'vi')
-      if (!testRes || !testRes.data) {
+      if (!testRes) {
         throw new TestNotFoundException()
       }
 
-      const testType = (testRes.data as any).testType
+      const testType = (testRes as any).testType
 
       // 5. Lấy tất cả UserTestAnswerLog của attempt này
       const answerLogsResult =
@@ -855,8 +855,8 @@ export class UserTestAttemptService {
         statusCode: 200,
         data: {
           id: test.id,
-          name: testRes.data.name,
-          description: testRes.data.description,
+          name: testRes.name,
+          description: testRes.description,
           testType: test.testType,
           testSets: allTestSets,
           userTestAttemptId,
@@ -1155,8 +1155,8 @@ export class UserTestAttemptService {
 
       const data = {
         id: test.id,
-        name: testRes.data.name,
-        description: testRes.data.description,
+        name: testRes.name,
+        description: testRes.description,
         testType: test.testType,
         testSets: allTestSets,
         totalQuestions,
@@ -1408,9 +1408,9 @@ export class UserTestAttemptService {
 
       const data = {
         id: attempt.testId,
-        name: testRes.data.name,
-        description: testRes.data.description,
-        testType: testRes.data.testType,
+        name: testRes.name,
+        description: testRes.description,
+        testType: testRes.testType,
         testSets: allTestSets,
         totalQuestions,
         answeredCorrect,
@@ -1458,7 +1458,7 @@ export class UserTestAttemptService {
 
       // 3. Lấy thông tin Test để lấy các TestSets
       const test = await this.testService.findOne(attempt.testId, 'vi')
-      if (!test || !test.data) {
+      if (!test) {
         throw new TestNotFoundException()
       }
 

@@ -14,11 +14,7 @@ describe('LessonService', () => {
     maxLessonOrder: jest.fn()
   }
   const languages = { getIdByCode: jest.fn(), getWithListCode: jest.fn() }
-  const service = new LessonService(
-    repo as never,
-    languages as never,
-    { translate: (k: string) => k } as never
-  )
+  const service = new LessonService(repo as never, languages as never)
   const lesson = { id: 7, titleKey: 'lesson.7.title', isPublished: false }
   const body = {
     titleJp: '課',
@@ -107,11 +103,11 @@ describe('LessonService', () => {
       { key: 'lesson.7.title', value: 'Bài', language: { code: 'vi' } }
     ])
     const all = await service.getLessonById(7)
-    expect(all.data.title).toEqual([{ language: 'vi', value: 'Bài' }])
+    expect(all.title).toEqual([{ language: 'vi', value: 'Bài' }])
 
     languages.getIdByCode.mockResolvedValue(31)
     const one = await service.getLessonById(7, 'vi')
-    expect(one.data.title).toBe('Bài')
+    expect(one.title).toBe('Bài')
     expect(repo.titles).toHaveBeenLastCalledWith(['lesson.7.title'], 31)
   })
 })
