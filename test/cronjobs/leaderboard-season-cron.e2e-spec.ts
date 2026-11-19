@@ -503,7 +503,7 @@ describe('Leaderboard season cronjob (e2e)', () => {
     // the list is not empty, so it shows what claiming gives
     const shown = async (userId: number) => {
       const res = await userService.getInfoBattleWithUser(userId, 'vi')
-      const data = res.data as {
+      const data = res as {
         hasUnclaimedReward?: boolean
         rewards?: { id: number }[]
       }

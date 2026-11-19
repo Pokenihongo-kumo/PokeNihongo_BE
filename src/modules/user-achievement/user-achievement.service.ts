@@ -2,8 +2,6 @@ import {
   AchievementType as AchievementTypeEnum,
   UserAchievementStatus
 } from '@/common/constants/achievement.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { UserAchievementMessage } from '@/i18n/message-keys'
 import { AchievementGroupService } from '@/modules/achievement-group/achievement-group.service'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { NotFoundRecordException } from '@/shared/error'
@@ -32,39 +30,27 @@ export class UserAchievementService {
     private userAchievementRepo: UserAchievementRepo,
     private achievementGroupService: AchievementGroupService,
     private readonly languagesService: LanguagesService,
-    private readonly i18nService: I18nService,
     private readonly userProgressService: UserProgressService,
 
     private readonly rewardService: RewardService
   ) {}
 
-  async list(pagination: PaginationQuery, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.userAchievementRepo.list(pagination)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(UserAchievementMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   // Helper method to calculate weaknesses for a Pokemon (copied from PokemonService)
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const userAchievement = await this.userAchievementRepo.findById(id)
     if (!userAchievement) {
       throw new UserAchievementNotFoundException()
     }
 
-    return {
-      statusCode: 200,
-      data: userAchievement,
-      message: this.i18nService.translate(UserAchievementMessage.GET_LIST_SUCCESS, lang)
-    }
+    return userAchievement
   }
 
-  async create(
-    { userId, data }: { userId: number; data: CreateUserAchievementBody },
-    lang: string = 'vi'
-  ) {
+  async create({ userId, data }: { userId: number; data: CreateUserAchievementBody }) {
     try {
       const result = await this.userAchievementRepo.create({
         createdById: userId,
@@ -72,11 +58,7 @@ export class UserAchievementService {
           ...data
         }
       })
-      return {
-        statusCode: 201,
-        data: result,
-        message: this.i18nService.translate(UserAchievementMessage.CREATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -88,29 +70,22 @@ export class UserAchievementService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      userId
-    }: {
-      id: number
-      data: UpdateUserAchievementBody
-      userId?: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    userId
+  }: {
+    id: number
+    data: UpdateUserAchievementBody
+    userId?: number
+  }) {
     try {
       const userAchievement = await this.userAchievementRepo.update({
         id,
         data: data,
         updatedById: userId
       })
-      return {
-        statusCode: 200,
-        data: userAchievement,
-        message: this.i18nService.translate(UserAchievementMessage.UPDATE_SUCCESS, lang)
-      }
+      return userAchievement
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UserAchievementNotFoundException()
@@ -123,7 +98,7 @@ export class UserAchievementService {
     }
   }
 
-  async delete({ id, userId }: { id: number; userId?: number }, lang: string = 'vi') {
+  async delete({ id, userId }: { id: number; userId?: number }) {
     try {
       const existUserAchievement = await this.userAchievementRepo.findById(id)
       if (!existUserAchievement) {
@@ -131,11 +106,7 @@ export class UserAchievementService {
       }
 
       await this.userAchievementRepo.delete(id)
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(UserAchievementMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UserAchievementNotFoundException()
@@ -167,11 +138,7 @@ export class UserAchievementService {
 
     const groupIds = (groupsPage.results || []).map((g: any) => g.id)
     if (groupIds.length === 0) {
-      return {
-        statusCode: 200,
-        data: groupsPage,
-        message: this.i18nService.translate(UserAchievementMessage.GET_LIST_SUCCESS, lang)
-      }
+      return groupsPage
     }
 
     // 3. Fetch achievements for these groups (only active ones for user)
@@ -322,16 +289,12 @@ export class UserAchievementService {
     })
 
     return {
-      statusCode: 200,
-      data: {
-        results,
-        pagination: groupsPage.pagination
-      },
-      message: this.i18nService.translate(UserAchievementMessage.GET_LIST_SUCCESS, lang)
+      results,
+      pagination: groupsPage.pagination
     }
   }
 
-  async getReward({ id, userId }: { id: number; userId: number }, lang: string = 'vi') {
+  async getReward({ id, userId }: { id: number; userId: number }) {
     try {
       // 1. Fetch user achievement with achievement details
       const userAchievement = await this.userAchievementRepo.findLiveWithReward(id)
@@ -374,14 +337,7 @@ export class UserAchievementService {
         updatedById: userId
       })
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: rewardResults,
-        message: this.i18nService.translate(
-          UserAchievementMessage.GET_REWARD_SUCCESS,
-          lang
-        )
-      }
+      return rewardResults
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UserAchievementNotFoundException()

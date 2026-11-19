@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { DailyRequestMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { IsPublic } from '@/common/decorators/auth.decorator'
 import { AuthenticationGuard } from '@/common/guards/authentication.guard'
@@ -33,35 +35,53 @@ import {
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class DailyRequestController {
-  constructor(private readonly dailyRequestService: DailyRequestService) {}
+  constructor(
+    private readonly dailyRequestService: DailyRequestService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @IsPublic()
   @ZodSerializerDto(PaginationResponseSchema)
-  list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return this.dailyRequestService.list(query, lang)
+  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(DailyRequestMessage.GET_LIST_SUCCESS, lang),
+      data: await this.dailyRequestService.list(query, lang)
+    }
   }
 
   @Get('admin/:dailyRequestId')
   @ZodSerializerDto(GetDailyRequestDetailwithAllLangResDTO)
-  findByIdWithAllLang(
+  async findByIdWithAllLang(
     @Param() params: GetDailyRequestParamsDTO,
     @I18nLang() lang: string
   ) {
-    return this.dailyRequestService.findByIdWithAllLang(params.dailyRequestId, lang)
+    return {
+      message: this.i18nService.translate(DailyRequestMessage.GET_SUCCESS, lang),
+      data: await this.dailyRequestService.findByIdWithAllLang(
+        params.dailyRequestId,
+        lang
+      )
+    }
   }
 
   @Get('admin')
   @ZodSerializerDto(PaginationResponseSchema)
-  getListwithAllLang(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return this.dailyRequestService.getListwithAllLang(query, lang)
+  async getListwithAllLang(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(DailyRequestMessage.GET_LIST_SUCCESS, lang),
+      data: await this.dailyRequestService.getListwithAllLang(query, lang)
+    }
   }
 
   @Get(':dailyRequestId')
   @IsPublic()
   @ZodSerializerDto(GetDailyRequestDetailResDTO)
-  findById(@Param() params: GetDailyRequestParamsDTO, @I18nLang() lang: string) {
-    return this.dailyRequestService.findById(params.dailyRequestId, lang)
+  async findById(@Param() params: GetDailyRequestParamsDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(DailyRequestMessage.GET_SUCCESS, lang),
+      data: await this.dailyRequestService.findById(params.dailyRequestId, lang)
+    }
   }
 
   @Post()
@@ -100,17 +120,21 @@ export class DailyRequestController {
 
   @Delete(':dailyRequestId')
   @ZodSerializerDto(MessageResDTO)
-  delete(
+  async delete(
     @Param() params: GetDailyRequestParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.dailyRequestService.delete(
+    await this.dailyRequestService.delete(
       {
         id: params.dailyRequestId,
         deletedById: userId
       },
       lang
     )
+    return {
+      message: this.i18nService.translate(DailyRequestMessage.DELETE_SUCCESS, lang),
+      data: null
+    }
   }
 }

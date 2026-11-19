@@ -38,11 +38,7 @@ export class DailyRequestService {
       throw new NotFoundRecordException()
     }
     const data = await this.dailyRequestRepo.list(pagination, langId)
-    return {
-      status: HttpStatus.OK,
-      data,
-      message: this.i18nService.translate(DailyRequestMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   async getListwithAllLang(pagination: PaginationQuery, lang: string = 'vi') {
@@ -72,11 +68,7 @@ export class DailyRequestService {
       }))
     }))
 
-    return {
-      status: HttpStatus.OK,
-      data: { ...data, results },
-      message: this.i18nService.translate(DailyRequestMessage.GET_LIST_SUCCESS, lang)
-    }
+    return { ...data, results }
   }
 
   async findById(id: number, lang: string = 'vi') {
@@ -94,11 +86,7 @@ export class DailyRequestService {
       nameTranslation: dr.nameTranslations?.[0]?.value ?? null,
       descriptionTranslation: dr.descriptionTranslations?.[0]?.value ?? null
     }
-    return {
-      statusCode: HttpStatus.OK,
-      data: resultRes,
-      message: this.i18nService.translate(DailyRequestMessage.GET_SUCCESS, lang)
-    }
+    return resultRes
   }
 
   async findByIdWithAllLang(id: number, lang: string = 'vi') {
@@ -140,11 +128,7 @@ export class DailyRequestService {
       nameTranslation,
       descriptionTranslation
     }
-    return {
-      statusCode: HttpStatus.OK,
-      data: resultRes,
-      message: this.i18nService.translate(DailyRequestMessage.GET_SUCCESS, lang)
-    }
+    return resultRes
   }
 
   async create(
@@ -467,11 +451,7 @@ export class DailyRequestService {
         this.translationService.deleteByKey(existingDailyRequest.descriptionKey)
       ])
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(DailyRequestMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()

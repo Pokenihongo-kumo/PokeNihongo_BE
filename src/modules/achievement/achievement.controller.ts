@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { AchievementMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { AuthenticationGuard } from '@/common/guards/authentication.guard'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
@@ -31,16 +33,22 @@ import {
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class AchievementController {
-  constructor(private readonly achievementService: AchievementService) {}
+  constructor(
+    private readonly achievementService: AchievementService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseSchema)
-  list(
+  async list(
     @Query() query: PaginationQueryDTO,
     @I18nLang() lang: string,
     @ActiveUser('roleName') roleName: string
   ) {
-    return this.achievementService.list(query, lang, roleName)
+    return {
+      message: this.i18nService.translate(AchievementMessage.GET_LIST_SUCCESS, lang),
+      data: await this.achievementService.list(query, lang, roleName)
+    }
   }
 
   @Post()
@@ -61,12 +69,15 @@ export class AchievementController {
 
   @Get(':achievementId')
   @ZodSerializerDto(GetAchievementDetailResDTO)
-  findById(
+  async findById(
     @Param() params: GetAchievementParamsDTO,
     @I18nLang() lang: string,
     @ActiveUser('roleName') roleName: string
   ) {
-    return this.achievementService.findById(params.achievementId, roleName, lang)
+    return {
+      message: this.i18nService.translate(AchievementMessage.GET_SUCCESS, lang),
+      data: await this.achievementService.findById(params.achievementId, roleName, lang)
+    }
   }
 
   @Put(':achievementId')
@@ -89,17 +100,18 @@ export class AchievementController {
 
   @Delete(':achievementId')
   @ZodSerializerDto(MessageResDTO)
-  delete(
+  async delete(
     @Param() params: GetAchievementParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.achievementService.delete(
-      {
-        id: params.achievementId,
-        deletedById: userId
-      },
-      lang
-    )
+    await this.achievementService.delete({
+      id: params.achievementId,
+      deletedById: userId
+    })
+    return {
+      message: this.i18nService.translate(AchievementMessage.DELETE_SUCCESS, lang),
+      data: null
+    }
   }
 }

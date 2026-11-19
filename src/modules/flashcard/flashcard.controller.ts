@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { FlashcardMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { MessageResDTO, PaginationResponseDTO } from '@/shared/dtos/response.dto'
@@ -63,7 +65,10 @@ import { FlashcardService } from './flashcard.service'
 @ApiBearerAuth()
 @Controller('flashcards')
 export class FlashcardController {
-  constructor(private readonly flashcardService: FlashcardService) {}
+  constructor(
+    private readonly flashcardService: FlashcardService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Post('decks')
   @ApiOperation({ summary: 'Tạo bộ flashcard mới' })
@@ -75,11 +80,16 @@ export class FlashcardController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.flashcardService.createDeck(
-      userId,
-      body as CreateFlashcardDeckBody,
-      lang ?? undefined
-    )
+    return {
+      message: this.i18nService.translate(
+        FlashcardMessage.CREATE_DECK_SUCCESS,
+        lang ?? undefined
+      ),
+      data: await this.flashcardService.createDeck(
+        userId,
+        body as CreateFlashcardDeckBody
+      )
+    }
   }
 
   @Put('decks/cards')
@@ -92,13 +102,16 @@ export class FlashcardController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.flashcardService.updateCard(
-      body.deckId,
-      body.cardId,
-      userId,
-      body as UpdateFlashcardCardBody,
-      lang ?? undefined
-    )
+    return {
+      message: this.i18nService.translate(FlashcardMessage.UPDATE_CARD_SUCCESS, lang),
+      data: await this.flashcardService.updateCard(
+        body.deckId,
+        body.cardId,
+        userId,
+        body as UpdateFlashcardCardBody,
+        lang ?? undefined
+      )
+    }
   }
 
   @Put('read')
@@ -111,13 +124,16 @@ export class FlashcardController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.flashcardService.markRead(
-      body.deckId,
-      body.cardId,
-      body.read,
-      userId,
-      lang ?? undefined
-    )
+    return {
+      message: this.i18nService.translate(FlashcardMessage.UPDATE_CARD_SUCCESS, lang),
+      data: await this.flashcardService.markRead(
+        body.deckId,
+        body.cardId,
+        body.read,
+        userId,
+        lang ?? undefined
+      )
+    }
   }
 
   @Get('decks')
@@ -130,7 +146,13 @@ export class FlashcardController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.flashcardService.getDecks(userId, query, lang ?? undefined)
+    return {
+      message: this.i18nService.translate(
+        FlashcardMessage.GET_DECK_LIST_SUCCESS,
+        lang ?? undefined
+      ),
+      data: await this.flashcardService.getDecks(userId, query)
+    }
   }
 
   @Get('decks/:deckId')
@@ -142,7 +164,10 @@ export class FlashcardController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.flashcardService.getDeckById(deckId, userId, lang ?? undefined)
+    return {
+      message: this.i18nService.translate(FlashcardMessage.GET_DECK_SUCCESS, lang),
+      data: await this.flashcardService.getDeckById(deckId, userId, lang ?? undefined)
+    }
   }
 
   @Get('decks/:deckId/export')
@@ -154,7 +179,14 @@ export class FlashcardController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.flashcardService.exportDeck(params.deckId, userId, lang ?? undefined)
+    return {
+      message: this.i18nService.translate(FlashcardMessage.EXPORT_DECK_SUCCESS, lang),
+      data: await this.flashcardService.exportDeck(
+        params.deckId,
+        userId,
+        lang ?? undefined
+      )
+    }
   }
 
   @Put('decks/:deckId')
@@ -168,12 +200,17 @@ export class FlashcardController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.flashcardService.updateDeck(
-      deckId,
-      userId,
-      body as UpdateFlashcardDeckBody,
-      lang ?? undefined
-    )
+    return {
+      message: this.i18nService.translate(
+        FlashcardMessage.UPDATE_DECK_SUCCESS,
+        lang ?? undefined
+      ),
+      data: await this.flashcardService.updateDeck(
+        deckId,
+        userId,
+        body as UpdateFlashcardDeckBody
+      )
+    }
   }
 
   @Delete('decks/cards')
@@ -186,12 +223,14 @@ export class FlashcardController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.flashcardService.deleteCards(
-      body.deckId,
-      body.cardIds,
-      userId,
-      lang ?? undefined
-    )
+    await this.flashcardService.deleteCards(body.deckId, body.cardIds, userId)
+    return {
+      message: this.i18nService.translate(
+        FlashcardMessage.DELETE_CARD_SUCCESS,
+        lang ?? undefined
+      ),
+      data: null
+    }
   }
 
   // The app's delete deck (src/services/flashcard deleteDeck): soft delete
@@ -204,7 +243,14 @@ export class FlashcardController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.flashcardService.deleteDeck(deckId, userId, lang ?? undefined)
+    await this.flashcardService.deleteDeck(deckId, userId)
+    return {
+      message: this.i18nService.translate(
+        FlashcardMessage.DELETE_DECK_SUCCESS,
+        lang ?? undefined
+      ),
+      data: null
+    }
   }
 
   @Get('decks/:deckId/cards')
@@ -218,12 +264,15 @@ export class FlashcardController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.flashcardService.getDeckCards(
-      deckId,
-      userId,
-      query as GetFlashcardCardListQuery,
-      lang ?? undefined
-    )
+    return {
+      message: this.i18nService.translate(FlashcardMessage.GET_DECK_SUCCESS, lang),
+      data: await this.flashcardService.getDeckCards(
+        deckId,
+        userId,
+        query as GetFlashcardCardListQuery,
+        lang ?? undefined
+      )
+    }
   }
 
   @Post('decks/:deckId/cards')
@@ -237,12 +286,15 @@ export class FlashcardController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.flashcardService.createCard(
-      deckId,
-      userId,
-      body as CreateFlashcardCardBody,
-      lang ?? undefined
-    )
+    return {
+      message: this.i18nService.translate(FlashcardMessage.CREATE_CARD_SUCCESS, lang),
+      data: await this.flashcardService.createCard(
+        deckId,
+        userId,
+        body as CreateFlashcardCardBody,
+        lang ?? undefined
+      )
+    }
   }
 
   @Post('decks/:deckId/cards/import')
@@ -259,12 +311,15 @@ export class FlashcardController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.flashcardService.importCards(
-      params.deckId,
-      userId,
-      body as ImportFlashcardCardsBody,
-      lang ?? undefined
-    )
+    return {
+      message: this.i18nService.translate(FlashcardMessage.IMPORT_CARD_SUCCESS, lang),
+      data: await this.flashcardService.importCards(
+        params.deckId,
+        userId,
+        body as ImportFlashcardCardsBody,
+        lang ?? undefined
+      )
+    }
   }
 
   @Get('decks/:deckId/review')
@@ -278,12 +333,15 @@ export class FlashcardController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.flashcardService.getReviewCards(
-      params.deckId,
-      userId,
-      query as FlashcardReviewQuery,
-      lang ?? undefined
-    )
+    return {
+      message: this.i18nService.translate(FlashcardMessage.GET_REVIEW_LIST_SUCCESS, lang),
+      data: await this.flashcardService.getReviewCards(
+        params.deckId,
+        userId,
+        query as FlashcardReviewQuery,
+        lang ?? undefined
+      )
+    }
   }
 
   @Post('review')
@@ -297,12 +355,15 @@ export class FlashcardController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.flashcardService.reviewCard(
-      body.deckId,
-      body.cardId,
-      userId,
-      body as FlashcardReviewActionBody,
-      lang ?? undefined
-    )
+    return {
+      message: this.i18nService.translate(FlashcardMessage.REVIEW_CARD_SUCCESS, lang),
+      data: await this.flashcardService.reviewCard(
+        body.deckId,
+        body.cardId,
+        userId,
+        body as FlashcardReviewActionBody,
+        lang ?? undefined
+      )
+    }
   }
 }

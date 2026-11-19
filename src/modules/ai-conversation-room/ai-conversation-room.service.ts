@@ -1,5 +1,3 @@
-import { I18nService } from '@/i18n/i18n.service'
-import { AIConversationRoomMessage as M } from '@/i18n/message-keys'
 import { toPaginationMeta } from '@/shared/utils/pagination'
 import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
 import { HttpException, Injectable, Logger } from '@nestjs/common'
@@ -19,14 +17,11 @@ import {
 export class AIConversationRoomService {
   private readonly logger = new Logger(AIConversationRoomService.name)
 
-  constructor(
-    private readonly aiConversationRoomRepository: AIConversationRoomRepo,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly aiConversationRoomRepository: AIConversationRoomRepo) {}
 
   // Creates the room of a conversation, or updates the user's own one. The
   // kaiwa gateway calls this too
-  async create(body: CreateAIConversationRoomInput, lang: string = 'vi') {
+  async create(body: CreateAIConversationRoomInput) {
     try {
       const owner = await this.aiConversationRoomRepository.findOwnerOfConversation(
         body.conversationId
@@ -34,17 +29,13 @@ export class AIConversationRoomService {
       if (owner !== null && owner !== body.userId)
         throw new AIConversationTakenException()
       const room = await this.aiConversationRoomRepository.upsert(body)
-      return {
-        statusCode: 201,
-        data: room,
-        message: this.i18nService.translate(M.CREATE_SUCCESS, lang)
-      }
+      return room
     } catch (error) {
       throw this.toRoomError(error)
     }
   }
 
-  async findAll(query: GetAIConversationRoomListQuery, userId: number, lang = 'vi') {
+  async findAll(query: GetAIConversationRoomListQuery, userId: number) {
     const { currentPage, pageSize, isArchived } = query
     const { items, total } = await this.aiConversationRoomRepository.findMany({
       currentPage,
@@ -52,49 +43,28 @@ export class AIConversationRoomService {
       userId,
       isArchived
     })
-    return {
-      statusCode: 200,
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: { results: items, pagination: toPaginationMeta(currentPage, pageSize, total) }
-    }
+    return { results: items, pagination: toPaginationMeta(currentPage, pageSize, total) }
   }
 
   // data is null when the user has no room for it (the gateway reads that)
-  async findByConversationId(conversationId: string, userId?: number, lang = 'vi') {
+  async findByConversationId(conversationId: string, userId?: number) {
     const room = await this.aiConversationRoomRepository.findByConversationId(
       conversationId,
       userId
     )
-    return {
-      statusCode: 200,
-      message: this.i18nService.translate(M.GET_SUCCESS, lang),
-      data: room
-    }
+    return room
   }
 
-  async findOne(id: string, userId: number, lang = 'vi') {
+  async findOne(id: string, userId: number) {
     const room = await this.ownRoom(id, userId)
-    return {
-      statusCode: 200,
-      data: room,
-      message: this.i18nService.translate(M.GET_SUCCESS, lang)
-    }
+    return room
   }
 
-  async update(
-    id: string,
-    userId: number,
-    body: UpdateAIConversationRoomData,
-    lang = 'vi'
-  ) {
+  async update(id: string, userId: number, body: UpdateAIConversationRoomData) {
     try {
       await this.ownRoom(id, userId)
       const room = await this.aiConversationRoomRepository.update({ id }, body)
-      return {
-        statusCode: 200,
-        data: room,
-        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
-      }
+      return room
     } catch (error) {
       throw this.toRoomError(error)
     }
@@ -103,33 +73,24 @@ export class AIConversationRoomService {
   // The kaiwa gateway: title, last message
   async updateByConversationId(
     conversationId: string,
-    body: UpdateAIConversationRoomData,
-    lang = 'vi'
+    body: UpdateAIConversationRoomData
   ) {
     try {
       const room = await this.aiConversationRoomRepository.update(
         { conversationId },
         body
       )
-      return {
-        statusCode: 200,
-        data: room,
-        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
-      }
+      return room
     } catch (error) {
       throw this.toRoomError(error)
     }
   }
 
-  async remove(id: string, userId: number, lang = 'vi') {
+  async remove(id: string, userId: number) {
     try {
       await this.ownRoom(id, userId)
       const room = await this.aiConversationRoomRepository.delete(id)
-      return {
-        statusCode: 200,
-        data: room,
-        message: this.i18nService.translate(M.DELETE_SUCCESS, lang)
-      }
+      return room
     } catch (error) {
       throw this.toRoomError(error)
     }

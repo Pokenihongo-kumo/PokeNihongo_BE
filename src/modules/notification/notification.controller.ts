@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { NotificationMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
@@ -18,112 +20,125 @@ import {
 
 @Controller('notification')
 export class NotificationController {
-  constructor(private readonly notificationService: NotificationService) {}
+  constructor(
+    private readonly notificationService: NotificationService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseDTO)
-  list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return this.notificationService.list(query, lang)
+  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(NotificationMessage.GET_LIST_SUCCESS, lang),
+      data: await this.notificationService.list(query)
+    }
   }
 
   @Get('user')
   @ZodSerializerDto(PaginationResponseDTO)
-  getUserSubWithSubPlan(
+  async getUserSubWithSubPlan(
     @Query() query: PaginationQueryDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.notificationService.getUserSubWithSubPlan(query, userId, lang)
+    return {
+      message: this.i18nService.translate(NotificationMessage.GET_LIST_SUCCESS, lang),
+      data: await this.notificationService.getUserSubWithSubPlan(query, userId, lang)
+    }
   }
 
   @Get(':notificationId')
   @ZodSerializerDto(GetNotificationDetailResDTO)
-  findById(
+  async findById(
     @Param() params: GetNotificationParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.notificationService.findById(params.notificationId, lang)
+    return {
+      message: this.i18nService.translate(NotificationMessage.GET_LIST_SUCCESS, lang),
+      data: await this.notificationService.findById(params.notificationId, lang)
+    }
   }
   @Post()
   @ZodSerializerDto(CreateNotificationResDTO)
-  create(
+  async create(
     @Body() body: CreateNotificationBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.notificationService.create(
-      {
+    return {
+      message: this.i18nService.translate(NotificationMessage.CREATE_SUCCESS, lang),
+      data: await this.notificationService.create({
         userId,
         data: body
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Put('read/list')
   @ZodSerializerDto(UpdateNotificationReadListResDTO)
-  updateReadList(
+  async updateReadList(
     @Body() body: UpdateNotificationReadListBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.notificationService.updateReads(
-      {
+    return {
+      message: this.i18nService.translate(NotificationMessage.UPDATE_SUCCESS, lang),
+      data: await this.notificationService.updateReads({
         body: body,
         userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Put('read/:notificationId')
   @ZodSerializerDto(UpdateNotificationResDTO)
-  updateRead(
+  async updateRead(
     @Param() params: GetNotificationParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.notificationService.updateRead(
-      {
+    return {
+      message: this.i18nService.translate(NotificationMessage.UPDATE_SUCCESS, lang),
+      data: await this.notificationService.updateRead({
         id: params.notificationId,
         userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Put(':notificationId')
   @ZodSerializerDto(UpdateNotificationResDTO)
-  update(
+  async update(
     @Body() body: UpdateNotificationBodyDTO,
     @Param() params: GetNotificationParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.notificationService.update(
-      {
+    return {
+      message: this.i18nService.translate(NotificationMessage.UPDATE_SUCCESS, lang),
+      data: await this.notificationService.update({
         data: body,
         id: params.notificationId,
         userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':notificationId')
   @ZodSerializerDto(MessageResDTO)
-  delete(
+  async delete(
     @Param() params: GetNotificationParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.notificationService.delete(
-      {
-        id: params.notificationId,
-        userId
-      },
-      lang
-    )
+    await this.notificationService.delete({
+      id: params.notificationId,
+      userId
+    })
+    return {
+      message: this.i18nService.translate(NotificationMessage.DELETE_SUCCESS, lang),
+      data: null
+    }
   }
 }
