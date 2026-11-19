@@ -110,6 +110,16 @@ function importOf(sf, name) {
   return null
 }
 
+// The import specifier of a local name as written: `X` or `X as Y`
+function specifierOf(sf, name) {
+  for (const st of sf.statements) {
+    if (!ts.isImportDeclaration(st)) continue
+    const el = st.importClause?.namedBindings?.elements?.find((e) => e.name.text === name)
+    if (el) return el.getText(sf)
+  }
+  return name
+}
+
 // Remove `name` from its named import (the whole import when it was alone)
 function dropImportEdit(sf, name) {
   for (const st of sf.statements) {
@@ -241,10 +251,40 @@ for (const mod of modules) {
         key,
         enumName,
         enumFrom: importOf(sf, enumName),
+        enumSpec: specifierOf(sf, enumName),
         hasData,
         nullData: withMsg.some((e) => e.env.nullData),
         langIndex
       })
+    }
+    // Methods that only pass on a moved method's result (`return this.m(...)`)
+    // now return bare data too: their controller calls need the message as well
+    for (let grew = true; grew; ) {
+      grew = false
+      for (const m of cls.members) {
+        if (!ts.isMethodDeclaration(m) || !m.body || !ts.isIdentifier(m.name)) continue
+        const name = m.name.text
+        if (done.has(name)) continue
+        const rets = returnsOf(m.body).filter((r) => r.expression)
+        if (!rets.length) continue
+        const targets = rets.map((r) => {
+          let e = r.expression
+          if (ts.isAwaitExpression(e)) e = e.expression
+          return ts.isCallExpression(e) &&
+            ts.isPropertyAccessExpression(e.expression) &&
+            e.expression.expression.kind === ts.SyntaxKind.ThisKeyword
+            ? e.expression.name.text
+            : null
+        })
+        const infos = targets.map((t) => (t ? done.get(t) : undefined))
+        if (infos.some((i) => !i)) continue
+        if (new Set(infos.map((i) => i.key)).size !== 1) {
+          report.push(`${className}.${name}: passes on several messages, fix by hand`)
+          continue
+        }
+        done.set(name, { ...infos[0], langIndex: null })
+        grew = true
+      }
     }
     if (!done.size) continue
 
@@ -365,7 +405,7 @@ for (const mod of modules) {
                       end: m.name.getStart(csf),
                       text: 'async '
                     })
-                  enums.set(info.enumName, info.enumFrom)
+                  enums.set(info.enumName, { from: info.enumFrom, spec: info.enumSpec })
                   changed++
                 }
               }
@@ -393,11 +433,10 @@ for (const mod of modules) {
       const imports = []
       if (needI18n && !importOf(csf, 'I18nService'))
         imports.push(`import { I18nService } from '@/i18n/i18n.service'`)
-      for (const [name, from] of enums) {
+      for (const [name, { from, spec }] of enums) {
         if (importOf(csf, name)) continue
         if (!from) report.push(`${controllerFile}: import ${name} by hand`)
-        else
-          imports.push(`import { ${name} } from '${from.startsWith('.') ? from : from}'`)
+        else imports.push(`import { ${spec} } from '${from}'`)
       }
       if (imports.length) ctext = imports.join('\n') + '\n' + ctext
       if (!DRY) fs.writeFileSync(controllerFile, ctext)

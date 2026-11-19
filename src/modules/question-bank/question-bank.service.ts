@@ -46,8 +46,7 @@ export class QuestionBankService {
   async createWithMeanings(
     body: CreateQuestionBankWithMeaningsBody,
     userId: number,
-    skipDuplicateCheck: boolean = false,
-    lang: string = 'vi'
+    skipDuplicateCheck: boolean = false
   ) {
     try {
       if (lacksPronunciation(body)) throw new QuestionBankPronunciationRequiredException()
@@ -56,18 +55,15 @@ export class QuestionBankService {
         { ...body, audioUrl: await this.audioFor(body) },
         userId
       )
-      return {
-        statusCode: 201,
-        data: questionBank,
-        message: this.i18nService.translate(M.CREATE_SUCCESS, lang)
-      }
+      return questionBank
     } catch (error) {
       throw this.toQuestionBankError(error)
     }
   }
 
-  // The question, then each answer on its own (failures are reported).
-  // statusCode: 201 all answers, 207 some, 400 none (the question stays)
+  // The question, then each answer on its own (failures are reported, their
+  // reason in `lang`). The controller answers 201 all answers, 207 some, 400 none
+  // (the question stays)
   async createWithAnswers(
     body: CreateQuestionBankWithAnswersBody,
     userId: number,
@@ -89,11 +85,11 @@ export class QuestionBankService {
     const failedAnswers: { answerJp: string; reason: string }[] = []
     for (const answer of body.answers) {
       try {
-        const created = await this.answerService.createAnswer(
-          { ...answer, questionBankId: questionBank.id },
-          lang
-        )
-        answers.push(created.data)
+        const created = await this.answerService.createAnswer({
+          ...answer,
+          questionBankId: questionBank.id
+        })
+        answers.push(created)
       } catch (error) {
         failedAnswers.push({
           answerJp: answer.answerJp,
@@ -102,81 +98,49 @@ export class QuestionBankService {
       }
     }
 
-    const total = body.answers.length
-    const counts = { created: answers.length, total }
-    const [statusCode, key] =
-      answers.length === 0
-        ? [400, M.WITH_ANSWERS_NONE]
-        : failedAnswers.length > 0
-          ? [207, M.WITH_ANSWERS_PARTIAL]
-          : [201, M.WITH_ANSWERS_CREATED]
     return {
-      statusCode,
-      data: {
-        questionBank,
-        answers,
-        createdCount: answers.length,
-        failedCount: failedAnswers.length,
-        failedAnswers: failedAnswers.length > 0 ? failedAnswers : undefined
-      },
-      message: this.i18nService.translate(key, lang, counts)
+      questionBank,
+      answers,
+      createdCount: answers.length,
+      failedCount: failedAnswers.length,
+      failedAnswers: failedAnswers.length > 0 ? failedAnswers : undefined
     }
   }
 
-  async findAll(query: GetQuestionBankListQuery, lang: string = 'vi') {
+  async findAll(query: GetQuestionBankListQuery) {
     const [{ data, total }, levelCounts] = await Promise.all([
       this.questionBankRepo.findMany(query),
       this.questionBankRepo.countByLevelN(query)
     ])
     return {
-      statusCode: 200,
-      data: {
-        results: data,
-        pagination: toPaginationMeta(query.currentPage, query.pageSize, total),
-        levelCounts
-      },
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang)
+      results: data,
+      pagination: toPaginationMeta(query.currentPage, query.pageSize, total),
+      levelCounts
     }
   }
 
   // Also used by testset-questionbank (reads data.answers)
-  async findOne(id: number, lang: string = 'vi') {
+  async findOne(id: number) {
     const questionBank = await this.questionBankRepo.findById(id)
     if (!questionBank) throw new QuestionBankNotFoundException()
-    return {
-      statusCode: 200,
-      data: questionBank,
-      message: this.i18nService.translate(M.GET_SUCCESS, lang)
-    }
+    return questionBank
   }
 
   async findByIds(ids: number[], lang: string = 'vi') {
     const questionBanks = await this.questionBankRepo.findByIds(ids, lang)
     return {
-      statusCode: 200,
-      data: {
-        results: questionBanks,
-        pagination: toPaginationMeta(1, questionBanks.length || 1, questionBanks.length)
-      },
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang)
+      results: questionBanks,
+      pagination: toPaginationMeta(1, questionBanks.length || 1, questionBanks.length)
     }
   }
 
   // Used by user-exercise-attempt (reads data.results)
-  async findByTestSetId(testSetId: number, lang: string = 'vi') {
+  async findByTestSetId(testSetId: number) {
     const questionBanks = await this.questionBankRepo.findByTestSetId(testSetId)
-    return {
-      statusCode: 200,
-      data: { results: questionBanks },
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang)
-    }
+    return { results: questionBanks }
   }
 
-  async updateWithMeanings(
-    id: number,
-    body: UpdateQuestionBankWithMeaningsBody,
-    lang: string = 'vi'
-  ) {
+  async updateWithMeanings(id: number, body: UpdateQuestionBankWithMeaningsBody) {
     try {
       const current = await this.questionBankRepo.findById(id)
       if (!current) throw new QuestionBankNotFoundException()
@@ -191,43 +155,28 @@ export class QuestionBankService {
         ...body,
         audioUrl
       })
-      return {
-        statusCode: 200,
-        data: questionBank,
-        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
-      }
+      return questionBank
     } catch (error) {
       throw this.toQuestionBankError(error)
     }
   }
 
   // Also deletes its meanings (only the bulk delete did)
-  async remove(id: number, lang: string = 'vi') {
+  async remove(id: number) {
     const questionBank = await this.questionBankRepo.delete(id)
     if (!questionBank) throw new QuestionBankNotFoundException()
-    return {
-      statusCode: 200,
-      data: questionBank,
-      message: this.i18nService.translate(M.DELETE_SUCCESS, lang)
-    }
+    return questionBank
   }
 
   // Ids that do not exist are skipped; 404 when none does
-  async removeMany(ids: number[], lang: string = 'vi') {
+  async removeMany(ids: number[]) {
     const { deletedCount, deletedIds } = await this.questionBankRepo.deleteMany(ids)
     if (deletedCount === 0) throw new NoQuestionBankDeletedException()
     return {
-      statusCode: 200,
-      data: {
-        deletedCount,
-        deletedIds,
-        requestedCount: ids.length,
-        notFoundCount: ids.length - deletedCount
-      },
-      message: this.i18nService.translate(M.DELETE_MANY_SUCCESS, lang, {
-        deleted: deletedCount,
-        requested: ids.length
-      })
+      deletedCount,
+      deletedIds,
+      requestedCount: ids.length,
+      notFoundCount: ids.length - deletedCount
     }
   }
 

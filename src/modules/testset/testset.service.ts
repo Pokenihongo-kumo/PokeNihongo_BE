@@ -1,5 +1,4 @@
 import { TextToSpeechService } from '@/modules/speech/text-to-speech.service'
-import { I18nService } from '@/i18n/i18n.service'
 import { TestSetMessage as M } from '@/i18n/message-keys'
 import { toPaginationMeta } from '@/shared/utils/pagination'
 import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
@@ -32,21 +31,15 @@ export class TestSetService {
   constructor(
     private readonly testSetRepo: TestSetRepo,
     private readonly questionBankService: QuestionBankService,
-    private readonly textToSpeechService: TextToSpeechService,
-    private readonly i18nService: I18nService
+    private readonly textToSpeechService: TextToSpeechService
   ) {}
 
   // GET /testset and /testset/basic (same result)
-  async findAll(query: GetTestSetListQuery, lang: string = 'vi') {
+  async findAll(query: GetTestSetListQuery) {
     const { data, total } = await this.testSetRepo.findMany(query)
-    // statusCode: the list serializer needs it
     return {
-      statusCode: 200,
-      data: {
-        results: data,
-        pagination: toPaginationMeta(query.currentPage, query.pageSize, total)
-      },
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang)
+      results: data,
+      pagination: toPaginationMeta(query.currentPage, query.pageSize, total)
     }
   }
 
@@ -54,71 +47,51 @@ export class TestSetService {
   async findOne(id: number, lang: string = 'vi') {
     const testSet = await this.testSetRepo.findById(id, lang)
     if (!testSet) throw new TestSetNotFoundException()
-    return { data: testSet, message: this.i18nService.translate(M.GET_SUCCESS, lang) }
+    return testSet
   }
 
   // Every translation, for editing
-  async findOneWithQuestionBanksFull(id: number, lang: string = 'vi') {
+  async findOneWithQuestionBanksFull(id: number) {
     const testSet = await this.testSetRepo.findWithQuestionBanksFull(id)
     if (!testSet) throw new TestSetNotFoundException()
-    return { data: testSet, message: this.i18nService.translate(M.GET_SUCCESS, lang) }
+    return testSet
   }
 
-  async createTestSetWithMeanings(
-    data: CreateTestSetWithMeaningsBody,
-    userId: number,
-    lang: string = 'vi'
-  ) {
+  async createTestSetWithMeanings(data: CreateTestSetWithMeaningsBody, userId: number) {
     try {
       const testSet = await this.testSetRepo.createWithMeanings(data, userId)
-      return {
-        data: testSet,
-        message: this.i18nService.translate(M.CREATE_SUCCESS, lang)
-      }
+      return testSet
     } catch (error) {
       throw this.toTestSetError(error)
     }
   }
 
-  async updateTestSet(id: number, data: UpdateTestSetBody, lang: string = 'vi') {
+  async updateTestSet(id: number, data: UpdateTestSetBody) {
     try {
       await this.assertChangeAllowed(await this.loadTestSet(id), data)
       const testSet = await this.testSetRepo.updateWithTranslations(id, data)
-      return {
-        data: testSet,
-        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
-      }
+      return testSet
     } catch (error) {
       throw this.toTestSetError(error)
     }
   }
 
-  async updateTestSetWithMeanings(
-    id: number,
-    data: UpdateTestSetWithMeaningsBody,
-    lang: string = 'vi'
-  ) {
+  async updateTestSetWithMeanings(id: number, data: UpdateTestSetWithMeaningsBody) {
     try {
       await this.assertChangeAllowed(await this.loadTestSet(id), data)
       const testSet = await this.testSetRepo.updateWithMeanings(id, data)
-      return {
-        data: testSet,
-        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
-      }
+      return testSet
     } catch (error) {
       throw this.toTestSetError(error)
     }
   }
 
   // Returns the deleted test set (with its translations)
-  async deleteTestSet(id: number, lang: string = 'vi') {
+  async deleteTestSet(id: number) {
     try {
       const testSet = await this.loadTestSet(id)
       await this.testSetRepo.delete(id)
-      return {
-        data: testSet,
-        message: this.i18nService.translate(M.DELETE_SUCCESS, lang)
-      }
+      return testSet
     } catch (error) {
       throw this.toTestSetError(error)
     }
@@ -129,10 +102,8 @@ export class TestSetService {
   // id) or else an existing QuestionBank; without id it is a new QuestionBank
   async upsertTestSetWithQuestionBanks(
     data: UpsertTestSetWithQuestionBanksBody,
-    userId: number,
-    lang: string = 'vi'
+    userId: number
   ) {
-    const isUpdate = !!data.id
     try {
       if (data.id) await this.loadTestSet(data.id)
       const links = data.id ? await this.testSetRepo.linksOf(data.id) : new Map()
@@ -184,14 +155,7 @@ export class TestSetService {
         meanings: data.meanings,
         questions
       })
-      // POST: 201 for both (the status is not switched on update)
-      return {
-        data: testSet,
-        message: this.i18nService.translate(
-          isUpdate ? M.UPDATE_SUCCESS : M.CREATE_SUCCESS,
-          lang
-        )
-      }
+      return testSet
     } catch (error) {
       throw this.toTestSetError(error)
     }
@@ -280,7 +244,7 @@ export class TestSetService {
       userId,
       q.questionType === QuestionType.SPEAKING
     )
-    return (result.data as { id: number }).id
+    return (result as { id: number }).id
   }
 
   private toTestSetError(error: unknown): HttpException {

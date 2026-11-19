@@ -80,6 +80,8 @@ src/modules/<feature>/
   }
   ```
 
+- Route mà status là kết quả nghiệp vụ (ghi từng phần: 201/207/400) dùng `@Res()`: service trả dữ liệu kèm số đếm, controller chọn status + message và gửi `{ statusCode, data, message }` (mẫu: `POST /answer/multiple`).
+- Chuyển một nhóm: `node scripts/codemods/p5-envelope-to-controller.mjs <module>...`, rồi `node scripts/codemods/p5-drop-envelope-data.mjs` tới khi tsc sạch, sửa tay các method nó liệt kê, grep `.data` trên kết quả đọc qua `any` ở các module gọi tới (tsc không thấy), chạy contract snapshot.
 - Module chưa chuyển vẫn trả envelope từ service (interceptor nhận cả hai). `arch:deps` đếm `serviceEnvelopeFiles`/`serviceStatusCodes`/`serviceMessages` trong `*.service.ts` và không cho tăng. Khi chuyển một module: method dùng bởi module khác cũng trả kết quả trần, sửa chỗ gọi (`r.data.id` → `r.id`).
 - Log bằng Nest `Logger` của class; không `console.*`. Việc best-effort (Level `autoLinkLevels`) log lỗi rõ ràng, có test chứng minh không làm hỏng thao tác chính.
 

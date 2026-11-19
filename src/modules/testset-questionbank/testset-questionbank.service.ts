@@ -44,21 +44,18 @@ export class TestSetQuestionBankService {
     private readonly i18nService: I18nService
   ) {}
 
-  async create(data: CreateTestSetQuestionBankBody, lang: string = 'vi') {
+  async create(data: CreateTestSetQuestionBankBody) {
     try {
       const testSet = await this.loadTestSet(data.testSetId)
       const created = await this.link(testSet, data.questionBankId)
-      return {
-        data: created,
-        message: this.i18nService.translate(M.CREATE_SUCCESS, lang)
-      }
+      return created
     } catch (error) {
       throw this.toTestSetQuestionBankError(error)
     }
   }
 
-  // Each question is linked on its own; failures are reported, not thrown.
-  // statusCode (201 all / 207 some / 400 none) is sent as the HTTP status
+  // Each question is linked on its own; failures are reported (reason in
+  // `lang`), not thrown. The controller answers 201 all / 207 some / 400 none
   async createMultiple(data: CreateMultipleTestSetQuestionBankBody, lang: string = 'vi') {
     const testSet = await this.loadTestSet(data.testSetId).catch((error) => {
       throw this.toTestSetQuestionBankError(error)
@@ -74,34 +71,23 @@ export class TestSetQuestionBankService {
     }
 
     const total = data.questionBankIds.length
-    const counts = { created: created.length, total, failed: failed.length }
-    const [statusCode, key] =
-      created.length === 0
-        ? [400, M.MULTIPLE_NONE_CREATED]
-        : failed.length > 0
-          ? [207, M.MULTIPLE_PARTIAL]
-          : [201, M.MULTIPLE_CREATED]
     return {
-      statusCode,
-      data: {
-        created,
-        failed,
-        summary: { total, success: created.length, failed: failed.length }
-      },
-      message: this.i18nService.translate(key, lang, counts)
+      created,
+      failed,
+      summary: { total, success: created.length, failed: failed.length }
     }
   }
 
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const link = await this.testSetQuestionBankRepo.findById(id)
     if (!link) throw new TestSetQuestionBankNotFoundException()
-    return { data: link, message: this.i18nService.translate(M.GET_SUCCESS, lang) }
+    return link
   }
 
-  async findByTestSetId(testSetId: number, lang: string = 'vi') {
+  async findByTestSetId(testSetId: number) {
     await this.loadTestSet(testSetId)
     const links = await this.testSetQuestionBankRepo.findByTestSetId(testSetId)
-    return { data: links, message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang) }
+    return links
   }
 
   // HTTP routes: a missing test set is a 404 (internal callers get an empty list)
@@ -115,7 +101,7 @@ export class TestSetQuestionBankService {
     return this.findFullWithAnswerByTestSetId(testSetId, lang)
   }
 
-  // Used by user-test-attempt; returns { statusCode, data: [...], message }
+  // Used by user-test-attempt; returns the linked questions
   async findFullByTestSetId(testSetId: number, languageCode: string = 'vi') {
     try {
       const links = await this.testSetQuestionBankRepo.findByTestSetId(testSetId)
@@ -142,11 +128,7 @@ export class TestSetQuestionBankService {
           }
         })
         .filter(Boolean)
-      return {
-        statusCode: 200,
-        data,
-        message: this.i18nService.translate(M.GET_LIST_SUCCESS, languageCode)
-      }
+      return data
     } catch (error) {
       throw this.toTestSetQuestionBankError(error)
     }
@@ -180,17 +162,13 @@ export class TestSetQuestionBankService {
           })
         )
       ).filter(Boolean)
-      return {
-        statusCode: 200,
-        data,
-        message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang)
-      }
+      return data
     } catch (error) {
       throw this.toTestSetQuestionBankError(error)
     }
   }
 
-  async update(id: number, data: UpdateTestSetQuestionBankBody, lang: string = 'vi') {
+  async update(id: number, data: UpdateTestSetQuestionBankBody) {
     try {
       const existing = await this.testSetQuestionBankRepo.findById(id)
       if (!existing) throw new TestSetQuestionBankNotFoundException()
@@ -206,50 +184,38 @@ export class TestSetQuestionBankService {
       }
 
       const updated = await this.testSetQuestionBankRepo.update(id, data)
-      return {
-        data: updated,
-        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
-      }
+      return updated
     } catch (error) {
       throw this.toTestSetQuestionBankError(error)
     }
   }
 
-  async updateQuestionOrder(id: number, questionOrder: number, lang: string = 'vi') {
+  async updateQuestionOrder(id: number, questionOrder: number) {
     try {
       const updated = await this.testSetQuestionBankRepo.update(id, { questionOrder })
-      return {
-        data: updated,
-        message: this.i18nService.translate(M.UPDATE_QUESTION_ORDER_SUCCESS, lang)
-      }
+      return updated
     } catch (error) {
       throw this.toTestSetQuestionBankError(error)
     }
   }
 
-  async delete(id: number, lang: string = 'vi') {
+  async delete(id: number) {
     try {
       await this.testSetQuestionBankRepo.delete(id)
-      return { message: this.i18nService.translate(M.DELETE_SUCCESS, lang) }
+      return
     } catch (error) {
       throw this.toTestSetQuestionBankError(error)
     }
   }
 
-  async deleteMany(body: DeleteManyTestSetQuestionBankBody, lang: string = 'vi') {
+  async deleteMany(body: DeleteManyTestSetQuestionBankBody) {
     const result = await this.testSetQuestionBankRepo.deleteMany(body.ids)
-    return {
-      data: { deletedCount: result.count },
-      message: this.i18nService.translate(M.DELETE_SUCCESS, lang)
-    }
+    return { deletedCount: result.count }
   }
 
-  async deleteByTestSetId(testSetId: number, lang: string = 'vi') {
+  async deleteByTestSetId(testSetId: number) {
     const result = await this.testSetQuestionBankRepo.deleteByTestSetId(testSetId)
-    return {
-      data: { deletedCount: result.count },
-      message: this.i18nService.translate(M.DELETE_BY_TESTSET_SUCCESS, lang)
-    }
+    return { deletedCount: result.count }
   }
 
   //#region helpers
@@ -330,7 +296,7 @@ export class TestSetQuestionBankService {
     const results = await Promise.all(
       links.map((l) => this.questionBankService.findOne(l.questionBankId))
     )
-    return new Map<number, any>(results.map((res: any) => [res.data.id, res.data]))
+    return new Map<number, any>(results.map((qb: any) => [qb.id, qb]))
   }
 
   private answersOf(qb: any, lang: string) {

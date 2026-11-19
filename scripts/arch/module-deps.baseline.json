@@ -9,10 +9,10 @@
     "prismaOutsideRepoFiles": 0,
     "httpSchemasInEntities": 0,
     "handWrittenEnvelopes": 2,
-    "serviceEnvelopeFiles": 71,
+    "serviceEnvelopeFiles": 67,
     "prismaOutsideRepoCalls": 0,
-    "serviceStatusCodes": 459,
-    "serviceMessages": 568
+    "serviceStatusCodes": 435,
+    "serviceMessages": 539
   },
   "details": {
     "crossModuleRepoImports": [
@@ -66,7 +66,6 @@
       "modules/achievement-group/achievement-group.service.ts",
       "modules/achievement/achievement.service.ts",
       "modules/ai-conversation-room/ai-conversation-room.service.ts",
-      "modules/answer/answer.service.ts",
       "modules/attendance/attendance.service.ts",
       "modules/auth/auth.service.ts",
       "modules/auth/google.service.ts",
@@ -96,7 +95,6 @@
       "modules/payment/payment.service.ts",
       "modules/permission/permission.service.ts",
       "modules/pokemon/pokemon.service.ts",
-      "modules/question-bank/question-bank.service.ts",
       "modules/reward/reward.service.ts",
       "modules/role/role.service.ts",
       "modules/round-question-answerlog/round-question-answerlog.service.ts",
@@ -111,8 +109,6 @@
       "modules/subscription-plan/subscription-plan.service.ts",
       "modules/subscription/subscription.service.ts",
       "modules/test/test.service.ts",
-      "modules/testset-questionbank/testset-questionbank.service.ts",
-      "modules/testset/testset.service.ts",
       "modules/upload/upload.service.ts",
       "modules/user-achievement/user-achievement.service.ts",
       "modules/user-ai-conversation/user-ai-conversation.service.ts",

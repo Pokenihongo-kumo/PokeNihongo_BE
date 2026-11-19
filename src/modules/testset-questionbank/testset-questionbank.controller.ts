@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { TestSetQuestionBankMessage as M } from '@/i18n/message-keys'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import {
   CreateTestSetQuestionBankBodyDTO,
@@ -44,7 +46,10 @@ import { TestSetQuestionBankService } from './testset-questionbank.service'
 @ApiTags('TestSetQuestionBank')
 @Controller('testset-questionbank')
 export class TestSetQuestionBankController {
-  constructor(private readonly testSetQuestionBankService: TestSetQuestionBankService) {}
+  constructor(
+    private readonly testSetQuestionBankService: TestSetQuestionBankService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Post()
   @ApiBearerAuth()
@@ -70,8 +75,11 @@ export class TestSetQuestionBankController {
     description: 'Tạo liên kết thành công',
     type: TestSetQuestionBankResponseSwaggerDTO
   })
-  create(@Body() body: CreateTestSetQuestionBankBodyDTO, @I18nLang() lang: string) {
-    return this.testSetQuestionBankService.create(body, lang)
+  async create(@Body() body: CreateTestSetQuestionBankBodyDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(M.CREATE_SUCCESS, lang),
+      data: await this.testSetQuestionBankService.create(body)
+    }
   }
 
   @Post('multiple')
@@ -111,8 +119,21 @@ export class TestSetQuestionBankController {
     @Res() res: Response
   ) {
     // 201 all linked, 207 some, 400 none: the status is part of the result
-    const result = await this.testSetQuestionBankService.createMultiple(body, lang)
-    res.status(result.statusCode).json(result)
+    const data = await this.testSetQuestionBankService.createMultiple(body, lang)
+    const { total, success, failed } = data.summary
+    const [statusCode, key] =
+      success === 0
+        ? [400, M.MULTIPLE_NONE_CREATED]
+        : failed > 0
+          ? [207, M.MULTIPLE_PARTIAL]
+          : [201, M.MULTIPLE_CREATED]
+    const message = this.i18nService.translate(key, lang, {
+      created: success,
+      total,
+      failed
+    })
+    // @Res(): sent as is, past TransformInterceptor
+    res.status(statusCode).json({ statusCode, data, message })
   }
 
   @Get(':id')
@@ -131,11 +152,14 @@ export class TestSetQuestionBankController {
     description: 'Lấy thông tin thành công',
     type: TestSetQuestionBankResponseSwaggerDTO
   })
-  findById(
+  async findById(
     @Param() params: GetTestSetQuestionBankByIdParamsDTO,
     @I18nLang() lang: string
   ) {
-    return this.testSetQuestionBankService.findById(params.id, lang)
+    return {
+      message: this.i18nService.translate(M.GET_SUCCESS, lang),
+      data: await this.testSetQuestionBankService.findById(params.id)
+    }
   }
 
   @Get('testset/:testSetId')
@@ -149,11 +173,14 @@ export class TestSetQuestionBankController {
     description: 'Lấy danh sách thành công',
     type: TestSetQuestionBankListResponseSwaggerDTO
   })
-  findByTestSetId(
+  async findByTestSetId(
     @Param() params: GetTestSetQuestionBankByTestSetIdParamsDTO,
     @I18nLang() lang: string
   ) {
-    return this.testSetQuestionBankService.findByTestSetId(params.testSetId, lang)
+    return {
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
+      data: await this.testSetQuestionBankService.findByTestSetId(params.testSetId)
+    }
   }
 
   @Get('testset/:testSetId/full')
@@ -162,11 +189,17 @@ export class TestSetQuestionBankController {
     summary: 'Lấy danh sách TestSetQuestionBank',
     description: 'Trả về các liên kết cùng dữ liệu QuestionBank'
   })
-  findFullByTestSetId(
+  async findFullByTestSetId(
     @Param() params: GetTestSetQuestionBankByTestSetIdParamsDTO,
     @I18nLang() lang: string
   ) {
-    return this.testSetQuestionBankService.getFullByTestSetId(params.testSetId, lang)
+    return {
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
+      data: await this.testSetQuestionBankService.getFullByTestSetId(
+        params.testSetId,
+        lang
+      )
+    }
   }
 
   @Get('testset/:testSetId/full-with-answer')
@@ -177,14 +210,17 @@ export class TestSetQuestionBankController {
     description:
       'Trả về các liên kết cùng dữ liệu QuestionBank và Answers với translations theo ngôn ngữ'
   })
-  findFullWithAnswerByTestSetId(
+  async findFullWithAnswerByTestSetId(
     @Param() params: GetTestSetQuestionBankByTestSetIdParamsDTO,
     @I18nLang() lang: string
   ) {
-    return this.testSetQuestionBankService.getFullWithAnswerByTestSetId(
-      params.testSetId,
-      lang
-    )
+    return {
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
+      data: await this.testSetQuestionBankService.getFullWithAnswerByTestSetId(
+        params.testSetId,
+        lang
+      )
+    }
   }
 
   @Delete('delete-many')
@@ -202,11 +238,14 @@ export class TestSetQuestionBankController {
       }
     }
   })
-  deleteMany(
+  async deleteMany(
     @Body() body: DeleteManyTestSetQuestionBankBodyDTO,
     @I18nLang() lang: string
   ) {
-    return this.testSetQuestionBankService.deleteMany(body, lang)
+    return {
+      message: this.i18nService.translate(M.DELETE_SUCCESS, lang),
+      data: await this.testSetQuestionBankService.deleteMany(body)
+    }
   }
 
   @Put(':id')
@@ -224,12 +263,15 @@ export class TestSetQuestionBankController {
     description: 'Cập nhật thành công',
     type: TestSetQuestionBankResponseSwaggerDTO
   })
-  update(
+  async update(
     @Param() params: GetTestSetQuestionBankByIdParamsDTO,
     @Body() body: UpdateTestSetQuestionBankBodyDTO,
     @I18nLang() lang: string
   ) {
-    return this.testSetQuestionBankService.update(params.id, body, lang)
+    return {
+      message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
+      data: await this.testSetQuestionBankService.update(params.id, body)
+    }
   }
 
   @Put(':id/question-order')
@@ -252,16 +294,18 @@ export class TestSetQuestionBankController {
     description: 'Cập nhật thứ tự thành công',
     type: TestSetQuestionBankResponseSwaggerDTO
   })
-  updateQuestionOrder(
+  async updateQuestionOrder(
     @Param() params: GetTestSetQuestionBankByIdParamsDTO,
     @Body() body: UpdateQuestionOrderDTO,
     @I18nLang() lang: string
   ) {
-    return this.testSetQuestionBankService.updateQuestionOrder(
-      params.id,
-      body.questionOrder,
-      lang
-    )
+    return {
+      message: this.i18nService.translate(M.UPDATE_QUESTION_ORDER_SUCCESS, lang),
+      data: await this.testSetQuestionBankService.updateQuestionOrder(
+        params.id,
+        body.questionOrder
+      )
+    }
   }
 
   @Delete(':id')
@@ -276,8 +320,12 @@ export class TestSetQuestionBankController {
     type: TestSetQuestionBankResponseSwaggerDTO
   })
   @HttpCode(HttpStatus.OK)
-  delete(@Param() params: GetTestSetQuestionBankByIdParamsDTO, @I18nLang() lang: string) {
-    return this.testSetQuestionBankService.delete(params.id, lang)
+  async delete(
+    @Param() params: GetTestSetQuestionBankByIdParamsDTO,
+    @I18nLang() lang: string
+  ) {
+    await this.testSetQuestionBankService.delete(params.id)
+    return { message: this.i18nService.translate(M.DELETE_SUCCESS, lang) }
   }
 
   @Delete('testset/:testSetId')
@@ -292,10 +340,13 @@ export class TestSetQuestionBankController {
     type: TestSetQuestionBankResponseSwaggerDTO
   })
   @HttpCode(HttpStatus.OK)
-  deleteByTestSetId(
+  async deleteByTestSetId(
     @Param() params: GetTestSetQuestionBankByTestSetIdParamsDTO,
     @I18nLang() lang: string
   ) {
-    return this.testSetQuestionBankService.deleteByTestSetId(params.testSetId, lang)
+    return {
+      message: this.i18nService.translate(M.DELETE_BY_TESTSET_SUCCESS, lang),
+      data: await this.testSetQuestionBankService.deleteByTestSetId(params.testSetId)
+    }
   }
 }

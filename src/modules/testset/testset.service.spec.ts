@@ -16,11 +16,7 @@ describe('TestSetService', () => {
   const service = new TestSetService(
     repo as never,
     questionBanks as never,
-    { generateAudioFromText: jest.fn() } as never,
-    {
-      translate: (k: string, _l: string, args?: object) =>
-        args ? `${k} ${JSON.stringify(args)}` : k
-    } as never
+    { generateAudioFromText: jest.fn() } as never
   )
 
   beforeEach(() => {
@@ -104,7 +100,7 @@ describe('TestSetService', () => {
   })
 
   it('upsert: a link id resolves to its QuestionBank, new questions are created, order kept', async () => {
-    questionBanks.createWithMeanings.mockResolvedValue({ data: { id: 8 } })
+    questionBanks.createWithMeanings.mockResolvedValue({ id: 8 })
     await service.upsertTestSetWithQuestionBanks(
       {
         id: 5,

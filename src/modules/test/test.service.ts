@@ -488,7 +488,7 @@ export class TestService {
               testSet.id,
               language
             )
-          const questions = questionsResult.data || []
+          const questions = questionsResult || []
 
           return {
             id: testSet.id,
@@ -620,7 +620,7 @@ export class TestService {
               testSet.id,
               language
             )
-          const questions = questionsResult.data || []
+          const questions = questionsResult || []
 
           return {
             id: testSet.id,
@@ -1153,7 +1153,7 @@ export class TestService {
             testSet.id,
             language
           )
-        const questions = questionsResult.data || []
+        const questions = questionsResult || []
 
         // Lọc chỉ lấy câu hỏi đúng loại (nếu cần)
         const filteredQuestions = questions.filter(

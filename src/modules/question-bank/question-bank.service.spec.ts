@@ -74,7 +74,7 @@ describe('QuestionBankService', () => {
   })
 
   it('createWithAnswers: 207 with translated reasons and counts', async () => {
-    answers.createAnswer.mockResolvedValueOnce({ data: { id: 1 } })
+    answers.createAnswer.mockResolvedValueOnce({ id: 1 })
     answers.createAnswer.mockRejectedValueOnce(new Error('x'))
     answers.failureReason.mockReturnValue('answer.UNKNOWN_FAILURE')
 
@@ -90,9 +90,8 @@ describe('QuestionBankService', () => {
       1,
       'en'
     )
-    expect(res.statusCode).toBe(207)
-    expect(res.message).toBe('question_bank.WITH_ANSWERS_PARTIAL {"created":1,"total":2}')
-    expect(res.data.failedAnswers).toEqual([
+    expect(res).toMatchObject({ createdCount: 1, failedCount: 1 })
+    expect(res.failedAnswers).toEqual([
       { answerJp: '二', reason: 'answer.UNKNOWN_FAILURE' }
     ])
     expect(answers.failureReason).toHaveBeenCalledWith(expect.any(Error), 'en')

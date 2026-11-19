@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { TestSetMessage as M } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import {
@@ -47,7 +49,10 @@ import { TestSetService } from './testset.service'
 @ApiTags('TestSet')
 @Controller('testset')
 export class TestSetController {
-  constructor(private readonly testSetService: TestSetService) {}
+  constructor(
+    private readonly testSetService: TestSetService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Post('upsert-with-question-banks')
   @ApiBearerAuth()
@@ -57,12 +62,20 @@ export class TestSetController {
       'Nếu không có id trong body → tạo mới testset. Nếu có id → cập nhật testset. Có thể: tạo questionBank mới, update thông tin testset/questionBank, và update vị trí order (drag & drop) trong 1 API'
   })
   @ApiBody({ type: UpsertTestSetWithQuestionBanksSwaggerDTO })
-  upsertTestSetWithQuestionBanks(
+  async upsertTestSetWithQuestionBanks(
     @Body() body: UpsertTestSetWithQuestionBanksBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.testSetService.upsertTestSetWithQuestionBanks(body, userId, lang)
+    const data = await this.testSetService.upsertTestSetWithQuestionBanks(body, userId)
+    // POST: 201 for both (the status is not switched on update)
+    return {
+      message: this.i18nService.translate(
+        body.id ? M.UPDATE_SUCCESS : M.CREATE_SUCCESS,
+        lang
+      ),
+      data
+    }
   }
 
   @Post('with-meanings')
@@ -78,12 +91,15 @@ export class TestSetController {
     description: 'Tạo bộ đề với meanings thành công',
     type: TestSetResponseSwaggerDTO
   })
-  createTestSetWithMeanings(
+  async createTestSetWithMeanings(
     @Body() body: CreateTestSetWithMeaningsBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.testSetService.createTestSetWithMeanings(body, userId, lang)
+    return {
+      message: this.i18nService.translate(M.CREATE_SUCCESS, lang),
+      data: await this.testSetService.createTestSetWithMeanings(body, userId)
+    }
   }
 
   @Get()
@@ -96,8 +112,11 @@ export class TestSetController {
   })
   @ApiQuery({ type: GetTestSetListQuerySwaggerDTO })
   @ZodSerializerDto(TestSetListResDTO)
-  findAll(@Query() query: GetTestSetListQueryDTO, @I18nLang() lang: string) {
-    return this.testSetService.findAll(query, lang)
+  async findAll(@Query() query: GetTestSetListQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
+      data: await this.testSetService.findAll(query)
+    }
   }
 
   @Get('basic')
@@ -110,8 +129,11 @@ export class TestSetController {
   })
   @ApiQuery({ type: GetTestSetListQuerySwaggerDTO })
   @ZodSerializerDto(TestSetListResDTO)
-  findAllBasic(@Query() query: GetTestSetListQueryDTO, @I18nLang() lang: string) {
-    return this.testSetService.findAll(query, lang)
+  async findAllBasic(@Query() query: GetTestSetListQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
+      data: await this.testSetService.findAll(query)
+    }
   }
 
   @Get(':id')
@@ -122,8 +144,11 @@ export class TestSetController {
     description: 'Lấy thông tin bộ đề thành công',
     type: TestSetWithQuestionsResponseSwaggerDTO
   })
-  findOne(@Param() params: GetTestSetByIdParamsDTO, @I18nLang() lang: string) {
-    return this.testSetService.findOne(params.id, lang)
+  async findOne(@Param() params: GetTestSetByIdParamsDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(M.GET_SUCCESS, lang),
+      data: await this.testSetService.findOne(params.id, lang)
+    }
   }
 
   @Get(':id/with-question-banks-full')
@@ -143,11 +168,14 @@ export class TestSetController {
     description: 'Lấy thông tin bộ đề với questionBanks và full translations thành công',
     type: TestSetWithQuestionsFullResponseSwaggerDTO
   })
-  findOneWithQuestionBanksFull(
+  async findOneWithQuestionBanksFull(
     @Param() params: GetTestSetByIdParamsDTO,
     @I18nLang() lang: string
   ) {
-    return this.testSetService.findOneWithQuestionBanksFull(params.id, lang)
+    return {
+      message: this.i18nService.translate(M.GET_SUCCESS, lang),
+      data: await this.testSetService.findOneWithQuestionBanksFull(params.id)
+    }
   }
 
   @Put(':id')
@@ -159,12 +187,15 @@ export class TestSetController {
     description: 'Cập nhật bộ đề thành công',
     type: TestSetResponseSwaggerDTO
   })
-  updateTestSet(
+  async updateTestSet(
     @Param() params: GetTestSetByIdParamsDTO,
     @Body() body: UpdateTestSetBodyDTO,
     @I18nLang() lang: string
   ) {
-    return this.testSetService.updateTestSet(params.id, body, lang)
+    return {
+      message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
+      data: await this.testSetService.updateTestSet(params.id, body)
+    }
   }
 
   @Put(':id/with-meanings')
@@ -176,12 +207,15 @@ export class TestSetController {
     description: 'Cập nhật bộ đề với meanings thành công',
     type: TestSetResponseSwaggerDTO
   })
-  updateTestSetWithMeanings(
+  async updateTestSetWithMeanings(
     @Param() params: GetTestSetByIdParamsDTO,
     @Body() body: UpdateTestSetWithMeaningsBodyDTO,
     @I18nLang() lang: string
   ) {
-    return this.testSetService.updateTestSetWithMeanings(params.id, body, lang)
+    return {
+      message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
+      data: await this.testSetService.updateTestSetWithMeanings(params.id, body)
+    }
   }
 
   @Delete(':id')
@@ -193,7 +227,13 @@ export class TestSetController {
     description: 'Xóa bộ đề thành công',
     type: TestSetResponseSwaggerDTO
   })
-  deleteTestSet(@Param() params: GetTestSetByIdParamsDTO, @I18nLang() lang: string) {
-    return this.testSetService.deleteTestSet(params.id, lang)
+  async deleteTestSet(
+    @Param() params: GetTestSetByIdParamsDTO,
+    @I18nLang() lang: string
+  ) {
+    return {
+      message: this.i18nService.translate(M.DELETE_SUCCESS, lang),
+      data: await this.testSetService.deleteTestSet(params.id)
+    }
   }
 }

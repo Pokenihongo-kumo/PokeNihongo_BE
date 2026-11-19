@@ -43,7 +43,8 @@ describe('TestSetQuestionBankService', () => {
       questionBankId: 1,
       questionOrder: 6
     })
-    expect(res.message).toBe('testset_questionbank.CREATE_SUCCESS')
+    // the service returns the row; the controller adds the message
+    expect(res).toMatchObject({ id: 70, questionOrder: 6 })
   })
 
   it('type and level rules: own type only, same level; GENERAL takes lower levels', async () => {
@@ -97,7 +98,7 @@ describe('TestSetQuestionBankService', () => {
     })
   })
 
-  it('createMultiple: 207 with translated reasons (a missing question was "unknown error")', async () => {
+  it('createMultiple: counts and translated reasons (a missing question was "unknown error")', async () => {
     repo.findByTestSetAndQuestionBank.mockImplementation(async (_t, qb: number) =>
       qb === 1 ? null : { id: 1 }
     )
@@ -106,11 +107,8 @@ describe('TestSetQuestionBankService', () => {
       questionBankIds: [1, 99, 3]
     })
 
-    expect(res.statusCode).toBe(207)
-    expect(res.message).toBe(
-      'testset_questionbank.MULTIPLE_PARTIAL {"created":1,"total":3,"failed":2}'
-    )
-    expect(res.data.failed).toEqual([
+    expect(res.summary).toEqual({ total: 3, success: 1, failed: 2 })
+    expect(res.failed).toEqual([
       { questionBankId: 99, reason: 'testset_questionbank.QUESTION_BANK_NOT_FOUND' },
       {
         questionBankId: 3,

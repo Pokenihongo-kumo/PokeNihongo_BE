@@ -181,8 +181,8 @@ export class UserTestAttemptService {
           testSetId,
           'vi'
         )
-        if (questionsResult.data && Array.isArray(questionsResult.data)) {
-          allQuestionBanks.push(...questionsResult.data)
+        if (questionsResult && Array.isArray(questionsResult)) {
+          allQuestionBanks.push(...questionsResult)
         }
       }
 
@@ -447,8 +447,8 @@ export class UserTestAttemptService {
           testSetId,
           'vi'
         )
-        if (questionsResult.data && Array.isArray(questionsResult.data)) {
-          allQuestionBanks.push(...questionsResult.data)
+        if (questionsResult && Array.isArray(questionsResult)) {
+          allQuestionBanks.push(...questionsResult)
         }
       }
 
