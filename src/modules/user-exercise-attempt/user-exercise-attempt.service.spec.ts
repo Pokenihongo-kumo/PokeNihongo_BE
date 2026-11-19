@@ -89,7 +89,7 @@ describe('UserExerciseAttemptService', () => {
       })
       deps.exercisesService.findByLessonId.mockResolvedValue([{ id: 3 }])
       deps.questionBankService.findByTestSetId.mockResolvedValue({
-        data: { results: [{ id: 11 }, { id: 12 }] }
+        results: [{ id: 11 }, { id: 12 }]
       })
       deps.userAnswerLogService.findByUserExerciseAttemptId.mockResolvedValue({
         data: { results: logs }

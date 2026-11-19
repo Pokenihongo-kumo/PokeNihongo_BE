@@ -49,7 +49,7 @@ export class AnswerService {
 
   //#region Get Answer
   // `language` (query) picks one meaning per answer; without it, all meanings
-  async getAnswerList(params: GetAnswerListQuery, lang: string = 'vi') {
+  async getAnswerList(params: GetAnswerListQuery) {
     const result = await this.answerRepository.findMany(params)
     const languages = await this.languageMaps()
     const languageId = params.language
@@ -93,12 +93,8 @@ export class AnswerService {
     )
 
     return {
-      statusCode: 200,
-      message: this.i18nService.translate(AnswerMessage.GET_LIST_SUCCESS, lang),
-      data: {
-        results,
-        pagination: toPaginationMeta(params.currentPage, params.pageSize, result.total)
-      }
+      results,
+      pagination: toPaginationMeta(params.currentPage, params.pageSize, result.total)
     }
   }
 
@@ -131,14 +127,10 @@ export class AnswerService {
       const meanings = answerKey ? await this.translationsOf(answerKey, languages) : []
 
       return {
-        statusCode: 200,
-        data: {
-          ...answer,
-          meaning,
-          ...(meanings.length > 0 ? { meanings } : {}),
-          ...this.parsedFields(answer.answerJp)
-        },
-        message: this.i18nService.translate(AnswerMessage.GET_SUCCESS, lang)
+        ...answer,
+        meaning,
+        ...(meanings.length > 0 ? { meanings } : {}),
+        ...this.parsedFields(answer.answerJp)
       }
     } catch (error) {
       throw this.toAnswerError(error)
@@ -147,7 +139,7 @@ export class AnswerService {
   //#endregion
 
   //#region Create Answer (also used by question-bank)
-  async createAnswer(data: CreateAnswerBody, lang: string = 'vi') {
+  async createAnswer(data: CreateAnswerBody) {
     try {
       if (!(await this.answerRepository.checkQuestionExists(data.questionBankId))) {
         throw new QuestionNotFoundException()
@@ -170,11 +162,7 @@ export class AnswerService {
         undefined
       )
 
-      return {
-        statusCode: 201,
-        data: await this.withTranslations(answer.id, languages),
-        message: this.i18nService.translate(AnswerMessage.CREATE_SUCCESS, lang)
-      }
+      return await this.withTranslations(answer.id, languages)
     } catch (error) {
       throw this.toAnswerError(error)
     }
@@ -182,7 +170,7 @@ export class AnswerService {
   //#endregion
 
   //#region Update Answer
-  async updateAnswer(id: number, data: UpdateAnswerBody, lang: string = 'vi') {
+  async updateAnswer(id: number, data: UpdateAnswerBody) {
     try {
       if (!(await this.answerRepository.findById(id))) {
         throw new AnswerNotFoundException()
@@ -211,11 +199,7 @@ export class AnswerService {
         )
       }
 
-      return {
-        statusCode: 200,
-        data: { ...updated, answerKey },
-        message: this.i18nService.translate(AnswerMessage.UPDATE_SUCCESS, lang)
-      }
+      return { ...updated, answerKey }
     } catch (error) {
       throw this.toAnswerError(error)
     }
@@ -223,16 +207,13 @@ export class AnswerService {
   //#endregion
 
   //#region Delete Answer
-  async deleteAnswer(id: number, lang: string = 'vi') {
+  async deleteAnswer(id: number) {
     try {
       if (!(await this.answerRepository.findById(id))) {
         throw new AnswerNotFoundException()
       }
       await this.answerRepository.delete(id)
-      return {
-        statusCode: 204,
-        message: this.i18nService.translate(AnswerMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       throw this.toAnswerError(error)
     }
@@ -243,8 +224,8 @@ export class AnswerService {
   /**
    * With `id`: updates that answer (its text may change); without: upserts by
    * answerJp. Answers that break a rule are reported in `failed`, the rest are
-   * saved. statusCode: 201 created only, 200 with updates, 207 some failed,
-   * 400 none saved.
+   * saved (reasons in `lang`). The controller answers 201 created only, 200 with
+   * updates, 207 some failed, 400 none saved.
    */
   async createMultiple(data: CreateMultipleAnswersBody, lang: string = 'vi') {
     try {
@@ -389,17 +370,11 @@ export class AnswerService {
       const created = createdAnswers.length
       const updated = updatedAnswers.length
       const failed = failedAnswers.length
-      const { statusCode, message } = this.summaryOf(created, updated, failed, t)
-
       return {
-        statusCode,
-        data: {
-          created: createdAnswers,
-          updated: updatedAnswers,
-          failed: failedAnswers,
-          summary: { total, created, updated, failed }
-        },
-        message
+        created: createdAnswers,
+        updated: updatedAnswers,
+        failed: failedAnswers,
+        summary: { total, created, updated, failed }
       }
     } catch (error) {
       throw this.toAnswerError(error)
@@ -408,33 +383,6 @@ export class AnswerService {
   //#endregion
 
   //#region Helpers
-  private summaryOf(
-    created: number,
-    updated: number,
-    failed: number,
-    t: Translate
-  ): { statusCode: number; message: string } {
-    if (created + updated === 0) {
-      return { statusCode: 400, message: t(AnswerMessage.MULTIPLE_NONE_SAVED) }
-    }
-    if (failed > 0) {
-      const key =
-        created > 0 && updated > 0
-          ? AnswerMessage.MULTIPLE_CREATED_UPDATED_FAILED
-          : created > 0
-            ? AnswerMessage.MULTIPLE_CREATED_FAILED
-            : AnswerMessage.MULTIPLE_UPDATED_FAILED
-      return { statusCode: 207, message: t(key, { created, updated, failed }) }
-    }
-    if (updated > 0) {
-      return {
-        statusCode: 200,
-        message: t(AnswerMessage.MULTIPLE_CREATED_UPDATED, { created, updated })
-      }
-    }
-    return { statusCode: 201, message: t(AnswerMessage.MULTIPLE_CREATED, { created }) }
-  }
-
   // MATCHING: a single answer, which must be correct; others: at most 4, one correct
   private async brokenNewAnswerRule(
     questionBankId: number,

@@ -96,13 +96,12 @@ describe('AnswerService', () => {
     ).rejects.toMatchObject({ response: { errorKey: 'answer.MATCHING_SINGLE_ANSWER' } })
   })
 
-  it('createMultiple reports failures translated and picks 201/207/400', async () => {
+  it('createMultiple reports failures translated and counts them (the controller picks 201/207/400)', async () => {
     const created = await service.createMultiple({
       questionBankId: 7,
       answers: [{ answerJp: '一', isCorrect: false }]
     })
-    expect(created.statusCode).toBe(201)
-    expect(created.message).toBe('answer.MULTIPLE_CREATED {"created":1}')
+    expect(created.summary).toEqual({ total: 1, created: 1, updated: 0, failed: 0 })
 
     repo.countAnswersByQuestionId.mockResolvedValueOnce(0).mockResolvedValueOnce(4)
     const partial = await service.createMultiple({
@@ -112,8 +111,8 @@ describe('AnswerService', () => {
         { answerJp: '三', isCorrect: false }
       ]
     })
-    expect(partial.statusCode).toBe(207)
-    expect(partial.data.failed).toEqual([
+    expect(partial.summary).toEqual({ total: 2, created: 1, updated: 0, failed: 1 })
+    expect(partial.failed).toEqual([
       { answerJp: '三', reason: 'answer.MAX_ANSWERS_REACHED' }
     ])
 
@@ -122,7 +121,7 @@ describe('AnswerService', () => {
       questionBankId: 7,
       answers: [{ id: 99, answerJp: '四', isCorrect: false }]
     })
-    expect(none.statusCode).toBe(400)
-    expect(none.data.failed[0].reason).toBe('answer.ANSWER_ID_NOT_FOUND {"id":99}')
+    expect(none.summary).toEqual({ total: 1, created: 0, updated: 0, failed: 1 })
+    expect(none.failed[0].reason).toBe('answer.ANSWER_ID_NOT_FOUND {"id":99}')
   })
 })

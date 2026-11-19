@@ -837,7 +837,7 @@ export class UserExerciseAttemptService {
     const questionsResult = await this.questionBankService.findByTestSetId(
       exercise.testSetId
     )
-    const allQuestions = questionsResult.data.results
+    const allQuestions = questionsResult.results
     const answerLogsResult =
       await this.userAnswerLogService.findByUserExerciseAttemptId(userExerciseAttemptId)
     const userAnswers = answerLogsResult.data.results

@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { AnswerMessage } from '@/i18n/message-keys'
 import {
   Body,
   Controller,
@@ -46,12 +48,41 @@ import {
 import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 
+// 400 nothing saved, 207 some failed, 200 with updates, 201 created only
+function summaryOf({
+  created,
+  updated,
+  failed
+}: {
+  created: number
+  updated: number
+  failed: number
+}): { statusCode: number; key: string } {
+  if (created + updated === 0) {
+    return { statusCode: 400, key: AnswerMessage.MULTIPLE_NONE_SAVED }
+  }
+  if (failed > 0) {
+    const key =
+      created > 0 && updated > 0
+        ? AnswerMessage.MULTIPLE_CREATED_UPDATED_FAILED
+        : created > 0
+          ? AnswerMessage.MULTIPLE_CREATED_FAILED
+          : AnswerMessage.MULTIPLE_UPDATED_FAILED
+    return { statusCode: 207, key }
+  }
+  if (updated > 0) return { statusCode: 200, key: AnswerMessage.MULTIPLE_CREATED_UPDATED }
+  return { statusCode: 201, key: AnswerMessage.MULTIPLE_CREATED }
+}
+
 @ApiTags('Answers')
 @Controller('answers')
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class AnswerController {
-  constructor(private readonly answerService: AnswerService) {}
+  constructor(
+    private readonly answerService: AnswerService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -71,7 +102,10 @@ export class AnswerController {
   @ApiBody({ type: CreateAnswerSwaggerDTO })
   @ZodSerializerDto(AnswerResponseDTO)
   async createAnswer(@Body() body: CreateAnswerBodyDTO, @I18nLang() lang: string) {
-    return await this.answerService.createAnswer(body, lang)
+    return {
+      message: this.i18nService.translate(AnswerMessage.CREATE_SUCCESS, lang),
+      data: await this.answerService.createAnswer(body)
+    }
   }
 
   @Post('multiple')
@@ -104,8 +138,12 @@ export class AnswerController {
     @Res() res: Response,
     @I18nLang() lang: string
   ) {
-    const result = await this.answerService.createMultiple(body, lang)
-    return res.status(result.statusCode).json(result) as any
+    const data = await this.answerService.createMultiple(body, lang)
+    const { statusCode, key } = summaryOf(data.summary)
+    const { created, updated, failed } = data.summary
+    const message = this.i18nService.translate(key, lang, { created, updated, failed })
+    // @Res(): sent as is, past TransformInterceptor
+    return res.status(statusCode).json({ statusCode, data, message }) as any
   }
 
   @Get()
@@ -118,7 +156,10 @@ export class AnswerController {
   @ApiQuery({ type: GetAnswerListQuerySwaggerDTO })
   @ZodSerializerDto(AnswerListResDTO)
   async getAnswerList(@Query() query: GetAnswerListQueryDTO, @I18nLang() lang: string) {
-    return await this.answerService.getAnswerList(query, lang)
+    return {
+      message: this.i18nService.translate(AnswerMessage.GET_LIST_SUCCESS, lang),
+      data: await this.answerService.getAnswerList(query)
+    }
   }
 
   @Get(':id')
@@ -130,7 +171,10 @@ export class AnswerController {
   })
   @ZodSerializerDto(AnswerResponseDTO)
   async getAnswerById(@Param() params: GetAnswerByIdParamsDTO, @I18nLang() lang: string) {
-    return await this.answerService.getAnswerById(params.id, lang)
+    return {
+      message: this.i18nService.translate(AnswerMessage.GET_SUCCESS, lang),
+      data: await this.answerService.getAnswerById(params.id, lang)
+    }
   }
 
   @Put(':id')
@@ -147,7 +191,10 @@ export class AnswerController {
     @Body() body: UpdateAnswerBodyDTO,
     @I18nLang() lang: string
   ) {
-    return await this.answerService.updateAnswer(params.id, body, lang)
+    return {
+      message: this.i18nService.translate(AnswerMessage.UPDATE_SUCCESS, lang),
+      data: await this.answerService.updateAnswer(params.id, body)
+    }
   }
 
   @Delete(':id')
@@ -156,6 +203,7 @@ export class AnswerController {
   @ApiResponse({ status: 204, description: 'Xóa câu trả lời thành công' })
   @ZodSerializerDto(MessageResDTO)
   async deleteAnswer(@Param() params: GetAnswerByIdParamsDTO, @I18nLang() lang: string) {
-    return await this.answerService.deleteAnswer(params.id, lang)
+    await this.answerService.deleteAnswer(params.id)
+    return { message: this.i18nService.translate(AnswerMessage.DELETE_SUCCESS, lang) }
   }
 }
