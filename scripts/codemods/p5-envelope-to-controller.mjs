@@ -86,6 +86,7 @@ function envelopeOf(expr, sf) {
     }
   }
   return {
+    call,
     key: key.getText(sf),
     enumName: key.expression.getText(sf),
     langName: lang.text,
@@ -210,7 +211,8 @@ for (const mod of modules) {
       )
       let langIndex = null
       if (langParamIdx >= 0) {
-        const msgCalls = new Set(withMsg.map((e) => e.r))
+        // only the translate(KEY, lang) calls go away; lang in the data still counts
+        const msgCalls = new Set(withMsg.map((e) => e.env.call))
         let stillUsed = false
         const visit = (n) => {
           if (stillUsed || msgCalls.has(n)) return

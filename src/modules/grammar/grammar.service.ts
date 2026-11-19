@@ -1,5 +1,3 @@
-import { I18nService } from '@/i18n/i18n.service'
-import { GrammarMessage } from '@/i18n/message-keys'
 import { toPaginationMeta } from '@/shared/utils/pagination'
 import {
   isNotFoundPrismaError,
@@ -23,34 +21,24 @@ import { GrammarRepo } from './grammar.repo'
 export class GrammarService {
   private readonly logger = new Logger(GrammarService.name)
 
-  constructor(
-    private readonly grammarRepository: GrammarRepo,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly grammarRepository: GrammarRepo) {}
 
   //#region Get Grammar
-  async getGrammarList(params: GetGrammarListQuery, lang: string = 'vi') {
+  async getGrammarList(params: GetGrammarListQuery) {
     const result = await this.grammarRepository.findMany(params)
     return {
-      statusCode: 200,
-      message: this.i18nService.translate(GrammarMessage.GET_LIST_SUCCESS, lang),
-      data: {
-        results: result.data,
-        pagination: toPaginationMeta(params.currentPage, params.pageSize, result.total)
-      }
+      results: result.data,
+      pagination: toPaginationMeta(params.currentPage, params.pageSize, result.total)
     }
   }
 
-  async getGrammarById(id: number, lang: string = 'vi') {
+  async getGrammarById(id: number) {
     try {
       const grammar = await this.grammarRepository.findByIdWithTranslations(id)
       if (!grammar) {
         throw new GrammarNotFoundException()
       }
-      return {
-        data: grammar,
-        message: this.i18nService.translate(GrammarMessage.GET_SUCCESS, lang)
-      }
+      return grammar
     } catch (error) {
       throw this.toGrammarError(error)
     }
@@ -59,7 +47,7 @@ export class GrammarService {
 
   //#region Create Grammar
   // Grammar + optional first usage + its translations, in one transaction (repo)
-  async createGrammar(data: CreateGrammarBody, lang: string = 'vi') {
+  async createGrammar(data: CreateGrammarBody) {
     try {
       if (await this.grammarRepository.checkStructureExists(data.structure)) {
         throw new GrammarAlreadyExistsException()
@@ -71,28 +59,22 @@ export class GrammarService {
       )
 
       return {
-        data: {
-          ...result.grammar,
-          usage: result.grammarUsage,
-          translationsCreated: result.translationsCreated
-        },
-        message: this.i18nService.translate(GrammarMessage.CREATE_SUCCESS, lang)
+        ...result.grammar,
+        usage: result.grammarUsage,
+        translationsCreated: result.translationsCreated
       }
     } catch (error) {
       throw this.toGrammarError(error)
     }
   }
 
-  async createGrammarBasic(data: CreateGrammarBasicBody, lang: string = 'vi') {
+  async createGrammarBasic(data: CreateGrammarBasicBody) {
     try {
       if (await this.grammarRepository.checkStructureExists(data.structure)) {
         throw new GrammarAlreadyExistsException()
       }
       const grammar = await this.grammarRepository.create(data)
-      return {
-        data: grammar,
-        message: this.i18nService.translate(GrammarMessage.CREATE_BASIC_SUCCESS, lang)
-      }
+      return grammar
     } catch (error) {
       throw this.toGrammarError(error)
     }
@@ -100,7 +82,7 @@ export class GrammarService {
   //#endregion
 
   //#region Update Grammar
-  async updateGrammar(id: number, data: UpdateGrammarBody, lang: string = 'vi') {
+  async updateGrammar(id: number, data: UpdateGrammarBody) {
     try {
       const grammar = await this.grammarRepository.findById(id)
       if (!grammar) {
@@ -115,10 +97,7 @@ export class GrammarService {
       }
 
       const updatedGrammar = await this.grammarRepository.update(id, data)
-      return {
-        data: updatedGrammar,
-        message: this.i18nService.translate(GrammarMessage.UPDATE_SUCCESS, lang)
-      }
+      return updatedGrammar
     } catch (error) {
       throw this.toGrammarError(error)
     }
@@ -126,15 +105,13 @@ export class GrammarService {
   //#endregion
 
   //#region Delete Grammar
-  async deleteGrammar(id: number, lang: string = 'vi') {
+  async deleteGrammar(id: number) {
     try {
       if (!(await this.grammarRepository.findById(id))) {
         throw new GrammarNotFoundException()
       }
       await this.grammarRepository.delete(id)
-      return {
-        message: this.i18nService.translate(GrammarMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       throw this.toGrammarError(error)
     }

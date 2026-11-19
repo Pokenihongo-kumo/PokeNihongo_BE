@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { GrammarMessage } from '@/i18n/message-keys'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import {
   Body,
@@ -45,7 +47,10 @@ import { GrammarResponseDTO } from './dto/grammar.response.dto'
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class GrammarController {
-  constructor(private readonly grammarService: GrammarService) {}
+  constructor(
+    private readonly grammarService: GrammarService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -60,7 +65,10 @@ export class GrammarController {
   @ApiResponse({ status: 409, description: 'Ngữ pháp đã tồn tại' })
   @ZodSerializerDto(GrammarResponseDTO)
   async createGrammar(@Body() body: CreateGrammarBodyDTO, @I18nLang() lang: string) {
-    return await this.grammarService.createGrammar(body, lang)
+    return {
+      message: this.i18nService.translate(GrammarMessage.CREATE_SUCCESS, lang),
+      data: await this.grammarService.createGrammar(body)
+    }
   }
 
   @Get()
@@ -72,7 +80,10 @@ export class GrammarController {
   })
   @ApiQuery({ type: GetGrammarListQuerySwaggerDTO })
   async getGrammarList(@Query() query: GetGrammarListQueryDTO, @I18nLang() lang: string) {
-    return await this.grammarService.getGrammarList(query, lang)
+    return {
+      message: this.i18nService.translate(GrammarMessage.GET_LIST_SUCCESS, lang),
+      data: await this.grammarService.getGrammarList(query)
+    }
   }
 
   @Get(':id')
@@ -87,7 +98,10 @@ export class GrammarController {
     @Param() params: GetGrammarByIdParamsDTO,
     @I18nLang() lang: string
   ) {
-    return await this.grammarService.getGrammarById(params.id, lang)
+    return {
+      message: this.i18nService.translate(GrammarMessage.GET_SUCCESS, lang),
+      data: await this.grammarService.getGrammarById(params.id)
+    }
   }
 
   @Put(':id')
@@ -105,7 +119,10 @@ export class GrammarController {
     @Body() body: UpdateGrammarBodyDTO,
     @I18nLang() lang: string
   ) {
-    return await this.grammarService.updateGrammar(params.id, body, lang)
+    return {
+      message: this.i18nService.translate(GrammarMessage.UPDATE_SUCCESS, lang),
+      data: await this.grammarService.updateGrammar(params.id, body)
+    }
   }
 
   @Delete(':id')
@@ -118,6 +135,7 @@ export class GrammarController {
     @Param() params: GetGrammarByIdParamsDTO,
     @I18nLang() lang: string
   ) {
-    return await this.grammarService.deleteGrammar(params.id, lang)
+    await this.grammarService.deleteGrammar(params.id)
+    return { message: this.i18nService.translate(GrammarMessage.DELETE_SUCCESS, lang) }
   }
 }

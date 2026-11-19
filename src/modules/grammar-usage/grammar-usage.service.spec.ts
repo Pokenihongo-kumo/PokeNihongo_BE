@@ -11,12 +11,7 @@ describe('GrammarUsageService', () => {
     findById: jest.fn(),
     update: jest.fn()
   }
-  const service = new GrammarUsageService(
-    repo as never,
-    {
-      translate: (k: string) => k
-    } as never
-  )
+  const service = new GrammarUsageService(repo as never)
 
   beforeAll(() => {
     jest.spyOn(service['logger'], 'error').mockImplementation(() => undefined)
@@ -26,9 +21,9 @@ describe('GrammarUsageService', () => {
   it('lists as { results, pagination } (was { data[], total, page, limit, totalPages })', async () => {
     repo.findMany.mockResolvedValue({ data: [{ id: 1 }], total: 11 })
 
-    const res = await service.getGrammarUsageList({ page: 2, limit: 5 } as never, 'en')
+    const res = await service.getGrammarUsageList({ page: 2, limit: 5 } as never)
 
-    expect(res.data).toEqual({
+    expect(res).toEqual({
       results: [{ id: 1 }],
       pagination: { current: 2, pageSize: 5, totalPage: 3, totalItem: 11 }
     })

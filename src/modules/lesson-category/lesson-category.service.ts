@@ -1,5 +1,3 @@
-import { I18nService } from '@/i18n/i18n.service'
-import { LessonCategoryMessage } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { toPaginationMeta } from '@/shared/utils/pagination'
 import {
@@ -36,8 +34,7 @@ export class LessonCategoryService {
   constructor(
     private readonly lessonCategoryRepository: LessonCategoryRepo,
     private readonly translationService: TranslationService,
-    private readonly languagesService: LanguagesService,
-    private readonly i18nService: I18nService
+    private readonly languagesService: LanguagesService
   ) {}
 
   async getLessonCategoryList(params: GetLessonCategoryListQuery, lang: string = 'vi') {
@@ -48,12 +45,8 @@ export class LessonCategoryService {
     )
 
     return {
-      statusCode: 200,
-      message: this.i18nService.translate(LessonCategoryMessage.GET_LIST_SUCCESS, lang),
-      data: {
-        results,
-        pagination: toPaginationMeta(params.page, params.limit, result.total)
-      }
+      results,
+      pagination: toPaginationMeta(params.page, params.limit, result.total)
     }
   }
 
@@ -64,10 +57,7 @@ export class LessonCategoryService {
       if (!category) {
         throw new LessonCategoryNotFoundException()
       }
-      return {
-        data: await this.toView(category, await this.languagesService.getIdByCode(lang)),
-        message: this.i18nService.translate(LessonCategoryMessage.GET_SUCCESS, lang)
-      }
+      return await this.toView(category, await this.languagesService.getIdByCode(lang))
     } catch (error) {
       throw this.toLessonCategoryError(error)
     }
@@ -79,16 +69,13 @@ export class LessonCategoryService {
       if (!category) {
         throw new LessonCategoryNotFoundException()
       }
-      return {
-        data: await this.toView(category, await this.languagesService.getIdByCode(lang)),
-        message: this.i18nService.translate(LessonCategoryMessage.GET_SUCCESS, lang)
-      }
+      return await this.toView(category, await this.languagesService.getIdByCode(lang))
     } catch (error) {
       throw this.toLessonCategoryError(error)
     }
   }
 
-  async createLessonCategory(data: CreateLessonCategoryBody, lang: string = 'vi') {
+  async createLessonCategory(data: CreateLessonCategoryBody) {
     try {
       // Auto-generate slug if not provided; append -1, -2... while taken
       let slug = data.slug || this.generateSlug(data.nameKey)
@@ -114,20 +101,13 @@ export class LessonCategoryService {
         )
       }
 
-      return {
-        data: category,
-        message: this.i18nService.translate(LessonCategoryMessage.CREATE_SUCCESS, lang)
-      }
+      return category
     } catch (error) {
       throw this.toLessonCategoryError(error)
     }
   }
 
-  async updateLessonCategory(
-    id: number,
-    data: UpdateLessonCategoryBody,
-    lang: string = 'vi'
-  ) {
+  async updateLessonCategory(id: number, data: UpdateLessonCategoryBody) {
     try {
       if (!(await this.lessonCategoryRepository.checkCategoryExists(id))) {
         throw new LessonCategoryNotFoundException()
@@ -140,24 +120,19 @@ export class LessonCategoryService {
       }
 
       const category = await this.lessonCategoryRepository.update(id, data)
-      return {
-        data: category,
-        message: this.i18nService.translate(LessonCategoryMessage.UPDATE_SUCCESS, lang)
-      }
+      return category
     } catch (error) {
       throw this.toLessonCategoryError(error)
     }
   }
 
-  async deleteLessonCategory(id: number, lang: string = 'vi') {
+  async deleteLessonCategory(id: number) {
     try {
       if (!(await this.lessonCategoryRepository.checkCategoryExists(id))) {
         throw new LessonCategoryNotFoundException()
       }
       await this.lessonCategoryRepository.delete(id)
-      return {
-        message: this.i18nService.translate(LessonCategoryMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       throw this.toLessonCategoryError(error)
     }
@@ -254,7 +229,7 @@ export class LessonCategoryService {
   /**
    * Tạo các lesson categories mặc định
    */
-  async createDefaultLessonCategories(lang: string = 'vi') {
+  async createDefaultLessonCategories() {
     const defaultCategories = [
       {
         nameKey: 'category.jlpt_n5',
@@ -339,17 +314,7 @@ export class LessonCategoryService {
         }
       }
 
-      return {
-        data: results,
-        page: 1,
-        limit: results.length,
-        total: results.length,
-        totalPages: 1,
-        message: this.i18nService.translate(
-          LessonCategoryMessage.CREATE_DEFAULT_SUCCESS,
-          lang
-        )
-      }
+      return results
     } catch (error) {
       this.logger.error('Error creating default lesson categories', error)
       throw new InvalidLessonCategoryDataException()
