@@ -132,6 +132,26 @@ describe('Gacha purchase (e2e)', () => {
       (item) => item.isDuplicate
     )
     expect(duplicates).toHaveLength(9)
+
+    // the duplicates' sparkles land in the wallet and in its ledger, next to the debit
+    const payout = (res.body.data as { parseItem: { sparkles: number } | null }[]).reduce(
+      (sum, item) => sum + (item.parseItem?.sparkles ?? 0),
+      0
+    )
+    expect(payout).toBeGreaterThan(0)
+    const purchase = await prisma.gachaPurchase.findFirstOrThrow({
+      where: { bannerId, userId }
+    })
+    const rows = await prisma.walletTransaction.findMany({
+      where: { walletId, referenceId: purchase.id, purpose: 'GACHA' },
+      orderBy: { id: 'asc' }
+    })
+    expect(rows.map(({ type, amount, source }) => ({ type, amount, source }))).toEqual([
+      { type: 'DECREASE', amount: COST * 10, source: 'SHOP_PURCHASE' },
+      { type: 'INCREASE', amount: payout, source: 'SHOP_PURCHASE' }
+    ])
+    const wallet = await prisma.wallet.findUniqueOrThrow({ where: { id: walletId } })
+    expect(wallet.balance).toBe(payout)
   })
 
   it('two purchases at once: pity counts both rolls, one pity row', async () => {
