@@ -12,12 +12,8 @@ function createService() {
     matchRoundRepo as any,
     {} as any,
     {} as any,
-    {} as any,
-    {} as any,
-    {} as any,
-    {} as any,
-    {} as any,
     matchingGateway as any,
+    {} as any,
     {} as any
   )
   return { service, matchRoundParticipantRepo, matchRoundRepo, matchingGateway }
