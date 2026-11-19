@@ -1,4 +1,3 @@
-import { checkIdSchema } from '@/common/utils/id.validation'
 import { TypeEffectivenessMessage } from '@/i18n/message-keys'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
@@ -30,104 +29,8 @@ export const TypeEffectivenessSchema = z.object({
   deletedAt: z.date().nullable()
 })
 
-// Create Schema - chỉ cần attackerId, defenderId, multiplier
-export const CreateTypeEffectivenessBodySchema = TypeEffectivenessSchema.pick({
-  attackerId: true,
-  defenderId: true,
-  multiplier: true
-})
-  .strict()
-  .refine((data) => data.attackerId !== data.defenderId, {
-    message: TypeEffectivenessMessage.CONFLICT_ATTACK_DEFENSE_TYPE,
-    path: ['attackerId']
-  })
-
-export const CreateTypeEffectivenessResSchema = z.object({
-  statusCode: z.number(),
-  data: TypeEffectivenessSchema,
-  message: z.string()
-})
-
-// Update Schema - có thể update multiplier
-export const UpdateTypeEffectivenessBodySchema = TypeEffectivenessSchema.pick({
-  attackerId: true,
-  defenderId: true,
-  multiplier: true
-})
-  .partial()
-  .strict()
-  .refine((data) => data.attackerId !== data.defenderId, {
-    message: TypeEffectivenessMessage.CONFLICT_ATTACK_DEFENSE_TYPE,
-    path: ['attackerId']
-  })
-
-export const UpdateTypeEffectivenessResSchema = CreateTypeEffectivenessResSchema
-
-// Query Schema cho filtering
-export const GetTypeEffectivenessParamsSchema = z.object({
-  typeEffectivenessId: checkIdSchema(TypeEffectivenessMessage.INVALID_ID)
-})
-
-export const GetTypeEffectivenessDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: z.object({
-    ...TypeEffectivenessSchema.shape,
-    attacker: z
-      .object({
-        id: z.number(),
-        type_name: z.string(),
-        display_name: z.any(),
-        color_hex: z.string()
-      })
-      .optional()
-      .nullable(),
-    defender: z
-      .object({
-        id: z.number(),
-        type_name: z.string(),
-        display_name: z.any(),
-        color_hex: z.string()
-      })
-      .optional()
-      .nullable()
-  }),
-  message: z.string()
-})
-
-// Response Schema với thông tin attacker và defender
-export const TypeEffectivenessResponseSchema = TypeEffectivenessSchema.extend({
-  attacker: z
-    .object({
-      id: z.number(),
-      type_name: z.string(),
-      display_name: z.any(),
-      color_hex: z.string()
-    })
-    .optional(),
-  defender: z
-    .object({
-      id: z.number(),
-      type_name: z.string(),
-      display_name: z.any(),
-      color_hex: z.string()
-    })
-    .optional()
-})
-
 // Type exports
-export type TypeEffectivenessType = z.infer<typeof TypeEffectivenessSchema>
-export type CreateTypeEffectivenessBodyType = z.infer<
-  typeof CreateTypeEffectivenessBodySchema
->
-export type UpdateTypeEffectivenessBodyType = z.infer<
-  typeof UpdateTypeEffectivenessBodySchema
->
-export type GetTypeEffectivenessParamsType = z.infer<
-  typeof GetTypeEffectivenessParamsSchema
->
-export type GetTypeEffectivenessDetailResType = z.infer<
-  typeof GetTypeEffectivenessDetailResSchema
->
+export type TypeEffectiveness = z.infer<typeof TypeEffectivenessSchema>
 //Field for query
 export type TypeEffectivenessFieldType = keyof z.infer<typeof TypeEffectivenessSchema>
 export const TYPE_EFFECTIVENESS_FIELDS = Object.keys(

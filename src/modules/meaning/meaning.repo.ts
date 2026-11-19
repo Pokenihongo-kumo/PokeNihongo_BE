@@ -1,206 +1,117 @@
-import { MeaningType, CreateMeaningBodyType, UpdateMeaningBodyType, CreateMeaningServiceType } from './entities/meaning.entities'
 import { PrismaService } from '@/shared/services/prisma.service'
+import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
+import { Prisma, PrismaClient, Meaning as PrismaMeaning } from '@prisma/client'
+import {
+  CreateMeaningService,
+  GetMeaningListQuery,
+  UpdateMeaningBody
+} from './dto/meaning.zod-dto'
+import { Meaning } from './entities/meaning.entity'
 
 @Injectable()
-export class MeaningRepository {
-    constructor(private readonly prismaService: PrismaService) { }
+export class MeaningRepo {
+  constructor(private readonly prismaService: PrismaService) {}
 
-    async findMany(params: {
-        page: number
-        limit: number
-        search?: string
-        vocabularyId?: number
-        wordTypeId?: number
-    }) {
-        const { page, limit, search, vocabularyId, wordTypeId } = params
-        const skip = (page - 1) * limit
-
-        const where: any = {}
-
-        if (search) {
-            where.OR = [
-                { meaningKey: { contains: search, mode: 'insensitive' } },
-                { exampleSentenceKey: { contains: search, mode: 'insensitive' } },
-                { explanationKey: { contains: search, mode: 'insensitive' } },
-                { exampleSentenceJp: { contains: search, mode: 'insensitive' } }
-            ]
-        }
-
-        if (vocabularyId) {
-            where.vocabularyId = vocabularyId
-        }
-
-        if (wordTypeId) {
-            where.wordTypeId = wordTypeId
-        }
-
-        const [data, total] = await Promise.all([
-            this.prismaService.meaning.findMany({
-                where,
-                skip,
-                take: limit,
-                orderBy: { createdAt: 'desc' },
-                include: {
-                    vocabulary: {
-                        select: {
-                            id: true,
-                            wordJp: true,
-                            reading: true
-                        }
-                    },
-                    wordType: {
-                        select: {
-                            id: true,
-                            nameKey: true
-                        }
-                    }
-                }
-            }),
-            this.prismaService.meaning.count({ where })
-        ])
-
-        return {
-            data: data.map(item => this.transformMeaning(item)),
-            total,
-            page,
-            limit,
-            totalPages: Math.ceil(total / limit)
-        }
+  async findMany(
+    params: GetMeaningListQuery
+  ): Promise<{ data: Meaning[]; total: number }> {
+    const { page, limit, search, vocabularyId, wordTypeId } = params
+    const where: Prisma.MeaningWhereInput = {
+      ...(search && {
+        OR: [
+          { meaningKey: { contains: search, mode: 'insensitive' } },
+          { exampleSentenceKey: { contains: search, mode: 'insensitive' } },
+          { explanationKey: { contains: search, mode: 'insensitive' } },
+          { exampleSentenceJp: { contains: search, mode: 'insensitive' } }
+        ]
+      }),
+      ...(vocabularyId && { vocabularyId }),
+      ...(wordTypeId && { wordTypeId })
     }
 
-    async findById(id: number): Promise<MeaningType | null> {
-        const meaning = await this.prismaService.meaning.findUnique({
-            where: { id },
-            include: {
-                vocabulary: {
-                    select: {
-                        id: true,
-                        wordJp: true,
-                        reading: true
-                    }
-                },
-                wordType: {
-                    select: {
-                        id: true,
-                        nameKey: true
-                    }
-                }
-            }
-        })
+    const [data, total] = await Promise.all([
+      this.prismaService.meaning.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        ...toSkipTake(page, limit)
+      }),
+      this.prismaService.meaning.count({ where })
+    ])
 
-        if (!meaning) {
-            return null
-        }
+    return { data: data.map((item) => this.toMeaning(item)), total }
+  }
 
-        return this.transformMeaning(meaning)
+  async findById(id: number): Promise<Meaning | null> {
+    const meaning = await this.prismaService.meaning.findUnique({ where: { id } })
+    return meaning && this.toMeaning(meaning)
+  }
+
+  async findByVocabularyId(vocabularyId: number): Promise<Meaning[]> {
+    const meanings = await this.prismaService.meaning.findMany({
+      where: { vocabularyId },
+      orderBy: { createdAt: 'asc' }
+    })
+    return meanings.map((item) => this.toMeaning(item))
+  }
+
+  async create(data: CreateMeaningService): Promise<Meaning> {
+    const meaning = await this.prismaService.meaning.create({
+      data: {
+        vocabularyId: data.vocabularyId,
+        wordTypeId: data.wordTypeId,
+        meaningKey: data.meaningKey || '',
+        exampleSentenceKey: data.exampleSentenceKey || '',
+        explanationKey: data.explanationKey || '',
+        exampleSentenceJp: data.exampleSentenceJp
+      }
+    })
+    return this.toMeaning(meaning)
+  }
+
+  async update(id: number, data: UpdateMeaningBody): Promise<Meaning> {
+    const meaning = await this.prismaService.meaning.update({ where: { id }, data })
+    return this.toMeaning(meaning)
+  }
+
+  async delete(id: number): Promise<void> {
+    await this.prismaService.meaning.delete({ where: { id } })
+  }
+
+  deleteByVocabularyId(vocabularyId: number): Promise<{ count: number }> {
+    return this.prismaService.meaning.deleteMany({ where: { vocabularyId } })
+  }
+
+  // Empty keys and nulls come back as undefined (unchanged answer shape)
+  private toMeaning(meaning: PrismaMeaning): Meaning {
+    return {
+      id: meaning.id,
+      vocabularyId: meaning.vocabularyId,
+      wordTypeId: meaning.wordTypeId || undefined,
+      meaningKey: meaning.meaningKey || undefined,
+      exampleSentenceKey: meaning.exampleSentenceKey || undefined,
+      explanationKey: meaning.explanationKey || undefined,
+      exampleSentenceJp: meaning.exampleSentenceJp || undefined,
+      createdAt: meaning.createdAt,
+      updatedAt: meaning.updatedAt
     }
+  }
 
-    async findByVocabularyId(vocabularyId: number) {
-        const meanings = await this.prismaService.meaning.findMany({
-            where: { vocabularyId },
-            orderBy: { createdAt: 'asc' },
-            include: {
-                wordType: {
-                    select: {
-                        id: true,
-                        nameKey: true
-                    }
-                }
-            }
-        })
+  // ---- Meanings written while saving a vocabulary (optional tx) ----
 
-        return meanings.map(item => this.transformMeaning(item))
-    }
+  countForVocabulary(vocabularyId: number, prismaTx?: PrismaClient) {
+    return (prismaTx ?? this.prismaService).meaning.count({
+      where: { vocabularyId }
+    })
+  }
 
-    async create(data: CreateMeaningServiceType): Promise<MeaningType> {
-        const result = await this.prismaService.meaning.create({
-            data: {
-                vocabularyId: data.vocabularyId,
-                wordTypeId: data.wordTypeId,
-                meaningKey: data.meaningKey || '',
-                exampleSentenceKey: data.exampleSentenceKey || '',
-                explanationKey: data.explanationKey || '',
-                exampleSentenceJp: data.exampleSentenceJp
-            },
-            include: {
-                vocabulary: {
-                    select: {
-                        id: true,
-                        wordJp: true,
-                        reading: true
-                    }
-                },
-                wordType: {
-                    select: {
-                        id: true,
-                        nameKey: true
-                    }
-                }
-            }
-        })
+  findForVocabulary(vocabularyId: number, prismaTx?: PrismaClient) {
+    return (prismaTx ?? this.prismaService).meaning.findMany({
+      where: { vocabularyId }
+    })
+  }
 
-        return this.transformMeaning(result)
-    }
-
-    async update(id: number, data: UpdateMeaningBodyType): Promise<MeaningType> {
-        const result = await this.prismaService.meaning.update({
-            where: { id },
-            data: {
-                vocabularyId: data.vocabularyId,
-                wordTypeId: data.wordTypeId,
-                meaningKey: data.meaningKey,
-                exampleSentenceKey: data.exampleSentenceKey,
-                explanationKey: data.explanationKey,
-                exampleSentenceJp: data.exampleSentenceJp
-            },
-            include: {
-                vocabulary: {
-                    select: {
-                        id: true,
-                        wordJp: true,
-                        reading: true
-                    }
-                },
-                wordType: {
-                    select: {
-                        id: true,
-                        nameKey: true
-                    }
-                }
-            }
-        })
-
-        return this.transformMeaning(result)
-    }
-
-    async delete(id: number): Promise<void> {
-        await this.prismaService.meaning.delete({
-            where: { id }
-        })
-    }
-
-    async deleteByVocabularyId(vocabularyId: number): Promise<{ count: number }> {
-        return await this.prismaService.meaning.deleteMany({
-            where: { vocabularyId }
-        })
-    }
-
-    async count(where?: any): Promise<number> {
-        return this.prismaService.meaning.count({ where })
-    }
-
-    private transformMeaning(meaning: any): MeaningType {
-        return {
-            id: meaning.id,
-            vocabularyId: meaning.vocabularyId,
-            wordTypeId: meaning.wordTypeId || undefined,
-            meaningKey: meaning.meaningKey || undefined,
-            exampleSentenceKey: meaning.exampleSentenceKey || undefined,
-            explanationKey: meaning.explanationKey || undefined,
-            exampleSentenceJp: meaning.exampleSentenceJp || undefined,
-            createdAt: meaning.createdAt,
-            updatedAt: meaning.updatedAt
-        }
-    }
+  createRow(data: Prisma.MeaningUncheckedCreateInput, prismaTx?: PrismaClient) {
+    return (prismaTx ?? this.prismaService).meaning.create({ data })
+  }
 }

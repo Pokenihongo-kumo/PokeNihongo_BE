@@ -1,11 +1,10 @@
-import { PaginationQueryType } from '@/shared/models/request.model'
-import { HttpStatus, Injectable } from '@nestjs/common'
+import { PaginationQuery } from '@/shared/models/request.model'
+import { Injectable } from '@nestjs/common'
 
 import { dailyRequestType } from '@/common/constants/achievement.constant'
 import {
   walletPurposeType,
-  WalletTransactionSourceType,
-  WalletTransactionType
+  WalletTransactionSourceType
 } from '@/common/constants/wallet-transaction.constant'
 import { walletType } from '@/common/constants/wallet.constant'
 import { NotFoundRecordException } from 'src/shared/error'
@@ -21,96 +20,48 @@ import { AttendancesStatus } from '@/common/constants/attendance.constant'
 import { WeekDayType } from '@/common/constants/attendence-config.constant'
 import { NotificationType } from '@/common/constants/notification.constant'
 import { FeatureKey } from '@/common/constants/subscription.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import {
-  AttendanceMessage,
-  ENTITY_MESSAGE,
-  NotificationMessage
-} from '@/i18n/message-keys'
-import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
-import { SharedNotificationService } from '@/shared/services/shared-notification.service'
-import { SharedUserSubscriptionService } from '@/shared/services/user-subscription.service'
-import { AttendenceConfigRepo } from '../attendence-config/attendence-config.repo'
-import { LanguagesRepository } from '../languages/languages.repo'
-import { WalletTransactionRepo } from '../wallet-transaction/wallet-transaction.repo'
-import { WalletRepo } from '../wallet/wallet.repo'
+import { NotificationMessage } from '@/i18n/message-keys'
+import { AttendenceConfigService } from '@/modules/attendence-config/attendence-config.service'
+import { NotificationService } from '@/modules/notification/notification.service'
+import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
+import { UserCoreService } from '@/modules/user/user-core.service'
+import { WalletService } from '@/modules/wallet/wallet.service'
 import { AttendanceRepo } from './attendence.repo'
 import { AttendancegAlreadyExistsException } from './dto/attendance.error'
-import {
-  AttendanceType,
-  CreateAttendanceBodyType,
-  UpdateAttendanceBodyType
-} from './entities/attendance.entity'
-type AttendanceWithDayOfWeekType = AttendanceType & { dayOfWeek: WeekDayType }
+import { CreateAttendanceBody, UpdateAttendanceBody } from './dto/attendance.zod-dto'
+import { Attendance } from './entities/attendance.entity'
+type AttendanceWithDayOfWeekType = Attendance & { dayOfWeek: WeekDayType }
 @Injectable()
 export class AttendanceService {
   constructor(
     private attendanceRepo: AttendanceRepo,
-    private attendanceConfigRepo: AttendenceConfigRepo,
-    private shareUserRepo: SharedUserRepository,
-    private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepository,
+    private attendenceConfigService: AttendenceConfigService,
+    private userCoreService: UserCoreService,
     private readonly userDailyRequestService: UserDailyRequestService,
-    private readonly walletRepo: WalletRepo,
-    private readonly walletTransactionRepo: WalletTransactionRepo,
-    private readonly userSubService: SharedUserSubscriptionService,
-    private readonly sharedNotificationService: SharedNotificationService
+    private readonly walletService: WalletService,
+    private readonly userSubService: UserSubscriptionService,
+    private readonly sharedNotificationService: NotificationService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
-    await this.getLand(lang)
+  async list(pagination: PaginationQuery) {
     const data = await this.attendanceRepo.list(pagination)
-    return {
-      statusCode: HttpStatus.OK,
-      data,
-      message: this.i18nService.translate(AttendanceMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
-  async findById(id: number, lang: string = 'vi') {
-    await this.getLand(lang)
+  async findById(id: number) {
     const attendance = await this.attendanceRepo.findById(id)
     if (!attendance) {
       throw new NotFoundRecordException()
     }
-    return {
-      statusCode: HttpStatus.OK,
-      data: attendance,
-      message: this.i18nService.translate(AttendanceMessage.GET_SUCCESS, lang)
-    }
-  }
-
-  async findByUser(userId: number, date: Date = new Date()) {
-    console.log(date)
-
-    const attendances = await this.findStreakDate(userId, date, true)
-    const userInfo = await this.shareUserRepo.findUnique({ id: userId })
-    if (!userInfo) {
-      throw new NotFoundRecordException()
-    }
-    const data = {
-      user: userInfo,
-      attendances: attendances.attendances,
-      count: attendances.count
-    }
-    return {
-      statusCode: HttpStatus.OK,
-      data,
-      message: ENTITY_MESSAGE.GET_SUCCESS
-    }
+    return attendance
   }
 
   // New: return attendance records of the week containing the given date (Mon-Sun)
-  async findByUserWeek(
-    userId: number,
-    date: Date = todayUTCWith0000(),
-    lang: string = 'vi'
-  ) {
-    const [, weekly, totalStreak, userInfo] = await Promise.all([
-      this.getLand(lang),
+  async findByUserWeek(userId: number, date: Date = todayUTCWith0000()) {
+    const [weekly, totalStreak, userInfo] = await Promise.all([
       this.findWeekAttendances(userId, date, true),
       this.findMaxStreakFromToday(userId),
-      this.shareUserRepo.findUnique({ id: userId })
+      this.userCoreService.findUnique({ id: userId })
     ])
 
     if (!userInfo) {
@@ -122,11 +73,7 @@ export class AttendanceService {
       count: weekly.count,
       totalStreak
     }
-    return {
-      statusCode: HttpStatus.OK,
-      data,
-      message: this.i18nService.translate(AttendanceMessage.GET_SUCCESS, lang)
-    }
+    return data
   }
 
   async create({ createdById }: { createdById: number }, lang: string = 'vi') {
@@ -135,11 +82,8 @@ export class AttendanceService {
       console.log(date)
 
       const getWeekDate = getWeekDay(date)
-      // lay list config theo ngay trong tuan kem check xem co ngon ngu ko
-      const [attendenceConfig] = await Promise.all([
-        this.attendanceConfigRepo.findByDateOfWeek(getWeekDate),
-        this.getLand(lang)
-      ])
+      const attendenceConfig =
+        await this.attendenceConfigService.findByDateOfWeek(getWeekDate)
 
       if (!attendenceConfig) {
         throw new NotFoundRecordException()
@@ -156,7 +100,7 @@ export class AttendanceService {
       console.log('Total streak (with today):', totalStreakWithToday)
       console.log('Is bonus day (7, 14, 21...):', isStreakSunday)
 
-      const data: CreateAttendanceBodyType = {
+      const data: CreateAttendanceBody = {
         date,
         status: AttendancesStatus.PRESENT,
         coin: attendenceConfig.baseCoin,
@@ -183,7 +127,7 @@ export class AttendanceService {
           createdById
         )
 
-      const [attendance, , , wallet] = await Promise.all([
+      const [attendance] = await Promise.all([
         this.attendanceRepo.create({
           createdById,
           data: data
@@ -199,57 +143,42 @@ export class AttendanceService {
           progressAdd: 1
         }),
 
-        // Cộng coin vào ví SPARKLES
-        this.walletRepo.addBalanceToWalletWithType({
-          userId: createdById,
-          type: walletType.SPARKLES,
-          amount: totalCoin * valueIncrease
-        })
-      ])
-
-      // Lưu lịch sử wallet transaction
-      if (wallet) {
-        await this.walletTransactionRepo.create({
-          createdById,
-          data: {
-            walletId: wallet.id,
+        // Cộng coin vào ví SPARKLES + lịch sử wallet transaction (cùng transaction)
+        this.walletService.credit(
+          {
             userId: createdById,
-            purpose: walletPurposeType.DAILY_REQUEST,
-            referenceId: null,
+            type: walletType.SPARKLES,
             amount: totalCoin * valueIncrease,
-            type: WalletTransactionType.INCREASE,
+            createdById,
+            purpose: walletPurposeType.DAILY_REQUEST,
             source: WalletTransactionSourceType.DAILY_CHECKIN,
             description: `Daily attendance reward: ${data.coin} base + ${data.bonusCoin} bonus`
-          }
-        })
-      }
+          },
+          undefined,
+          // a user without the wallet gets it with the coins
+          { createIfMissing: true }
+        )
+      ])
 
       // Tạo notification cho attendance
-      await this.sharedNotificationService.create(
-        {
+      await this.sharedNotificationService.create({
+        userId: createdById,
+        data: {
           userId: createdById,
+          titleKey: NotificationMessage.NOTI_ATTENDANCE,
+          bodyKey: NotificationMessage.YOU_HAVE_COMPLETED_ATTENDANCE,
+          type: NotificationType.ATTENDANCE,
           data: {
-            userId: createdById,
-            titleKey: NotificationMessage.NOTI_ATTENDANCE,
-            bodyKey: NotificationMessage.YOU_HAVE_COMPLETED_ATTENDANCE,
-            type: NotificationType.ATTENDANCE,
-            data: {
-              attendanceId: attendance.id,
-              sparkle: data.coin,
-              sparkleTotal: data.bonusCoin,
-              totalCoin: totalCoin * valueIncrease,
-              streakCount: totalStreakWithToday
-            }
+            attendanceId: attendance.id,
+            sparkle: data.coin,
+            sparkleTotal: data.bonusCoin,
+            totalCoin: totalCoin * valueIncrease,
+            streakCount: totalStreakWithToday
           }
-        },
-        lang
-      )
+        }
+      })
 
-      return {
-        statusCode: HttpStatus.CREATED,
-        data: attendance,
-        message: this.i18nService.translate(AttendanceMessage.CREATE_SUCCESS, lang)
-      }
+      return attendance
     } catch (error) {
       if (isUniqueConstraintPrismaError(error)) {
         throw new AttendancegAlreadyExistsException()
@@ -258,30 +187,22 @@ export class AttendanceService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateAttendanceBodyType
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateAttendanceBody
+    updatedById: number
+  }) {
     try {
-      await this.getLand(lang)
       const updatedAttendanceg = await this.attendanceRepo.update({
         id,
         updatedById,
         data
       })
-      return {
-        statusCode: HttpStatus.OK,
-        data: updatedAttendanceg,
-        message: this.i18nService.translate(AttendanceMessage.UPDATE_SUCCESS, lang)
-      }
+      return updatedAttendanceg
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -293,21 +214,13 @@ export class AttendanceService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
-      await this.getLand(lang)
       await this.attendanceRepo.delete({
         id,
         deletedById
       })
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(AttendanceMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -333,10 +246,10 @@ export class AttendanceService {
 
     // 2️⃣ Đếm streak liên tiếp
     let streakCount = 0
-    let expectedDate = new Date(today)
+    const expectedDate = new Date(today)
     expectedDate.setDate(expectedDate.getDate() - 1) // Bắt đầu từ hôm qua
 
-    const streakAttendances: AttendanceType[] = []
+    const streakAttendances: Attendance[] = []
 
     for (const att of sortedAttendances) {
       const attDate = new Date(att.date)
@@ -441,7 +354,7 @@ export class AttendanceService {
 
     // Đếm streak liên tiếp từ hôm nay
     let streakCount = 0
-    let expectedDate = new Date(today)
+    const expectedDate = new Date(today)
     expectedDate.setHours(0, 0, 0, 0)
 
     for (const att of sortedAttendances) {
@@ -459,13 +372,5 @@ export class AttendanceService {
     }
 
     return streakCount
-  }
-
-  async getLand(lang: string) {
-    const langId = await this.languageRepo.getIdByCode(lang)
-    if (!langId) {
-      throw new NotFoundRecordException()
-    }
-    return langId
   }
 }

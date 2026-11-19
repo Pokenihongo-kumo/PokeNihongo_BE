@@ -1,31 +1,27 @@
 import { SortOrder, TranslationSortField } from '@/common/enum/enum'
 import { PrismaService } from '@/shared/services/prisma.service'
+import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 import {
   DuplicateLanguageException,
   DuplicateRecordException,
   DuplicateValueException
 } from './dto/translation.error'
 import {
-  CreateTranslationBodyType,
-  TranslationType,
-  UpdateTranslationBodyType
-} from './entities/translation.entities'
+  CreateTranslationBody,
+  GetTranslationListQuery,
+  UpdateTranslationBody
+} from './dto/translation.zod-dto'
+import { Translation } from './entities/translation.entity'
 
 @Injectable()
-export class TranslationRepository {
-  constructor(private readonly prismaService: PrismaService) { }
+export class TranslationRepo {
+  constructor(private readonly prismaService: PrismaService) {}
 
-  async findMany(params: {
-    page: number
-    limit: number
-    search?: string
-    languageId?: number
-    key?: string
-    sortBy?: TranslationSortField
-    sort?: SortOrder
-  }) {
+  async findMany(
+    params: GetTranslationListQuery
+  ): Promise<{ data: Translation[]; total: number }> {
     const {
       page,
       limit,
@@ -35,45 +31,29 @@ export class TranslationRepository {
       sortBy = TranslationSortField.CREATED_AT,
       sort = SortOrder.DESC
     } = params
-    const skip = (page - 1) * limit
-
-    const where: any = {}
-
-    if (search) {
-      where.OR = [
-        { key: { contains: search, mode: 'insensitive' } },
-        { value: { contains: search, mode: 'insensitive' } }
-      ]
-    }
-
-    if (languageId) {
-      where.languageId = languageId
-    }
-
-    if (key) {
-      where.key = { contains: key, mode: 'insensitive' }
+    const where: Prisma.TranslationWhereInput = {
+      ...(search && {
+        OR: [
+          { key: { contains: search, mode: 'insensitive' } },
+          { value: { contains: search, mode: 'insensitive' } }
+        ]
+      }),
+      ...(languageId && { languageId }),
+      ...(key && { key: { contains: key, mode: 'insensitive' } })
     }
 
     const [data, total] = await Promise.all([
       this.prismaService.translation.findMany({
         where,
-        skip,
-        take: limit,
-        orderBy: { [sortBy]: sort }
+        orderBy: { [sortBy]: sort },
+        ...toSkipTake(page, limit)
       }),
       this.prismaService.translation.count({ where })
     ])
-
-    return {
-      data: data.map((item) => this.transformTranslation(item)),
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit)
-    }
+    return { data, total }
   }
 
-  async findById(id: number): Promise<TranslationType | null> {
+  async findById(id: number): Promise<Translation | null> {
     const translation = await this.prismaService.translation.findUnique({
       where: { id }
     })
@@ -82,13 +62,13 @@ export class TranslationRepository {
       return null
     }
 
-    return this.transformTranslation(translation)
+    return translation
   }
 
   async findByKeyAndLanguage(
     key: string,
     languageId: number
-  ): Promise<TranslationType | null> {
+  ): Promise<Translation | null> {
     const translation = await this.prismaService.translation.findUnique({
       where: {
         languageId_key: {
@@ -102,7 +82,7 @@ export class TranslationRepository {
       return null
     }
 
-    return this.transformTranslation(translation)
+    return translation
   }
 
   async findByKey(key: string) {
@@ -111,7 +91,7 @@ export class TranslationRepository {
       orderBy: { languageId: 'asc' }
     })
 
-    return translations.map((item) => this.transformTranslation(item))
+    return translations
   }
 
   async findByLanguage(
@@ -120,32 +100,22 @@ export class TranslationRepository {
       page: number
       limit: number
     }
-  ) {
-    const { page, limit } = params
-    const skip = (page - 1) * limit
-
+  ): Promise<{ data: Translation[]; total: number }> {
     const [data, total] = await Promise.all([
       this.prismaService.translation.findMany({
         where: { languageId },
-        skip,
-        take: limit,
-        orderBy: { key: 'asc' }
+        orderBy: { key: 'asc' },
+        ...toSkipTake(params.page, params.limit)
       }),
       this.prismaService.translation.count({
         where: { languageId }
       })
     ])
 
-    return {
-      data: data.map((item) => this.transformTranslation(item)),
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit)
-    }
+    return { data, total }
   }
 
-  async create(data: CreateTranslationBodyType): Promise<TranslationType> {
+  async create(data: CreateTranslationBody): Promise<Translation> {
     const result = await this.prismaService.translation.create({
       data: {
         languageId: data.languageId,
@@ -154,10 +124,10 @@ export class TranslationRepository {
       }
     })
 
-    return this.transformTranslation(result)
+    return result
   }
 
-  async createMany(data: CreateTranslationBodyType[]): Promise<{ count: number }> {
+  async createMany(data: CreateTranslationBody[]): Promise<{ count: number }> {
     return await this.prismaService.translation.createMany({
       data: data.map((item) => ({
         languageId: item.languageId,
@@ -167,7 +137,7 @@ export class TranslationRepository {
     })
   }
 
-  async update(id: number, data: UpdateTranslationBodyType): Promise<TranslationType> {
+  async update(id: number, data: UpdateTranslationBody): Promise<Translation> {
     const result = await this.prismaService.translation.update({
       where: { id },
       data: {
@@ -177,14 +147,14 @@ export class TranslationRepository {
       }
     })
 
-    return this.transformTranslation(result)
+    return result
   }
 
   async updateByKeyAndLanguage(
     key: string,
     languageId: number,
-    data: UpdateTranslationBodyType
-  ): Promise<TranslationType> {
+    data: UpdateTranslationBody
+  ): Promise<Translation> {
     const result = await this.prismaService.translation.update({
       where: {
         languageId_key: {
@@ -199,7 +169,7 @@ export class TranslationRepository {
       }
     })
 
-    return this.transformTranslation(result)
+    return result
   }
 
   async delete(id: number): Promise<void> {
@@ -219,14 +189,11 @@ export class TranslationRepository {
     })
   }
 
-  async deleteByKey(key: string): Promise<{ count: number }> {
-    return await this.prismaService.translation.deleteMany({
+  async deleteByKey(key: string, prismaTx?: PrismaClient): Promise<{ count: number }> {
+    const client = prismaTx || this.prismaService
+    return await client.translation.deleteMany({
       where: { key }
     })
-  }
-
-  async count(where?: any): Promise<number> {
-    return this.prismaService.translation.count({ where })
   }
 
   /**
@@ -235,7 +202,7 @@ export class TranslationRepository {
    * @throws Error nếu có value trùng lặp
    */
   async validateTranslationRecords(
-    translationRecords: CreateTranslationBodyType[]
+    translationRecords: CreateTranslationBody[]
   ): Promise<void> {
     const languageIdSet = new Set<number>()
 
@@ -332,7 +299,7 @@ export class TranslationRepository {
   async createOrUpdateWithTransaction(
     data: { languageId: number; key: string; value: string },
     prismaTx?: PrismaClient // optional, nếu có thì dùng transaction
-  ): Promise<TranslationType> {
+  ): Promise<Translation> {
     const client = prismaTx || this.prismaService
 
     const existingTranslation = await client.translation.findUnique({
@@ -357,7 +324,7 @@ export class TranslationRepository {
           updatedAt: new Date()
         }
       })
-      return this.transformTranslation(updated)
+      return updated
     } else {
       const created = await client.translation.create({
         data: {
@@ -366,11 +333,11 @@ export class TranslationRepository {
           value: data.value
         }
       })
-      return this.transformTranslation(created)
+      return created
     }
   }
 
-  findByLangAndKey(langId: number, key: string): Promise<TranslationType | null> {
+  findByLangAndKey(langId: number, key: string): Promise<Translation | null> {
     //! schema đang thiếu deletedAt
     return this.prismaService.translation.findFirst({
       where: { languageId: langId, key }
@@ -381,7 +348,7 @@ export class TranslationRepository {
   async findByKeysAndLanguage(
     keys: string[],
     languageId: number
-  ): Promise<TranslationType[]> {
+  ): Promise<Translation[]> {
     if (keys.length === 0) return []
 
     return this.prismaService.translation.findMany({
@@ -397,7 +364,7 @@ export class TranslationRepository {
   async findByKeyOrMeaningPrefix(
     key: string,
     languageId: number
-  ): Promise<TranslationType[]> {
+  ): Promise<Translation[]> {
     const translations = await this.prismaService.translation.findMany({
       where: {
         languageId,
@@ -412,12 +379,59 @@ export class TranslationRepository {
       }
     })
 
-    return translations.map((item) => this.transformTranslation(item))
+    return translations
   }
 
-  private transformTranslation(translation: any): TranslationType {
-    return {
-      ...translation
-    }
+  // ---- A vocabulary's meaning translations (optional tx) ----
+
+  // Translations under vocabulary.<id>.meaning.* in these languages
+  findVocabularyMeaningTranslations(
+    vocabularyId: number,
+    languageCodes: string[],
+    prismaTx?: PrismaClient
+  ) {
+    return (prismaTx ?? this.prismaService).translation.findMany({
+      where: {
+        key: {
+          startsWith: `vocabulary.${vocabularyId}.meaning.`
+        },
+        language: {
+          code: {
+            in: languageCodes
+          }
+        }
+      },
+      include: {
+        language: true
+      }
+    })
+  }
+
+  createManySkippingDuplicates(
+    rows: Prisma.TranslationCreateManyInput[],
+    prismaTx?: PrismaClient
+  ) {
+    return (prismaTx ?? this.prismaService).translation.createMany({
+      data: rows,
+      skipDuplicates: true // Tránh lỗi nếu translation đã tồn tại
+    })
+  }
+
+  // A meaning translation of this vocabulary with the same text
+  findVocabularyMeaningWithValue(
+    vocabularyId: number,
+    languageId: number,
+    value: string,
+    prismaTx?: PrismaClient
+  ) {
+    return (prismaTx ?? this.prismaService).translation.findFirst({
+      where: {
+        languageId,
+        value: value,
+        key: {
+          startsWith: `vocabulary.${vocabularyId}.meaning.`
+        }
+      }
+    })
   }
 }

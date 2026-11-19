@@ -1,22 +1,29 @@
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 
 import { parseQs } from '@/common/utils/qs-parser'
-import { PrismaClient } from '@prisma/client'
+import { LeaderboardStatus, Prisma, PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import { SeasonRankRewardType } from '../season-rank-reward/entities/season-rank-reward.entity'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entities'
-import { UserSeasonHistoryType } from '../user-season-history/entities/user-season-history.entity'
+import { SeasonRankReward } from '../season-rank-reward/entities/season-rank-reward.entity'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
+import { UserSeasonHistory } from '../user-season-history/entities/user-season-history.entity'
 import {
-  CreateLeaderboardSeasonBodyType,
+  CreateLeaderboardSeasonBody,
+  UpdateLeaderboardSeasonBody
+} from './dto/leaderboard-season.zod-dto'
+import {
   LEADERBOARD_SEASON_FIELDS,
-  LeaderboardSeasonType,
-  UpdateLeaderboardSeasonBodyType
+  LeaderboardSeason
 } from './entities/leaderboard-season.entity'
 
-type LeaderboardSeasonPrismaType = Omit<LeaderboardSeasonType, 'nameKey'> & {
+type LeaderboardSeasonPrismaType = Omit<LeaderboardSeason, 'nameKey'> & {
   name: string
 }
+
+const SEASON_TEMPLATE_INCLUDE = {
+  nameTranslations: true,
+  seasonRankRewards: { include: { rewards: { select: { id: true } } } }
+} satisfies Prisma.LeaderboardSeasonInclude
 
 @Injectable()
 export class LeaderboardSeasonRepo {
@@ -33,10 +40,10 @@ export class LeaderboardSeasonRepo {
       data
     }: {
       createdById: number | null
-      data: CreateLeaderboardSeasonBodyType & { hasOpened: boolean }
+      data: CreateLeaderboardSeasonBody & { hasOpened: boolean }
     },
     prismaTx?: PrismaClient
-  ): Promise<LeaderboardSeasonType> {
+  ): Promise<LeaderboardSeason> {
     const client = prismaTx || this.prismaService
     return client.leaderboardSeason.create({
       data: {
@@ -54,14 +61,14 @@ export class LeaderboardSeasonRepo {
     }: {
       id: number
       updatedById?: number
-      data: UpdateLeaderboardSeasonBodyType & {
-        nameTranslations: CreateTranslationBodyType[]
+      data: UpdateLeaderboardSeasonBody & {
+        nameTranslations: CreateTranslationBody[]
         leaderboardSeasonNameKey: string
         hasOpened: boolean
       }
     },
     prismaTx?: PrismaClient
-  ): Promise<LeaderboardSeasonType> {
+  ): Promise<LeaderboardSeason> {
     const client = prismaTx || this.prismaService
     const { nameTranslations, leaderboardSeasonNameKey, ...leaderboardSeasonData } = data
 
@@ -109,7 +116,7 @@ export class LeaderboardSeasonRepo {
     },
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<LeaderboardSeasonType> {
+  ): Promise<LeaderboardSeason> {
     const client = prismaTx || this.prismaService
     const result = isHard
       ? await this.prismaService.leaderboardSeason.delete({
@@ -130,7 +137,7 @@ export class LeaderboardSeasonRepo {
     return result
   }
 
-  async list(pagination: PaginationQueryType, langId?: number, isAdmin: boolean = false) {
+  async list(pagination: PaginationQuery, langId?: number, isAdmin: boolean = false) {
     const { where: rawWhere = {}, orderBy } = parseQs(
       pagination.qs,
       LEADERBOARD_SEASON_FIELDS
@@ -210,7 +217,7 @@ export class LeaderboardSeasonRepo {
       }
     }
   }
-  findById(id: number): Promise<LeaderboardSeasonType | null> {
+  findById(id: number): Promise<LeaderboardSeason | null> {
     return this.prismaService.leaderboardSeason.findUnique({
       where: {
         id,
@@ -223,7 +230,7 @@ export class LeaderboardSeasonRepo {
     id: number,
     isAllLang: boolean,
     langId: number
-  ): Promise<LeaderboardSeasonType | null> {
+  ): Promise<LeaderboardSeason | null> {
     return this.prismaService.leaderboardSeason.findUnique({
       where: {
         id,
@@ -273,7 +280,7 @@ export class LeaderboardSeasonRepo {
     })
   }
 
-  findActiveSeason(): Promise<LeaderboardSeasonType | null> {
+  findActiveSeason(): Promise<LeaderboardSeason | null> {
     return this.prismaService.leaderboardSeason.findFirst({
       where: {
         status: 'ACTIVE',
@@ -286,9 +293,9 @@ export class LeaderboardSeasonRepo {
     userId: number,
     langId?: number
   ): Promise<
-    | (LeaderboardSeasonType & {
+    | (LeaderboardSeason & {
         nameTranslations
-        userHistories: UserSeasonHistoryType[]
+        userHistories: UserSeasonHistory[]
       })
     | null
   > {
@@ -310,9 +317,9 @@ export class LeaderboardSeasonRepo {
   }
 
   findWithDetailsWithoutLang(id: number): Promise<
-    | (LeaderboardSeasonType & {
-        userHistories: UserSeasonHistoryType[]
-        seasonRankRewards: SeasonRankRewardType[]
+    | (LeaderboardSeason & {
+        userHistories: UserSeasonHistory[]
+        seasonRankRewards: SeasonRankReward[]
       })
     | null
   > {
@@ -340,7 +347,7 @@ export class LeaderboardSeasonRepo {
   findLeaderboardSeasonNowWithRewards(
     langId: number,
     isAdmin: boolean
-  ): Promise<LeaderboardSeasonType | null> {
+  ): Promise<LeaderboardSeason | null> {
     return this.prismaService.leaderboardSeason.findFirst({
       where: {
         status: 'ACTIVE',
@@ -373,6 +380,204 @@ export class LeaderboardSeasonRepo {
           }
         }
       }
+    })
+  }
+
+  // ---- Rankings (read model, R4: read only) ----
+
+  findLatestByEndDate() {
+    return this.prismaService.leaderboardSeason.findFirst({
+      where: { deletedAt: null },
+      orderBy: { endDate: 'desc' }
+    })
+  }
+
+  countRankedUsers(whereUsers: Prisma.UserWhereInput) {
+    return this.prismaService.user.count({ where: whereUsers })
+  }
+
+  pageRankedUsers(whereUsers: Prisma.UserWhereInput, skip: number, take: number) {
+    return this.prismaService.user.findMany({
+      where: whereUsers,
+      orderBy: [{ eloscore: 'desc' }, { name: 'asc' }],
+      skip,
+      take,
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+        eloscore: true
+      }
+    })
+  }
+
+  findRankedUser(userId: number) {
+    return this.prismaService.user.findUnique({
+      where: { id: userId, deletedAt: null },
+      select: { id: true, name: true, avatar: true, eloscore: true }
+    })
+  }
+
+  // Users ahead of this one (higher elo, or same elo and lower id)
+  countUsersRankedAbove(
+    myUser: { id: number; eloscore: number },
+    eloFilter: { gte?: number; lte?: number } | undefined
+  ) {
+    return this.prismaService.user.count({
+      where: {
+        deletedAt: null,
+        ...(eloFilter ? { eloscore: eloFilter } : {}),
+        OR: [
+          { eloscore: { gt: myUser.eloscore } },
+          {
+            eloscore: myUser.eloscore,
+            id: { lt: myUser.id }
+          }
+        ]
+      }
+    })
+  }
+
+  countSeasonHistories(whereTop: Prisma.UserSeasonHistoryWhereInput) {
+    return this.prismaService.userSeasonHistory.count({ where: whereTop })
+  }
+
+  pageSeasonHistories(
+    whereTop: Prisma.UserSeasonHistoryWhereInput,
+    skip: number,
+    take: number
+  ) {
+    return this.prismaService.userSeasonHistory.findMany({
+      where: whereTop,
+      orderBy: [{ finalElo: 'desc' }, { userId: 'asc' }],
+      skip,
+      take,
+      include: {
+        user: { select: { id: true, name: true, avatar: true } }
+      }
+    })
+  }
+
+  findSeasonHistory(seasonId: number, userId: number) {
+    return this.prismaService.userSeasonHistory.findFirst({
+      where: { seasonId, userId, deletedAt: null },
+      include: { user: { select: { id: true, name: true, avatar: true } } }
+    })
+  }
+
+  // Histories ahead of this one (higher final elo, or same and lower user id)
+  countHistoriesRankedAbove(
+    seasonId: number,
+    myHist: { finalElo: number; userId: number },
+    eloFilter: { gte?: number; lte?: number } | undefined
+  ) {
+    return this.prismaService.userSeasonHistory.count({
+      where: {
+        seasonId,
+        deletedAt: null,
+        ...(eloFilter ? { finalElo: eloFilter } : {}),
+        OR: [
+          { finalElo: { gt: myHist.finalElo } },
+          {
+            finalElo: myHist.finalElo,
+            userId: { lt: myHist.userId }
+          }
+        ]
+      }
+    })
+  }
+
+  // ---- Season cronjob (src/cronjobs/handle-leaderboard-season.cronjob.ts) ----
+
+  findEndedActiveIds(now: Date) {
+    return this.prismaService.leaderboardSeason.findMany({
+      where: { status: 'ACTIVE', endDate: { lte: now }, deletedAt: null },
+      select: { id: true }
+    })
+  }
+
+  setStatus(id: number, status: LeaderboardStatus) {
+    return this.prismaService.leaderboardSeason.update({
+      where: { id },
+      data: { status }
+    })
+  }
+
+  findAllPreview() {
+    return this.prismaService.leaderboardSeason.findMany({
+      where: { status: 'PREVIEW', deletedAt: null }
+    })
+  }
+
+  countActive() {
+    return this.prismaService.leaderboardSeason.count({
+      where: { status: 'ACTIVE', deletedAt: null }
+    })
+  }
+
+  activate(id: number) {
+    return this.prismaService.leaderboardSeason.update({
+      where: { id },
+      data: { status: 'ACTIVE', hasOpened: true }
+    })
+  }
+
+  // With what a next season copies: name translations and rank rewards (reward ids)
+  findActiveForPrecreate() {
+    return this.prismaService.leaderboardSeason.findMany({
+      where: { status: 'ACTIVE', enablePrecreate: true, deletedAt: null },
+      include: SEASON_TEMPLATE_INCLUDE
+    })
+  }
+
+  findTemplateForPrecreate(id: number) {
+    return this.prismaService.leaderboardSeason.findUnique({
+      where: { id, deletedAt: null },
+      include: SEASON_TEMPLATE_INCLUDE
+    })
+  }
+
+  findFirstByNameKeyPrefix(prefix: string) {
+    return this.prismaService.leaderboardSeason.findFirst({
+      where: { nameKey: { startsWith: prefix }, deletedAt: null }
+    })
+  }
+
+  findPreviewStartingAt(startDate: Date) {
+    return this.prismaService.leaderboardSeason.findFirst({
+      where: { startDate, status: 'PREVIEW', deletedAt: null }
+    })
+  }
+
+  createSeason(
+    data: Prisma.LeaderboardSeasonUncheckedCreateInput,
+    prismaTx?: PrismaClient
+  ) {
+    const client = prismaTx || this.prismaService
+    return client.leaderboardSeason.create({ data })
+  }
+
+  // Final nameKey of a season made under a temporary one, with its translations
+  setNameKeyWithTranslations(
+    id: number,
+    nameKey: string,
+    upserts: Prisma.TranslationUpsertWithWhereUniqueWithoutLeaderboardSeasonInput[],
+    prismaTx?: PrismaClient
+  ) {
+    const client = prismaTx || this.prismaService
+    return client.leaderboardSeason.update({
+      where: { id },
+      data: {
+        nameKey,
+        ...(upserts.length ? { nameTranslations: { upsert: upserts } } : {})
+      }
+    })
+  }
+
+  disablePrecreate(id: number) {
+    return this.prismaService.leaderboardSeason.update({
+      where: { id },
+      data: { enablePrecreate: false, precreateBeforeEndDays: 999 }
     })
   }
 }

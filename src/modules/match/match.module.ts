@@ -1,3 +1,4 @@
+import { QuestionBankModule } from '@/modules/question-bank/question-bank.module'
 import { forwardRef, Module } from '@nestjs/common'
 import { LanguagesModule } from '../languages/languages.module'
 import { LeaderboardSeasonModule } from '../leaderboard-season/leaderboard-season.module'
@@ -6,7 +7,11 @@ import { MatchRepo } from './match.repo'
 import { MatchService } from './match.service'
 
 @Module({
-  imports: [forwardRef(() => LeaderboardSeasonModule), forwardRef(() => LanguagesModule)],
+  imports: [
+    forwardRef(() => LeaderboardSeasonModule),
+    LanguagesModule,
+    QuestionBankModule
+  ],
   controllers: [MatchController],
   providers: [MatchService, MatchRepo],
   exports: [MatchService, MatchRepo]

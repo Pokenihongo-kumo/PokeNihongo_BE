@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { WalletMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { AuthenticationGuard } from '@/common/guards/authentication.guard'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
@@ -13,7 +15,9 @@ import {
   Post,
   Put,
   Query,
-  UseGuards
+  UseGuards,
+  HttpCode,
+  HttpStatus
 } from '@nestjs/common'
 import { ApiBearerAuth } from '@nestjs/swagger'
 import { ZodSerializerDto } from 'nestjs-zod'
@@ -32,87 +36,102 @@ import { WalletService } from './wallet.service'
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class WalletController {
-  constructor(private readonly walletService: WalletService) {}
+  constructor(
+    private readonly walletService: WalletService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseSchema)
-  list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return this.walletService.list(query, lang)
+  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(WalletMessage.GET_LIST_SUCCESS, lang),
+      data: await this.walletService.list(query)
+    }
   }
 
   @Get('user')
   @ZodSerializerDto(GetWalletsWithUserResDTO)
-  getWalletsByUser(@ActiveUser('userId') userId: number, @I18nLang() lang: string) {
-    return this.walletService.getWalletsByUser(userId, lang)
+  async getWalletsByUser(@ActiveUser('userId') userId: number, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(WalletMessage.GET_LIST_SUCCESS, lang),
+      data: await this.walletService.getWalletsByUser(userId)
+    }
   }
 
   @Get(':walletId')
   @ZodSerializerDto(GetWalletDetailResDTO)
-  findById(@Param() params: GetWalletParamsDTO, @I18nLang() lang: string) {
-    return this.walletService.findById(params.walletId, lang)
+  async findById(@Param() params: GetWalletParamsDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(WalletMessage.GET_SUCCESS, lang),
+      data: await this.walletService.findById(params.walletId)
+    }
   }
 
   @Post('generate/users')
+  @HttpCode(HttpStatus.OK)
   @ZodSerializerDto(MessageResDTO)
-  generateWalletForAllUsers(
+  async generateWalletForAllUsers(
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.walletService.generateWalletForAllUsers(
-      {
-        createdById: userId
-      },
-      lang
-    )
+    await this.walletService.generateWalletForAllUsers({
+      createdById: userId
+    })
+    return {
+      message: this.i18nService.translate(WalletMessage.CREATE_SUCCESS, lang),
+      data: null
+    }
   }
 
   @Post()
   @ZodSerializerDto(CreateWalletResDTO)
-  create(
+  async create(
     @Body() body: CreatedWalletBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.walletService.create(
-      {
+    return {
+      message: this.i18nService.translate(WalletMessage.CREATE_SUCCESS, lang),
+      data: await this.walletService.create({
         data: body,
         createdById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Put(':walletId')
   @ZodSerializerDto(UpdateWalletResDTO)
-  update(
+  async update(
     @Body() body: UpdateWalletBodyDTO,
     @Param() params: GetWalletParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.walletService.update(
-      {
+    return {
+      message: this.i18nService.translate(WalletMessage.UPDATE_SUCCESS, lang),
+      data: await this.walletService.update({
         data: body,
         id: params.walletId,
         updatedById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':walletId')
   @ZodSerializerDto(MessageResDTO)
-  delete(
+  async delete(
     @Param() params: GetWalletParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.walletService.delete(
-      {
-        id: params.walletId,
-        deletedById: userId
-      },
-      lang
-    )
+    await this.walletService.delete({
+      id: params.walletId,
+      deletedById: userId
+    })
+    return {
+      message: this.i18nService.translate(WalletMessage.DELETE_SUCCESS, lang),
+      data: null
+    }
   }
 }

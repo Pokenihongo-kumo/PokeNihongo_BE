@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { UserSubscriptionMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
@@ -16,86 +18,105 @@ import { UserSubscriptionService } from './user-subscription.service'
 
 @Controller('user-subscription')
 export class UserSubscriptionController {
-  constructor(private readonly userSubscriptionService: UserSubscriptionService) {}
+  constructor(
+    private readonly userSubscriptionService: UserSubscriptionService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseDTO)
-  list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return this.userSubscriptionService.list(query, lang)
+  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(UserSubscriptionMessage.GET_LIST_SUCCESS, lang),
+      data: await this.userSubscriptionService.list(query)
+    }
   }
 
   @Get('user')
   @ZodSerializerDto(PaginationResponseDTO)
-  getUserSubWithSubPlan(
+  async getUserSubWithSubPlan(
     @Query() query: PaginationQueryDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userSubscriptionService.getUserSubWithSubPlan(query, userId, lang)
+    return {
+      message: this.i18nService.translate(UserSubscriptionMessage.GET_LIST_SUCCESS, lang),
+      data: await this.userSubscriptionService.getUserSubWithSubPlan(query, userId, lang)
+    }
   }
 
   @Get('user/features')
   // @ZodSerializerDto(PaginationResponseDTO)
-  getListFeatureOfUser(@ActiveUser('userId') userId: number, @I18nLang() lang: string) {
-    return this.userSubscriptionService.getListFeatureOfUser(userId, lang)
+  async getListFeatureOfUser(
+    @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string
+  ) {
+    return {
+      message: this.i18nService.translate(UserSubscriptionMessage.GET_LIST_SUCCESS, lang),
+      data: await this.userSubscriptionService.getListFeatureOfUser(userId)
+    }
   }
 
   @Get(':userSubscriptionId')
   @ZodSerializerDto(GetUserSubscriptionDetailResDTO)
-  findById(
+  async findById(
     @Param() params: GetUserSubscriptionParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userSubscriptionService.findById(params.userSubscriptionId, lang)
+    return {
+      message: this.i18nService.translate(UserSubscriptionMessage.GET_LIST_SUCCESS, lang),
+      data: await this.userSubscriptionService.findById(params.userSubscriptionId)
+    }
   }
   @Post()
   @ZodSerializerDto(CreateUserSubscriptionResDTO)
-  create(
+  async create(
     @Body() body: CreateUserSubscriptionBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userSubscriptionService.create(
-      {
+    return {
+      message: this.i18nService.translate(UserSubscriptionMessage.CREATE_SUCCESS, lang),
+      data: await this.userSubscriptionService.create({
         userId,
         data: body
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Put(':userSubscriptionId')
   @ZodSerializerDto(UpdateUserSubscriptionResDTO)
-  update(
+  async update(
     @Body() body: UpdateUserSubscriptionBodyDTO,
     @Param() params: GetUserSubscriptionParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userSubscriptionService.update(
-      {
+    return {
+      message: this.i18nService.translate(UserSubscriptionMessage.UPDATE_SUCCESS, lang),
+      data: await this.userSubscriptionService.update({
         data: body,
         id: params.userSubscriptionId,
         userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':userSubscriptionId')
   @ZodSerializerDto(MessageResDTO)
-  delete(
+  async delete(
     @Param() params: GetUserSubscriptionParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userSubscriptionService.delete(
-      {
-        id: params.userSubscriptionId,
-        userId
-      },
-      lang
-    )
+    await this.userSubscriptionService.delete({
+      id: params.userSubscriptionId,
+      userId
+    })
+    return {
+      message: this.i18nService.translate(UserSubscriptionMessage.DELETE_SUCCESS, lang),
+      data: null
+    }
   }
 }

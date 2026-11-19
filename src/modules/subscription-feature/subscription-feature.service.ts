@@ -1,16 +1,13 @@
 import { FeatureKey } from '@/common/constants/subscription.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { SubscriptionFeatureMessage } from '@/i18n/message-keys'
+import { SubscriptionService } from '@/modules/subscription/subscription.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
-import { FeatureRepo } from '../feature/feature.repo'
-import { SubscriptionRepo } from '../subscription/subscription.repo'
 import {
   InvalidValueForCoinMultiplierExistsException,
   InvalidValueForXPMultiplierExistsException,
@@ -18,54 +15,41 @@ import {
   SubscriptionFeatureNotFoundException
 } from './dto/subscription-feature.error'
 import {
-  CreateSubscriptionFeatureBodyType,
-  UpdateSubscriptionFeatureBodyType,
-  UpdateWithListItemBodyType
-} from './entities/subscription-feature.entity'
+  CreateSubscriptionFeatureBody,
+  UpdateSubscriptionFeatureBody,
+  UpdateWithListItemBody
+} from './dto/subscription-feature.zod-dto'
 import { SubscriptionFeatureRepo } from './subscription-feature.repo'
 
 @Injectable()
 export class SubscriptionFeatureService {
   constructor(
     private subscriptionFeatureRepo: SubscriptionFeatureRepo,
-    private readonly subRepo: SubscriptionRepo,
-    private readonly featureRepo: FeatureRepo,
-    private readonly i18nService: I18nService
+    private readonly subscriptionService: SubscriptionService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.subscriptionFeatureRepo.list(pagination)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(
-        SubscriptionFeatureMessage.GET_LIST_SUCCESS,
-        lang
-      )
-    }
+    return data
   }
 
   // Helper method to calculate weaknesses for a Pokemon (copied from PokemonService)
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const subscriptionFeature = await this.subscriptionFeatureRepo.findById(id)
     if (!subscriptionFeature) {
       throw new SubscriptionFeatureNotFoundException()
     }
 
-    return {
-      statusCode: 200,
-      data: subscriptionFeature,
-      message: this.i18nService.translate(
-        SubscriptionFeatureMessage.GET_LIST_SUCCESS,
-        lang
-      )
-    }
+    return subscriptionFeature
   }
 
-  async create(
-    { userId, data }: { userId: number; data: CreateSubscriptionFeatureBodyType },
-    lang: string = 'vi'
-  ) {
+  async create({
+    userId,
+    data
+  }: {
+    userId: number
+    data: CreateSubscriptionFeatureBody
+  }) {
     try {
       // Validate numeric multiplier features for create
       // if (
@@ -88,14 +72,7 @@ export class SubscriptionFeatureService {
           ...data
         }
       })
-      return {
-        statusCode: 201,
-        data: result,
-        message: this.i18nService.translate(
-          SubscriptionFeatureMessage.CREATE_SUCCESS,
-          lang
-        )
-      }
+      return result
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -107,18 +84,15 @@ export class SubscriptionFeatureService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      userId
-    }: {
-      id: number
-      data: UpdateSubscriptionFeatureBodyType
-      userId?: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    userId
+  }: {
+    id: number
+    data: UpdateSubscriptionFeatureBody
+    userId?: number
+  }) {
     try {
       // Fetch existing if needed for validation (when only value changed)
       const existing = await this.subscriptionFeatureRepo.findById(id)
@@ -148,14 +122,7 @@ export class SubscriptionFeatureService {
         data: data,
         updatedById: userId
       })
-      return {
-        statusCode: 200,
-        data: subscriptionFeature,
-        message: this.i18nService.translate(
-          SubscriptionFeatureMessage.UPDATE_SUCCESS,
-          lang
-        )
-      }
+      return subscriptionFeature
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new SubscriptionFeatureNotFoundException()
@@ -168,7 +135,7 @@ export class SubscriptionFeatureService {
     }
   }
 
-  async delete({ id, userId }: { id: number; userId?: number }, lang: string = 'vi') {
+  async delete({ id, userId }: { id: number; userId?: number }) {
     try {
       const existSubscriptionFeature = await this.subscriptionFeatureRepo.findById(id)
       if (!existSubscriptionFeature) {
@@ -176,14 +143,7 @@ export class SubscriptionFeatureService {
       }
 
       await this.subscriptionFeatureRepo.delete(id)
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(
-          SubscriptionFeatureMessage.DELETE_SUCCESS,
-          lang
-        )
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new SubscriptionFeatureNotFoundException()
@@ -192,20 +152,17 @@ export class SubscriptionFeatureService {
     }
   }
 
-  async updateWithListFeature(
-    {
-      subscriptionId,
-      updatedById,
-      data
-    }: {
-      subscriptionId: number
-      updatedById: number
-      data: UpdateWithListItemBodyType
-    },
-    lang: string = 'vi'
-  ) {
+  async updateWithListFeature({
+    subscriptionId,
+    updatedById,
+    data
+  }: {
+    subscriptionId: number
+    updatedById: number
+    data: UpdateWithListItemBody
+  }) {
     try {
-      const isExistSubscription = await this.subRepo.findById(subscriptionId)
+      const isExistSubscription = await this.subscriptionService.getById(subscriptionId)
       if (!isExistSubscription) {
         throw new NotFoundRecordException()
       }
@@ -213,16 +170,14 @@ export class SubscriptionFeatureService {
         const { items } = data
 
         // 1. Delete existing subscription features for subscriptionId
-        await tx.subscriptionFeature.deleteMany({
-          where: { subscriptionId }
-        })
+        await this.subscriptionFeatureRepo.deleteBySubscription(subscriptionId, tx)
 
         // 2. Get all featureIds to validate
         const featureIds = items.map((item) => item.featureId)
-        const features = await tx.feature.findMany({
-          where: { id: { in: featureIds }, deletedAt: null },
-          select: { id: true, featureKey: true }
-        })
+        const features = await this.subscriptionFeatureRepo.findLiveFeatureKeys(
+          featureIds,
+          tx
+        )
 
         // Build map for quick lookup
         const featureMap = new Map(features.map((f) => [f.id, f.featureKey]))
@@ -268,25 +223,13 @@ export class SubscriptionFeatureService {
         })
 
         // 4. Create all features at once
-        await tx.subscriptionFeature.createMany({
-          data: createData
-        })
+        await this.subscriptionFeatureRepo.createManyRows(createData, tx)
 
         // 5. Re-fetch created data
-        return await tx.subscriptionFeature.findMany({
-          where: { subscriptionId, deletedAt: null },
-          orderBy: { id: 'asc' }
-        })
+        return await this.subscriptionFeatureRepo.listBySubscription(subscriptionId, tx)
       })
 
-      return {
-        statusCode: 200,
-        data: created,
-        message: this.i18nService.translate(
-          SubscriptionFeatureMessage.UPDATE_SUCCESS,
-          lang
-        )
-      }
+      return created
     } catch (error) {
       if (isForeignKeyConstraintPrismaError(error)) {
         throw new NotFoundRecordException()

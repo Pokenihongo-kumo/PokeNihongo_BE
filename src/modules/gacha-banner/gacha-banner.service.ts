@@ -1,7 +1,7 @@
 import { GachaStarType } from '@/common/constants/gacha.constant'
 import { RoleName } from '@/common/constants/role.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { GachaBannerMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { TranslationService } from '@/modules/translation/translation.service'
 import {
   LanguageNotExistToTranslateException,
   NotFoundRecordException
@@ -14,12 +14,10 @@ import {
   todayUTCWith0000,
   todayUTCWith0000ByDate
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
-import { HttpStatus, Injectable } from '@nestjs/common'
+import { PaginationQuery } from '@/shared/models/request.model'
+import { Injectable } from '@nestjs/common'
 import { GachaItemRepo } from '../gacha-item/gacha-item.repo'
-import { LanguagesRepository } from '../languages/languages.repo'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entities'
-import { TranslationRepository } from '../translation/translation.repo'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import {
   GachaBannerActiveLimitExceededException,
   GachaBannerAlreadyExistsException,
@@ -27,11 +25,11 @@ import {
   InvalidGachaBannerAmountItemsException
 } from './dto/gacha-banner.error'
 import {
-  CreateGachaBannerBodyInputType,
-  CreateGachaBannerBodyType,
-  UpdateGachaBannerBodyInputType,
-  UpdateGachaBannerBodyType
-} from './entities/gacha-banner.entity'
+  CreateGachaBannerBody,
+  CreateGachaBannerBodyInput,
+  UpdateGachaBannerBody,
+  UpdateGachaBannerBodyInput
+} from './dto/gacha-banner.zod-dto'
 import { GachaBannerRepo } from './gacha-banner.repo'
 
 // Constant: Số lượng banner ACTIVE tối đa được phép
@@ -41,9 +39,8 @@ const MAX_ACTIVE_BANNERS = 2
 export class GachaBannerService {
   constructor(
     private gachaBannerRepo: GachaBannerRepo,
-    private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepository,
-    private readonly translationRepo: TranslationRepository,
+    private readonly languagesService: LanguagesService,
+    private readonly translationService: TranslationService,
     private readonly gachaItemRepo: GachaItemRepo
   ) {}
 
@@ -53,7 +50,7 @@ export class GachaBannerService {
     if (!nameTranslations || nameTranslations.length === 0) return []
 
     const allLangIds = Array.from(new Set(nameTranslations.map((t) => t.languageId)))
-    const langs = await this.languageRepo.getWithListId(allLangIds)
+    const langs = await this.languagesService.getWithListId(allLangIds)
     const idToCode = new Map(langs.map((l) => [l.id, l.code]))
 
     return nameTranslations.map((t) => ({
@@ -73,25 +70,19 @@ export class GachaBannerService {
     }
   }
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi', roleName: string) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+  async list(pagination: PaginationQuery, lang: string = 'vi', roleName: string) {
+    const langId = await this.languagesService.getIdByCode(lang)
 
     const isAdmin = roleName === RoleName.Admin ? true : false
-
-    console.log('admin ne: ', isAdmin)
 
     const data = await this.gachaBannerRepo.list(pagination, langId ?? undefined, isAdmin)
     // Convert translations to lang codes for all cases
     const allTranslations = (data.results || []).flatMap(
       (item: any) => item.nameTranslations || []
     )
-    console.log('all ne: ', allTranslations)
 
     if (allTranslations.length === 0) {
-      return {
-        data,
-        message: this.i18nService.translate(GachaBannerMessage.GET_LIST_SUCCESS, lang)
-      }
+      return data
     }
 
     const converted = await this.convertTranslationsToLangCodes(allTranslations)
@@ -115,19 +106,15 @@ export class GachaBannerService {
         nameTranslations: translationsAll
       }
     })
-    console.log('results', results)
 
     return {
-      data: {
-        ...data,
-        results
-      },
-      message: this.i18nService.translate(GachaBannerMessage.GET_LIST_SUCCESS, lang)
+      ...data,
+      results
     }
   }
 
-  async listwithDetail(pagination: PaginationQueryType, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+  async listwithDetail(pagination: PaginationQuery, lang: string = 'vi') {
+    const langId = await this.languagesService.getIdByCode(lang)
     const data = await this.gachaBannerRepo.listwithDetail(
       pagination,
       langId ?? undefined
@@ -141,7 +128,7 @@ export class GachaBannerService {
         )
       )
     )
-    const langs = await this.languageRepo.getWithListId(allLangIds)
+    const langs = await this.languagesService.getWithListId(allLangIds)
     const idToCode = new Map(langs.map((l) => [l.id, l.code]))
 
     const results = (data.results || []).map((item: any) => {
@@ -157,23 +144,17 @@ export class GachaBannerService {
     })
 
     return {
-      data: {
-        ...data,
-        results
-      },
-      message: this.i18nService.translate(GachaBannerMessage.GET_LIST_SUCCESS, lang)
+      ...data,
+      results
     }
   }
 
   async findById(id: number, lang: string = 'vi', roleName: string) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     if (!langId) {
-      return {
-        data: null,
-        message: this.i18nService.translate(GachaBannerMessage.GET_SUCCESS, lang)
-      }
+      return null
     }
 
     const gachaBanner = await this.gachaBannerRepo.findByIdWithLangId(id, langId, isAdmin)
@@ -219,25 +200,17 @@ export class GachaBannerService {
       amount2StarCurrent,
       amount1StarCurrent
     }
-    console.log(`${isAdmin ? nameTranslations : 'ehe'}`)
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: result,
-      message: this.i18nService.translate(GachaBannerMessage.GET_SUCCESS, lang)
-    }
+    return result
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreateGachaBannerBodyInputType
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({
+    data,
+    createdById
+  }: {
+    data: CreateGachaBannerBodyInput
+    createdById: number
+  }) {
     let createdGachaBanner: any = null
 
     try {
@@ -258,8 +231,6 @@ export class GachaBannerService {
           ? todayUTCWith0000ByDate(data.endDate)
           : addDaysUTC0000(startDateNormalized, 7)
 
-        console.log('sDate: ' + startDateNormalized + ' eDate: ' + endDateNormalized)
-
         if (
           startDateNormalized &&
           endDateNormalized &&
@@ -269,7 +240,7 @@ export class GachaBannerService {
         }
 
         // Convert data for create
-        const dataCreate: CreateGachaBannerBodyType = {
+        const dataCreate: CreateGachaBannerBody = {
           nameKey,
           startDate: startDateNormalized,
           endDate: endDateNormalized,
@@ -303,7 +274,7 @@ export class GachaBannerService {
         const allLangCodes = Array.from(new Set(nameList))
 
         // Get languages corresponding to the keys
-        const languages = await this.languageRepo.getWithListCode(allLangCodes)
+        const languages = await this.languagesService.getWithListCode(allLangCodes)
 
         // Create map { code: id } for quick access
         const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
@@ -315,7 +286,7 @@ export class GachaBannerService {
         }
 
         // Create translation records (for validation only)
-        const translationRecords: CreateTranslationBodyType[] = data.nameTranslations.map(
+        const translationRecords: CreateTranslationBody[] = data.nameTranslations.map(
           (item) => ({
             languageId: langMap[item.key],
             key: fNameKey,
@@ -324,7 +295,7 @@ export class GachaBannerService {
         )
 
         // Validate translations (check for duplicate names)
-        await this.translationRepo.validateTranslationRecords(translationRecords)
+        await this.translationService.validateTranslationRecords(translationRecords)
 
         // Build nested upserts for name translations
         const nameUpserts = data.nameTranslations.map((item) => ({
@@ -348,11 +319,7 @@ export class GachaBannerService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.CREATED,
-          data: result,
-          message: this.i18nService.translate(GachaBannerMessage.CREATE_SUCCESS, lang)
-        }
+        return result
       })
     } catch (error) {
       // Rollback: Delete gachaBanner if created
@@ -381,18 +348,15 @@ export class GachaBannerService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateGachaBannerBodyInputType
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateGachaBannerBodyInput
+    updatedById: number
+  }) {
     let existingGachaBanner: any = null
 
     try {
@@ -407,7 +371,7 @@ export class GachaBannerService {
         if (!existingGachaBanner) throw new NotFoundRecordException()
 
         // Prepare data for update
-        const dataUpdate: Partial<UpdateGachaBannerBodyType> = {}
+        const dataUpdate: Partial<UpdateGachaBannerBody> = {}
 
         // Normalize dates if provided
         const normalizedStart =
@@ -519,7 +483,7 @@ export class GachaBannerService {
 
           if (allLangCodes.length > 0) {
             // Get languages
-            const languages = await this.languageRepo.getWithListCode(allLangCodes)
+            const languages = await this.languagesService.getWithListCode(allLangCodes)
             const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
 
             // Check missing language
@@ -527,7 +491,7 @@ export class GachaBannerService {
             if (missingLangs.length > 0) throw new LanguageNotExistToTranslateException()
 
             // Create translation records for validation
-            const translationRecords: CreateTranslationBodyType[] = []
+            const translationRecords: CreateTranslationBody[] = []
             for (const t of data.nameTranslations) {
               translationRecords.push({
                 languageId: langMap[t.key],
@@ -535,7 +499,7 @@ export class GachaBannerService {
                 value: t.value
               })
             }
-            await this.translationRepo.validateTranslationRecords(translationRecords)
+            await this.translationService.validateTranslationRecords(translationRecords)
 
             // Nested upserts for translations
             nameUpserts = (data.nameTranslations ?? []).map((t) => ({
@@ -570,11 +534,7 @@ export class GachaBannerService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.OK,
-          data: updatedGachaBanner,
-          message: this.i18nService.translate(GachaBannerMessage.UPDATE_SUCCESS, lang)
-        }
+        return updatedGachaBanner
       })
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
@@ -590,10 +550,7 @@ export class GachaBannerService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
       const existingGachaBanner = await this.gachaBannerRepo.findById(id)
       if (!existingGachaBanner) {
@@ -605,14 +562,10 @@ export class GachaBannerService {
           id,
           deletedById
         }),
-        this.translationRepo.deleteByKey(existingGachaBanner.nameKey)
+        this.translationService.deleteByKey(existingGachaBanner.nameKey)
       ])
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(GachaBannerMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -624,14 +577,10 @@ export class GachaBannerService {
   async getByToday(lang: string = 'vi', userId?: number) {
     try {
       const date = todayUTCWith0000()
-      const langId = await this.languageRepo.getIdByCode(lang)
+      const langId = await this.languagesService.getIdByCode(lang)
 
       if (!langId) {
-        return {
-          statusCode: HttpStatus.OK,
-          data: [],
-          message: this.i18nService.translate(GachaBannerMessage.GET_LIST_SUCCESS, lang)
-        }
+        return []
       }
 
       // Lấy tất cả gacha banners có status = ACTIVE và trong khoảng thời gian hợp lệ
@@ -669,13 +618,64 @@ export class GachaBannerService {
       })
       // console.log(enrichedBanners)
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: enrichedBanners,
-        message: this.i18nService.translate(GachaBannerMessage.GET_LIST_SUCCESS, lang)
-      }
+      return enrichedBanners
     } catch (error) {
       throw error
     }
+  }
+
+  // ---- For other modules: Daily banner rotation (HandleGachaBannerCronjob) (B7) ----
+
+  expireActiveEndedBefore(
+    ...args: Parameters<GachaBannerRepo['expireActiveEndedBefore']>
+  ) {
+    return this.gachaBannerRepo.expireActiveEndedBefore(...args)
+  }
+
+  findPreviewValidOn(...args: Parameters<GachaBannerRepo['findPreviewValidOn']>) {
+    return this.gachaBannerRepo.findPreviewValidOn(...args)
+  }
+
+  countActive(...args: Parameters<GachaBannerRepo['countActive']>) {
+    return this.gachaBannerRepo.countActive(...args)
+  }
+
+  activate(...args: Parameters<GachaBannerRepo['activate']>) {
+    return this.gachaBannerRepo.activate(...args)
+  }
+
+  findActiveWithPrecreate(
+    ...args: Parameters<GachaBannerRepo['findActiveWithPrecreate']>
+  ) {
+    return this.gachaBannerRepo.findActiveWithPrecreate(...args)
+  }
+
+  findLiveByNameKeyPrefix(
+    ...args: Parameters<GachaBannerRepo['findLiveByNameKeyPrefix']>
+  ) {
+    return this.gachaBannerRepo.findLiveByNameKeyPrefix(...args)
+  }
+
+  createSuccessor(...args: Parameters<GachaBannerRepo['createSuccessor']>) {
+    return this.gachaBannerRepo.createSuccessor(...args)
+  }
+
+  setNameKeyAndTranslations(
+    ...args: Parameters<GachaBannerRepo['setNameKeyAndTranslations']>
+  ) {
+    return this.gachaBannerRepo.setNameKeyAndTranslations(...args)
+  }
+
+  disablePrecreate(...args: Parameters<GachaBannerRepo['disablePrecreate']>) {
+    return this.gachaBannerRepo.disablePrecreate(...args)
+  }
+
+  // ---- For other modules (module-boundary plan B8) ----
+  // Same arguments and results as the repo methods.
+
+  findByIdWithItemWithitemRate(
+    ...args: Parameters<GachaBannerRepo['findByIdWithItemWithitemRate']>
+  ) {
+    return this.gachaBannerRepo.findByIdWithItemWithitemRate(...args)
   }
 }

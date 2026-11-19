@@ -1,6 +1,7 @@
+import { UserCoreModule } from '@/modules/user/user-core.module'
 import { Module } from '@nestjs/common'
 import { UserExerciseAttemptController } from './user-exercise-attempt.controller'
-import { UserExerciseAttemptRepository } from './user-exercise-attempt.repo'
+import { UserExerciseAttemptRepo } from './user-exercise-attempt.repo'
 import { UserExerciseAttemptService } from './user-exercise-attempt.service'
 import { QuestionBankModule } from '../question-bank/question-bank.module'
 import { UserAnswerLogModule } from '../user-answer-log/user-answer-log.module'
@@ -10,11 +11,17 @@ import { TranslationModule } from '../translation/translation.module'
 import { RewardModule } from '../reward/reward.module'
 
 @Module({
-    imports: [QuestionBankModule, UserAnswerLogModule, UserProgressModule, ExercisesModule, TranslationModule, RewardModule],
-    controllers: [UserExerciseAttemptController],
-    providers: [UserExerciseAttemptService, UserExerciseAttemptRepository],
-    exports: [UserExerciseAttemptService, UserExerciseAttemptRepository]
+  imports: [
+    UserCoreModule,
+    QuestionBankModule,
+    UserAnswerLogModule,
+    UserProgressModule,
+    ExercisesModule,
+    TranslationModule,
+    RewardModule
+  ],
+  controllers: [UserExerciseAttemptController],
+  providers: [UserExerciseAttemptService, UserExerciseAttemptRepo],
+  exports: [UserExerciseAttemptService, UserExerciseAttemptRepo]
 })
-export class UserExerciseAttemptModule { }
-
-
+export class UserExerciseAttemptModule {}

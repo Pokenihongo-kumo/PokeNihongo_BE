@@ -4,24 +4,14 @@ import { randomInt } from 'crypto'
 import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
 
-// Type Predicate
-export function isUniqueConstraintPrismaError(
-  error: any
-): error is Prisma.PrismaClientKnownRequestError {
-  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002'
-}
-
-export function isNotFoundPrismaError(
-  error: any
-): error is Prisma.PrismaClientKnownRequestError {
-  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025'
-}
-
-export function isForeignKeyConstraintPrismaError(
-  error: any
-): error is Prisma.PrismaClientKnownRequestError {
-  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003'
-}
+// Prisma error predicates live in ./utils/prisma-errors; re-exported so the
+// existing imports keep working while modules migrate
+export {
+  isForeignKeyConstraintPrismaError,
+  isNotFoundPrismaError,
+  isRestrictViolationPrismaError,
+  isUniqueConstraintPrismaError
+} from './utils/prisma-errors'
 
 export const generateOTP = () => {
   return String(randomInt(100000, 1000000))

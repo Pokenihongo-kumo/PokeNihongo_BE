@@ -1,276 +1,219 @@
+import { toPaginationMeta } from '@/shared/utils/pagination'
 import {
-    CreateLanguagesBodyType,
-    UpdateLanguagesBodyType,
-    GetLanguagesListQueryType,
-    GetLanguagesByCodeParamsType,
-    LanguagesType
-} from './entities/languages.entities'
-import { LanguagesRepository } from './languages.repo'
+  isNotFoundPrismaError,
+  isUniqueConstraintPrismaError
+} from '@/shared/utils/prisma-errors'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
 import {
-    LanguagesNotFoundException,
-    LanguagesAlreadyExistsException,
-    InvalidLanguagesDataException,
-    LanguageCodeAlreadyExistsException
+  InvalidLanguagesDataException,
+  LanguagesAlreadyExistsException,
+  LanguagesNotFoundException
 } from './dto/languages.error'
-import { LANGUAGES_MESSAGE } from '@/common/constants/message'
-import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from '@/shared/helpers'
-import { Injectable, Logger, HttpException } from '@nestjs/common'
+import {
+  CreateLanguagesBody,
+  GetLanguagesByCodeParams,
+  GetLanguagesListQuery,
+  UpdateLanguagesBody
+} from './dto/languages.zod-dto'
+import { LanguagesRepo } from './languages.repo'
 
+// Other modules call findMany/findById/findByCode without a language; `lang`
+// only picks the message, so it defaults to vi like before.
 @Injectable()
 export class LanguagesService {
-    private readonly logger = new Logger(LanguagesService.name)
+  private readonly logger = new Logger(LanguagesService.name)
 
-    constructor(private readonly languagesRepository: LanguagesRepository) { }
+  constructor(private readonly languagesRepository: LanguagesRepo) {}
 
-    async findMany(params: GetLanguagesListQueryType) {
-        try {
-            this.logger.log(`Finding languages with params: ${JSON.stringify(params)}`)
-            const result = await this.languagesRepository.findMany(params)
+  async findMany(params: GetLanguagesListQuery) {
+    const result = await this.languagesRepository.findMany(params)
 
-            return {
-                statusCode: 200,
-                message: LANGUAGES_MESSAGE.GET_LIST_SUCCESS,
-                data: {
-                    results: result.data,
-                    pagination: {
-                        current: result.page,
-                        pageSize: result.limit,
-                        totalPage: result.totalPages,
-                        totalItem: result.total
-                    }
-                }
-            }
-        } catch (error) {
-            this.logger.error('Error finding languages:', error)
-            throw error
-        }
+    return {
+      results: result.data,
+      pagination: toPaginationMeta(params.currentPage, params.pageSize, result.total)
+    }
+  }
+
+  async findById(id: number) {
+    const language = await this.languagesRepository.findById(id)
+    if (!language) {
+      throw new LanguagesNotFoundException()
     }
 
-    async findById(id: number) {
-        try {
-            this.logger.log(`Finding language by id: ${id}`)
-            const language = await this.languagesRepository.findById(id)
+    return language
+  }
 
-            if (!language) {
-                throw LanguagesNotFoundException
-            }
-
-            return {
-                data: language,
-                message: LANGUAGES_MESSAGE.GET_SUCCESS
-            }
-        } catch (error) {
-            this.logger.error('Error finding language by id:', error)
-            throw error
-        }
+  async findByCode(params: GetLanguagesByCodeParams) {
+    const language = await this.languagesRepository.findByCode(params.code)
+    if (!language) {
+      throw new LanguagesNotFoundException()
     }
 
-    async findByCode(params: GetLanguagesByCodeParamsType) {
-        try {
-            this.logger.log(`Finding language by code: ${params.code}`)
-            const language = await this.languagesRepository.findByCode(params.code)
+    return language
+  }
 
-            if (!language) {
-                throw LanguagesNotFoundException
-            }
+  async create(data: CreateLanguagesBody) {
+    try {
+      const existingLanguage = await this.languagesRepository.findByCode(data.code)
+      if (existingLanguage) {
+        throw new LanguagesAlreadyExistsException()
+      }
 
-            return {
-                data: language,
-                message: LANGUAGES_MESSAGE.GET_SUCCESS
-            }
-        } catch (error) {
-            this.logger.error('Error finding language by code:', error)
-            throw error
-        }
+      const language = await this.languagesRepository.create(data)
+      this.logger.log(`Language created: ${language.id} (${language.code})`)
+
+      return language
+    } catch (error) {
+      throw this.toLanguagesError(error, 'rethrow')
     }
+  }
 
-    async create(data: CreateLanguagesBodyType) {
-        try {
-            this.logger.log(`Creating language: ${data.code} - ${data.name}`)
+  async update(id: number, data: UpdateLanguagesBody) {
+    try {
+      const existingLanguage = await this.languagesRepository.findById(id)
+      if (!existingLanguage) {
+        throw new LanguagesNotFoundException()
+      }
 
-            // Kiểm tra ngôn ngữ đã tồn tại chưa
-            const existingLanguage = await this.languagesRepository.findByCode(data.code)
-            if (existingLanguage) {
-                this.logger.error('Language already exists:', data.code)
-                throw LanguagesAlreadyExistsException
-            }
-
-            const language = await this.languagesRepository.create(data)
-            this.logger.log(`Language created successfully: ${language.id}`)
-
-            return {
-                data: language,
-                message: LANGUAGES_MESSAGE.CREATE_SUCCESS
-            }
-        } catch (error) {
-            this.logger.error('Error creating language:', error)
-            if (error instanceof HttpException) {
-                throw error
-            }
-            if (isUniqueConstraintPrismaError(error)) {
-                throw LanguagesAlreadyExistsException
-            }
-            throw error
+      if (data.code && data.code !== existingLanguage.code) {
+        const duplicateLanguage = await this.languagesRepository.findByCode(data.code)
+        if (duplicateLanguage) {
+          throw new LanguagesAlreadyExistsException()
         }
+      }
+
+      const language = await this.languagesRepository.update(id, data)
+      return language
+    } catch (error) {
+      throw this.toLanguagesError(error, 'rethrow')
     }
+  }
 
-    async update(id: number, data: UpdateLanguagesBodyType) {
-        try {
-            this.logger.log(`Updating language: ${id}`)
+  async updateByCode(code: string, data: UpdateLanguagesBody) {
+    try {
+      const existingLanguage = await this.languagesRepository.findByCode(code)
+      if (!existingLanguage) {
+        throw new LanguagesNotFoundException()
+      }
 
-            // Kiểm tra ngôn ngữ có tồn tại không
-            const existingLanguage = await this.languagesRepository.findById(id)
-            if (!existingLanguage) {
-                throw LanguagesNotFoundException
-            }
-
-            // Nếu thay đổi code, kiểm tra code mới có trùng không
-            if (data.code && data.code !== existingLanguage.code) {
-                const duplicateLanguage = await this.languagesRepository.findByCode(data.code)
-                if (duplicateLanguage) {
-                    throw LanguagesAlreadyExistsException
-                }
-            }
-
-            const language = await this.languagesRepository.update(id, data)
-            this.logger.log(`Language updated successfully: ${language.id}`)
-
-            return {
-                data: language,
-                message: LANGUAGES_MESSAGE.UPDATE_SUCCESS
-            }
-        } catch (error) {
-            this.logger.error('Error updating language:', error)
-            if (error instanceof HttpException) {
-                throw error
-            }
-            throw error
+      if (data.code && data.code !== code) {
+        const duplicateLanguage = await this.languagesRepository.findByCode(data.code)
+        if (duplicateLanguage) {
+          throw new LanguagesAlreadyExistsException()
         }
+      }
+
+      const language = await this.languagesRepository.updateByCode(code, data)
+      return language
+    } catch (error) {
+      throw this.toLanguagesError(error, 'invalid-data')
     }
+  }
 
-    async updateByCode(code: string, data: UpdateLanguagesBodyType) {
-        try {
-            this.logger.log(`Updating language by code: ${code}`)
+  async delete(id: number) {
+    try {
+      const existingLanguage = await this.languagesRepository.findById(id)
+      if (!existingLanguage) {
+        throw new LanguagesNotFoundException()
+      }
 
-            // Kiểm tra ngôn ngữ có tồn tại không
-            const existingLanguage = await this.languagesRepository.findByCode(code)
-            if (!existingLanguage) {
-                throw LanguagesNotFoundException
-            }
-
-            // Nếu thay đổi code, kiểm tra code mới có trùng không
-            if (data.code && data.code !== code) {
-                const duplicateLanguage = await this.languagesRepository.findByCode(data.code)
-                if (duplicateLanguage) {
-                    throw LanguagesAlreadyExistsException
-                }
-            }
-
-            const language = await this.languagesRepository.updateByCode(code, data)
-            this.logger.log(`Language updated successfully: ${language.id}`)
-
-            return {
-                data: language,
-                message: LANGUAGES_MESSAGE.UPDATE_SUCCESS
-            }
-        } catch (error) {
-            this.logger.error('Error updating language by code:', error)
-            throw InvalidLanguagesDataException
-        }
+      await this.languagesRepository.delete(id)
+      // data: null keeps this an envelope for TransformInterceptor (without it
+      // the message ended up nested under data)
+      return
+    } catch (error) {
+      throw this.toLanguagesError(error, 'invalid-data')
     }
+  }
 
-    async delete(id: number) {
-        try {
-            this.logger.log(`Deleting language: ${id}`)
+  async deleteByCode(code: string) {
+    try {
+      const existingLanguage = await this.languagesRepository.findByCode(code)
+      if (!existingLanguage) {
+        throw new LanguagesNotFoundException()
+      }
 
-            // Kiểm tra ngôn ngữ có tồn tại không
-            const existingLanguage = await this.languagesRepository.findById(id)
-            if (!existingLanguage) {
-                throw LanguagesNotFoundException
-            }
-
-            await this.languagesRepository.delete(id)
-            this.logger.log(`Language deleted successfully: ${id}`)
-
-            return {
-                message: LANGUAGES_MESSAGE.DELETE_SUCCESS
-            }
-        } catch (error) {
-            this.logger.error('Error deleting language:', error)
-            throw InvalidLanguagesDataException
-        }
+      await this.languagesRepository.deleteByCode(code)
+      return
+    } catch (error) {
+      throw this.toLanguagesError(error, 'invalid-data')
     }
+  }
 
-    async deleteByCode(code: string) {
-        try {
-            this.logger.log(`Deleting language by code: ${code}`)
+  /**
+   * Error to answer for a failed write, decided by type (not message text):
+   * our HTTP errors pass through, Prisma unique/not-found become 409/404.
+   * Anything else keeps its old answer: create/update let it through (500),
+   * updateByCode/delete/deleteByCode answer the generic "invalid data" 400.
+   * Before, those three also turned "not found" into that 400.
+   */
+  private toLanguagesError(
+    error: unknown,
+    otherwise: 'rethrow' | 'invalid-data'
+  ): unknown {
+    if (error instanceof HttpException) return error
+    this.logger.error(
+      'Language write failed',
+      error instanceof Error ? error.stack : error
+    )
+    if (isUniqueConstraintPrismaError(error)) return new LanguagesAlreadyExistsException()
+    if (isNotFoundPrismaError(error)) return new LanguagesNotFoundException()
+    return otherwise === 'invalid-data' ? new InvalidLanguagesDataException() : error
+  }
 
-            // Kiểm tra ngôn ngữ có tồn tại không
-            const existingLanguage = await this.languagesRepository.findByCode(code)
-            if (!existingLanguage) {
-                throw LanguagesNotFoundException
-            }
-
-            await this.languagesRepository.deleteByCode(code)
-            this.logger.log(`Language deleted successfully: ${code}`)
-
-            return {
-                message: LANGUAGES_MESSAGE.DELETE_SUCCESS
-            }
-        } catch (error) {
-            this.logger.error('Error deleting language by code:', error)
-            throw InvalidLanguagesDataException
-        }
+  /**
+   * Kiểm tra ngôn ngữ có được hỗ trợ không
+   */
+  async isLanguageSupported(code: string): Promise<boolean> {
+    try {
+      const language = await this.languagesRepository.findByCode(code)
+      return !!language
+    } catch (error) {
+      this.logger.error(`Error checking if language ${code} is supported:`, error)
+      return false
     }
+  }
 
+  /**
+   * Tạo các ngôn ngữ mặc định nếu chưa có
+   */
+  async createDefaultLanguages(): Promise<void> {
+    const defaultLanguages = [
+      { id: 1, name: 'Tiếng Việt', code: 'vi' },
+      { id: 2, name: 'English', code: 'en' },
+      { id: 3, name: '日本語', code: 'ja' }
+    ]
 
-    /**
-     * Kiểm tra ngôn ngữ có được hỗ trợ không
-     */
-    async isLanguageSupported(code: string): Promise<boolean> {
-        try {
-            const language = await this.languagesRepository.findByCode(code)
-            return !!language
-        } catch (error) {
-            this.logger.error(`Error checking if language ${code} is supported:`, error)
-            return false
-        }
+    for (const language of defaultLanguages) {
+      const existing = await this.languagesRepository.findByCode(language.code)
+      if (!existing) {
+        await this.languagesRepository.create(language)
+        this.logger.log(`Created default language ${language.code} (id ${language.id})`)
+      }
     }
+  }
 
-    /**
-     * Tạo các ngôn ngữ mặc định nếu chưa có
-     */
-    async createDefaultLanguages(): Promise<void> {
-        try {
-            this.logger.log('Creating default languages')
+  // ---- Narrow lookups for other modules (module-boundary plan R1/R2) ----
+  // Same results as the repo methods they replace: no message, no throw.
 
-            const defaultLanguages = [
-                { id: 1, name: 'Tiếng Việt', code: 'vi', flag: '🇻🇳' },
-                { id: 2, name: 'English', code: 'en', flag: '🇺🇸' },
-                { id: 3, name: '日本語', code: 'ja', flag: '🇯🇵' }
-            ]
+  getIdByCode(code: string): Promise<number | null> {
+    return this.languagesRepository.getIdByCode(code)
+  }
 
-            for (const language of defaultLanguages) {
-                const existing = await this.languagesRepository.findByCode(language.code)
+  getWithListCode(codes: string[]) {
+    return this.languagesRepository.getWithListCode(codes)
+  }
 
-                if (!existing) {
-                    // Tạo language với ID cụ thể
-                    await this.languagesRepository.create({
-                        id: language.id,
-                        name: language.name,
-                        code: language.code,
-                        flag: language.flag
-                    })
-                    this.logger.log(`Created default language with ID ${language.id}: ${language.name} (${language.code})`)
-                } else {
-                    this.logger.log(`Language ${language.code} already exists`)
-                }
-            }
+  getWithListId(ids: number[]) {
+    return this.languagesRepository.getWithListId(ids)
+  }
 
-            this.logger.log('Default languages creation completed')
-        } catch (error) {
-            this.logger.error('Error creating default languages:', error)
-            throw error
-        }
-    }
+  // The language row, or null (findById/findByCode above answer the HTTP routes)
+  getById(id: number) {
+    return this.languagesRepository.findById(id)
+  }
+
+  getByCode(code: string) {
+    return this.languagesRepository.findByCode(code)
+  }
 }

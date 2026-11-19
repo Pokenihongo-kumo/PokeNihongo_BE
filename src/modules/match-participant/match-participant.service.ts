@@ -1,7 +1,9 @@
 import { BullAction, BullQueue } from '@/common/constants/bull-action.constant'
 import { MatchRoundNumber, MatchStatus } from '@/common/constants/match.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { MatchingSocketMessage, MatchParticipantMessage } from '@/i18n/message-keys'
+import { MatchingSocketMessage } from '@/i18n/message-keys'
+import { MatchRoundParticipantService } from '@/modules/match-round-participant/match-round-participant.service'
+import { MatchRoundService } from '@/modules/match-round/match-round.service'
+import { MatchService } from '@/modules/match/match.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   addTimeUTC,
@@ -9,22 +11,19 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { InjectQueue } from '@nestjs/bull'
 import { Injectable, Logger } from '@nestjs/common'
 import { Queue } from 'bull'
 import { MatchingGateway } from 'src/websockets/matching.gateway'
-import { MatchRoundParticipantRepo } from '../match-round-participant/match-round-participant.repo'
-import { MatchRoundRepo } from '../match-round/match-round.repo'
-import { MatchRepo } from '../match/match.repo'
 import {
   MatchParticipantInvalidActionException,
   MatchParticipantNotFoundException
 } from './dto/match-participant.error'
 import {
-  CreateMatchParticipantBodyType,
-  UpdateMatchParticipantBodyType
-} from './entities/match-participant.entity'
+  CreateMatchParticipantBody,
+  UpdateMatchParticipantBody
+} from './dto/match-participant.zod-dto'
 import { MatchParticipantRepo } from './match-participant.repo'
 
 const TIME_CHOOSE_POKEMON_MS = 5000
@@ -34,10 +33,9 @@ export class MatchParticipantService {
 
   constructor(
     private matchParticipantRepo: MatchParticipantRepo,
-    private readonly matchRepo: MatchRepo,
-    private readonly matchRoundRepo: MatchRoundRepo,
-    private readonly matchRoundParticipantRepo: MatchRoundParticipantRepo,
-    private readonly i18nService: I18nService,
+    private readonly matchService: MatchService,
+    private readonly matchRoundService: MatchRoundService,
+    private readonly matchRoundParticipantService: MatchRoundParticipantService,
     @InjectQueue(BullQueue.MATCH_PARTICIPANT_TIMEOUT)
     private readonly matchParticipantTimeoutQueue: Queue,
     @InjectQueue(BullQueue.MATCH_ROUND_PARTICIPANT_TIMEOUT)
@@ -45,33 +43,22 @@ export class MatchParticipantService {
     private readonly matchingGateway: MatchingGateway
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.matchParticipantRepo.list(pagination)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(MatchParticipantMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   // Helper method to calculate weaknesses for a Pokemon (copied from PokemonService)
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const matchParticipant = await this.matchParticipantRepo.findById(id)
     if (!matchParticipant) {
       throw new MatchParticipantNotFoundException()
     }
 
-    return {
-      statusCode: 200,
-      data: matchParticipant,
-      message: this.i18nService.translate(MatchParticipantMessage.GET_LIST_SUCCESS, lang)
-    }
+    return matchParticipant
   }
 
-  async create(
-    { userId, data }: { userId: number; data: CreateMatchParticipantBodyType },
-    lang: string = 'vi'
-  ) {
+  async create({ userId, data }: { userId: number; data: CreateMatchParticipantBody }) {
     try {
       // check coi co truyen userId ko, neu ko thi lay cua created_by
       data.userId = data.userId || userId
@@ -82,11 +69,7 @@ export class MatchParticipantService {
           ...data
         }
       })
-      return {
-        statusCode: 201,
-        data: result,
-        message: this.i18nService.translate(MatchParticipantMessage.CREATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isUniqueConstraintPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -101,22 +84,24 @@ export class MatchParticipantService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      userId
-    }: {
-      id: number
-      data: UpdateMatchParticipantBodyType
-      userId?: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    userId
+  }: {
+    id: number
+    data: UpdateMatchParticipantBody
+    userId?: number
+  }) {
     try {
       //check coi thang user nay co
       const existingParticipant = await this.matchParticipantRepo.findById(id)
       if (!existingParticipant) {
+        throw new MatchParticipantNotFoundException()
+      }
+      // Only the player's own place: another player's answers like a missing
+      // one (anyone could accept or decline for someone else)
+      if (existingParticipant.userId !== userId) {
         throw new MatchParticipantNotFoundException()
       }
       if (existingParticipant.hasAccepted !== null) {
@@ -145,11 +130,7 @@ export class MatchParticipantService {
         await this.checkBothParticipantsAccepted(existingParticipant.matchId)
       }
 
-      return {
-        statusCode: 200,
-        data: matchParticipant,
-        message: this.i18nService.translate(MatchParticipantMessage.UPDATE_SUCCESS, lang)
-      }
+      return matchParticipant
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new MatchParticipantNotFoundException()
@@ -204,7 +185,7 @@ export class MatchParticipantService {
           `[MatchParticipant] Match ${matchId} has rejection - cancelling match`
         )
 
-        const updateMatch = await this.matchRepo.update({
+        const updateMatch = await this.matchService.updateMatch({
           id: matchId,
           data: {
             status: MatchStatus.CANCELLED
@@ -224,7 +205,7 @@ export class MatchParticipantService {
           `[MatchParticipant] Both participants accepted match ${matchId} - match is ready`
         )
 
-        const updateMatch = await this.matchRepo.update({
+        const updateMatch = await this.matchService.updateMatch({
           id: matchId,
           data: {
             status: MatchStatus.IN_PROGRESS
@@ -271,19 +252,18 @@ export class MatchParticipantService {
         MatchRoundNumber.THREE
       ]
 
-      await this.matchRoundRepo.withTransaction(async (prismaTx) => {
+      await this.matchParticipantRepo.withTransaction(async (prismaTx) => {
         let previousOrderMapping: Map<number, number> = new Map() // matchParticipantId -> orderSelected
 
         for (let roundIndex = 0; roundIndex < roundNumbers.length; roundIndex++) {
           const roundNumber = roundNumbers[roundIndex]
 
           // Tạo match-round
-          const createdMatchRound = await prismaTx.matchRound.create({
-            data: {
-              matchId,
-              roundNumber
-            }
-          })
+          const createdMatchRound = await this.matchRoundService.createRoundRow(
+            matchId,
+            roundNumber,
+            prismaTx
+          )
 
           this.logger.debug(
             `[MatchParticipant] Created match-round ${createdMatchRound.id} for round ${roundNumber}`
@@ -339,9 +319,10 @@ export class MatchParticipantService {
             endTimeSelected: participant.endTimeSelected
           }))
 
-          await prismaTx.matchRoundParticipant.createMany({
-            data: matchRoundParticipantsData
-          })
+          await this.matchRoundService.createParticipants(
+            matchRoundParticipantsData,
+            prismaTx
+          )
 
           this.logger.debug(
             `[MatchParticipant] Created ${matchRoundParticipantsData.length} participants for round ${roundNumber}`
@@ -350,25 +331,26 @@ export class MatchParticipantService {
       })
 
       // Sau khi tạo xong tất cả rounds, set endTime và Bull job cho người đầu tiên của Round ONE
-      const roundOne = await this.matchRoundRepo.findByMatchIdAndRoundNumber(
+      const roundOne = await this.matchRoundService.findByMatchIdAndRoundNumber(
         matchId,
         MatchRoundNumber.ONE
       )
 
       if (roundOne) {
-        const roundOneParticipants = await this.matchRoundParticipantRepo.findMany({
-          where: {
-            matchRoundId: roundOne.id
-          },
-          orderBy: {
-            orderSelected: 'asc'
-          }
-        })
+        const roundOneParticipants =
+          await this.matchRoundParticipantService.findRoundParticipants({
+            where: {
+              matchRoundId: roundOne.id
+            },
+            orderBy: {
+              orderSelected: 'asc'
+            }
+          })
 
         const firstParticipant = roundOneParticipants[0]
         if (firstParticipant) {
           // Set endTimeSelected cho người đầu tiên
-          await this.matchRoundParticipantRepo.update({
+          await this.matchRoundParticipantService.updateRoundParticipant({
             id: firstParticipant.id,
             data: {
               endTimeSelected: addTimeUTC(new Date(), TIME_CHOOSE_POKEMON_MS)
@@ -487,7 +469,7 @@ export class MatchParticipantService {
     }
   }
 
-  async delete({ id, userId }: { id: number; userId?: number }, lang: string = 'vi') {
+  async delete({ id, userId }: { id: number; userId?: number }) {
     try {
       const existMatchParticipant = await this.matchParticipantRepo.findById(id)
       if (!existMatchParticipant) {
@@ -495,11 +477,7 @@ export class MatchParticipantService {
       }
 
       await this.matchParticipantRepo.delete(id)
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(MatchParticipantMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new MatchParticipantNotFoundException()
@@ -509,4 +487,12 @@ export class MatchParticipantService {
   }
 
   async getListPokemonByUser(userId: number, lang: string = 'vi') {}
+
+  // ---- For other modules (module-boundary plan B6) ----
+  // Same arguments and results as the repo methods.
+
+  // The repo's create (the service's own create answers the HTTP route)
+  createParticipant(...args: Parameters<MatchParticipantRepo['create']>) {
+    return this.matchParticipantRepo.create(...args)
+  }
 }

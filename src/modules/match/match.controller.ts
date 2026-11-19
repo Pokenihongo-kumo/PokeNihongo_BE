@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { MatchMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { AuthenticationGuard } from '@/common/guards/authentication.guard'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
@@ -30,23 +32,29 @@ const TIME_CHOOSE_POKEMON_MS = 5000
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class MatchController {
-  constructor(private readonly matchService: MatchService) {}
+  constructor(
+    private readonly matchService: MatchService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseSchema)
-  list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return this.matchService.list(query, lang)
+  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(MatchMessage.GET_LIST_SUCCESS, lang),
+      data: await this.matchService.list(query, lang)
+    }
   }
 
   @Post()
   @ZodSerializerDto(CreateMatchResDTO)
-  create(@ActiveUser('userId') userId: number, @I18nLang() lang: string) {
-    return this.matchService.create(
-      {
+  async create(@ActiveUser('userId') userId: number, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(MatchMessage.CREATE_SUCCESS, lang),
+      data: await this.matchService.create({
         createdById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Get('tracking')
@@ -57,41 +65,45 @@ export class MatchController {
 
   @Get(':matchId')
   @ZodSerializerDto(GetMatchDetailResDTO)
-  findById(@Param() params: GetMatchParamsDTO, @I18nLang() lang: string) {
-    return this.matchService.findById(params.matchId, lang)
+  async findById(@Param() params: GetMatchParamsDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(MatchMessage.GET_SUCCESS, lang),
+      data: await this.matchService.findById(params.matchId)
+    }
   }
 
   @Put(':matchId')
   @ZodSerializerDto(UpdateMatchResDTO)
-  update(
+  async update(
     @Body() body: UpdateMatchBodyDTO,
     @Param() params: GetMatchParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.matchService.update(
-      {
+    return {
+      message: this.i18nService.translate(MatchMessage.UPDATE_SUCCESS, lang),
+      data: await this.matchService.update({
         data: body,
         id: params.matchId,
         updatedById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':matchId')
   @ZodSerializerDto(MessageResDTO)
-  delete(
+  async delete(
     @Param() params: GetMatchParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.matchService.delete(
-      {
-        id: params.matchId,
-        deletedById: userId
-      },
-      lang
-    )
+    await this.matchService.delete({
+      id: params.matchId,
+      deletedById: userId
+    })
+    return {
+      message: this.i18nService.translate(MatchMessage.DELETE_SUCCESS, lang),
+      data: null
+    }
   }
 }

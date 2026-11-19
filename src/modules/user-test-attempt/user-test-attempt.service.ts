@@ -1,68 +1,77 @@
-import { TEST_MESSAGE, USER_TEST_ATTEMPT_MESSAGE } from '@/common/constants/message'
 import { calculateScore } from '@/common/utils/algorithm'
 import { pickLabelFromComposite } from '@/common/utils/prase.utils'
-import { I18nService } from '@/i18n/i18n.service'
-import { UserTestAttemptMessage } from '@/i18n/message-keys'
-import { LevelRepo } from '@/modules/level/level.repo'
+import { LessonService } from '@/modules/lesson/lesson.service'
+import { LevelService } from '@/modules/level/level.service'
 import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
-import { TestRepository } from '@/modules/test/test.repo'
+import { TestRepo } from '@/modules/test/test.repo'
 import { TestService } from '@/modules/test/test.service'
 import { TestSetQuestionBankService } from '@/modules/testset-questionbank/testset-questionbank.service'
 import { TestSetService } from '@/modules/testset/testset.service'
 import { TranslationHelperService } from '@/modules/translation/translation.helper.service'
-import { UserProgressRepository } from '@/modules/user-progress/user-progress.repo'
+import { UserProgressService } from '@/modules/user-progress/user-progress.service'
 import { UserTestAnswerLogService } from '@/modules/user-test-answer-log/user-test-answer-log.service'
-import {
-  ForbiddenReviewAccessException,
-  InvalidUserTestAttemptDataException,
-  TestNotFoundException,
-  UnauthorizedUserTestAttemptAccessException,
-  UserTestAttemptNotFoundException
-} from '@/modules/user-test-attempt/dto/user-test-attempt.error'
-import {
-  GetUserTestAttemptListQueryType,
-  UpdateUserTestAttemptBodyType
-} from '@/modules/user-test-attempt/entities/user-test-attempt.entities'
-import { UserTestAttemptRepository } from '@/modules/user-test-attempt/user-test-attempt.repo'
-import { UserTestRepository } from '@/modules/user-test/user-test.repo'
-import { UserRepo } from '@/modules/user/user.repo'
-import { MessageResDTO } from '@/shared/dtos/response.dto'
-import { PrismaService } from '@/shared/services/prisma.service'
+import { UserTestService } from '@/modules/user-test/user-test.service'
+import { UserService } from '@/modules/user/user.service'
+import { toPaginationMeta } from '@/shared/utils/pagination'
+import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
 import { HttpException, Injectable, Logger } from '@nestjs/common'
 import { ProgressStatus, UserRewardSourceType } from '@prisma/client'
-import { LessonRepository } from '../lesson/lesson.repo'
 import { RewardService } from '../reward/reward.service'
+import {
+  AttemptNotOwnedException,
+  InvalidUserTestAttemptDataException,
+  ReviewInsufficientScoreException,
+  TestAttemptHasNoAnswersException,
+  TestAttemptNotInProgressException,
+  TestHasNoTestSetException,
+  TestNotFoundException,
+  TestOutOfLimitException,
+  UserTestAttemptNotFoundException,
+  UserTestNotFoundException
+} from './dto/user-test-attempt.error'
+import {
+  GetUserTestAttemptListQuery,
+  UpdateUserTestAttemptBody
+} from './dto/user-test-attempt.zod-dto'
 import { REQUIRED_ANSWERS_FOR_LESSON_REVIEW } from './dto/variable'
+import { UserTestAttemptRepo } from './user-test-attempt.repo'
+
+export type TestCompletionOutcome =
+  | 'not-enough-answers'
+  | 'no-answer'
+  | 'incomplete'
+  | 'all-correct'
+  | 'some-wrong'
+  | 'review-passed'
+  | 'review-failed'
 
 @Injectable()
 export class UserTestAttemptService {
   private readonly logger = new Logger(UserTestAttemptService.name)
 
   constructor(
-    private readonly userTestAttemptRepository: UserTestAttemptRepository,
-    private readonly userTestRepository: UserTestRepository,
+    private readonly userTestAttemptRepository: UserTestAttemptRepo,
+    private readonly userTestService: UserTestService,
     private readonly questionBankService: QuestionBankService,
     private readonly userTestAnswerLogService: UserTestAnswerLogService,
     private readonly testService: TestService,
-    private readonly testRepo: TestRepository,
+    private readonly testRepo: TestRepo,
     private readonly testSetService: TestSetService,
     private readonly testSetQuestionBankService: TestSetQuestionBankService,
     private readonly translationHelper: TranslationHelperService,
-    private readonly i18nService: I18nService,
-    private readonly prisma: PrismaService,
-    private readonly userRepo: UserRepo,
-    private readonly levelRepo: LevelRepo,
-    private readonly userProgressRepository: UserProgressRepository,
+    private readonly userService: UserService,
+    private readonly levelService: LevelService,
+    private readonly userProgressService: UserProgressService,
     private readonly rewardService: RewardService,
-    private readonly lessonRepository: LessonRepository
-  ) { }
+    private readonly lessonService: LessonService
+  ) {}
 
   async create(userId: number, testId: number) {
     try {
       // 1. Lấy thông tin Test
       const testRes = await this.testService.findOne(testId, 'vi')
-      if (!testRes || !testRes.data) {
-        throw TestNotFoundException
+      if (!testRes) {
+        throw new TestNotFoundException()
       }
 
       const userTestAttempt = await this.userTestAttemptRepository.create({
@@ -70,20 +79,13 @@ export class UserTestAttemptService {
         testId: testId
       })
 
-      return {
-        data: userTestAttempt,
-        message: USER_TEST_ATTEMPT_MESSAGE.CREATE_SUCCESS
-      }
+      return userTestAttempt
     } catch (error) {
-      this.logger.error('Error creating user test attempt:', error)
-      if (error instanceof HttpException) {
-        throw error
-      }
-      throw InvalidUserTestAttemptDataException
+      throw this.toAttemptError(error)
     }
   }
 
-  async findAll(query: GetUserTestAttemptListQueryType) {
+  async findAll(query: GetUserTestAttemptListQuery) {
     const { currentPage, pageSize, userId, testId, status } = query
 
     const result = await this.userTestAttemptRepository.findMany({
@@ -95,118 +97,63 @@ export class UserTestAttemptService {
     })
 
     return {
-      statusCode: 200,
-      message: USER_TEST_ATTEMPT_MESSAGE.GET_LIST_SUCCESS,
-      data: {
-        results: result.items,
-        pagination: {
-          current: result.page,
-          pageSize: result.limit,
-          totalPage: Math.ceil(result.total / result.limit),
-          totalItem: result.total
-        }
-      }
+      results: result.items,
+      pagination: toPaginationMeta(currentPage, pageSize, result.total)
     }
   }
 
-  async findOne(id: number, lang: string) {
+  async findOne(id: number) {
     const userTestAttempt = await this.userTestAttemptRepository.findUnique({
       id: id
     })
 
     if (!userTestAttempt) {
-      throw UserTestAttemptNotFoundException
+      throw new UserTestAttemptNotFoundException()
     }
 
-    const message = this.i18nService.translate(
-      USER_TEST_ATTEMPT_MESSAGE.GET_SUCCESS,
-      lang || 'vi'
-    )
-
-    return {
-      statusCode: 200,
-      data: userTestAttempt,
-      message: message || USER_TEST_ATTEMPT_MESSAGE.GET_SUCCESS
-    }
+    return userTestAttempt
   }
 
-  async update(id: number, body: UpdateUserTestAttemptBodyType) {
+  async update(id: number, body: UpdateUserTestAttemptBody) {
     try {
       const userTestAttempt = await this.userTestAttemptRepository.update({ id }, body)
-
-      return {
-        data: userTestAttempt,
-        message: USER_TEST_ATTEMPT_MESSAGE.UPDATE_SUCCESS
-      }
+      return userTestAttempt
     } catch (error) {
-      this.logger.error('Error updating user test attempt:', error)
-      if (
-        error instanceof HttpException ||
-        error.message?.includes('không tồn tại') ||
-        error.message?.includes('đã tồn tại')
-      ) {
-        throw error
-      }
-      throw InvalidUserTestAttemptDataException
+      throw this.toAttemptError(error)
     }
   }
 
-  async remove(id: number) {
+  // The app deletes its own attempt
+  async remove(id: number, userId: number) {
     try {
+      await this.ownAttempt(id, userId)
       const userTestAttempt = await this.userTestAttemptRepository.delete({ id })
-
-      return {
-        data: userTestAttempt,
-        message: USER_TEST_ATTEMPT_MESSAGE.DELETE_SUCCESS
-      }
+      return userTestAttempt
     } catch (error) {
-      this.logger.error('Error deleting user test attempt:', error)
-      if (error instanceof HttpException || error.message?.includes('không tồn tại')) {
-        throw error
-      }
-      throw InvalidUserTestAttemptDataException
+      throw this.toAttemptError(error)
     }
   }
 
-  async checkTestCompletion(
-    userTestAttemptId: number,
-    userId: number,
-    languageCode: string = 'vi'
-  ) {
+  async checkTestCompletion(userTestAttemptId: number, userId: number) {
     try {
-      this.logger.log(`Checking completion for user test attempt: ${userTestAttemptId}`)
-
-      // 1. Lấy thông tin UserTestAttempt
-      const attempt = await this.userTestAttemptRepository.findById(userTestAttemptId)
-      if (!attempt) {
-        throw UserTestAttemptNotFoundException
-      }
+      const attempt = await this.ownAttempt(userTestAttemptId, userId)
 
       // 2. Lấy thông tin Test để biết các TestSets
       const testRes = await this.testService.findOne(attempt.testId, 'vi')
-      if (!testRes || !testRes.data) {
-        throw TestNotFoundException
+      if (!testRes) {
+        throw new TestNotFoundException()
       }
 
       // Lấy testType từ testRes
-      const testType = (testRes.data as any).testType
+      const testType = (testRes as any).testType
 
       // 3. Lấy tất cả TestSets của Test
-      const test = await this.prisma.test.findUnique({
-        where: { id: attempt.testId },
-        include: {
-          testTestSets: {
-            select: {
-              testSet: {
-                select: { id: true }
-              }
-            }
-          }
-        }
-      })
+      const test = await this.userTestAttemptRepository.findTestWithTestSetIds(
+        attempt.testId
+      )
 
       if (!test || !test.testTestSets || test.testTestSets.length === 0) {
-        throw new Error('Test không có test set nào')
+        throw new TestHasNoTestSetException()
       }
 
       const testSetIds = test.testTestSets.map((tts) => tts.testSet.id)
@@ -218,8 +165,8 @@ export class UserTestAttemptService {
           testSetId,
           'vi'
         )
-        if (questionsResult.data && Array.isArray(questionsResult.data)) {
-          allQuestionBanks.push(...questionsResult.data)
+        if (questionsResult && Array.isArray(questionsResult)) {
+          allQuestionBanks.push(...questionsResult)
         }
       }
 
@@ -230,7 +177,7 @@ export class UserTestAttemptService {
       // 5. Lấy tất cả UserTestAnswerLog của attempt này
       const answerLogsResult =
         await this.userTestAnswerLogService.findByUserTestAttemptId(userTestAttemptId)
-      const userAnswers = answerLogsResult.data.results
+      const userAnswers = answerLogsResult.results
       this.logger.log(
         `Found ${userAnswers.length} user answers for attempt ${userTestAttemptId}`
       )
@@ -253,14 +200,9 @@ export class UserTestAttemptService {
           this.logger.log(
             `LESSON_REVIEW: Still need ${REQUIRED_ANSWERS_FOR_LESSON_REVIEW - answeredCount} more answers (answered: ${answeredCount}/${REQUIRED_ANSWERS_FOR_LESSON_REVIEW})`
           )
-          const normalizedLang = (languageCode || '').toLowerCase().split('-')[0] || 'vi'
-          const message = this.i18nService.translate(
-            UserTestAttemptMessage.NOT_ENOUGH_ANSWERS,
-            normalizedLang
-          )
+          const outcome = 'not-enough-answers' as const
           return {
-            statusCode: 200,
-            message: message,
+            outcome,
             data: {
               isCompleted: false,
               totalQuestions: REQUIRED_ANSWERS_FOR_LESSON_REVIEW,
@@ -277,14 +219,9 @@ export class UserTestAttemptService {
         // Với các test type khác: phải trả lời hết tất cả câu hỏi
         if (unansweredQuestions.length > 0) {
           this.logger.log(`Still ${unansweredQuestions.length} unanswered questions`)
-          const normalizedLang = (languageCode || '').toLowerCase().split('-')[0] || 'vi'
-          const message = this.i18nService.translate(
-            UserTestAttemptMessage.NOT_ENOUGH_ANSWERS,
-            normalizedLang
-          )
+          const outcome = 'not-enough-answers' as const
           return {
-            statusCode: 200,
-            message: message,
+            outcome,
             data: {
               isCompleted: false,
               totalQuestions: allQuestionBanks.length,
@@ -303,16 +240,7 @@ export class UserTestAttemptService {
 
       // 8. Chỉ trả kết quả, KHÔNG cập nhật DB trong hàm check
       const finalStatus = allCorrect ? 'COMPLETED' : 'FAILED'
-      const normalizedLang = (languageCode || '').toLowerCase().split('-')[0] || 'vi'
-      const message = allCorrect
-        ? this.i18nService.translate(
-          UserTestAttemptMessage.TEST_COMPLETED_ALL_CORRECT,
-          normalizedLang
-        )
-        : this.i18nService.translate(
-          UserTestAttemptMessage.TEST_COMPLETED_SOME_WRONG,
-          normalizedLang
-        )
+      const outcome = allCorrect ? ('all-correct' as const) : ('some-wrong' as const)
 
       // Với LESSON_REVIEW, totalQuestions luôn là 10
       const totalQuestions = isLessonReview
@@ -320,8 +248,7 @@ export class UserTestAttemptService {
         : allQuestionBanks.length
 
       return {
-        statusCode: 200,
-        message: message,
+        outcome,
         data: {
           isCompleted: true,
           totalQuestions: totalQuestions,
@@ -349,26 +276,26 @@ export class UserTestAttemptService {
       // 1. Lấy thông tin UserTestAttempt
       const attempt = await this.userTestAttemptRepository.findById(userTestAttemptId)
       if (!attempt) {
-        throw UserTestAttemptNotFoundException
+        throw new UserTestAttemptNotFoundException()
       }
 
       // 2. Kiểm tra xem attempt có thuộc về user này không
       if (attempt.userId !== userId) {
-        throw UnauthorizedUserTestAttemptAccessException
+        throw new AttemptNotOwnedException()
       }
 
       // 3. Lấy thông tin Test để biết testType
       const testRes = await this.testService.findOne(attempt.testId, 'vi')
-      if (!testRes || !testRes.data) {
-        throw TestNotFoundException
+      if (!testRes) {
+        throw new TestNotFoundException()
       }
 
-      const testType = (testRes.data as any).testType
+      const testType = (testRes as any).testType
 
       // 5. Lấy tất cả UserTestAnswerLog của attempt này
       const answerLogsResult =
         await this.userTestAnswerLogService.findByUserTestAttemptId(userTestAttemptId)
-      const userAnswers = answerLogsResult.data.results
+      const userAnswers = answerLogsResult.results
 
       // Xử lý riêng cho LESSON_REVIEW test
       if (testType === 'LESSON_REVIEW') {
@@ -378,7 +305,7 @@ export class UserTestAttemptService {
         // Nếu không có câu trả lời nào mà vẫn nộp bài, coi như FAILED
         if (userAnswers.length === 0) {
           const newStatus = 'FAILED'
-          const message = 'Bạn đã nộp bài nhưng chưa trả lời câu hỏi nào'
+          const outcome = 'no-answer' as const
 
           await this.userTestAttemptRepository.update(
             { id: userTestAttemptId },
@@ -395,8 +322,7 @@ export class UserTestAttemptService {
           await this.updateUserProgressOnLessonReviewFailure(userId, attempt.testId)
 
           return {
-            statusCode: 200,
-            message: message,
+            outcome,
             data: {
               isCompleted: true,
               totalQuestions: expectedQuestionCount,
@@ -417,14 +343,14 @@ export class UserTestAttemptService {
 
         // Update status dựa trên kết quả: >= 80% là COMPLETED
         let newStatus: string
-        let message: string
+        let outcome: TestCompletionOutcome
 
         if (score >= 80) {
           newStatus = 'COMPLETED'
-          message = 'Chúc mừng! Bạn đã hoàn thành bài test'
+          outcome = 'review-passed' as const
         } else {
           newStatus = 'FAILED'
-          message = 'Bạn đã hoàn thành bài test nhưng chưa đạt yêu cầu (cần >= 80%)'
+          outcome = 'review-failed' as const
         }
 
         // Update status và score trong database
@@ -445,7 +371,7 @@ export class UserTestAttemptService {
         // Cập nhật UserProgress dựa trên kết quả
         if (newStatus === 'COMPLETED') {
           // Lấy lessonId từ testId
-          const lessonId = await this.lessonRepository.findByTestId(attempt.testId)
+          const lessonId = await this.lessonService.findByTestId(attempt.testId)
           // Nếu hoàn thành (score >= 80%), trao phần thưởng từ lesson trước khi update status
           // (cần check status trước khi update để biết có phải lần đầu hoàn thành không)
           rewardResults = await this.grantTestRewards(
@@ -461,8 +387,7 @@ export class UserTestAttemptService {
         }
 
         return {
-          statusCode: 200,
-          message: message,
+          outcome,
           data: {
             isCompleted: true,
             totalQuestions: userAnswers.length, // Số câu đã trả lời
@@ -478,21 +403,12 @@ export class UserTestAttemptService {
 
       // Logic cho các test type khác (giữ nguyên)
       // 3. Lấy tất cả TestSets của Test
-      const test = await this.prisma.test.findUnique({
-        where: { id: attempt.testId },
-        include: {
-          testTestSets: {
-            select: {
-              testSet: {
-                select: { id: true }
-              }
-            }
-          }
-        }
-      })
+      const test = await this.userTestAttemptRepository.findTestWithTestSetIds(
+        attempt.testId
+      )
 
       if (!test || !test.testTestSets || test.testTestSets.length === 0) {
-        throw new Error('Test không có test set nào')
+        throw new TestHasNoTestSetException()
       }
 
       const testSetIds = test.testTestSets.map((tts) => tts.testSet.id)
@@ -504,8 +420,8 @@ export class UserTestAttemptService {
           testSetId,
           'vi'
         )
-        if (questionsResult.data && Array.isArray(questionsResult.data)) {
-          allQuestionBanks.push(...questionsResult.data)
+        if (questionsResult && Array.isArray(questionsResult)) {
+          allQuestionBanks.push(...questionsResult)
         }
       }
 
@@ -520,7 +436,7 @@ export class UserTestAttemptService {
       // Nếu không có câu trả lời nào mà vẫn nộp bài, coi như FAILED
       if (userAnswers.length === 0) {
         const newStatus = 'FAILED'
-        const message = 'Bạn đã nộp bài nhưng chưa trả lời câu hỏi nào'
+        const outcome = 'no-answer' as const
 
         await this.userTestAttemptRepository.update(
           { id: userTestAttemptId },
@@ -534,8 +450,7 @@ export class UserTestAttemptService {
         )
 
         return {
-          statusCode: 200,
-          message: message,
+          outcome,
           data: {
             isCompleted: true,
             totalQuestions: allQuestionBanks.length,
@@ -551,7 +466,7 @@ export class UserTestAttemptService {
       // Nếu chưa trả lời hết, coi như FAILED
       if (unansweredQuestions.length > 0) {
         const newStatus = 'FAILED'
-        const message = 'Bạn đã nộp bài nhưng chưa trả lời đủ câu hỏi'
+        const outcome = 'incomplete' as const
 
         await this.userTestAttemptRepository.update(
           { id: userTestAttemptId },
@@ -565,8 +480,7 @@ export class UserTestAttemptService {
         )
 
         return {
-          statusCode: 200,
-          message: message,
+          outcome,
           data: {
             isCompleted: true,
             totalQuestions: allQuestionBanks.length,
@@ -585,19 +499,19 @@ export class UserTestAttemptService {
       // 8. Tính điểm số (số câu đúng / tổng số câu * 100)
       const score = Math.round(
         (userAnswers.filter((log) => log.isCorrect).length / allQuestionBanks.length) *
-        100
+          100
       )
 
       // 9. Update status dựa trên kết quả
       let newStatus: string
-      let message: string
+      let outcome: TestCompletionOutcome
 
       if (allCorrect) {
         newStatus = 'COMPLETED'
-        message = 'Chúc mừng! Bạn đã hoàn thành bài test và trả lời đúng hết'
+        outcome = 'all-correct' as const
       } else {
         newStatus = 'FAILED'
-        message = 'Bạn đã hoàn thành bài test nhưng có một số câu trả lời sai'
+        outcome = 'some-wrong' as const
       }
 
       // Update status và score trong database
@@ -614,8 +528,7 @@ export class UserTestAttemptService {
       )
 
       return {
-        statusCode: 200,
-        message: message,
+        outcome,
         data: {
           isCompleted: true,
           totalQuestions: allQuestionBanks.length,
@@ -641,21 +554,17 @@ export class UserTestAttemptService {
       // 1. Lấy thông tin UserTestAttempt
       const attempt = await this.userTestAttemptRepository.findById(userTestAttemptId)
       if (!attempt) {
-        throw UserTestAttemptNotFoundException
+        throw new UserTestAttemptNotFoundException()
       }
 
       // 2. Kiểm tra xem attempt có thuộc về user này không
       if (attempt.userId !== userId) {
-        throw UnauthorizedUserTestAttemptAccessException
+        throw new AttemptNotOwnedException()
       }
 
       // 3. Kiểm tra xem attempt có đang IN_PROGRESS không
       if (attempt.status !== 'IN_PROGRESS') {
-        return {
-          statusCode: 400,
-          message: 'Chỉ có thể bỏ dở bài test đang trong trạng thái IN_PROGRESS',
-          data: attempt
-        }
+        throw new TestAttemptNotInProgressException()
       }
 
       // 4. Update status thành ABANDONED
@@ -669,18 +578,14 @@ export class UserTestAttemptService {
 
       this.logger.log(`Updated attempt ${userTestAttemptId} to ABANDONED`)
 
-      return {
-        statusCode: 200,
-        message: 'Đã đánh dấu bài test là bỏ dở',
-        data: updatedAttempt
-      }
+      return updatedAttempt
     } catch (error) {
       this.logger.error('Error abandoning test attempt:', error)
       throw error
     }
   }
 
-  async getStatus(userTestAttemptId: number, userId: number, lang: string) {
+  async getStatus(userTestAttemptId: number, userId: number) {
     try {
       this.logger.log(
         `Getting status for user test attempt: ${userTestAttemptId} for user: ${userId}`
@@ -689,74 +594,43 @@ export class UserTestAttemptService {
       // 1. Lấy thông tin UserTestAttempt
       const attempt = await this.userTestAttemptRepository.findById(userTestAttemptId)
       if (!attempt) {
-        throw UserTestAttemptNotFoundException
+        throw new UserTestAttemptNotFoundException()
       }
 
       // 2. Kiểm tra xem attempt có thuộc về user này không
       if (attempt.userId !== userId) {
-        throw UnauthorizedUserTestAttemptAccessException
+        throw new AttemptNotOwnedException()
       }
 
-      const message = this.i18nService.translate(
-        USER_TEST_ATTEMPT_MESSAGE.GET_STATUS_SUCCESS,
-        lang || 'vi'
-      )
-
-      return {
-        statusCode: 200,
-        message: message || USER_TEST_ATTEMPT_MESSAGE.GET_STATUS_SUCCESS,
-        data: attempt
-      }
+      return attempt
     } catch (error) {
       this.logger.error('Error getting test attempt status:', error)
       throw error
     }
   }
 
-  async getTestAttemptByTestId(
-    testId: number,
-    userId: number,
-    languageCode: string
-  ): Promise<MessageResDTO | null> {
+  async getTestAttemptByTestId(testId: number, userId: number, languageCode: string) {
     try {
       const normalizedLang = (languageCode || '').toLowerCase().split('-')[0] || 'vi'
 
       // Kiểm tra và giảm limit của UserTest
-      const userTest = await this.userTestRepository.findByUserAndTest(userId, testId)
+      const userTest = await this.userTestService.findByUserAndTest(userId, testId)
       if (!userTest) {
-        const message = this.i18nService.translate(
-          UserTestAttemptMessage.USER_TEST_NOT_FOUND,
-          normalizedLang
-        )
-        throw new HttpException(message || 'Không tìm thấy UserTest', 400)
+        throw new UserTestNotFoundException()
       }
 
       // Kiểm tra limit (null, undefined, hoặc 0 được coi như không giới hạn)
       // Chỉ throw error khi limit < 0 (âm số) hoặc limit > 0 nhưng đã hết lượt (cần check riêng)
       // Logic này phải nhất quán với decrementLimit: limit = 0 được coi là "không giới hạn"
-      if (
-        userTest.limit !== null &&
-        userTest.limit !== undefined &&
-        userTest.limit < 0
-      ) {
-        const message = this.i18nService.translate(
-          UserTestAttemptMessage.OUT_OF_LIMIT,
-          normalizedLang
-        )
-        throw new HttpException(message || 'Bạn đã hết lượt làm bài test này', 400)
+      if (userTest.limit !== null && userTest.limit !== undefined && userTest.limit < 0) {
+        throw new TestOutOfLimitException()
       }
 
       // Tìm attempt IN_PROGRESS gần nhất của user với test này
-      const inProgressAttempt = await this.prisma.userTestAttempt.findFirst({
-        where: {
-          userId,
-          testId,
-          status: 'IN_PROGRESS'
-        },
-        orderBy: {
-          createdAt: 'desc' // Lấy attempt được tạo gần nhất
-        }
-      })
+      const inProgressAttempt = await this.userTestAttemptRepository.findLatestInProgress(
+        userId,
+        testId
+      )
 
       let attempt: any
       let userTestAttemptId: number
@@ -773,15 +647,12 @@ export class UserTestAttemptService {
           this.logger.log(
             `Attempt ${inProgressAttempt.id} is older than 1 hour (${Math.round(timeDiffMs / (60 * 1000))} minutes), marking as ABANDONED and creating new one`
           )
-          await this.prisma.userTestAttempt.update({
-            where: { id: inProgressAttempt.id },
-            data: { status: 'ABANDONED' }
-          })
+          await this.userTestAttemptRepository.markAbandoned(inProgressAttempt.id)
 
           // Giảm limit và tạo attempt mới
-          await this.userTestRepository.decrementLimit(userId, testId)
+          await this.userTestService.decrementLimit(userId, testId)
           const createAttempt = await this.create(userId, testId)
-          attempt = createAttempt.data as any
+          attempt = createAttempt as any
           userTestAttemptId = attempt.id
         } else {
           // Dưới 1 tiếng → reuse và update updatedAt
@@ -790,14 +661,11 @@ export class UserTestAttemptService {
           )
 
           // Update updatedAt để reset timer
-          await this.prisma.userTestAttempt.update({
-            where: { id: inProgressAttempt.id },
-            data: { updatedAt: now }
-          })
+          await this.userTestAttemptRepository.touch(inProgressAttempt.id, now)
 
           attempt = await this.userTestAttemptRepository.findById(inProgressAttempt.id)
           if (!attempt) {
-            throw UserTestAttemptNotFoundException
+            throw new UserTestAttemptNotFoundException()
           }
           userTestAttemptId = attempt.id
         }
@@ -808,10 +676,10 @@ export class UserTestAttemptService {
         )
 
         // Giảm limit trước khi cho phép làm bài (chỉ khi tạo mới)
-        await this.userTestRepository.decrementLimit(userId, testId)
+        await this.userTestService.decrementLimit(userId, testId)
 
         const createAttempt = await this.create(userId, testId)
-        attempt = createAttempt.data as any
+        attempt = createAttempt as any
         userTestAttemptId = attempt.id
       }
 
@@ -820,7 +688,7 @@ export class UserTestAttemptService {
       const test = await this.testRepo.findByIdWithTestSetsAndQuestions(testId)
 
       if (!test || !test.testTestSets || test.testTestSets.length === 0) {
-        throw new Error('Test không có test set nào')
+        throw new TestHasNoTestSetException()
       }
 
       // Load user answer logs (nếu reuse attempt IN_PROGRESS thì có thể đã có logs)
@@ -828,8 +696,8 @@ export class UserTestAttemptService {
       let userAnswerLogs: any[] = []
       const answerLogsResult =
         await this.userTestAnswerLogService.findByUserTestAttemptId(userTestAttemptId)
-      if (answerLogsResult?.data?.results) {
-        userAnswerLogs = answerLogsResult.data.results
+      if (answerLogsResult?.results) {
+        userAnswerLogs = answerLogsResult.results
         answeredCount = userAnswerLogs.length
         this.logger.log(
           `Found ${answeredCount} existing answer logs for attempt ${userTestAttemptId}`
@@ -934,22 +802,16 @@ export class UserTestAttemptService {
         `Getting test attempt for user ${userId} in test ${testId}, using attempt ${userTestAttemptId} with status ${attempt?.status}`
       )
 
-      const message = this.i18nService.translate(TEST_MESSAGE.GET_SUCCESS, normalizedLang)
-
       return {
-        statusCode: 200,
-        data: {
-          id: test.id,
-          name: testRes.data.name,
-          description: testRes.data.description,
-          testType: test.testType,
-          testSets: allTestSets,
-          userTestAttemptId,
-          totalQuestions,
-          answeredQuestions: answeredCount,
-          time: Number(attempt?.time ?? 0)
-        },
-        message: message || TEST_MESSAGE.GET_SUCCESS
+        id: test.id,
+        name: testRes.name,
+        description: testRes.description,
+        testType: test.testType,
+        testSets: allTestSets,
+        userTestAttemptId,
+        totalQuestions,
+        answeredQuestions: answeredCount,
+        time: Number(attempt?.time ?? 0)
       }
     } catch (error) {
       this.logger.error('Error getting test attempt by test id:', error)
@@ -960,18 +822,14 @@ export class UserTestAttemptService {
     }
   }
 
-  async getTestAttemptReview(
-    id: number,
-    userId: number,
-    languageCode: string
-  ): Promise<MessageResDTO> {
+  async getTestAttemptReview(id: number, userId: number, languageCode: string) {
     try {
-      const attemptRes = await this.findOne(id, languageCode)
-      const attempt = attemptRes.data as any
+      const attemptRes = await this.findOne(id)
+      const attempt = attemptRes as any
 
       // Kiểm tra attempt có thuộc về user này không
       if ((attempt as any)?.userId !== userId) {
-        throw ForbiddenReviewAccessException
+        throw new AttemptNotOwnedException()
       }
 
       const normalizedLang = (languageCode || '').toLowerCase().split('-')[0] || 'vi'
@@ -979,11 +837,7 @@ export class UserTestAttemptService {
       // Only build review when attempt is COMPLETED or FAILED
       if (attempt.status !== 'COMPLETED' && attempt.status !== 'FAILED') {
         return {
-          statusCode: 200,
-          message: this.i18nService.translate(
-            UserTestAttemptMessage.REVIEW_NOT_COMPLETED,
-            normalizedLang
-          ),
+          completed: false,
           data: { status: attempt.status }
         }
       }
@@ -992,7 +846,7 @@ export class UserTestAttemptService {
       const test = await this.testRepo.findByIdWithTestSetsAndQuestions(attempt.testId)
 
       if (!test || !test.testTestSets || test.testTestSets.length === 0) {
-        throw new Error('Test không có test set nào')
+        throw new TestHasNoTestSetException()
       }
 
       // Xác định test type từ attempt (nếu có) hoặc từ test object đã query
@@ -1003,7 +857,7 @@ export class UserTestAttemptService {
       // Load user answer logs for this attempt
       const logsRes = await this.userTestAnswerLogService.findByUserTestAttemptId(id)
       let logs: Array<{ questionBankId: number; answerId: number; isCorrect: boolean }> =
-        (logsRes?.data?.results || []) as any
+        (logsRes?.results || []) as any
 
       // Nếu test type là PLACEMENT_TEST_DONE, chỉ lấy 10 câu đầu tiên từ logs (những câu đã làm)
       const isPlacementTestDone = testType === 'PLACEMENT_TEST_DONE'
@@ -1049,20 +903,7 @@ export class UserTestAttemptService {
       // - Nếu test có ít nhất 1 lần làm COMPLETED → được quyền xem (không cần đúng 80%)
       // - Nếu chưa có lần nào COMPLETED → phải đúng >= 80% mới được xem
       if (!hasCompletedAttempt && correctPercentage < 80) {
-        return {
-          statusCode: 403,
-          message: this.i18nService.translate(
-            UserTestAttemptMessage.REVIEW_INSUFFICIENT_SCORE,
-            normalizedLang
-          ),
-          data: {
-            status: attempt.status,
-            totalQuestions,
-            answeredCorrect: answeredCorrectCount,
-            correctPercentage: Math.round(correctPercentage),
-            minimumRequired: 80
-          }
-        }
+        throw new ReviewInsufficientScoreException()
       }
 
       const translateOrFallback = async (key?: string, jp?: string): Promise<string> => {
@@ -1161,7 +1002,7 @@ export class UserTestAttemptService {
                 pickLabelFromComposite(a?.answerJp || '', normalizedLang)
               )
               const explanation = await translateOrFallback(a?.answerKey, a?.answerJp)
-              let entry: any = { id: a.id, answer: label }
+              const entry: any = { id: a.id, answer: label }
               if (correct && a.id === correct.id) {
                 entry.type = 'correct_answer'
                 entry.explantion = explanation
@@ -1256,8 +1097,8 @@ export class UserTestAttemptService {
 
       const data = {
         id: test.id,
-        name: testRes.data.name,
-        description: testRes.data.description,
+        name: testRes.name,
+        description: testRes.description,
         testType: test.testType,
         testSets: allTestSets,
         totalQuestions,
@@ -1269,11 +1110,7 @@ export class UserTestAttemptService {
       }
 
       return {
-        statusCode: 200,
-        message: this.i18nService.translate(
-          UserTestAttemptMessage.REVIEW_SUCCESS,
-          normalizedLang
-        ),
+        completed: true,
         data
       }
     } catch (error) {
@@ -1285,18 +1122,14 @@ export class UserTestAttemptService {
     }
   }
 
-  async getLessonTestAttemptReview(
-    id: number,
-    userId: number,
-    languageCode: string
-  ): Promise<MessageResDTO> {
+  async getLessonTestAttemptReview(id: number, userId: number, languageCode: string) {
     try {
-      const attemptRes = await this.findOne(id, languageCode)
-      const attempt = attemptRes.data as any
+      const attemptRes = await this.findOne(id)
+      const attempt = attemptRes as any
 
       // Kiểm tra attempt có thuộc về user này không
       if ((attempt as any)?.userId !== userId) {
-        throw ForbiddenReviewAccessException
+        throw new AttemptNotOwnedException()
       }
 
       const normalizedLang = (languageCode || '').toLowerCase().split('-')[0] || 'vi'
@@ -1304,11 +1137,7 @@ export class UserTestAttemptService {
       // Only build review when attempt is COMPLETED or FAILED
       if (attempt.status !== 'COMPLETED' && attempt.status !== 'FAILED') {
         return {
-          statusCode: 200,
-          message: this.i18nService.translate(
-            UserTestAttemptMessage.REVIEW_NOT_COMPLETED,
-            normalizedLang
-          ),
+          completed: false,
           data: { status: attempt.status }
         }
       }
@@ -1320,10 +1149,10 @@ export class UserTestAttemptService {
         answerId: number
         isCorrect: boolean
         turnNumber?: number
-      }> = (logsRes?.data?.results || []) as any
+      }> = (logsRes?.results || []) as any
 
       if (!logs || logs.length === 0) {
-        throw new Error('Không tìm thấy câu trả lời cho lần làm bài này')
+        throw new TestAttemptHasNoAnswersException()
       }
 
       // Tính tỷ lệ đúng
@@ -1340,34 +1169,15 @@ export class UserTestAttemptService {
       // - Nếu test có ít nhất 1 lần làm COMPLETED → được quyền xem (không cần đúng 80%)
       // - Nếu chưa có lần nào COMPLETED → phải đúng >= 80% mới được xem
       if (!hasCompletedAttempt && correctPercentage < 80) {
-        return {
-          statusCode: 403,
-          message: this.i18nService.translate(
-            UserTestAttemptMessage.REVIEW_INSUFFICIENT_SCORE,
-            normalizedLang
-          ),
-          data: {
-            status: attempt.status,
-            totalQuestions,
-            answeredCorrect: answeredCorrectCount,
-            correctPercentage: Math.round(correctPercentage),
-            minimumRequired: 80
-          }
-        }
+        throw new ReviewInsufficientScoreException()
       }
 
       // Lấy tất cả questionBankIds từ logs
       const questionBankIds = [...new Set(logs.map((l: any) => l.questionBankId))]
 
       // Query QuestionBanks với answers từ database
-      const questionBanks = await this.prisma.questionBank.findMany({
-        where: {
-          id: { in: questionBankIds }
-        },
-        include: {
-          answers: true
-        }
-      })
+      const questionBanks =
+        await this.userTestAttemptRepository.findQuestionsWithAnswers(questionBankIds)
 
       // Tạo map để truy cập nhanh
       const questionBankMap = new Map(questionBanks.map((qb) => [qb.id, qb]))
@@ -1450,7 +1260,7 @@ export class UserTestAttemptService {
               a?.answerKey || undefined,
               a?.answerJp || undefined
             )
-            let entry: any = { id: a.id, answer: label }
+            const entry: any = { id: a.id, answer: label }
             if (correct && a.id === correct.id) {
               entry.type = 'correct_answer'
               entry.explantion = explanation
@@ -1534,9 +1344,9 @@ export class UserTestAttemptService {
 
       const data = {
         id: attempt.testId,
-        name: testRes.data.name,
-        description: testRes.data.description,
-        testType: testRes.data.testType,
+        name: testRes.name,
+        description: testRes.description,
+        testType: testRes.testType,
         testSets: allTestSets,
         totalQuestions,
         answeredCorrect,
@@ -1547,11 +1357,7 @@ export class UserTestAttemptService {
       }
 
       return {
-        statusCode: 200,
-        message: this.i18nService.translate(
-          UserTestAttemptMessage.REVIEW_SUCCESS,
-          normalizedLang
-        ),
+        completed: true,
         data
       }
     } catch (error) {
@@ -1576,18 +1382,18 @@ export class UserTestAttemptService {
       // 1. Lấy thông tin UserTestAttempt
       const attempt = await this.userTestAttemptRepository.findById(userTestAttemptId)
       if (!attempt) {
-        throw UserTestAttemptNotFoundException
+        throw new UserTestAttemptNotFoundException()
       }
 
       // 2. Kiểm tra xem attempt có thuộc về user này không
       if (attempt.userId !== userId) {
-        throw UnauthorizedUserTestAttemptAccessException
+        throw new AttemptNotOwnedException()
       }
 
       // 3. Lấy thông tin Test để lấy các TestSets
       const test = await this.testService.findOne(attempt.testId, 'vi')
-      if (!test || !test.data) {
-        throw TestNotFoundException
+      if (!test) {
+        throw new TestNotFoundException()
       }
 
       // 4. Lấy các TestSets của Test
@@ -1596,7 +1402,7 @@ export class UserTestAttemptService {
       )
 
       if (testTestSets.length === 0) {
-        throw new HttpException('Test này chưa có TestSet nào', 400)
+        throw new TestHasNoTestSetException()
       }
 
       const testSetIds = testTestSets.map((tts: any) => tts.testSetId)
@@ -1619,7 +1425,7 @@ export class UserTestAttemptService {
       // 6. Lấy tất cả UserTestAnswerLog của attempt này
       const answerLogsResult =
         await this.userTestAnswerLogService.findByUserTestAttemptId(userTestAttemptId)
-      let userAnswers = answerLogsResult.data.results
+      let userAnswers = answerLogsResult.results
       this.logger.log(
         `Found ${userAnswers.length} user answers for attempt ${userTestAttemptId}`
       )
@@ -1628,7 +1434,7 @@ export class UserTestAttemptService {
       if (userAnswers.length > 10) {
         userAnswers = userAnswers.slice(0, 10)
         this.logger.log(
-          `PLACEMENT_TEST_DONE: Limiting to first 10 questions from ${answerLogsResult.data.results.length} total logs`
+          `PLACEMENT_TEST_DONE: Limiting to first 10 questions from ${answerLogsResult.results.length} total logs`
         )
       }
 
@@ -1763,7 +1569,7 @@ export class UserTestAttemptService {
       }
       // else {
       //     // 12. Cập nhật levelId của User
-      //     // await this.userRepo.update({
+      //     // await this.userService.updateUserRow({
       //     //     id: userId,
       //     //     updatedById: userId,
       //     //     data: { levelId: level.id }
@@ -1800,15 +1606,11 @@ export class UserTestAttemptService {
 
       // 15. Trả về kết quả với levelN được đánh giá
       return {
-        statusCode: 200,
-        message: 'Đánh giá trình độ hoàn thành',
-        data: {
-          levelN: evaluatedLevelN,
-          levelId: level,
-          totalCorrect,
-          totalQuestions,
-          percentage
-        }
+        levelN: evaluatedLevelN,
+        levelId: level,
+        totalCorrect,
+        totalQuestions,
+        percentage
       }
     } catch (error) {
       this.logger.error('Error submitting placement test completion:', error)
@@ -1823,6 +1625,26 @@ export class UserTestAttemptService {
    * Trao phần thưởng từ lesson khi hoàn thành test cuối
    * Lấy rewardId từ lesson dựa vào testId
    */
+  //#region helpers
+  // The attempt, when it is the user's
+  private async ownAttempt(id: number, userId: number) {
+    const attempt = await this.userTestAttemptRepository.findById(id)
+    if (!attempt) throw new UserTestAttemptNotFoundException()
+    if (attempt.userId !== userId) throw new AttemptNotOwnedException()
+    return attempt
+  }
+
+  private toAttemptError(error: unknown): HttpException {
+    if (error instanceof HttpException) return error
+    this.logger.error(
+      'Test attempt request failed',
+      error instanceof Error ? error.stack : error
+    )
+    if (isNotFoundPrismaError(error)) return new UserTestAttemptNotFoundException()
+    return new InvalidUserTestAttemptDataException()
+  }
+  //#endregion
+
   private async grantTestRewards(
     testId: number,
     userId: number,
@@ -1830,10 +1652,7 @@ export class UserTestAttemptService {
   ) {
     try {
       // 1. Tìm lesson có testId = testId của attempt
-      const lesson = await this.prisma.lesson.findFirst({
-        where: { testId: testId },
-        select: { id: true, rewardId: true }
-      })
+      const lesson = await this.userTestAttemptRepository.findLessonRewardForTest(testId)
 
       if (!lesson) {
         this.logger.warn(`No lesson found with testId ${testId}, skipping reward grant`)
@@ -1841,7 +1660,7 @@ export class UserTestAttemptService {
       }
 
       // 2. Kiểm tra xem đã hoàn thành lesson này trước đó chưa
-      const userProgress = await this.userProgressRepository.findByUserAndLesson(
+      const userProgress = await this.userProgressService.getByUserAndLesson(
         userId,
         lesson.id
       )
@@ -1894,10 +1713,7 @@ export class UserTestAttemptService {
       )
 
       // Tìm lesson có testId = testId của attempt
-      const lesson = await this.prisma.lesson.findFirst({
-        where: { testId: testId },
-        select: { id: true }
-      })
+      const lesson = await this.userTestAttemptRepository.findLessonIdForTest(testId)
 
       if (!lesson) {
         this.logger.warn(
@@ -1907,7 +1723,7 @@ export class UserTestAttemptService {
       }
 
       // Tìm UserProgress của user và lesson đó
-      const userProgress = await this.userProgressRepository.findByUserAndLesson(
+      const userProgress = await this.userProgressService.getByUserAndLesson(
         userId,
         lesson.id
       )
@@ -1926,7 +1742,7 @@ export class UserTestAttemptService {
         )
         // Chỉ update testId nếu chưa có
         if (!userProgress.testId) {
-          await this.userProgressRepository.update(
+          await this.userProgressService.updateProgressRow(
             { id: userProgress.id },
             { testId: testId }
           )
@@ -1939,7 +1755,7 @@ export class UserTestAttemptService {
 
       // Update UserProgress với testId, status COMPLETED và progressPercentage 100%
       // Vì đã hoàn thành LESSON_REVIEW test nên coi như đã hoàn thành lesson
-      await this.userProgressRepository.update(
+      await this.userProgressService.updateProgressRow(
         { id: userProgress.id },
         {
           testId: testId,
@@ -1951,10 +1767,10 @@ export class UserTestAttemptService {
       )
 
       // Cập nhật UserProgress cho lesson tiếp theo
-      const nextLessonId = await this.userProgressRepository.getNextLessonId(lesson.id)
+      const nextLessonId = await this.userProgressService.getNextLessonId(lesson.id)
       if (nextLessonId) {
         // Kiểm tra status hiện tại của lesson tiếp theo
-        const nextLessonProgress = await this.userProgressRepository.findByUserAndLesson(
+        const nextLessonProgress = await this.userProgressService.getByUserAndLesson(
           userId,
           nextLessonId
         )
@@ -1966,7 +1782,7 @@ export class UserTestAttemptService {
         ) {
           // Sử dụng upsert để tự động tạo hoặc update UserProgress cho lesson tiếp theo
           // Upsert sẽ tự động lấy testId từ lesson nếu chưa có
-          await this.userProgressRepository.upsert(userId, nextLessonId, {
+          await this.userProgressService.upsert(userId, nextLessonId, {
             status: ProgressStatus.IN_PROGRESS,
             progressPercentage: 0
           })
@@ -2002,10 +1818,7 @@ export class UserTestAttemptService {
       )
 
       // Tìm lesson có testId = testId của attempt
-      const lesson = await this.prisma.lesson.findFirst({
-        where: { testId: testId },
-        select: { id: true }
-      })
+      const lesson = await this.userTestAttemptRepository.findLessonIdForTest(testId)
 
       if (!lesson) {
         this.logger.warn(
@@ -2015,7 +1828,7 @@ export class UserTestAttemptService {
       }
 
       // Tìm UserProgress của user và lesson đó
-      const userProgress = await this.userProgressRepository.findByUserAndLesson(
+      const userProgress = await this.userProgressService.getByUserAndLesson(
         userId,
         lesson.id
       )
@@ -2037,7 +1850,7 @@ export class UserTestAttemptService {
 
       // Update UserProgress với testId, status TESTING_LAST_FAILED
       // User cần làm lại LESSON_REVIEW test
-      await this.userProgressRepository.update(
+      await this.userProgressService.updateProgressRow(
         { id: userProgress.id },
         {
           testId: testId,

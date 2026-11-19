@@ -1,14 +1,10 @@
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import {
-  CreateShopItemBodyType,
-  SHOP_ITEM_FIELDS,
-  ShopItemType,
-  UpdateShopItemBodyType
-} from './entities/shop-item.entity'
+import { CreateShopItemBody, UpdateShopItemBody } from './dto/shop-item.zod-dto'
+import { SHOP_ITEM_FIELDS, ShopItem } from './entities/shop-item.entity'
 
 @Injectable()
 export class ShopItemRepo {
@@ -22,10 +18,10 @@ export class ShopItemRepo {
       data
     }: {
       createdById?: number
-      data: CreateShopItemBodyType
+      data: CreateShopItemBody
     },
     prismaTx?: PrismaClient
-  ): Promise<ShopItemType> {
+  ): Promise<ShopItem> {
     const client = prismaTx || this.prismaService
     return client.shopItem.create({
       data: {
@@ -41,12 +37,12 @@ export class ShopItemRepo {
       items
     }: {
       createdById?: number
-      items: CreateShopItemBodyType[]
+      items: CreateShopItemBody[]
     },
     prismaTx?: PrismaClient
-  ): Promise<ShopItemType[]> {
+  ): Promise<ShopItem[]> {
     const client = prismaTx || this.prismaService
-    const createdItems: ShopItemType[] = []
+    const createdItems: ShopItem[] = []
 
     for (const item of items) {
       const created = await client.shopItem.create({
@@ -68,11 +64,11 @@ export class ShopItemRepo {
       updatedById
     }: {
       id: number
-      data: UpdateShopItemBodyType
+      data: UpdateShopItemBody
       updatedById?: number
     },
     prismaTx?: PrismaClient
-  ): Promise<ShopItemType> {
+  ): Promise<ShopItem> {
     const client = prismaTx || this.prismaService
     return client.shopItem.update({
       where: {
@@ -86,7 +82,7 @@ export class ShopItemRepo {
     })
   }
 
-  delete(id: number, isHard?: boolean, prismaTx?: PrismaClient): Promise<ShopItemType> {
+  delete(id: number, isHard?: boolean, prismaTx?: PrismaClient): Promise<ShopItem> {
     const client = prismaTx || this.prismaService
     return isHard
       ? client.shopItem.delete({
@@ -103,7 +99,7 @@ export class ShopItemRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, SHOP_ITEM_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -159,7 +155,7 @@ export class ShopItemRepo {
     }
   }
 
-  findById(id: number): Promise<ShopItemType | null> {
+  findById(id: number): Promise<ShopItem | null> {
     return this.prismaService.shopItem.findUnique({
       where: {
         id,
@@ -176,7 +172,7 @@ export class ShopItemRepo {
     id: number,
     quantity: number,
     prismaTx?: PrismaClient
-  ): Promise<ShopItemType> {
+  ): Promise<ShopItem> {
     const client = prismaTx || this.prismaService
     return client.shopItem.update({
       where: {
@@ -211,7 +207,7 @@ export class ShopItemRepo {
     shopBannerId: number,
     pokemonId: number,
     excludeId?: number
-  ): Promise<ShopItemType | null> {
+  ): Promise<ShopItem | null> {
     return this.prismaService.shopItem.findFirst({
       where: {
         shopBannerId,
@@ -244,12 +240,12 @@ export class ShopItemRepo {
       items
     }: {
       updatedById?: number
-      items: Array<{ id: number } & UpdateShopItemBodyType>
+      items: Array<{ id: number } & UpdateShopItemBody>
     },
     prismaTx?: PrismaClient
-  ): Promise<ShopItemType[]> {
+  ): Promise<ShopItem[]> {
     const client = prismaTx || this.prismaService
-    const updatedItems: ShopItemType[] = []
+    const updatedItems: ShopItem[] = []
 
     for (const item of items) {
       const { id, ...data } = item

@@ -1,91 +1,88 @@
 import { BullAction, BullQueue } from '@/common/constants/bull-action.constant'
-import { UserSubscriptionStatus } from '@/common/constants/subscription.constant'
+import {
+  maxPokeCoinDiscount,
+  UserSubscriptionStatus
+} from '@/common/constants/subscription.constant'
 import {
   walletPurposeType,
-  WalletTransactionSourceType,
-  WalletTransactionType
+  WalletTransactionSourceType
 } from '@/common/constants/wallet-transaction.constant'
 import { walletType } from '@/common/constants/wallet.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { InvoiceMessage } from '@/i18n/message-keys'
+import { SubscriptionPlanService } from '@/modules/subscription-plan/subscription-plan.service'
+import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
+import { WalletService } from '@/modules/wallet/wallet.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
-  addTimeUTC,
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { InjectQueue } from '@nestjs/bull'
-import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
+import { PrismaClient } from '@prisma/client'
 import { Queue } from 'bull'
-import { PaymentService } from '../payment/payment.service'
 import { SubscriptionPlanNotFoundException } from '../subscription-plan/dto/subscription-plan.error'
-import { SubscriptionPlanRepo } from '../subscription-plan/subscription-plan.repo'
 import {
   UserHasSubscriptionWithStatusActiveException,
   UserHasSubscriptionWithStatusPendingPaymentException
 } from '../user-subscription/dto/user-subscription.error'
-import { UserSubscriptionRepo } from '../user-subscription/user-subscription.repo'
-import { WalletTransactionRepo } from '../wallet-transaction/wallet-transaction.repo'
-import { WalletRepo } from '../wallet/wallet.repo'
-import { InvoiceNotFoundException } from './dto/invoice.error'
-import { CreateInvoiceBodyType, UpdateInvoiceBodyType } from './entities/invoice.entity'
+import {
+  InvoiceDiscountTooHighException,
+  InvoiceNotEnoughPokeCoinsException,
+  InvoiceNotFoundException
+} from './dto/invoice.error'
+import { CreateInvoiceBody, UpdateInvoiceBody } from './dto/invoice.zod-dto'
 import { InvoiceRepo } from './invoice.repo'
 
 @Injectable()
 export class InvoiceService {
   constructor(
     private invoiceRepo: InvoiceRepo,
-    private readonly subscriptionPlanRepo: SubscriptionPlanRepo,
-    private readonly userSubRepo: UserSubscriptionRepo,
-    private readonly i18nService: I18nService,
-    @Inject(forwardRef(() => PaymentService))
-    private readonly paymentService: PaymentService,
+    private readonly subscriptionPlanService: SubscriptionPlanService,
+    private readonly userSubscriptionService: UserSubscriptionService,
     @InjectQueue(BullQueue.INVOICE_EXPIRATION)
     private readonly invoiceExpirationQueue: Queue,
-    private readonly walletRepo: WalletRepo,
-    private readonly walletTransactionRepo: WalletTransactionRepo
+    private readonly walletService: WalletService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.invoiceRepo.list(pagination)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(InvoiceMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   // Helper method to calculate weaknesses for a Pokemon (copied from PokemonService)
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const invoice = await this.invoiceRepo.findById(id)
     if (!invoice) {
       throw new InvoiceNotFoundException()
     }
 
-    return {
-      statusCode: 200,
-      data: invoice,
-      message: this.i18nService.translate(InvoiceMessage.GET_LIST_SUCCESS, lang)
-    }
+    return invoice
   }
-  async create(
-    { userId, data }: { userId: number; data: CreateInvoiceBodyType },
-    lang: string = 'vi'
-  ) {
+  // A pending invoice (with its PENDING_PAYMENT subscription and the PokeCoin
+  // discount taken), committed before any payment link exists. POST /invoice
+  // lives in the payment module, which opens the link next (B5: invoice no
+  // longer calls payment).
+  async createPending({ userId, data }: { userId: number; data: CreateInvoiceBody }) {
     try {
       // check xem goi plan co active ko
-      const isPlanExist = await this.subscriptionPlanRepo.getById(data.subscriptionPlanId)
+      const isPlanExist = await this.subscriptionPlanService.getById(
+        data.subscriptionPlanId
+      )
       if (!isPlanExist) {
         throw new SubscriptionPlanNotFoundException()
       }
       if (isPlanExist.isActive === false) {
         throw new SubscriptionPlanNotFoundException()
       }
-      console.log('isPlanExist')
+      // PokeCoin pays at most half the price (any amount, even more than the
+      // price, used to be taken: a free or negative-total plan)
+      if ((data.discountAmount || 0) > maxPokeCoinDiscount(isPlanExist.price)) {
+        throw new InvoiceDiscountTooHighException()
+      }
       // xem user mua goi nay co dang active khong, neu co goi nay va dang active thi khong duoc mua nua
       const isUserActivePlanExist =
-        await this.userSubRepo.findActiveByUserIdPlanIdAndStatus(
+        await this.userSubscriptionService.findActiveByUserIdPlanIdAndStatus(
           userId,
           data.subscriptionPlanId,
           UserSubscriptionStatus.ACTIVE
@@ -93,31 +90,30 @@ export class InvoiceService {
       if (isUserActivePlanExist) {
         throw new UserHasSubscriptionWithStatusActiveException()
       }
-      console.log('isUserActivePlanExist')
       // xem user co dang thanh toan goi nay khong
-      const isUserPayPlanExist = await this.userSubRepo.findActiveByUserIdPlanIdAndStatus(
-        userId,
-        data.subscriptionPlanId,
-        UserSubscriptionStatus.PENDING_PAYMENT
-      )
+      const isUserPayPlanExist =
+        await this.userSubscriptionService.findActiveByUserIdPlanIdAndStatus(
+          userId,
+          data.subscriptionPlanId,
+          UserSubscriptionStatus.PENDING_PAYMENT
+        )
       if (isUserPayPlanExist) {
         throw new UserHasSubscriptionWithStatusPendingPaymentException(
           `Invoice ID: ${isUserPayPlanExist.invoiceId}`,
           { invoiceId: isUserPayPlanExist.invoiceId }
         )
       }
-      console.log('isUserPayPlanExist')
       const discountAmountInput = data.discountAmount || 0
 
       // Nếu có discount > 0, kiểm tra ví có đủ PokeCoin không
       if (discountAmountInput > 0) {
-        const enough = await this.walletRepo.checkEnoughBalance({
+        const enough = await this.walletService.checkEnoughBalance({
           userId,
           type: walletType.POKE_COINS,
           amount: discountAmountInput
         })
         if (!enough) {
-          throw new BadRequestException()
+          throw new InvoiceNotEnoughPokeCoinsException()
         }
       }
 
@@ -143,7 +139,7 @@ export class InvoiceService {
         )
 
         // Tạo UserSubscription ở trạng thái PENDING_PAYMENT, gắn với invoice vừa tạo
-        await this.userSubRepo.create(
+        await this.userSubscriptionService.createUserSubscription(
           {
             createdById: userId,
             data: {
@@ -157,37 +153,31 @@ export class InvoiceService {
 
         // Nếu có discount > 0: trừ coin và tạo wallet transaction, cập nhật invoice.walletTransactionId
         if (discountAmount > 0) {
-          const updatedWallet = await this.walletRepo.minusBalanceToWalletWithTypeUserId(
-            { userId, type: walletType.POKE_COINS, amount: discountAmount },
-            tx
-          )
-          if (!updatedWallet) {
-            throw new BadRequestException()
-          }
-
-          const wtx = await this.walletTransactionRepo.create(
+          const debited = await this.walletService.debit(
             {
+              userId,
+              type: walletType.POKE_COINS,
+              amount: discountAmount,
               createdById: userId,
-              data: {
-                walletId: updatedWallet.id,
-                userId,
-                purpose: walletPurposeType.SUBSCRIPTION,
-                referenceId: createdInvoice.id,
-                amount: discountAmount,
-                type: WalletTransactionType.DECREASE,
-                source: WalletTransactionSourceType.SUBSCRIPTION_DISCOUNT,
-                description: null
-              }
+              purpose: walletPurposeType.SUBSCRIPTION,
+              referenceId: createdInvoice.id,
+              source: WalletTransactionSourceType.SUBSCRIPTION_DISCOUNT
             },
             tx
           )
+          if (!debited) {
+            throw new InvoiceNotEnoughPokeCoinsException()
+          }
 
-          await this.invoiceRepo.updateWalletTransaction(createdInvoice.id, wtx.id, tx)
+          await this.invoiceRepo.updateWalletTransaction(
+            createdInvoice.id,
+            debited.transaction.id,
+            tx
+          )
         }
 
         return createdInvoice
       })
-      console.log('xong create')
       // Schedule auto cancellation after 60 minutes if still PENDING
       await this.invoiceExpirationQueue.add(
         BullAction.EXPIRE_INVOICE,
@@ -199,26 +189,8 @@ export class InvoiceService {
           removeOnFail: true
         }
       )
-      console.log('bull')
-      console.log('vao create payment')
 
-      // Sau khi invoice đã commit vào DB, gọi createPayOSPayment
-      const paymentResult = await this.paymentService.createPayOSPayment(
-        {
-          invoiceId: invoice.id
-        },
-        userId,
-        lang
-      )
-      console.log('xong create - payment')
-      return {
-        statusCode: 201,
-        data: {
-          invoice,
-          payment: paymentResult.data
-        },
-        message: this.i18nService.translate(InvoiceMessage.CREATE_SUCCESS, lang)
-      }
+      return invoice
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -230,18 +202,15 @@ export class InvoiceService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      userId
-    }: {
-      id: number
-      data: UpdateInvoiceBodyType
-      userId?: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    userId
+  }: {
+    id: number
+    data: UpdateInvoiceBody
+    userId?: number
+  }) {
     try {
       // Update invoice trong transaction
       const invoice = await this.invoiceRepo.withTransaction(async (tx) => {
@@ -255,11 +224,7 @@ export class InvoiceService {
         )
       })
 
-      return {
-        statusCode: 200,
-        data: invoice,
-        message: this.i18nService.translate(InvoiceMessage.UPDATE_SUCCESS, lang)
-      }
+      return invoice
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new InvoiceNotFoundException()
@@ -272,7 +237,7 @@ export class InvoiceService {
     }
   }
 
-  async delete({ id, userId }: { id: number; userId?: number }, lang: string = 'vi') {
+  async delete({ id, userId }: { id: number; userId?: number }) {
     try {
       const existInvoice = await this.invoiceRepo.findById(id)
       if (!existInvoice) {
@@ -280,11 +245,7 @@ export class InvoiceService {
       }
 
       await this.invoiceRepo.delete(id)
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(InvoiceMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new InvoiceNotFoundException()
@@ -293,60 +254,68 @@ export class InvoiceService {
     }
   }
 
-  async updateInvoiceWhenPaymentSuccess(invoiceId: number) {
-    const invoice = await this.invoiceRepo.findById(invoiceId)
-    if (!invoice) {
-      throw new InvoiceNotFoundException()
-    }
+  // The invoice was paid: its expiration job has nothing left to do
+  async removeExpirationJob(invoiceId: number) {
+    const job = await this.invoiceExpirationQueue.getJob(`invoice-expire-${invoiceId}`)
+    if (job) await job.remove()
+  }
 
-    // Remove scheduled expiration job if exists
-    const jobId = `invoice-expire-${invoiceId}`
-    const existingJob = await this.invoiceExpirationQueue.getJob(jobId)
-    if (existingJob) {
-      await existingJob.remove()
-    }
+  // ---- For other modules (module-boundary plan B4) ----
+  // Same arguments (a caller's transaction client included) and results as the
+  // repo methods, so callers keep their transactions and write order.
 
-    // If already paid, just ensure subscription exists/updated
-    const isAlreadyPaid = invoice.status === 'PAID'
-    if (!isAlreadyPaid) {
-      await this.invoiceRepo.update({ id: invoiceId, data: { status: 'PAID' } })
-    }
+  // The invoice row or null (the service's findById answers the HTTP route)
+  getById(...args: Parameters<InvoiceRepo['findById']>) {
+    return this.invoiceRepo.findById(...args)
+  }
 
-    // Create or update user subscription linked by invoiceId
-    const existingUserSub = await this.userSubRepo.findByInvoiceId(invoiceId)
-    const plan = await this.subscriptionPlanRepo.getById(invoice.subscriptionPlanId)
-    if (!plan) {
-      // If plan missing, nothing more to do
-      return
-    }
-    const now = new Date()
-    const startDate = addTimeUTC(now, 0)
-    const expiresAt =
-      plan.type === 'RECURRING' && plan.durationInDays
-        ? addTimeUTC(startDate, plan.durationInDays * 24 * 60 * 60 * 1000)
-        : null
+  findActiveByUserIdPlanIdAndStatus(
+    ...args: Parameters<InvoiceRepo['findActiveByUserIdPlanIdAndStatus']>
+  ) {
+    return this.invoiceRepo.findActiveByUserIdPlanIdAndStatus(...args)
+  }
 
-    if (!existingUserSub) {
-      const created = await this.userSubRepo.create({
+  // ---- Cancelling a pending invoice (ADR D1 §3) ----
+
+  /**
+   * Cancels an invoice that is still PENDING, inside the caller's transaction.
+   * Shared by the expiration job and the PayOS cancel callback. Only the call
+   * that moves the invoice PENDING -> CANCELLED goes on: its subscription
+   * PENDING_PAYMENT -> PAYMENT_FAILED and the PokeCoin discount is given back.
+   * A paid invoice, or one another call already cancelled, is left alone, so
+   * the coins come back exactly once.
+   */
+  async cancelPending(
+    invoiceId: number,
+    prismaTx: PrismaClient
+  ): Promise<{ cancelled: boolean; refunded: number }> {
+    const { count } = await this.invoiceRepo.cancelIfPending(invoiceId, prismaTx)
+    if (count === 0) return { cancelled: false, refunded: 0 }
+
+    await this.userSubscriptionService.failPendingPayment(invoiceId, prismaTx)
+
+    const invoice = await this.invoiceRepo.getByIdOrThrow(invoiceId, prismaTx)
+    if (invoice.discountAmount <= 0) return { cancelled: true, refunded: 0 }
+
+    // The coins were taken from this wallet when the invoice was created
+    await this.walletService.credit(
+      {
+        userId: invoice.userId,
+        type: walletType.POKE_COINS,
+        amount: invoice.discountAmount,
         createdById: invoice.userId,
-        data: {
-          subscriptionPlanId: plan.id,
-          invoiceId: invoice.id,
-          userId: invoice.userId
-        }
-      })
-      await this.userSubRepo.update({
-        id: created.id,
-        data: { startDate, expiresAt, status: UserSubscriptionStatus.ACTIVE }
-      })
-    } else {
-      // Update if not already ACTIVE
-      if (existingUserSub.status !== UserSubscriptionStatus.ACTIVE) {
-        await this.userSubRepo.update({
-          id: existingUserSub.id,
-          data: { startDate, expiresAt, status: UserSubscriptionStatus.ACTIVE }
-        })
-      }
-    }
+        purpose: walletPurposeType.REFUND,
+        referenceId: invoice.id,
+        source: WalletTransactionSourceType.ADMIN_ADJUST
+      },
+      prismaTx,
+      { createIfMissing: true }
+    )
+    return { cancelled: true, refunded: invoice.discountAmount }
+  }
+
+  // The expiration job: cancelPending in its own transaction
+  expirePending(invoiceId: number) {
+    return this.invoiceRepo.withTransaction((tx) => this.cancelPending(invoiceId, tx))
   }
 }

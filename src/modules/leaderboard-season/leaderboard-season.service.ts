@@ -1,6 +1,6 @@
 import { RoleName } from '@/common/constants/role.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { LeaderboardSeasonMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { TranslationService } from '@/modules/translation/translation.service'
 import {
   LanguageNotExistToTranslateException,
   NotFoundRecordException
@@ -13,34 +13,30 @@ import {
   isUniqueConstraintPrismaError,
   todayUTCWith0000
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
-import { PrismaService } from '@/shared/services/prisma.service'
-import { HttpStatus, Injectable } from '@nestjs/common'
-import { LanguagesRepository } from '../languages/languages.repo'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entities'
-import { TranslationRepository } from '../translation/translation.repo'
+import { PaginationQuery } from '@/shared/models/request.model'
+import { Injectable } from '@nestjs/common'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import {
   LeaderboardSeasonAlreadyExistsException,
   LeaderboardSeasonHasActiveException,
   LeaderboardSeasonHasInvalidToActiveException,
-  LeaderboardSeasonHasOpenedException
+  LeaderboardSeasonHasOpenedException,
+  NotStartedLeaderboardSeasonException
 } from './dto/leaderboard-season.error'
 import {
-  CreateLeaderboardSeasonBodyInputType,
-  CreateLeaderboardSeasonBodyType,
-  UpdateLeaderboardSeasonBodyInputType,
-  UpdateLeaderboardSeasonBodyType
-} from './entities/leaderboard-season.entity'
+  CreateLeaderboardSeasonBody,
+  CreateLeaderboardSeasonBodyInput,
+  UpdateLeaderboardSeasonBody,
+  UpdateLeaderboardSeasonBodyInput
+} from './dto/leaderboard-season.zod-dto'
 import { LeaderboardSeasonRepo } from './leaderboard-season.repo'
 
 @Injectable()
 export class LeaderboardSeasonService {
   constructor(
     private leaderboardSeasonRepo: LeaderboardSeasonRepo,
-    private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepository,
-    private readonly translationRepo: TranslationRepository,
-    private readonly prismaService: PrismaService
+    private readonly languagesService: LanguagesService,
+    private readonly translationService: TranslationService
   ) {}
 
   private async convertTranslationsToLangCodes(
@@ -49,7 +45,7 @@ export class LeaderboardSeasonService {
     if (!nameTranslations || nameTranslations.length === 0) return []
 
     const allLangIds = Array.from(new Set(nameTranslations.map((t) => t.languageId)))
-    const langs = await this.languageRepo.getWithListId(allLangIds)
+    const langs = await this.languagesService.getWithListId(allLangIds)
     const idToCode = new Map(langs.map((l) => [l.id, l.code]))
 
     return nameTranslations.map((t) => ({
@@ -58,8 +54,8 @@ export class LeaderboardSeasonService {
     }))
   }
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi', roleName: string) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+  async list(pagination: PaginationQuery, lang: string = 'vi', roleName: string) {
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     const data = await this.leaderboardSeasonRepo.list(
@@ -89,21 +85,15 @@ export class LeaderboardSeasonService {
       }
     }
 
-    return {
-      data,
-      message: this.i18nService.translate(LeaderboardSeasonMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   async findById(id: number, roleName: string, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     if (!langId) {
-      return {
-        data: null,
-        message: this.i18nService.translate(LeaderboardSeasonMessage.GET_SUCCESS, lang)
-      }
+      return null
     }
 
     const leaderboardSeason = await this.leaderboardSeasonRepo.findByIdWithLangId(
@@ -146,18 +136,14 @@ export class LeaderboardSeasonService {
       : null
 
     return {
-      statusCode: HttpStatus.OK,
-      data: {
-        ...transformed,
-        nameTranslation: currentTranslation?.value ?? null,
-        ...(isAdmin ? { nameTranslations } : {})
-      },
-      message: this.i18nService.translate(LeaderboardSeasonMessage.GET_SUCCESS, lang)
+      ...transformed,
+      nameTranslation: currentTranslation?.value ?? null,
+      ...(isAdmin ? { nameTranslations } : {})
     }
   }
 
   async findByIdWithAllLang(id: number, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
 
     const leaderboardSeason: any =
       await this.leaderboardSeasonRepo.findByIdWithAllLang(id)
@@ -172,7 +158,7 @@ export class LeaderboardSeasonService {
       : null
 
     // map array to { key: code, value }
-    const languages = await this.languageRepo.getWithListId(
+    const languages = await this.languagesService.getWithListId(
       Array.from(
         new Set((leaderboardSeason.nameTranslations ?? []).map((t: any) => t.languageId))
       )
@@ -187,23 +173,16 @@ export class LeaderboardSeasonService {
       }))
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: result,
-      message: this.i18nService.translate(LeaderboardSeasonMessage.GET_SUCCESS, lang)
-    }
+    return result
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreateLeaderboardSeasonBodyInputType
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({
+    data,
+    createdById
+  }: {
+    data: CreateLeaderboardSeasonBodyInput
+    createdById: number
+  }) {
     let createdLeaderboardSeason: any = null
 
     try {
@@ -227,7 +206,7 @@ export class LeaderboardSeasonService {
           : addDaysUTC0000(startDateUtc, 30)
         // Convert data for create
         const now = todayUTCWith0000()
-        const dataCreate: CreateLeaderboardSeasonBodyType = {
+        const dataCreate: CreateLeaderboardSeasonBody = {
           nameKey,
           startDate: startDateUtc,
           endDate: endDateUtc,
@@ -257,7 +236,7 @@ export class LeaderboardSeasonService {
         const allLangCodes = Array.from(new Set(nameList))
 
         // Get languages corresponding to the keys
-        const languages = await this.languageRepo.getWithListCode(allLangCodes)
+        const languages = await this.languagesService.getWithListCode(allLangCodes)
 
         // Create map { code: id } for quick access
         const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
@@ -269,7 +248,7 @@ export class LeaderboardSeasonService {
         }
 
         // Create translation records
-        const translationRecords: CreateTranslationBodyType[] = []
+        const translationRecords: CreateTranslationBody[] = []
 
         // nameTranslations → key = nameKey
         for (const item of data.nameTranslations) {
@@ -281,11 +260,11 @@ export class LeaderboardSeasonService {
         }
 
         // Validate translations (check for duplicate names)
-        await this.translationRepo.validateTranslationRecords(translationRecords)
+        await this.translationService.validateTranslationRecords(translationRecords)
 
         // Create or update translations with transaction
         // const translationPromises = translationRecords.map((record) =>
-        //   this.translationRepo.createOrUpdateWithTransaction(record, prismaTx)
+        //   this.translationService.createOrUpdateWithTransaction(record, prismaTx)
         // )
         // await Promise.all(translationPromises)
 
@@ -303,14 +282,7 @@ export class LeaderboardSeasonService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.CREATED,
-          data: result,
-          message: this.i18nService.translate(
-            LeaderboardSeasonMessage.CREATE_SUCCESS,
-            lang
-          )
-        }
+        return result
       })
     } catch (error) {
       // Rollback: Delete leaderboardSeason if created
@@ -339,30 +311,27 @@ export class LeaderboardSeasonService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateLeaderboardSeasonBodyInputType
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateLeaderboardSeasonBodyInput
+    updatedById: number
+  }) {
     let existingLeaderboardSeason: any = null
 
     try {
       return await this.leaderboardSeasonRepo.withTransaction(async (prismaTx) => {
         let hasOpen = false
-        let translationRecords: CreateTranslationBodyType[] = []
+        let translationRecords: CreateTranslationBody[] = []
         // Get current record
         existingLeaderboardSeason = await this.leaderboardSeasonRepo.findById(id)
         if (!existingLeaderboardSeason) throw new NotFoundRecordException()
 
         // Prepare data for update
-        const dataUpdate: Partial<UpdateLeaderboardSeasonBodyType> = {}
+        const dataUpdate: Partial<UpdateLeaderboardSeasonBody> = {}
 
         if (data.startDate) {
           dataUpdate.startDate = addDaysUTC0000(data.startDate, 0)
@@ -383,7 +352,7 @@ export class LeaderboardSeasonService {
 
           if (allLangCodes.length > 0) {
             // Get languages
-            const languages = await this.languageRepo.getWithListCode(allLangCodes)
+            const languages = await this.languagesService.getWithListCode(allLangCodes)
             const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
 
             // Check missing language
@@ -403,11 +372,11 @@ export class LeaderboardSeasonService {
             }
 
             // Validate translation records
-            await this.translationRepo.validateTranslationRecords(translationRecords)
+            await this.translationService.validateTranslationRecords(translationRecords)
 
             // Update translations with transaction
             // const translationPromises = translationRecords.map((record) =>
-            //   this.translationRepo.createOrUpdateWithTransaction(record, prismaTx)
+            //   this.translationService.createOrUpdateWithTransaction(record, prismaTx)
             // )
             // await Promise.all(translationPromises)
           }
@@ -453,14 +422,7 @@ export class LeaderboardSeasonService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.OK,
-          data: updatedLeaderboardSeason,
-          message: this.i18nService.translate(
-            LeaderboardSeasonMessage.UPDATE_SUCCESS,
-            lang
-          )
-        }
+        return updatedLeaderboardSeason
       })
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
@@ -476,10 +438,7 @@ export class LeaderboardSeasonService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
       const existingLeaderboardSeason = await this.leaderboardSeasonRepo.findById(id)
       if (!existingLeaderboardSeason) {
@@ -491,14 +450,10 @@ export class LeaderboardSeasonService {
           id,
           deletedById
         }),
-        this.translationRepo.deleteByKey(existingLeaderboardSeason.nameKey)
+        this.translationService.deleteByKey(existingLeaderboardSeason.nameKey)
       ])
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(LeaderboardSeasonMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -518,7 +473,7 @@ export class LeaderboardSeasonService {
     lang?: string
     userId: number
     rankName: string | undefined
-    pagination: PaginationQueryType
+    pagination: PaginationQuery
   }) {
     const currentPage = pagination.currentPage || 1
     const pageSize = pagination.pageSize || 20
@@ -533,10 +488,7 @@ export class LeaderboardSeasonService {
       season = await this.leaderboardSeasonRepo.findActiveSeason()
       if (!season) {
         // fallback to most recent by endDate
-        season = await this.prismaService.leaderboardSeason.findFirst({
-          where: { deletedAt: null },
-          orderBy: { endDate: 'desc' }
-        })
+        season = await this.leaderboardSeasonRepo.findLatestByEndDate()
       }
     }
 
@@ -561,14 +513,7 @@ export class LeaderboardSeasonService {
         eloFilter = { gte: found.minElo, lte: found.maxElo }
       } else {
         // unknown rankName -> return empty
-        return {
-          statusCode: HttpStatus.OK,
-          data: { top: [], me: null },
-          message: this.i18nService.translate(
-            LeaderboardSeasonMessage.GET_LIST_SUCCESS,
-            lang
-          )
-        }
+        return { top: [], me: null }
       }
     }
 
@@ -583,21 +528,14 @@ export class LeaderboardSeasonService {
       if (eloFilter) whereUsers.eloscore = eloFilter
 
       // Count total items matching filter
-      totalItems = await this.prismaService.user.count({ where: whereUsers })
+      totalItems = await this.leaderboardSeasonRepo.countRankedUsers(whereUsers)
 
       // Query top users by eloscore (secondary sort by id for stability)
-      const topUsers = await this.prismaService.user.findMany({
-        where: whereUsers,
-        orderBy: [{ eloscore: 'desc' }, { name: 'asc' }],
+      const topUsers = await this.leaderboardSeasonRepo.pageRankedUsers(
+        whereUsers,
         skip,
-        take,
-        select: {
-          id: true,
-          name: true,
-          avatar: true,
-          eloscore: true
-        }
-      })
+        take
+      )
 
       topMapped = topUsers.map((u: any, idx: number) => ({
         position: skip + idx + 1,
@@ -609,10 +547,7 @@ export class LeaderboardSeasonService {
       }))
 
       // Compute 'me' record
-      const myUser = await this.prismaService.user.findUnique({
-        where: { id: userId, deletedAt: null },
-        select: { id: true, name: true, avatar: true, eloscore: true }
-      })
+      const myUser = await this.leaderboardSeasonRepo.findRankedUser(userId)
 
       if (myUser) {
         // Check if user matches rankName filter (if provided)
@@ -621,19 +556,10 @@ export class LeaderboardSeasonService {
 
         if (matchesFilter) {
           // Count users with same filter and higher elo, or same elo but lower id
-          const higherCount = await this.prismaService.user.count({
-            where: {
-              deletedAt: null,
-              ...(eloFilter ? { eloscore: eloFilter } : {}),
-              OR: [
-                { eloscore: { gt: myUser.eloscore } },
-                {
-                  eloscore: myUser.eloscore,
-                  id: { lt: myUser.id }
-                }
-              ]
-            }
-          })
+          const higherCount = await this.leaderboardSeasonRepo.countUsersRankedAbove(
+            myUser,
+            eloFilter
+          )
 
           me = {
             position: higherCount + 1,
@@ -651,18 +577,14 @@ export class LeaderboardSeasonService {
       if (eloFilter) whereTop.finalElo = eloFilter
 
       // Count total items matching filter
-      totalItems = await this.prismaService.userSeasonHistory.count({ where: whereTop })
+      totalItems = await this.leaderboardSeasonRepo.countSeasonHistories(whereTop)
 
       // Query top records (secondary sort by userId for stability)
-      const top = await this.prismaService.userSeasonHistory.findMany({
-        where: whereTop,
-        orderBy: [{ finalElo: 'desc' }, { userId: 'asc' }],
+      const top = await this.leaderboardSeasonRepo.pageSeasonHistories(
+        whereTop,
         skip,
-        take,
-        include: {
-          user: { select: { id: true, name: true, avatar: true } }
-        }
-      })
+        take
+      )
 
       topMapped = top.map((h: any, idx: number) => ({
         position: skip + idx + 1,
@@ -674,10 +596,7 @@ export class LeaderboardSeasonService {
       }))
 
       // Compute 'me' record
-      const myHist = await this.prismaService.userSeasonHistory.findFirst({
-        where: { seasonId, userId, deletedAt: null },
-        include: { user: { select: { id: true, name: true, avatar: true } } }
-      })
+      const myHist = await this.leaderboardSeasonRepo.findSeasonHistory(seasonId, userId)
 
       if (myHist && myHist.finalElo !== null) {
         // Check if user matches rankName filter (if provided)
@@ -685,20 +604,11 @@ export class LeaderboardSeasonService {
 
         if (matchesFilter) {
           // Count higher records with same filter
-          const higherCount = await this.prismaService.userSeasonHistory.count({
-            where: {
-              seasonId,
-              deletedAt: null,
-              ...(eloFilter ? { finalElo: eloFilter } : {}),
-              OR: [
-                { finalElo: { gt: myHist.finalElo } },
-                {
-                  finalElo: myHist.finalElo,
-                  userId: { lt: myHist.userId }
-                }
-              ]
-            }
-          })
+          const higherCount = await this.leaderboardSeasonRepo.countHistoriesRankedAbove(
+            seasonId,
+            { finalElo: myHist.finalElo, userId: myHist.userId },
+            eloFilter
+          )
 
           me = {
             position: higherCount + 1,
@@ -713,23 +623,19 @@ export class LeaderboardSeasonService {
     }
 
     return {
-      statusCode: HttpStatus.OK,
-      data: {
-        results: topMapped,
-        pagination: {
-          current: currentPage,
-          pageSize,
-          totalPage: Math.ceil(totalItems / pageSize),
-          totalItem: totalItems
-        },
-        me
+      results: topMapped,
+      pagination: {
+        current: currentPage,
+        pageSize,
+        totalPage: Math.ceil(totalItems / pageSize),
+        totalItem: totalItems
       },
-      message: this.i18nService.translate(LeaderboardSeasonMessage.GET_LIST_SUCCESS, lang)
+      me
     }
   }
 
   async getRewardLeaderboardSeasonNow(roleName: string, lang: string) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     if (!langId) {
       throw new LanguageNotExistToTranslateException()
     }
@@ -739,6 +645,10 @@ export class LeaderboardSeasonService {
         langId,
         isAdmin
       )
+    // no season running: say so (reading its translations used to be a 500)
+    if (!inforLeaderboardWithRewards) {
+      throw new NotStartedLeaderboardSeasonException()
+    }
     const nameTranslations = await this.convertTranslationsToLangCodes(
       (inforLeaderboardWithRewards as any).nameTranslations || []
     )
@@ -768,13 +678,100 @@ export class LeaderboardSeasonService {
       : null
 
     return {
-      statusCode: HttpStatus.OK,
-      data: {
-        ...transformed,
-        nameTranslation: currentTranslation?.value ?? null,
-        ...(isAdmin ? { nameTranslations } : {})
-      },
-      message: this.i18nService.translate(LeaderboardSeasonMessage.GET_LIST_SUCCESS, lang)
+      ...transformed,
+      nameTranslation: currentTranslation?.value ?? null,
+      ...(isAdmin ? { nameTranslations } : {})
     }
+  }
+
+  // ---- Catalog lookups for other modules (module-boundary plan B3) ----
+  // Same arguments and results as the repo methods; no message, no throw.
+
+  getById(...args: Parameters<LeaderboardSeasonRepo['findById']>) {
+    return this.leaderboardSeasonRepo.findById(...args)
+  }
+
+  findWithDetailsWithoutLang(
+    ...args: Parameters<LeaderboardSeasonRepo['findWithDetailsWithoutLang']>
+  ) {
+    return this.leaderboardSeasonRepo.findWithDetailsWithoutLang(...args)
+  }
+
+  findActiveSeason() {
+    return this.leaderboardSeasonRepo.findActiveSeason()
+  }
+
+  findActiveSeasonWithLangIdAndUser(
+    ...args: Parameters<LeaderboardSeasonRepo['findActiveSeasonWithLangIdAndUser']>
+  ) {
+    return this.leaderboardSeasonRepo.findActiveSeasonWithLangIdAndUser(...args)
+  }
+
+  findByIdWithLangId(...args: Parameters<LeaderboardSeasonRepo['findByIdWithLangId']>) {
+    return this.leaderboardSeasonRepo.findByIdWithLangId(...args)
+  }
+
+  // ---- Season cronjob (status, finalize, precreate) ----
+
+  withTransaction(...args: Parameters<LeaderboardSeasonRepo['withTransaction']>) {
+    return this.leaderboardSeasonRepo.withTransaction(...args)
+  }
+
+  findEndedActiveIds(...args: Parameters<LeaderboardSeasonRepo['findEndedActiveIds']>) {
+    return this.leaderboardSeasonRepo.findEndedActiveIds(...args)
+  }
+
+  setStatus(...args: Parameters<LeaderboardSeasonRepo['setStatus']>) {
+    return this.leaderboardSeasonRepo.setStatus(...args)
+  }
+
+  findAllPreview(...args: Parameters<LeaderboardSeasonRepo['findAllPreview']>) {
+    return this.leaderboardSeasonRepo.findAllPreview(...args)
+  }
+
+  countActive(...args: Parameters<LeaderboardSeasonRepo['countActive']>) {
+    return this.leaderboardSeasonRepo.countActive(...args)
+  }
+
+  activate(...args: Parameters<LeaderboardSeasonRepo['activate']>) {
+    return this.leaderboardSeasonRepo.activate(...args)
+  }
+
+  findActiveForPrecreate(
+    ...args: Parameters<LeaderboardSeasonRepo['findActiveForPrecreate']>
+  ) {
+    return this.leaderboardSeasonRepo.findActiveForPrecreate(...args)
+  }
+
+  findTemplateForPrecreate(
+    ...args: Parameters<LeaderboardSeasonRepo['findTemplateForPrecreate']>
+  ) {
+    return this.leaderboardSeasonRepo.findTemplateForPrecreate(...args)
+  }
+
+  findFirstByNameKeyPrefix(
+    ...args: Parameters<LeaderboardSeasonRepo['findFirstByNameKeyPrefix']>
+  ) {
+    return this.leaderboardSeasonRepo.findFirstByNameKeyPrefix(...args)
+  }
+
+  findPreviewStartingAt(
+    ...args: Parameters<LeaderboardSeasonRepo['findPreviewStartingAt']>
+  ) {
+    return this.leaderboardSeasonRepo.findPreviewStartingAt(...args)
+  }
+
+  createSeason(...args: Parameters<LeaderboardSeasonRepo['createSeason']>) {
+    return this.leaderboardSeasonRepo.createSeason(...args)
+  }
+
+  setNameKeyWithTranslations(
+    ...args: Parameters<LeaderboardSeasonRepo['setNameKeyWithTranslations']>
+  ) {
+    return this.leaderboardSeasonRepo.setNameKeyWithTranslations(...args)
+  }
+
+  disablePrecreate(...args: Parameters<LeaderboardSeasonRepo['disablePrecreate']>) {
+    return this.leaderboardSeasonRepo.disablePrecreate(...args)
   }
 }

@@ -1,17 +1,20 @@
 import {
   FeatureKeyType,
+  UserSubscriptionStatus,
   UserSubscriptionStatusType
 } from '@/common/constants/subscription.constant'
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
-  CreateUserSubscriptionBodyType,
+  CreateUserSubscriptionBody,
+  UpdateUserSubscriptionBody
+} from './dto/user-subscription.zod-dto'
+import {
   USER_SEASON_HISTORY_FIELDS,
-  UpdateUserSubscriptionBodyType,
-  UserSubscriptionType
+  UserSubscription
 } from './entities/user-subscription.entity'
 
 @Injectable()
@@ -26,10 +29,10 @@ export class UserSubscriptionRepo {
       data
     }: {
       createdById: number
-      data: CreateUserSubscriptionBodyType & { userId: number }
+      data: CreateUserSubscriptionBody & { userId: number }
     },
     prismaTx?: PrismaClient
-  ): Promise<UserSubscriptionType> {
+  ): Promise<UserSubscription> {
     const client = prismaTx || this.prismaService
     return client.userSubscription.create({
       data: {
@@ -46,11 +49,11 @@ export class UserSubscriptionRepo {
       updatedById
     }: {
       id: number
-      data: UpdateUserSubscriptionBodyType
+      data: UpdateUserSubscriptionBody
       updatedById?: number
     },
     prismaTx?: PrismaClient
-  ): Promise<UserSubscriptionType> {
+  ): Promise<UserSubscription> {
     const client = prismaTx || this.prismaService
     return client.userSubscription.update({
       where: {
@@ -67,7 +70,7 @@ export class UserSubscriptionRepo {
     id: number,
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<UserSubscriptionType> {
+  ): Promise<UserSubscription> {
     const client = prismaTx || this.prismaService
     return isHard
       ? client.userSubscription.delete({
@@ -84,7 +87,7 @@ export class UserSubscriptionRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, USER_SEASON_HISTORY_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -120,7 +123,7 @@ export class UserSubscriptionRepo {
   }
 
   async getUserSubWithSubPlan(
-    pagination: PaginationQueryType,
+    pagination: PaginationQuery,
     userId: number,
     langId?: number
   ) {
@@ -199,7 +202,7 @@ export class UserSubscriptionRepo {
     }
   }
 
-  findById(id: number): Promise<UserSubscriptionType | null> {
+  findById(id: number): Promise<UserSubscription | null> {
     return this.prismaService.userSubscription.findUnique({
       where: {
         id,
@@ -281,7 +284,7 @@ export class UserSubscriptionRepo {
     userId: number,
     planId: number,
     status: UserSubscriptionStatusType
-  ): Promise<UserSubscriptionType | null> {
+  ): Promise<UserSubscription | null> {
     return this.prismaService.userSubscription.findFirst({
       where: {
         userId,
@@ -292,7 +295,7 @@ export class UserSubscriptionRepo {
     })
   }
 
-  findByInvoiceId(invoiceId: number): Promise<UserSubscriptionType | null> {
+  findByInvoiceId(invoiceId: number): Promise<UserSubscription | null> {
     return this.prismaService.userSubscription.findFirst({
       where: {
         invoiceId,
@@ -426,13 +429,95 @@ export class UserSubscriptionRepo {
   findByUserAndInvoice(
     userId: number,
     invoiceId: number
-  ): Promise<UserSubscriptionType | null> {
+  ): Promise<UserSubscription | null> {
     return this.prismaService.userSubscription.findFirst({
       where: {
         userId,
         invoiceId,
         deletedAt: null
       }
+    })
+  }
+
+  // ---- Expiry cron (HandleUserSubscriptionCronjob) ----
+
+  findExpiredActive(now: Date) {
+    return this.prismaService.userSubscription.findMany({
+      where: {
+        status: 'ACTIVE',
+        expiresAt: {
+          not: null,
+          lt: now // expiresAt < now (expired)
+        },
+        deletedAt: null
+      },
+      select: {
+        id: true,
+        userId: true,
+        expiresAt: true
+      }
+    })
+  }
+
+  cancelByIds(ids: number[]) {
+    return this.prismaService.userSubscription.updateMany({
+      where: {
+        id: { in: ids }
+      },
+      data: {
+        status: 'CANCELED'
+      }
+    })
+  }
+
+  findActiveExpiringBetween(startOfTargetDay: Date, endOfTargetDay: Date) {
+    return this.prismaService.userSubscription.findMany({
+      where: {
+        status: 'ACTIVE',
+        expiresAt: {
+          not: null,
+          gte: startOfTargetDay,
+          lte: endOfTargetDay
+        },
+        deletedAt: null
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        },
+        subscriptionPlan: {
+          select: {
+            id: true,
+            subscription: {
+              select: {
+                nameKey: true,
+                nameTranslations: {
+                  where: {
+                    language: {
+                      code: 'vi'
+                    }
+                  },
+                  select: {
+                    value: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
+  }
+
+  // The invoice was cancelled: its subscription, if still waiting, failed
+  failPendingPayment(invoiceId: number, prismaTx: PrismaClient) {
+    return prismaTx.userSubscription.updateMany({
+      where: { invoiceId, status: UserSubscriptionStatus.PENDING_PAYMENT },
+      data: { status: UserSubscriptionStatus.PAYMENT_FAILED }
     })
   }
 }

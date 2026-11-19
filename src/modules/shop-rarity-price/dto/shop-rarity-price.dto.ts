@@ -7,7 +7,7 @@ import {
   UpdateShopRarityPriceBodySchema,
   UpdateShopRarityPriceResSchema,
   UpdateWithListItemResSchema
-} from '../entities/shop-rarity-price.entity'
+} from './shop-rarity-price.zod-dto'
 
 // Request DTOs
 export class CreateShopRarityPriceBodyDTO extends createZodDto(

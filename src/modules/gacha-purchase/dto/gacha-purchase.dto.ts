@@ -7,7 +7,7 @@ import {
   GetGachaPurchaseParamsSchema,
   UpdateGachaPurchaseBodySchema,
   UpdateGachaPurchaseResSchema
-} from '../entities/gacha-purchase.entity'
+} from './gacha-purchase.zod-dto'
 
 // Request DTOs
 export class CreateGachaPurchaseBodyDTO extends createZodDto(

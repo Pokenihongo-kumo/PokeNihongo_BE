@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { GachaBannerMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { AuthenticationGuard } from '@/common/guards/authentication.guard'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
@@ -32,89 +34,103 @@ import { GachaBannerService } from './gacha-banner.service'
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class GachaBannerController {
-  constructor(private readonly gachaBannerService: GachaBannerService) {}
+  constructor(
+    private readonly gachaBannerService: GachaBannerService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseSchema)
-  list(
+  async list(
     @Query() query: PaginationQueryDTO,
     @I18nLang() lang: string,
     @ActiveUser('roleName') roleName: string
   ) {
-    return this.gachaBannerService.list(query, lang, roleName)
+    return {
+      message: this.i18nService.translate(GachaBannerMessage.GET_LIST_SUCCESS, lang),
+      data: await this.gachaBannerService.list(query, lang, roleName)
+    }
   }
 
   @Get('all/details')
   @ZodSerializerDto(PaginationResponseSchema)
-  listwithDetail(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return this.gachaBannerService.listwithDetail(query, lang)
+  async listwithDetail(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(GachaBannerMessage.GET_LIST_SUCCESS, lang),
+      data: await this.gachaBannerService.listwithDetail(query, lang)
+    }
   }
 
   @Get('today/user')
   @ZodSerializerDto(GetGachaBannerByTodayResDTO)
-  getByToday(@I18nLang() lang: string, @ActiveUser('userId') userId: number) {
-    return this.gachaBannerService.getByToday(lang, userId)
+  async getByToday(@I18nLang() lang: string, @ActiveUser('userId') userId: number) {
+    return {
+      message: this.i18nService.translate(GachaBannerMessage.GET_LIST_SUCCESS, lang),
+      data: await this.gachaBannerService.getByToday(lang, userId)
+    }
   }
 
   @Get(':gachaBannerId')
   @ZodSerializerDto(GetGachaBannerDetailResDTO)
-  findById(
+  async findById(
     @Param() params: GetGachaBannerParamsDTO,
     @I18nLang() lang: string,
     @ActiveUser('roleName') roleName: string
   ) {
-    return this.gachaBannerService.findById(params.gachaBannerId, lang, roleName)
+    return {
+      message: this.i18nService.translate(GachaBannerMessage.GET_SUCCESS, lang),
+      data: await this.gachaBannerService.findById(params.gachaBannerId, lang, roleName)
+    }
   }
 
   @Post()
   @ZodSerializerDto(CreateGachaBannerResDTO)
-  create(
+  async create(
     @Body() body: CreatedGachaBannerBodyInputDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.gachaBannerService.create(
-      {
+    return {
+      message: this.i18nService.translate(GachaBannerMessage.CREATE_SUCCESS, lang),
+      data: await this.gachaBannerService.create({
         data: body,
         createdById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Put(':gachaBannerId')
   @ZodSerializerDto(UpdateGachaBannerResDTO)
-  update(
+  async update(
     @Body() body: UpdateGachaBannerBodyInputDTO,
     @Param() params: GetGachaBannerParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    console.log('vao ne')
-
-    return this.gachaBannerService.update(
-      {
+    return {
+      message: this.i18nService.translate(GachaBannerMessage.UPDATE_SUCCESS, lang),
+      data: await this.gachaBannerService.update({
         data: body,
         id: params.gachaBannerId,
         updatedById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':gachaBannerId')
   @ZodSerializerDto(MessageResDTO)
-  delete(
+  async delete(
     @Param() params: GetGachaBannerParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.gachaBannerService.delete(
-      {
-        id: params.gachaBannerId,
-        deletedById: userId
-      },
-      lang
-    )
+    await this.gachaBannerService.delete({
+      id: params.gachaBannerId,
+      deletedById: userId
+    })
+    return {
+      message: this.i18nService.translate(GachaBannerMessage.DELETE_SUCCESS, lang),
+      data: null
+    }
   }
 }

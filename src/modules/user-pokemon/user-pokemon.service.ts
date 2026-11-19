@@ -1,19 +1,17 @@
-import { I18nService } from '@/i18n/i18n.service'
-import { UserPokemonMessage } from '@/i18n/message-keys'
+import { LevelService } from '@/modules/level/level.service'
+import { MatchService } from '@/modules/match/match.service'
+import { PokemonService } from '@/modules/pokemon/pokemon.service'
+import { TypeEffectivenessService } from '@/modules/type-effectiveness/type-effectiveness.service'
+import { UserCoreService } from '@/modules/user/user-core.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
-import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
-import { PrismaService } from 'src/shared/services/prisma.service'
-import { LevelRepo } from '../level/level.repo'
-import { MatchRepo } from '../match/match.repo'
-import { PokemonRepo } from '../pokemon/pokemon.repo'
 import {
   ErrorInitLevelPokemonException,
   InvalidUserAccessPokemonException,
@@ -22,31 +20,23 @@ import {
   UserNotInRoundException,
   UserPokemonNotFoundException
 } from './dto/user-pokemon.error'
-import {
-  CreateUserPokemonBodyType,
-  UpdateUserPokemonBodyType
-} from './entities/user-pokemon.entity'
+import { CreateUserPokemonBody, UpdateUserPokemonBody } from './dto/user-pokemon.zod-dto'
 import { UserPokemonRepo } from './user-pokemon.repo'
 
 @Injectable()
 export class UserPokemonService {
   constructor(
     private userPokemonRepo: UserPokemonRepo,
-    private pokemonRepo: PokemonRepo,
-    private readonly matchRepo: MatchRepo,
-    private levelRepo: LevelRepo,
-    private readonly sharedUserRepository: SharedUserRepository,
-    private readonly i18nService: I18nService,
-    private prismaService: PrismaService
+    private pokemonService: PokemonService,
+    private readonly matchService: MatchService,
+    private levelService: LevelService,
+    private readonly userCoreService: UserCoreService,
+    private readonly typeEffectivenessService: TypeEffectivenessService
   ) {}
 
-  async list(pagination: PaginationQueryType, userId: number, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, userId: number) {
     const data = await this.userPokemonRepo.list(pagination, userId)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(UserPokemonMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   // Add Pokemon for user via Shop purchase (nickname = null, isMain = false, level = conditionLevel if has prev, else first level)
@@ -61,7 +51,7 @@ export class UserPokemonService {
     }
 
     // 2) Lấy thông tin pokemon
-    const [pokemon] = await Promise.all([this.pokemonRepo.findById(pokemonId)])
+    const [pokemon] = await Promise.all([this.pokemonService.getById(pokemonId)])
 
     if (!pokemon) {
       throw new NotFoundRecordException()
@@ -84,18 +74,18 @@ export class UserPokemonService {
   }
 
   async addPokemonByGacha(
-    { userId, data }: { userId: number; data: CreateUserPokemonBodyType },
+    { userId, data }: { userId: number; data: CreateUserPokemonBody },
     prismaTx?: PrismaClient
   ) {
     try {
       // Get Pokemon info to use nameJp as nickname if not provided
-      const pokemon = await this.pokemonRepo.findById(data.pokemonId)
+      const pokemon = await this.pokemonService.getById(data.pokemonId)
       if (!pokemon) {
         throw new NotFoundRecordException()
       }
 
       // Get user check is first pokemon
-      const user = await this.sharedUserRepository.findUnique({ id: userId })
+      const user = await this.userCoreService.findUnique({ id: userId })
 
       // Check if user already has this Pokemon
       const existingUserPokemon = await this.userPokemonRepo.findByUserAndPokemon(
@@ -131,38 +121,27 @@ export class UserPokemonService {
     }
   }
 
-  async getUserPokemonStats(userId: number, lang: string = 'vi') {
+  async getUserPokemonStats(userId: number) {
     const userPokemons = await this.userPokemonRepo.getByUserId(userId)
-    const totalPokemons = await this.prismaService.pokemon.count()
+    const totalPokemons = await this.pokemonService.countAll()
     const userPokemonsCount = userPokemons.length
     const ownershipPercentage =
       totalPokemons > 0 ? Math.round((userPokemonsCount / totalPokemons) * 100) : 0
     return {
-      statusCode: 200,
-      data: {
-        ownershipPercentage,
-        userPokemonsCount,
-        totalPokemons
-      },
-      message: this.i18nService.translate(UserPokemonMessage.GET_STATS_SUCCESS, lang)
+      ownershipPercentage,
+      userPokemonsCount,
+      totalPokemons
     }
   }
 
   async getPokemonListWithUser(
-    query: PaginationQueryType,
+    query: PaginationQuery,
     userId: number,
     lang: string = 'vi',
-    hasPokemon: string | undefined = undefined
+    filterHasPoke?: boolean
   ) {
-    console.log('ser - hasPokemon: ', hasPokemon)
-    console.log('currentP: ', query.currentPage)
-    console.log('pageS: ', query.pageSize)
-
-    const filterHasPoke =
-      hasPokemon === 'true' ? true : hasPokemon === 'false' ? false : undefined
-
     // 1. Lấy danh sách tất cả pokemon
-    const pokemonData = await this.pokemonRepo.getPokemonListWithPokemonUser(
+    const pokemonData = await this.pokemonService.getPokemonListWithPokemonUser(
       query,
       query.pageSize
     )
@@ -205,14 +184,10 @@ export class UserPokemonService {
       }
     }
 
-    return {
-      statusCode: 200,
-      data: pokemonData,
-      message: this.i18nService.translate(UserPokemonMessage.GET_LIST_SUCCESS, lang)
-    }
+    return pokemonData
   }
 
-  async listWithUserId(userId: number, lang: string = 'vi') {
+  async listWithUserId(userId: number) {
     const data = await this.userPokemonRepo.getByUserId(userId)
 
     // Optimize: Calculate weaknesses for all Pokemon in batch
@@ -226,26 +201,10 @@ export class UserPokemonService {
       })
 
       // Batch load all type effectiveness data once
-      const allTypeEffectiveness = await this.prismaService.typeEffectiveness.findMany({
-        where: {
-          defenderId: {
-            in: Array.from(allTypeIds)
-          },
-          multiplier: {
-            gt: 1 // Only get super effective (weaknesses)
-          }
-        },
-        include: {
-          attacker: {
-            select: {
-              id: true,
-              type_name: true,
-              display_name: true,
-              color_hex: true
-            }
-          }
-        }
-      })
+      const allTypeEffectiveness =
+        await this.typeEffectivenessService.findWeaknessesForDefenders(
+          Array.from(allTypeIds)
+        )
 
       // Create lookup map for faster access
       const effectivenessMap = new Map<number, any[]>()
@@ -289,18 +248,10 @@ export class UserPokemonService {
         }
       })
 
-      return {
-        statusCode: 200,
-        data: userPokemonsWithWeaknesses,
-        message: this.i18nService.translate(UserPokemonMessage.GET_LIST_SUCCESS, lang)
-      }
+      return userPokemonsWithWeaknesses
     }
 
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(UserPokemonMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   // Helper method to calculate weaknesses for a Pokemon (copied from PokemonService)
@@ -311,24 +262,8 @@ export class UserPokemonService {
 
     const typeIds = pokemonTypes.map((type) => type.id)
 
-    const typeEffectiveness = await this.prismaService.typeEffectiveness.findMany({
-      where: {
-        defenderId: {
-          in: typeIds
-        },
-        deletedAt: null
-      },
-      include: {
-        attacker: {
-          select: {
-            id: true,
-            type_name: true,
-            display_name: true,
-            color_hex: true
-          }
-        }
-      }
-    })
+    const typeEffectiveness =
+      await this.typeEffectivenessService.findForDefenders(typeIds)
 
     const weaknessMap = new Map<
       number,
@@ -371,7 +306,7 @@ export class UserPokemonService {
       }))
   }
 
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const userPokemon = await this.userPokemonRepo.findById(id)
     if (!userPokemon) {
       throw new UserPokemonNotFoundException()
@@ -389,7 +324,7 @@ export class UserPokemonService {
         const nextWeaknesses = await this.getWeaknessesForPokemon(nextPokemon.types)
 
         // Get level info for this pokemon if user owns it
-        let userLevel: any = null
+        const userLevel: any = null
         const userOwnedPokemon = await this.userPokemonRepo.findByUserAndPokemon(
           userPokemon.userId,
           nextPokemon.id
@@ -437,20 +372,13 @@ export class UserPokemonService {
         : userPokemon.pokemon
     }
 
-    return {
-      statusCode: 200,
-      data: enrichedUserPokemon,
-      message: this.i18nService.translate(UserPokemonMessage.GET_DETAIL_SUCCESS, lang)
-    }
+    return enrichedUserPokemon
   }
 
-  async create(
-    { userId, data }: { userId: number; data: CreateUserPokemonBodyType },
-    lang: string = 'vi'
-  ) {
+  async create({ userId, data }: { userId: number; data: CreateUserPokemonBody }) {
     try {
       // Get Pokemon info to use nameJp as nickname if not provided
-      const pokemon = await this.pokemonRepo.findById(data.pokemonId)
+      const pokemon = await this.pokemonService.getById(data.pokemonId)
       if (!pokemon) {
         throw new NotFoundRecordException()
       }
@@ -462,15 +390,15 @@ export class UserPokemonService {
       }
 
       // Get user check is first pokemon
-      const user = await this.sharedUserRepository.findUnique({ id: userId })
+      const user = await this.userCoreService.findUnique({ id: userId })
       let isFirstPokemon = false
 
       if (user?.levelId === null) {
-        const firstLevelUser = await this.levelRepo.getFirstLevelUser()
+        const firstLevelUser = await this.levelService.getFirstLevelUser()
         if (!firstLevelUser) {
           throw new ErrorInitLevelPokemonException()
         }
-        await this.sharedUserRepository.addLevelForUser(userId, firstLevelUser.id)
+        await this.userCoreService.addLevelForUser(userId, firstLevelUser.id)
         isFirstPokemon = true
       }
 
@@ -502,11 +430,7 @@ export class UserPokemonService {
           isMain: isFirstPokemon // Set isMain = true nếu là Pokemon đầu tiên
         }
       })
-      return {
-        statusCode: 201,
-        data: result,
-        message: this.i18nService.translate(UserPokemonMessage.CREATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isUniqueConstraintPrismaError(error)) {
         throw new NicknameAlreadyExistsException()
@@ -518,18 +442,15 @@ export class UserPokemonService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      userId
-    }: {
-      id: number
-      data: UpdateUserPokemonBodyType
-      userId?: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    userId
+  }: {
+    id: number
+    data: UpdateUserPokemonBody
+    userId?: number
+  }) {
     try {
       const existUserPokemon = await this.userPokemonRepo.findById(id)
       if (!existUserPokemon) {
@@ -563,11 +484,7 @@ export class UserPokemonService {
         id,
         data: updateData
       })
-      return {
-        statusCode: 200,
-        data: userPokemon,
-        message: this.i18nService.translate(UserPokemonMessage.UPDATE_SUCCESS, lang)
-      }
+      return userPokemon
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UserPokemonNotFoundException()
@@ -582,7 +499,7 @@ export class UserPokemonService {
     }
   }
 
-  async delete({ id, userId }: { id: number; userId?: number }, lang: string = 'vi') {
+  async delete({ id, userId }: { id: number; userId?: number }) {
     try {
       const existUserPokemon = await this.userPokemonRepo.findById(id)
       if (!existUserPokemon) {
@@ -595,11 +512,7 @@ export class UserPokemonService {
       }
 
       await this.userPokemonRepo.delete(id)
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(UserPokemonMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UserPokemonNotFoundException()
@@ -608,16 +521,7 @@ export class UserPokemonService {
     }
   }
 
-  async getUserPokemons(userId: number) {
-    const data = await this.userPokemonRepo.getUserPokemons(userId)
-    return {
-      statusCode: 200,
-      data,
-      message: 'Lấy danh sách Pokemon của người dùng thành công'
-    }
-  }
-
-  async getWithEvolvesPokemon(pokemonId: number, userId: number, lang: string = 'vi') {
+  async getWithEvolvesPokemon(pokemonId: number, userId: number) {
     // 1. Lấy userPokemon với pokemon, level và evolution chain
     const userPokemon = await this.userPokemonRepo.findByPokemonId(pokemonId, userId)
 
@@ -626,9 +530,6 @@ export class UserPokemonService {
     }
 
     const weaknesses = await this.getWeaknessesForPokemon(userPokemon.pokemon?.types)
-    console.log('userId: ', userId)
-
-    console.log('userpokemon.userId: ', userPokemon.userId)
 
     // 2. Verify ownership
     if (userPokemon.userId !== userId) {
@@ -689,20 +590,12 @@ export class UserPokemonService {
     }
     // chinh lai gan userPokemon  = true hoac false
 
-    return {
-      statusCode: 200,
-      data: result,
-      message: this.i18nService.translate(UserPokemonMessage.GET_DETAIL_SUCCESS, lang)
-    }
+    return result
   }
 
-  async getPokemonListWithUserByRounds(
-    query: PaginationQueryType,
-    userId: number,
-    lang: string = 'vi'
-  ) {
+  async getPokemonListWithUserByRounds(query: PaginationQuery, userId: number) {
     // 1. Lấy danh sách tất cả pokemon
-    const pokemonData = await this.pokemonRepo.getPokemonListWithPokemonUser(query)
+    const pokemonData = await this.pokemonService.getPokemonListWithPokemonUser(query)
     const pokemonIdToRarity = new Map<number, string>()
     ;(pokemonData.results || []).forEach((p: any) => {
       pokemonIdToRarity.set(p.id, p.rarity)
@@ -722,7 +615,7 @@ export class UserPokemonService {
       })
     }
     // 3. dựa vào userId tìm ra match
-    const matches = await this.matchRepo.getMatchWithRoundsByUserId(userId)
+    const matches = await this.matchService.getMatchWithRoundsByUserId(userId)
 
     // neu ko co tuc la user dang ko co torng tran nao
     if (!matches) {
@@ -787,12 +680,53 @@ export class UserPokemonService {
     }
 
     return {
-      statusCode: 200,
-      data: {
-        results: pokemonListWithUser,
-        pagination: updatedPagination
-      },
-      message: this.i18nService.translate(UserPokemonMessage.GET_LIST_SUCCESS, lang)
+      results: pokemonListWithUser,
+      pagination: updatedPagination
     }
+  }
+
+  // ---- For other modules (module-boundary plan B4) ----
+  // Same arguments (a caller's transaction client included) and results as the
+  // repo methods, so callers keep their transactions and write order.
+
+  // The repo's create (the service's create answers the HTTP route)
+  insert(...args: Parameters<UserPokemonRepo['create']>) {
+    return this.userPokemonRepo.create(...args)
+  }
+
+  findByUserAndPokemon(...args: Parameters<UserPokemonRepo['findByUserAndPokemon']>) {
+    return this.userPokemonRepo.findByUserAndPokemon(...args)
+  }
+
+  getByUserId(...args: Parameters<UserPokemonRepo['getByUserId']>) {
+    return this.userPokemonRepo.getByUserId(...args)
+  }
+
+  unsetMainPokemon(...args: Parameters<UserPokemonRepo['unsetMainPokemon']>) {
+    return this.userPokemonRepo.unsetMainPokemon(...args)
+  }
+
+  // The repo's update (the service's update answers the HTTP route)
+  updateUserPokemon(...args: Parameters<UserPokemonRepo['update']>) {
+    return this.userPokemonRepo.update(...args)
+  }
+
+  // ---- For other modules (module-boundary plan B7) ----
+
+  findOwnedAmong(...args: Parameters<UserPokemonRepo['findOwnedAmong']>) {
+    return this.userPokemonRepo.findOwnedAmong(...args)
+  }
+
+  // ---- For other modules (module-boundary plan B6) ----
+  // Same arguments and results as the repo methods.
+
+  countPokemonByUser(...args: Parameters<UserPokemonRepo['countPokemonByUser']>) {
+    return this.userPokemonRepo.countPokemonByUser(...args)
+  }
+
+  // ---- For other modules: Pick timeout: the player's pokemon (B7) ----
+
+  findPokemonIdsOfUser(...args: Parameters<UserPokemonRepo['findPokemonIdsOfUser']>) {
+    return this.userPokemonRepo.findPokemonIdsOfUser(...args)
   }
 }

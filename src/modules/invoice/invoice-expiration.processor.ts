@@ -1,45 +1,26 @@
-import { InvoiceStatus } from '@/common/constants/invoice.constant'
-import { UserSubscriptionStatus } from '@/common/constants/subscription.constant'
+import { BullAction, BullQueue } from '@/common/constants/bull-action.constant'
 import { Process, Processor } from '@nestjs/bull'
 import { Injectable, Logger } from '@nestjs/common'
 import { Job } from 'bull'
-import { UserSubscriptionRepo } from '../user-subscription/user-subscription.repo'
-import { InvoiceRepo } from './invoice.repo'
+import { InvoiceService } from './invoice.service'
 
-@Processor('invoice-expiration')
+// An unpaid invoice expires: cancelled and its PokeCoin discount given back,
+// in one transaction and only while it is still PENDING (a payment that lands
+// meanwhile wins; see InvoiceService.cancelPending)
+@Processor(BullQueue.INVOICE_EXPIRATION)
 @Injectable()
 export class InvoiceExpirationProcessor {
   private readonly logger = new Logger(InvoiceExpirationProcessor.name)
-  constructor(
-    private readonly invoiceRepo: InvoiceRepo,
-    private readonly userSubscriptionRepo: UserSubscriptionRepo
-  ) {}
+  constructor(private readonly invoiceService: InvoiceService) {}
 
-  @Process('expireInvoice')
+  @Process(BullAction.EXPIRE_INVOICE)
   async handleExpireInvoice(job: Job<{ invoiceId: number }>) {
     const { invoiceId } = job.data
     try {
-      const invoice = await this.invoiceRepo.findById(invoiceId)
-      if (!invoice) {
-        this.logger.warn(`Invoice ${invoiceId} not found for expiration job.`)
-        return
-      }
-      if (invoice.status !== InvoiceStatus.PENDING) {
-        // Already processed
-        return
-      }
-      // Update invoice to CANCELLED
-      await this.invoiceRepo.update({
-        id: invoice.id,
-        data: { status: InvoiceStatus.CANCELLED }
-      })
-      // Update related user subscription (if exists) to PAYMENT_FAILED
-      const userSub = await this.userSubscriptionRepo.findByInvoiceId(invoice.id)
-      if (userSub && userSub.status === UserSubscriptionStatus.PENDING_PAYMENT) {
-        await this.userSubscriptionRepo.update({
-          id: userSub.id,
-          data: { status: UserSubscriptionStatus.PAYMENT_FAILED }
-        })
+      const { cancelled, refunded } = await this.invoiceService.expirePending(invoiceId)
+      if (!cancelled) return // paid, already cancelled or gone
+      if (refunded > 0) {
+        this.logger.log(`Refunded ${refunded} PokeCoin for invoice ${invoiceId}`)
       }
       this.logger.log(`Expired invoice ${invoiceId} after timeout.`)
     } catch (err) {

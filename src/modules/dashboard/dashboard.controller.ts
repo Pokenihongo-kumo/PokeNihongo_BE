@@ -2,6 +2,14 @@ import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
 import { Controller, Get, Param, Query } from '@nestjs/common'
 import { DashboardService } from './dashboard.service'
+import {
+  DashboardGachaBannerParamsDTO,
+  DashboardPeriodQueryDTO,
+  DashboardRevenueQueryDTO,
+  DashboardSeasonParamsDTO,
+  DashboardSeasonStatsQueryDTO,
+  DashboardYearQueryDTO
+} from './dto/dashboard.zod-dto'
 
 @Controller('dashboard')
 export class DashboardController {
@@ -15,18 +23,14 @@ export class DashboardController {
   @Get('subscription-stats/revennue')
   getSubStatsRevenue(
     @I18nLang() lang: string,
-    @Query('month') month?: string,
-    @Query('year') year?: string
+    @Query() { month, year }: DashboardRevenueQueryDTO
   ) {
-    const monthNum = month ? parseInt(month, 10) : undefined
-    const yearNum = year ? parseInt(year, 10) : undefined
-    return this.dashboardService.getSubStatsRevenue(lang, monthNum, yearNum)
+    return this.dashboardService.getSubStatsRevenue(lang, month, year)
   }
 
   @Get('subscription-stats/yearly-revenue')
-  getYearlyRevenue(@I18nLang() lang: string, @Query('year') year?: string) {
-    const yearNum = year ? parseInt(year, 10) : undefined
-    return this.dashboardService.getYearlyRevenue(lang, yearNum)
+  getYearlyRevenue(@I18nLang() lang: string, @Query() { year }: DashboardYearQueryDTO) {
+    return this.dashboardService.getYearlyRevenue(lang, year)
   }
 
   @Get('subscription-stats/register-recently')
@@ -41,17 +45,13 @@ export class DashboardController {
   }
 
   @Get('user-growth/new-users')
-  getNewUsers(
-    @Query('period') period?: string // 'day', 'week', 'month'
-  ) {
-    return this.dashboardService.getNewUsers(period || 'month')
+  getNewUsers(@Query() { period }: DashboardPeriodQueryDTO) {
+    return this.dashboardService.getNewUsers(period)
   }
 
   @Get('user-growth/active-users')
-  getActiveUsers(
-    @Query('period') period?: string // 'day', 'week', 'month'
-  ) {
-    return this.dashboardService.getActiveUsers(period || 'month')
+  getActiveUsers(@Query() { period }: DashboardPeriodQueryDTO) {
+    return this.dashboardService.getActiveUsers(period)
   }
 
   @Get('user-growth/account-activation')
@@ -107,26 +107,23 @@ export class DashboardController {
   @Get('leaderboard-season/stats')
   getLeaderboardSeasonStats(
     @I18nLang() lang: string,
-    @Query() query: PaginationQueryDTO,
-    @Query('period') period?: string // 'day', 'week', 'month'
+    @Query() query: DashboardSeasonStatsQueryDTO
   ) {
     return this.dashboardService.getLeaderboardSeasonStats(
       lang,
       query.currentPage,
       query.pageSize,
-      period
+      query.period
     )
   }
 
   @Get('leaderboard-season/:seasonId')
   getLeaderboardSeasonDetail(
     @I18nLang() lang: string,
-    @Param('seasonId') seasonId: string,
-    @Query('period') period?: string // 'day', 'week', 'month'
+    @Param() { seasonId }: DashboardSeasonParamsDTO,
+    @Query() { period }: DashboardPeriodQueryDTO
   ) {
-    const seasonIdNum = parseInt(seasonId, 10)
-
-    return this.dashboardService.getLeaderboardSeasonDetail(seasonIdNum, lang, period)
+    return this.dashboardService.getLeaderboardSeasonDetail(seasonId, lang, period)
   }
 
   // //! --------------------------------------------------------------------------
@@ -144,10 +141,9 @@ export class DashboardController {
   @Get('gacha-stats/:gachaBannerId')
   getGachaStatsDetail(
     @I18nLang() lang: string,
-    @Param('gachaBannerId') gachaBannerId: string
+    @Param() { gachaBannerId }: DashboardGachaBannerParamsDTO
   ) {
-    const bannerIdNum = parseInt(gachaBannerId, 10)
-    return this.dashboardService.getGachaStatsDetail(bannerIdNum, lang)
+    return this.dashboardService.getGachaStatsDetail(gachaBannerId, lang)
   }
 
   // //! --------------------------------------------------------------------------

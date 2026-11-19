@@ -1,97 +1,80 @@
-import {
-    TestSetQuestionBankType,
-    CreateTestSetQuestionBankBodyType,
-    UpdateTestSetQuestionBankBodyType
-} from './entities/testset-questionbank.entities'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
+import { Prisma } from '@prisma/client'
+import { TestSetQuestionBank } from './entities/testset-questionbank.entity'
 
 @Injectable()
-export class TestSetQuestionBankRepository {
-    constructor(private readonly prismaService: PrismaService) { }
+export class TestSetQuestionBankRepo {
+  constructor(private readonly prismaService: PrismaService) {}
 
-    // TestSetQuestionBank CRUD operations
-    async create(data: CreateTestSetQuestionBankBodyType): Promise<TestSetQuestionBankType> {
-        return await this.prismaService.testSetQuestionBank.create({
-            data
-        })
-    }
+  create(
+    data: Prisma.TestSetQuestionBankUncheckedCreateInput
+  ): Promise<TestSetQuestionBank> {
+    return this.prismaService.testSetQuestionBank.create({ data })
+  }
 
-    async findById(id: number): Promise<TestSetQuestionBankType | null> {
-        return await this.prismaService.testSetQuestionBank.findUnique({
-            where: { id }
-        })
-    }
+  findById(id: number): Promise<TestSetQuestionBank | null> {
+    return this.prismaService.testSetQuestionBank.findUnique({ where: { id } })
+  }
 
-    async findByTestSetId(testSetId: number): Promise<TestSetQuestionBankType[]> {
-        return await this.prismaService.testSetQuestionBank.findMany({
-            where: { testSetId },
-            orderBy: { questionOrder: 'asc' }
-        })
-    }
+  findByTestSetId(testSetId: number): Promise<TestSetQuestionBank[]> {
+    return this.prismaService.testSetQuestionBank.findMany({
+      where: { testSetId },
+      orderBy: { questionOrder: 'asc' }
+    })
+  }
 
-    async findByQuestionBankId(questionBankId: number): Promise<TestSetQuestionBankType[]> {
-        return await this.prismaService.testSetQuestionBank.findMany({
-            where: { questionBankId }
-        })
-    }
+  findByTestSetAndQuestionBank(
+    testSetId: number,
+    questionBankId: number
+  ): Promise<TestSetQuestionBank | null> {
+    return this.prismaService.testSetQuestionBank.findUnique({
+      where: { testSetId_questionBankId: { testSetId, questionBankId } }
+    })
+  }
 
-    async findByTestSetAndQuestionBank(testSetId: number, questionBankId: number): Promise<TestSetQuestionBankType | null> {
-        return await this.prismaService.testSetQuestionBank.findFirst({
-            where: {
-                testSetId,
-                questionBankId
-            }
-        })
-    }
+  // Only the fields the type and level rules need
+  findTestSet(id: number) {
+    return this.prismaService.testSet.findUnique({
+      where: { id },
+      select: { id: true, testType: true, levelN: true }
+    })
+  }
 
-    async update(id: number, data: UpdateTestSetQuestionBankBodyType): Promise<TestSetQuestionBankType> {
-        return await this.prismaService.testSetQuestionBank.update({
-            where: { id },
-            data
-        })
-    }
+  findQuestionBank(id: number) {
+    return this.prismaService.questionBank.findUnique({
+      where: { id },
+      select: { id: true, questionType: true, levelN: true }
+    })
+  }
 
-    async updateQuestionOrder(id: number, questionOrder: number): Promise<TestSetQuestionBankType> {
-        return await this.prismaService.testSetQuestionBank.update({
-            where: { id },
-            data: { questionOrder }
-        })
-    }
+  update(
+    id: number,
+    data: Prisma.TestSetQuestionBankUncheckedUpdateInput
+  ): Promise<TestSetQuestionBank> {
+    return this.prismaService.testSetQuestionBank.update({ where: { id }, data })
+  }
 
-    async delete(id: number): Promise<TestSetQuestionBankType> {
-        return await this.prismaService.testSetQuestionBank.delete({
-            where: { id }
-        })
-    }
+  delete(id: number): Promise<TestSetQuestionBank> {
+    return this.prismaService.testSetQuestionBank.delete({ where: { id } })
+  }
 
-    async deleteMany(ids: number[]): Promise<{ count: number }> {
-        return await this.prismaService.testSetQuestionBank.deleteMany({
-            where: { id: { in: ids } }
-        })
-    }
+  deleteMany(ids: number[]): Promise<{ count: number }> {
+    return this.prismaService.testSetQuestionBank.deleteMany({
+      where: { id: { in: ids } }
+    })
+  }
 
-    async deleteByTestSetId(testSetId: number): Promise<{ count: number }> {
-        return await this.prismaService.testSetQuestionBank.deleteMany({
-            where: { testSetId }
-        })
-    }
+  deleteByTestSetId(testSetId: number): Promise<{ count: number }> {
+    return this.prismaService.testSetQuestionBank.deleteMany({ where: { testSetId } })
+  }
 
-    async deleteByQuestionBankId(questionBankId: number): Promise<{ count: number }> {
-        return await this.prismaService.testSetQuestionBank.deleteMany({
-            where: { questionBankId }
-        })
-    }
-
-    async countByTestSetId(testSetId: number): Promise<number> {
-        return await this.prismaService.testSetQuestionBank.count({
-            where: { testSetId }
-        })
-    }
-
-    async countByQuestionBankId(questionBankId: number): Promise<number> {
-        return await this.prismaService.testSetQuestionBank.count({
-            where: { questionBankId }
-        })
-    }
+  // 0 for an empty test set. Not count(): after a delete it would reuse an order
+  async maxQuestionOrder(testSetId: number): Promise<number> {
+    const { _max } = await this.prismaService.testSetQuestionBank.aggregate({
+      where: { testSetId },
+      _max: { questionOrder: true }
+    })
+    return _max.questionOrder ?? 0
+  }
 }

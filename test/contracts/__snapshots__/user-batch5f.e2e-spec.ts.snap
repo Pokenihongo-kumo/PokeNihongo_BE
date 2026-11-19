@@ -1,0 +1,405 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`User batch 5f contract (e2e) achievements of the app user (as achievements.tsx asks) 1`] = `
+{
+  "mine": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [],
+      },
+      "message": "Lấy danh sách thành tích người dùng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`User batch 5f contract (e2e) daily requests of the web admin: create, list, detail, update, delete 1`] = `
+{
+  "create": {
+    "body": {
+      "data": {
+        "conditionValue": "number",
+        "createdAt": "string",
+        "createdById": "number",
+        "dailyRequestType": "string",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "descriptionKey": "string",
+        "id": "number",
+        "isActive": "boolean",
+        "isStreak": "boolean",
+        "nameKey": "string",
+        "rewardId": "null",
+        "updatedAt": "string",
+        "updatedById": "null",
+      },
+      "message": "Tạo nhiệm vụ hàng ngày thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "detail": {
+    "body": {
+      "data": {
+        "conditionValue": "number",
+        "createdAt": "string",
+        "createdById": "number",
+        "dailyRequestType": "string",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "descriptionKey": "string",
+        "descriptionTranslation": "string",
+        "id": "number",
+        "isActive": "boolean",
+        "isStreak": "boolean",
+        "nameKey": "string",
+        "nameTranslation": "string",
+        "reward": "null",
+        "rewardId": "null",
+        "updatedAt": "string",
+        "updatedById": "null",
+      },
+      "message": "Lấy thông tin nhiệm vụ hàng ngày thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "list": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "conditionValue": "number",
+            "createdAt": "string",
+            "createdById": "number",
+            "dailyRequestType": "string",
+            "deletedAt": "null",
+            "deletedById": "null",
+            "descriptionKey": "string",
+            "descriptionTranslation": "string",
+            "id": "number",
+            "isActive": "boolean",
+            "isStreak": "boolean",
+            "nameKey": "string",
+            "nameTranslation": "string",
+            "rewardId": "null",
+            "updatedAt": "string",
+            "updatedById": "null",
+          },
+        ],
+      },
+      "message": "Lấy danh sách nhiệm vụ hàng ngày thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "remove": {
+    "body": {
+      "data": "null",
+      "message": "Xóa nhiệm vụ hàng ngày thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "update": {
+    "body": {
+      "data": {
+        "conditionValue": "number",
+        "createdAt": "string",
+        "createdById": "number",
+        "dailyRequestType": "string",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "descriptionKey": "string",
+        "id": "number",
+        "isActive": "boolean",
+        "isStreak": "boolean",
+        "nameKey": "string",
+        "rewardId": "null",
+        "updatedAt": "string",
+        "updatedById": "number",
+      },
+      "message": "Cập nhật nhiệm vụ hàng ngày thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`User batch 5f contract (e2e) errors 1`] = `
+{
+  "achievementMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Record not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bản ghi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "dailyCreateInvalid": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid data provided",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Dữ liệu không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "dailyDeleteMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Record not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bản ghi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "dailyInvalidId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "dailyMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Record not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bản ghi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "dailyUpdateMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Record not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bản ghi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "mineBadAchPageSize": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Page size must be a positive integer",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Kích thước trang phải là số nguyên dương",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "mineBadGroup": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid achievement group ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID nhóm thành tích không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "rewardInvalidId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "rewardMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "User achievement not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy thành tích người dùng",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "userDailyMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Record not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bản ghi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+}
+`;

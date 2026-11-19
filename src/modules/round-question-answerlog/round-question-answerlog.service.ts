@@ -1,60 +1,43 @@
-import { I18nService } from '@/i18n/i18n.service'
-import { RoundQuestionsAnswerLogMessage } from '@/i18n/message-keys'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { RoundQuestionsAnswerLogNotFoundException } from './dto/round-question-answerlog.error'
 import {
-  CreateRoundQuestionsAnswerLogBodyType,
-  UpdateRoundQuestionsAnswerLogBodyType
-} from './entities/round-question-answerlog.entity'
+  CreateRoundQuestionsAnswerLogBody,
+  UpdateRoundQuestionsAnswerLogBody
+} from './dto/round-question-answerlog.zod-dto'
 import { RoundQuestionsAnswerLogRepo } from './round-question-answerlog.repo'
 
 @Injectable()
 export class RoundQuestionsAnswerLogService {
-  constructor(
-    private roundQuestionsAnswerLogRepo: RoundQuestionsAnswerLogRepo,
+  constructor(private roundQuestionsAnswerLogRepo: RoundQuestionsAnswerLogRepo) {}
 
-    private readonly i18nService: I18nService
-  ) {}
-
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.roundQuestionsAnswerLogRepo.list(pagination)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(
-        RoundQuestionsAnswerLogMessage.GET_LIST_SUCCESS,
-        lang
-      )
-    }
+    return data
   }
 
   // Helper method to calculate weaknesses for a Pokemon (copied from PokemonService)
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const roundQuestionsAnswerLog = await this.roundQuestionsAnswerLogRepo.findById(id)
     if (!roundQuestionsAnswerLog) {
       throw new RoundQuestionsAnswerLogNotFoundException()
     }
 
-    return {
-      statusCode: 200,
-      data: roundQuestionsAnswerLog,
-      message: this.i18nService.translate(
-        RoundQuestionsAnswerLogMessage.GET_LIST_SUCCESS,
-        lang
-      )
-    }
+    return roundQuestionsAnswerLog
   }
 
-  async create(
-    { userId, data }: { userId: number; data: CreateRoundQuestionsAnswerLogBodyType },
-    lang: string = 'vi'
-  ) {
+  async create({
+    userId,
+    data
+  }: {
+    userId: number
+    data: CreateRoundQuestionsAnswerLogBody
+  }) {
     try {
       const result = await this.roundQuestionsAnswerLogRepo.create({
         createdById: userId,
@@ -62,14 +45,7 @@ export class RoundQuestionsAnswerLogService {
           ...data
         }
       })
-      return {
-        statusCode: 201,
-        data: result,
-        message: this.i18nService.translate(
-          RoundQuestionsAnswerLogMessage.CREATE_SUCCESS,
-          lang
-        )
-      }
+      return result
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -81,32 +57,22 @@ export class RoundQuestionsAnswerLogService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      userId
-    }: {
-      id: number
-      data: UpdateRoundQuestionsAnswerLogBodyType
-      userId?: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    userId
+  }: {
+    id: number
+    data: UpdateRoundQuestionsAnswerLogBody
+    userId?: number
+  }) {
     try {
       const roundQuestionsAnswerLog = await this.roundQuestionsAnswerLogRepo.update({
         id,
         data: data,
         updatedById: userId
       })
-      return {
-        statusCode: 200,
-        data: roundQuestionsAnswerLog,
-        message: this.i18nService.translate(
-          RoundQuestionsAnswerLogMessage.UPDATE_SUCCESS,
-          lang
-        )
-      }
+      return roundQuestionsAnswerLog
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new RoundQuestionsAnswerLogNotFoundException()
@@ -119,7 +85,7 @@ export class RoundQuestionsAnswerLogService {
     }
   }
 
-  async delete({ id, userId }: { id: number; userId?: number }, lang: string = 'vi') {
+  async delete({ id, userId }: { id: number; userId?: number }) {
     try {
       const existRoundQuestionsAnswerLog =
         await this.roundQuestionsAnswerLogRepo.findById(id)
@@ -128,14 +94,7 @@ export class RoundQuestionsAnswerLogService {
       }
 
       await this.roundQuestionsAnswerLogRepo.delete(id)
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(
-          RoundQuestionsAnswerLogMessage.DELETE_SUCCESS,
-          lang
-        )
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new RoundQuestionsAnswerLogNotFoundException()

@@ -8,7 +8,7 @@ import {
   UpdateUserSeasonHistoryBodySchema,
   UpdateUserSeasonHistoryResSchema,
   UpdateWithListItemResSchema
-} from '../entities/user-season-history.entity'
+} from './user-season-history.zod-dto'
 
 // Request DTOs
 export class CreateUserSeasonHistoryBodyDTO extends createZodDto(

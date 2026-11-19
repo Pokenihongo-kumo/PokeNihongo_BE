@@ -1,0 +1,454 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Economy batch 6a contract (e2e) errors 1`] = `
+{
+  "historyBadId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid user reward history data",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Dữ liệu lịch sử phần thưởng người dùng không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "historyBadSource": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid user reward history data",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Dữ liệu lịch sử phần thưởng người dùng không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "historyMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "User reward history not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy lịch sử phần thưởng người dùng",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "rewardBadId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid reward data",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Dữ liệu phần thưởng không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "rewardCreateEmpty": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "This field is required",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Trường này là bắt buộc",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "rewardMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Record not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bản ghi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "transactionWithoutLogin": {
+    "httpStatus": 401,
+  },
+  "transactionsWithoutLogin": {
+    "httpStatus": 401,
+  },
+  "walletBadId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid wallet data",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Dữ liệu ví không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "walletMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Record not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bản ghi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+}
+`;
+
+exports[`Economy batch 6a contract (e2e) mobile: my wallets and my reward history 1`] = `
+{
+  "history": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "amount": "number",
+            "createdAt": "string",
+            "id": "number",
+            "meta": "null",
+            "note": "string",
+            "rewardId": "null",
+            "rewardTargetSnapshot": "string",
+            "sourceId": "null",
+            "sourceType": "string",
+            "userId": "number",
+          },
+        ],
+      },
+      "message": "Lấy danh sách lịch sử phần thưởng người dùng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "historyFiltered": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "amount": "number",
+            "createdAt": "string",
+            "id": "number",
+            "meta": "null",
+            "note": "string",
+            "rewardId": "null",
+            "rewardTargetSnapshot": "string",
+            "sourceId": "null",
+            "sourceType": "string",
+            "userId": "number",
+          },
+        ],
+      },
+      "message": "Lấy danh sách lịch sử phần thưởng người dùng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "wallets": {
+    "body": {
+      "data": [],
+      "message": "Lấy danh sách ví thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Economy batch 6a contract (e2e) web: reward list, create, read, update, delete 1`] = `
+{
+  "adminList": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "createdAt": "string",
+            "createdById": "number",
+            "deletedAt": "null",
+            "deletedById": "null",
+            "id": "number",
+            "nameKey": "string",
+            "nameTranslations": [
+              {
+                "key": "string",
+                "value": "string",
+              },
+            ],
+            "rewardItem": "number",
+            "rewardTarget": "string",
+            "rewardType": "string",
+            "updatedAt": "string",
+            "updatedById": "null",
+          },
+        ],
+      },
+      "message": "Lấy danh sách phần thưởng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "adminOne": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "createdById": "number",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "id": "number",
+        "nameKey": "string",
+        "nameTranslations": [
+          {
+            "key": "string",
+            "value": "string",
+          },
+        ],
+        "rewardItem": "number",
+        "rewardTarget": "string",
+        "rewardType": "string",
+        "updatedAt": "string",
+        "updatedById": "null",
+      },
+      "message": "Lấy thông tin phần thưởng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "created": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "createdById": "number",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "id": "number",
+        "nameKey": "string",
+        "rewardItem": "number",
+        "rewardTarget": "string",
+        "rewardType": "string",
+        "updatedAt": "string",
+        "updatedById": "null",
+      },
+      "message": "Tạo phần thưởng thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "deleted": {
+    "body": {
+      "data": "null",
+      "message": "Xóa phần thưởng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "list": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "createdAt": "string",
+            "createdById": "number",
+            "deletedAt": "null",
+            "deletedById": "null",
+            "id": "number",
+            "nameKey": "string",
+            "nameTranslation": "string",
+            "rewardItem": "number",
+            "rewardTarget": "string",
+            "rewardType": "string",
+            "updatedAt": "string",
+            "updatedById": "null",
+          },
+        ],
+      },
+      "message": "Lấy danh sách phần thưởng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "one": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "createdById": "number",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "id": "number",
+        "nameKey": "string",
+        "nameTranslation": "string",
+        "rewardItem": "number",
+        "rewardTarget": "string",
+        "rewardType": "string",
+        "updatedAt": "string",
+        "updatedById": "null",
+      },
+      "message": "Lấy thông tin phần thưởng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "updated": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "createdById": "number",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "id": "number",
+        "nameKey": "string",
+        "rewardItem": "number",
+        "rewardTarget": "string",
+        "rewardType": "string",
+        "updatedAt": "string",
+        "updatedById": "number",
+      },
+      "message": "Cập nhật phần thưởng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;

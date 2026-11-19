@@ -1,7 +1,9 @@
 import { InvoiceStatus } from '@/common/constants/invoice.constant'
 import { RoleName } from '@/common/constants/role.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { SubscriptionMessage } from '@/i18n/message-keys'
+import { InvoiceService } from '@/modules/invoice/invoice.service'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { SubscriptionPlanService } from '@/modules/subscription-plan/subscription-plan.service'
+import { TranslationService } from '@/modules/translation/translation.service'
 import {
   LanguageNotExistToTranslateException,
   NotFoundRecordException
@@ -12,31 +14,26 @@ import {
   isUniqueConstraintPrismaError,
   todayUTCWith0000
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
-import { HttpStatus, Injectable } from '@nestjs/common'
-import { InvoiceRepo } from '../invoice/invoice.repo'
-import { LanguagesRepository } from '../languages/languages.repo'
-import { SubscriptionPlanRepo } from '../subscription-plan/subscription-plan.repo'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entities'
-import { TranslationRepository } from '../translation/translation.repo'
+import { PaginationQuery } from '@/shared/models/request.model'
+import { Injectable } from '@nestjs/common'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { SubscriptionAlreadyExistsException } from './dto/subscription.error'
 import {
-  CreateSubscriptionBodyInputType,
-  CreateSubscriptionBodyType,
-  UpdateSubscriptionBodyInputType,
-  UpdateSubscriptionBodyType
-} from './entities/subscription.entity'
+  CreateSubscriptionBody,
+  CreateSubscriptionBodyInput,
+  UpdateSubscriptionBody,
+  UpdateSubscriptionBodyInput
+} from './dto/subscription.zod-dto'
 import { SubscriptionRepo } from './subscription.repo'
 
 @Injectable()
 export class SubscriptionService {
   constructor(
     private subscriptionRepo: SubscriptionRepo,
-    private subscriptionPlanRepo: SubscriptionPlanRepo,
-    private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepository,
-    private readonly translationRepo: TranslationRepository,
-    private readonly invoiceRepo: InvoiceRepo
+    private subscriptionPlanService: SubscriptionPlanService,
+    private readonly languagesService: LanguagesService,
+    private readonly translationService: TranslationService,
+    private readonly invoiceService: InvoiceService
   ) {}
 
   private async convertTranslationsToLangCodes(
@@ -45,7 +42,7 @@ export class SubscriptionService {
     if (!nameTranslations || nameTranslations.length === 0) return []
 
     const allLangIds = Array.from(new Set(nameTranslations.map((t) => t.languageId)))
-    const langs = await this.languageRepo.getWithListId(allLangIds)
+    const langs = await this.languagesService.getWithListId(allLangIds)
     const idToCode = new Map(langs.map((l) => [l.id, l.code]))
 
     return nameTranslations.map((t) => ({
@@ -54,8 +51,8 @@ export class SubscriptionService {
     }))
   }
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi', roleName: string) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+  async list(pagination: PaginationQuery, lang: string = 'vi', roleName: string) {
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     const data = await this.subscriptionRepo.list(
@@ -93,21 +90,15 @@ export class SubscriptionService {
       }
     }
 
-    return {
-      data,
-      message: this.i18nService.translate(SubscriptionMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   async findById(id: number, roleName: string, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     if (!langId) {
-      return {
-        data: null,
-        message: this.i18nService.translate(SubscriptionMessage.GET_SUCCESS, lang)
-      }
+      return null
     }
 
     const subscription = await this.subscriptionRepo.findByIdWithLangId(
@@ -145,19 +136,15 @@ export class SubscriptionService {
       : null
 
     return {
-      statusCode: HttpStatus.OK,
-      data: {
-        ...transformed,
-        nameTranslation: currentNameTranslation?.value ?? null,
-        descriptionTranslation: currentDescriptionTranslation?.value ?? null,
-        ...(isAdmin ? { nameTranslations, descriptionTranslations } : {})
-      },
-      message: this.i18nService.translate(SubscriptionMessage.GET_SUCCESS, lang)
+      ...transformed,
+      nameTranslation: currentNameTranslation?.value ?? null,
+      descriptionTranslation: currentDescriptionTranslation?.value ?? null,
+      ...(isAdmin ? { nameTranslations, descriptionTranslations } : {})
     }
   }
 
   async findByIdWithAllLang(id: number, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
 
     const subscription: any = await this.subscriptionRepo.findByIdWithAllLang(id)
     if (!subscription) {
@@ -171,7 +158,7 @@ export class SubscriptionService {
       : null
 
     // map array to { key: code, value }
-    const languages = await this.languageRepo.getWithListId(
+    const languages = await this.languagesService.getWithListId(
       Array.from(
         new Set((subscription.nameTranslations ?? []).map((t: any) => t.languageId))
       )
@@ -186,23 +173,16 @@ export class SubscriptionService {
       }))
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: result,
-      message: this.i18nService.translate(SubscriptionMessage.GET_SUCCESS, lang)
-    }
+    return result
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreateSubscriptionBodyInputType
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({
+    data,
+    createdById
+  }: {
+    data: CreateSubscriptionBodyInput
+    createdById: number
+  }) {
     let createdSubscription: any = null
 
     try {
@@ -212,7 +192,7 @@ export class SubscriptionService {
 
         // Convert data for create
         const now = todayUTCWith0000()
-        const dataCreate: CreateSubscriptionBodyType = {
+        const dataCreate: CreateSubscriptionBody = {
           nameKey,
           descriptionKey,
           tagName: data.tagName
@@ -240,7 +220,7 @@ export class SubscriptionService {
         const allLangCodes = Array.from(new Set([...nameList, ...descriptionList]))
 
         // Get languages corresponding to the keys
-        const languages = await this.languageRepo.getWithListCode(allLangCodes)
+        const languages = await this.languagesService.getWithListCode(allLangCodes)
 
         // Create map { code: id } for quick access
         const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
@@ -252,8 +232,8 @@ export class SubscriptionService {
         }
 
         // Create translation records
-        const nameTranslationRecords: CreateTranslationBodyType[] = []
-        const descriptionTranslationRecords: CreateTranslationBodyType[] = []
+        const nameTranslationRecords: CreateTranslationBody[] = []
+        const descriptionTranslationRecords: CreateTranslationBody[] = []
 
         // nameTranslations → key = fNameKey
         for (const item of data.nameTranslations) {
@@ -274,7 +254,9 @@ export class SubscriptionService {
         }
 
         // Validate translations (check for duplicate names)
-        await this.translationRepo.validateTranslationRecords([...nameTranslationRecords])
+        await this.translationService.validateTranslationRecords([
+          ...nameTranslationRecords
+        ])
 
         // Update subscription with final keys and translations
         const result = await this.subscriptionRepo.update(
@@ -292,11 +274,7 @@ export class SubscriptionService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.CREATED,
-          data: result,
-          message: this.i18nService.translate(SubscriptionMessage.CREATE_SUCCESS, lang)
-        }
+        return result
       })
     } catch (error) {
       // Rollback: Delete subscription if created
@@ -325,38 +303,35 @@ export class SubscriptionService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateSubscriptionBodyInputType
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateSubscriptionBodyInput
+    updatedById: number
+  }) {
     let existingSubscription: any = null
 
     try {
       return await this.subscriptionRepo.withTransaction(async (prismaTx) => {
         let hasOpen = false
-        let translationRecords: CreateTranslationBodyType[] = []
+        let translationRecords: CreateTranslationBody[] = []
         // Get current record
         existingSubscription = await this.subscriptionRepo.findById(id)
         if (!existingSubscription) throw new NotFoundRecordException()
 
         // Prepare data for update
-        const dataUpdate: Partial<UpdateSubscriptionBodyType> = {}
+        const dataUpdate: Partial<UpdateSubscriptionBody> = {}
 
         if (data.tagName) {
           dataUpdate.tagName = data.tagName
         }
 
         // Handle translations if provided
-        let nameTranslationRecords: CreateTranslationBodyType[] = []
-        let descriptionTranslationRecords: CreateTranslationBodyType[] = []
+        let nameTranslationRecords: CreateTranslationBody[] = []
+        let descriptionTranslationRecords: CreateTranslationBody[] = []
 
         if (data.nameTranslations || data.descriptionTranslations) {
           const nameList = data.nameTranslations?.map((t) => t.key) || []
@@ -365,7 +340,7 @@ export class SubscriptionService {
 
           if (allLangCodes.length > 0) {
             // Get languages
-            const languages = await this.languageRepo.getWithListCode(allLangCodes)
+            const languages = await this.languagesService.getWithListCode(allLangCodes)
             const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
 
             // Check missing language
@@ -395,7 +370,7 @@ export class SubscriptionService {
             }
 
             // Validate translation records
-            await this.translationRepo.validateTranslationRecords([
+            await this.translationService.validateTranslationRecords([
               ...nameTranslationRecords
             ])
           }
@@ -421,11 +396,7 @@ export class SubscriptionService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.OK,
-          data: updatedSubscription,
-          message: this.i18nService.translate(SubscriptionMessage.UPDATE_SUCCESS, lang)
-        }
+        return updatedSubscription
       })
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
@@ -441,10 +412,7 @@ export class SubscriptionService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
       const existingSubscription = await this.subscriptionRepo.findById(id)
       if (!existingSubscription) {
@@ -456,14 +424,10 @@ export class SubscriptionService {
           id,
           deletedById
         }),
-        this.translationRepo.deleteByKey(existingSubscription.nameKey)
+        this.translationService.deleteByKey(existingSubscription.nameKey)
       ])
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(SubscriptionMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -473,7 +437,7 @@ export class SubscriptionService {
   }
 
   async listForMarketplace(lang: string = 'vi', roleName: string, userId?: number) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin
 
     // Step 1: Get subscriptions with active plans, sorted by tagName
@@ -483,12 +447,12 @@ export class SubscriptionService {
 
     // Step 2: Get user's active subscription plan IDs
     const userActivePlanIds = userId
-      ? await this.subscriptionPlanRepo.getUserActivePlanIds(userId)
+      ? await this.subscriptionPlanService.getUserActivePlanIds(userId)
       : []
 
     // Step 3: Get purchase counts per subscription plan
     const planPurchaseCounts =
-      await this.subscriptionPlanRepo.getSubscriptionPurchaseCounts()
+      await this.subscriptionPlanService.getSubscriptionPurchaseCounts()
 
     // Step 3.5: Get user's pending invoices if userId provided
     const userPendingInvoices: Record<number, any> = {}
@@ -498,7 +462,7 @@ export class SubscriptionService {
       )
       const pendingInvoicesData = await Promise.all(
         allPlanIds.map((planId) =>
-          this.invoiceRepo.findActiveByUserIdPlanIdAndStatus(
+          this.invoiceService.findActiveByUserIdPlanIdAndStatus(
             userId,
             planId,
             InvoiceStatus.PENDING
@@ -640,11 +604,7 @@ export class SubscriptionService {
       })
     )
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: results,
-      message: this.i18nService.translate(SubscriptionMessage.GET_LIST_SUCCESS, lang)
-    }
+    return results
   }
 
   async getMarketplaceOptions(
@@ -652,7 +612,7 @@ export class SubscriptionService {
     lang: string = 'vi',
     roleName: string
   ) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin
 
     // Get subscription with active plans
@@ -752,10 +712,14 @@ export class SubscriptionService {
       result.descriptionTranslations = convertedDescTrans
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: result,
-      message: this.i18nService.translate(SubscriptionMessage.GET_SUCCESS, lang)
-    }
+    return result
+  }
+
+  // ---- For other modules (module-boundary plan B8) ----
+  // Same arguments and results as the repo methods.
+
+  // The repo's findById (the service's own findById answers the HTTP route)
+  getById(...args: Parameters<SubscriptionRepo['findById']>) {
+    return this.subscriptionRepo.findById(...args)
   }
 }

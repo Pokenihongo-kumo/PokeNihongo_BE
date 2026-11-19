@@ -1,43 +1,46 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { QuestionBankMessage as M } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import {
-    CreateQuestionBankBodyDTO,
-    CreateQuestionBankWithMeaningsBodyDTO,
-    UpdateQuestionBankWithMeaningsBodyDTO,
-    CreateQuestionBankWithAnswersBodyDTO,
-    GetQuestionBankByIdParamsDTO,
-    GetQuestionBankListQueryDTO,
-    GetQuestionBanksByIdsQueryDTO,
-    UpdateQuestionBankBodyDTO,
-    QuestionBankListResDTO,
-    QuestionBankResDTO,
-    BulkDeleteQuestionBankBodyDTO
+  UpdateQuestionBankWithMeaningsBodyDTO,
+  CreateQuestionBankWithAnswersBodyDTO,
+  GetQuestionBankByIdParamsDTO,
+  GetQuestionBankListQueryDTO,
+  GetQuestionBanksByIdsQueryDTO,
+  QuestionBankResDTO,
+  BulkDeleteQuestionBankBodyDTO
 } from '@/modules/question-bank/dto/question-bank.zod-dto'
 import {
-    QuestionBankResponseSwaggerDTO,
-    QuestionBankListResponseSwaggerDTO,
-    GetQuestionBankListQuerySwaggerDTO,
-    GetQuestionBanksByIdsQuerySwaggerDTO,
-    CreateQuestionBankWithMeaningsSwaggerDTO,
-    UpdateQuestionBankWithMeaningsSwaggerDTO,
-    CreateQuestionBankWithAnswersSwaggerDTO,
-    CreateQuestionBankWithAnswersResponseSwaggerDTO,
-    UpdateQuestionBankSwaggerDTO,
-    BulkDeleteQuestionBankSwaggerDTO
+  QuestionBankResponseSwaggerDTO,
+  QuestionBankListResponseSwaggerDTO,
+  GetQuestionBankListQuerySwaggerDTO,
+  GetQuestionBanksByIdsQuerySwaggerDTO,
+  UpdateQuestionBankWithMeaningsSwaggerDTO,
+  CreateQuestionBankWithAnswersSwaggerDTO,
+  CreateQuestionBankWithAnswersResponseSwaggerDTO,
+  BulkDeleteQuestionBankSwaggerDTO
 } from '@/modules/question-bank/dto/question-bank.dto'
 import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpStatus,
-    Param,
-    Post,
-    Put,
-    Query,
-    Res
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  Res
 } from '@nestjs/common'
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger'
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags
+} from '@nestjs/swagger'
 import { Response } from 'express'
 import { ZodSerializerDto } from 'nestjs-zod'
 import { QuestionBankService } from './question-bank.service'
@@ -46,38 +49,16 @@ import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 @ApiTags('Question Bank')
 @Controller('question-bank')
 export class QuestionBankController {
-    constructor(private readonly questionBankService: QuestionBankService) { }
+  constructor(
+    private readonly questionBankService: QuestionBankService,
+    private readonly i18nService: I18nService
+  ) {}
 
-
-
-    //     @Post('with-meanings')
-    //     @ApiBearerAuth()
-    //     @ApiOperation({
-    //         summary: 'Tạo câu hỏi mới với nghĩa và bản dịch',
-    //         description: `Tạo câu hỏi mới với nghĩa và bản dịch. 
-
-    // **Quy tắc đặc biệt:**
-    // - **audioUrl**: Optional - chỉ khi questionType là LISTENING và không truyền thì hệ thống sẽ tự động gen text-to-speech từ questionJp
-    // - **SPEAKING**: Bắt buộc phải có pronunciation (cách phát âm romaji)
-    // - **Các loại khác**: audioUrl và pronunciation là tùy chọn
-
-    // **Loại câu hỏi hỗ trợ:** VOCABULARY, GRAMMAR, KANJI, LISTENING, READING, SPEAKING, MATCHING` })
-    //     @ApiBody({ type: CreateQuestionBankWithMeaningsSwaggerDTO })
-    //     @ApiResponse({
-    //         status: 201,
-    //         description: 'Tạo câu hỏi với nghĩa thành công',
-    //         type: QuestionBankResponseSwaggerDTO
-    //     })
-    //     @ZodSerializerDto(QuestionBankResDTO)
-    //     createWithMeanings(@Body() body: CreateQuestionBankWithMeaningsBodyDTO, @ActiveUser('userId') userId: number) {
-    //         return this.questionBankService.createWithMeanings(body, userId)
-    //     }
-
-    @Post('with-answers')
-    @ApiBearerAuth()
-    @ApiOperation({
-        summary: 'Tạo câu hỏi mới với 4 câu trả lời cùng lúc',
-        description: `Tạo câu hỏi mới với tối đa 4 câu trả lời cùng lúc. Hệ thống sẽ tự động tạo question bank và các câu trả lời tương ứng.
+  @Post('with-answers')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Tạo câu hỏi mới với 4 câu trả lời cùng lúc',
+    description: `Tạo câu hỏi mới với tối đa 4 câu trả lời cùng lúc. Hệ thống sẽ tự động tạo question bank và các câu trả lời tương ứng.
         
 **Quy tắc đặc biệt:**
 - **MATCHING type**: Chỉ cho phép tạo 1 answer duy nhất và bắt buộc isCorrect = true
@@ -88,131 +69,175 @@ export class QuestionBankController {
 
 **Loại câu hỏi hỗ trợ:** VOCABULARY, GRAMMAR, KANJI, LISTENING, READING, SPEAKING, MATCHING
 
-**Response:** Trả về thông tin câu hỏi đã tạo, danh sách answers thành công, số lượng tạo thành công/thất bại và chi tiết lỗi nếu có.` })
-    @ApiBody({ type: CreateQuestionBankWithAnswersSwaggerDTO })
-    @ApiResponse({
-        status: 201,
-        description: 'Tạo câu hỏi và câu trả lời thành công',
-        type: CreateQuestionBankWithAnswersResponseSwaggerDTO
+**Response:** Trả về thông tin câu hỏi đã tạo, danh sách answers thành công, số lượng tạo thành công/thất bại và chi tiết lỗi nếu có.`
+  })
+  @ApiBody({ type: CreateQuestionBankWithAnswersSwaggerDTO })
+  @ApiResponse({
+    status: 201,
+    description: 'Tạo câu hỏi và câu trả lời thành công',
+    type: CreateQuestionBankWithAnswersResponseSwaggerDTO
+  })
+  async createWithAnswers(
+    @Body() body: CreateQuestionBankWithAnswersBodyDTO,
+    @ActiveUser('userId') userId: number,
+    @I18nLang() lang: string,
+    @Res() res: Response
+  ) {
+    // 201 all answers saved, 207 some, 400 none: the status is part of the result
+    const data = await this.questionBankService.createWithAnswers(body, userId, lang)
+    const [statusCode, key] =
+      data.createdCount === 0
+        ? [400, M.WITH_ANSWERS_NONE]
+        : data.failedCount > 0
+          ? [207, M.WITH_ANSWERS_PARTIAL]
+          : [201, M.WITH_ANSWERS_CREATED]
+    const message = this.i18nService.translate(key, lang, {
+      created: data.createdCount,
+      total: body.answers.length
     })
-    createWithAnswers(
-        @Body() body: CreateQuestionBankWithAnswersBodyDTO,
-        @ActiveUser('userId') userId: number,
-        @Res() res: Response
-    ) {
-        const result = this.questionBankService.createWithAnswers(body, userId)
-        return result.then(data => res.status(data.statusCode).json(data)) as any
+    // @Res(): sent as is, past TransformInterceptor
+    res.status(statusCode).json({ statusCode, data, message })
+  }
+
+  @Get()
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Lấy danh sách câu hỏi với phân trang và lọc' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lấy danh sách câu hỏi thành công',
+    type: QuestionBankListResponseSwaggerDTO
+  })
+  @ApiQuery({ type: GetQuestionBankListQuerySwaggerDTO })
+  async findAll(@Query() query: GetQuestionBankListQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
+      data: await this.questionBankService.findAll(query)
     }
+  }
 
-    @Get()
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Lấy danh sách câu hỏi với phân trang và lọc' })
-    @ApiResponse({
-        status: 200,
-        description: 'Lấy danh sách câu hỏi thành công',
-        type: QuestionBankListResponseSwaggerDTO
-    })
-    @ApiQuery({ type: GetQuestionBankListQuerySwaggerDTO })
-    findAll(@Query() query: GetQuestionBankListQueryDTO, @I18nLang() lang: string) {
-        return this.questionBankService.findAll(query, lang)
+  @Get('by-ids')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Lấy thông tin nhiều câu hỏi theo mảng IDs với translation' })
+  @ApiQuery({ type: GetQuestionBanksByIdsQuerySwaggerDTO })
+  @ApiResponse({
+    status: 200,
+    description: 'Lấy thông tin câu hỏi thành công',
+    type: QuestionBankListResponseSwaggerDTO
+  })
+  async findByIds(
+    @Query() query: GetQuestionBanksByIdsQueryDTO,
+    @I18nLang() lang: string
+  ) {
+    return {
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
+      data: await this.questionBankService.findByIds(query.questionIds, lang)
     }
+  }
 
-    @Get('by-ids')
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Lấy thông tin nhiều câu hỏi theo mảng IDs với translation' })
-    @ApiQuery({ type: GetQuestionBanksByIdsQuerySwaggerDTO })
-    @ApiResponse({
-        status: 200,
-        description: 'Lấy thông tin câu hỏi thành công',
-        type: QuestionBankListResponseSwaggerDTO
-    })
-    // @ZodSerializerDto(QuestionBankListResDTO)
-    findByIds(@Query() query: GetQuestionBanksByIdsQueryDTO, @I18nLang() lang: string) {
-        return this.questionBankService.findByIds(query.questionIds, lang)
+  @Get(':id')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Lấy thông tin câu hỏi theo ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lấy thông tin câu hỏi thành công',
+    type: QuestionBankResponseSwaggerDTO
+  })
+  @ZodSerializerDto(QuestionBankResDTO)
+  async findOne(@Param() params: GetQuestionBankByIdParamsDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(M.GET_SUCCESS, lang),
+      data: await this.questionBankService.findOne(params.id)
     }
+  }
 
-    @Get(':id')
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Lấy thông tin câu hỏi theo ID' })
-    @ApiResponse({
-        status: 200,
-        description: 'Lấy thông tin câu hỏi thành công',
-        type: QuestionBankResponseSwaggerDTO
-    })
-    @ZodSerializerDto(QuestionBankResDTO)
-    findOne(@Param('id') id: string) {
-        return this.questionBankService.findOne(Number(id))
+  @Put(':id')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Cập nhật câu hỏi với meanings theo ID',
+    description:
+      'Cập nhật câu hỏi kèm theo nghĩa và translations. Tất cả fields đều optional.'
+  })
+  @ApiBody({ type: UpdateQuestionBankWithMeaningsSwaggerDTO })
+  @ApiResponse({
+    status: 200,
+    description: 'Cập nhật câu hỏi với meanings thành công',
+    type: QuestionBankResponseSwaggerDTO
+  })
+  async updateWithMeanings(
+    @Param() params: GetQuestionBankByIdParamsDTO,
+    @Body() body: UpdateQuestionBankWithMeaningsBodyDTO,
+    @I18nLang() lang: string
+  ) {
+    return {
+      message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
+      data: await this.questionBankService.updateWithMeanings(params.id, body)
     }
+  }
 
-
-    @Put(':id')
-    @ApiBearerAuth()
-    @ApiOperation({
-        summary: 'Cập nhật câu hỏi với meanings theo ID',
-        description: 'Cập nhật câu hỏi kèm theo nghĩa và translations. Tất cả fields đều optional.'
-    })
-    @ApiBody({ type: UpdateQuestionBankWithMeaningsSwaggerDTO })
-    @ApiResponse({
-        status: 200,
-        description: 'Cập nhật câu hỏi với meanings thành công',
-        type: QuestionBankResponseSwaggerDTO
-    })
-    updateWithMeanings(
-        @Param('id') id: string,
-        @Body() body: UpdateQuestionBankWithMeaningsBodyDTO
-    ) {
-        return this.questionBankService.updateWithMeanings(Number(id), body)
-    }
-
-
-    @Delete('bulk')
-    @ApiBearerAuth()
-    @HttpCode(HttpStatus.OK)
-    @ApiOperation({
-        summary: 'Xóa nhiều câu hỏi cùng lúc',
-        description: 'Xóa nhiều câu hỏi cùng lúc và tự động xóa translations liên quan. Tối đa 100 câu hỏi mỗi lần.'
-    })
-    @ApiBody({
-        type: BulkDeleteQuestionBankSwaggerDTO,
-        description: 'Danh sách ID câu hỏi cần xóa'
-    })
-    @ApiResponse({
-        status: 200,
-        description: 'Xóa nhiều câu hỏi thành công',
-        schema: {
-            type: 'object',
-            properties: {
-                statusCode: { type: 'number', example: 200 },
-                message: { type: 'string', example: 'Xóa thành công 5/5 câu hỏi' },
-                data: {
-                    type: 'object',
-                    properties: {
-                        deletedCount: { type: 'number', example: 5 },
-                        deletedIds: { type: 'array', items: { type: 'number' }, example: [1, 2, 3, 4, 5] },
-                        requestedCount: { type: 'number', example: 5 },
-                        notFoundCount: { type: 'number', example: 0 }
-                    }
-                }
-            }
+  @Delete('bulk')
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Xóa nhiều câu hỏi cùng lúc',
+    description:
+      'Xóa nhiều câu hỏi cùng lúc và tự động xóa translations liên quan. Tối đa 100 câu hỏi mỗi lần.'
+  })
+  @ApiBody({
+    type: BulkDeleteQuestionBankSwaggerDTO,
+    description: 'Danh sách ID câu hỏi cần xóa'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Xóa nhiều câu hỏi thành công',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 200 },
+        message: { type: 'string', example: 'Xóa thành công 5/5 câu hỏi' },
+        data: {
+          type: 'object',
+          properties: {
+            deletedCount: { type: 'number', example: 5 },
+            deletedIds: {
+              type: 'array',
+              items: { type: 'number' },
+              example: [1, 2, 3, 4, 5]
+            },
+            requestedCount: { type: 'number', example: 5 },
+            notFoundCount: { type: 'number', example: 0 }
+          }
         }
-    })
-    removeMany(@Body() body: BulkDeleteQuestionBankBodyDTO) {
-        return this.questionBankService.removeMany(body.ids)
+      }
     }
-
-
-    @Delete(':id')
-    @ApiBearerAuth()
-    @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Xóa câu hỏi theo ID' })
-    @ApiResponse({
-        status: 200,
-        description: 'Xóa câu hỏi thành công',
-        type: QuestionBankResponseSwaggerDTO
-    })
-    @ZodSerializerDto(QuestionBankResDTO)
-    remove(@Param('id') id: string) {
-        return this.questionBankService.remove(Number(id))
+  })
+  async removeMany(
+    @Body() body: BulkDeleteQuestionBankBodyDTO,
+    @I18nLang() lang: string
+  ) {
+    const data = await this.questionBankService.removeMany(body.ids)
+    return {
+      message: this.i18nService.translate(M.DELETE_MANY_SUCCESS, lang, {
+        deleted: data.deletedCount,
+        requested: data.requestedCount
+      }),
+      data
     }
+  }
+
+  @Delete(':id')
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Xóa câu hỏi theo ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Xóa câu hỏi thành công',
+    type: QuestionBankResponseSwaggerDTO
+  })
+  @ZodSerializerDto(QuestionBankResDTO)
+  async remove(@Param() params: GetQuestionBankByIdParamsDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(M.DELETE_SUCCESS, lang),
+      data: await this.questionBankService.remove(params.id)
+    }
+  }
 }
-

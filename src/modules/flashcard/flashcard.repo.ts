@@ -1,22 +1,20 @@
+import { PrismaService } from '@/shared/services/prisma.service'
+import { Injectable } from '@nestjs/common'
 import {
-  CreateFlashcardCardBody,
+  Prisma,
+  FlashcardCardStatus as PrismaFlashcardCardStatus,
+  FlashcardContentType as PrismaFlashcardContentType,
+  FlashcardDeckStatus as PrismaFlashcardDeckStatus,
+  SrsContentType as PrismaSrsContentType
+} from '@prisma/client'
+import {
   CreateFlashcardDeckBody,
-  FlashcardContentType,
-  FlashcardDeckStatus,
   GetFlashcardCardListQuery,
   GetFlashcardDeckListQuery,
   UpdateFlashcardCardBody,
   UpdateFlashcardDeckBody
-} from './entities/flashcard.entities'
-import { Injectable } from '@nestjs/common'
-import {
-  Prisma,
-  FlashcardContentType as PrismaFlashcardContentType,
-  FlashcardDeckStatus as PrismaFlashcardDeckStatus,
-  FlashcardCardStatus as PrismaFlashcardCardStatus,
-  SrsContentType as PrismaSrsContentType
-} from '@prisma/client'
-import { PrismaService } from '@/shared/services/prisma.service'
+} from './dto/flashcard.zod-dto'
+import { FlashcardContent, FlashcardDeckStatus } from './entities/flashcard.entity'
 
 const CARD_RELATION_INCLUDE = {
   vocabulary: {
@@ -57,8 +55,8 @@ const CARD_RELATION_INCLUDE = {
 } satisfies Prisma.FlashcardCardInclude
 
 @Injectable()
-export class FlashcardRepository {
-  constructor(private readonly prisma: PrismaService) { }
+export class FlashcardRepo {
+  constructor(private readonly prisma: PrismaService) {}
 
   async createDeck(userId: number, data: CreateFlashcardDeckBody) {
     return this.prisma.flashcardDeck.create({
@@ -141,9 +139,7 @@ export class FlashcardRepository {
     }
 
     if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } }
-      ]
+      where.OR = [{ name: { contains: search, mode: 'insensitive' } }]
     }
 
     if (status) {
@@ -292,7 +288,11 @@ export class FlashcardRepository {
     })
   }
 
-  async findExistingContentCards(deckId: number, contentType: FlashcardContentType, ids: number[]) {
+  async findExistingContentCards(
+    deckId: number,
+    contentType: FlashcardContent,
+    ids: number[]
+  ) {
     if (!ids.length) {
       return []
     }
@@ -322,14 +322,17 @@ export class FlashcardRepository {
     })
   }
 
-  async createCard(deckId: number, body: {
-    contentType: string
-    vocabularyId?: number | null
-    kanjiId?: number | null
-    grammarId?: number | null
-    notes?: string | null
-    metadata?: any
-  }) {
+  async createCard(
+    deckId: number,
+    body: {
+      contentType: string
+      vocabularyId?: number | null
+      kanjiId?: number | null
+      grammarId?: number | null
+      notes?: string | null
+      metadata?: any
+    }
+  ) {
     return this.prisma.flashcardCard.create({
       data: {
         deckId,
@@ -362,8 +365,10 @@ export class FlashcardRepository {
   async updateCard(cardId: number, data: UpdateFlashcardCardBody) {
     const updateData: Prisma.FlashcardCardUncheckedUpdateInput = {}
 
-    if (data.contentType !== undefined) updateData.contentType = data.contentType as PrismaFlashcardContentType
-    if (data.status !== undefined) updateData.status = data.status as PrismaFlashcardCardStatus
+    if (data.contentType !== undefined)
+      updateData.contentType = data.contentType as PrismaFlashcardContentType
+    if (data.status !== undefined)
+      updateData.status = data.status as PrismaFlashcardCardStatus
     if (data.notes !== undefined) updateData.notes = data.notes ?? null
     if (data.read !== undefined) updateData.read = data.read
     if (data.metadata !== undefined) updateData.metadata = data.metadata ?? undefined
@@ -572,7 +577,12 @@ export class FlashcardRepository {
     return { total, results }
   }
 
-  async searchKanji(params: { skip: number; take: number; search?: string; jlptLevel?: number }) {
+  async searchKanji(params: {
+    skip: number
+    take: number
+    search?: string
+    jlptLevel?: number
+  }) {
     const { skip, take, search, jlptLevel } = params
 
     const where: Prisma.KanjiWhereInput = {}
@@ -610,7 +620,12 @@ export class FlashcardRepository {
     return { total, results }
   }
 
-  async searchGrammar(params: { skip: number; take: number; search?: string; level?: string }) {
+  async searchGrammar(params: {
+    skip: number
+    take: number
+    search?: string
+    level?: string
+  }) {
     const { skip, take, search, level } = params
 
     const where: Prisma.GrammarWhereInput = {}
@@ -645,7 +660,7 @@ export class FlashcardRepository {
 
   async findCardsForReview(
     deckId: number,
-    types: Array<Exclude<FlashcardContentType, 'CUSTOM'>>,
+    types: Array<Exclude<FlashcardContent, 'CUSTOM'>>,
     limit: number
   ) {
     if (!types.length) return []
@@ -671,7 +686,7 @@ export class FlashcardRepository {
 
   async findSrsEntries(
     userId: number,
-    type: Exclude<FlashcardContentType, 'CUSTOM'>,
+    type: Exclude<FlashcardContent, 'CUSTOM'>,
     ids: number[]
   ): Promise<
     Array<{
@@ -706,4 +721,3 @@ export class FlashcardRepository {
     })
   }
 }
-

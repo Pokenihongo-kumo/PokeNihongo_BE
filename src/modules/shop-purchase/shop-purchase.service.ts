@@ -1,26 +1,21 @@
 import {
   walletPurposeType,
-  WalletTransactionSourceType,
-  WalletTransactionType
+  WalletTransactionSourceType
 } from '@/common/constants/wallet-transaction.constant'
 import { walletType } from '@/common/constants/wallet.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { ShopPurchaseMessage } from '@/i18n/message-keys'
+import { PokemonService } from '@/modules/pokemon/pokemon.service'
+import { WalletService } from '@/modules/wallet/wallet.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { forwardRef, Inject, Injectable } from '@nestjs/common'
-import { PokemonRepo } from '../pokemon/pokemon.repo'
 import { ShopBannerRepo } from '../shop-banner/shop-banner.repo'
 import { ShopItemRepo } from '../shop-item/shop-item.repo'
 import { UserHasPokemonException } from '../user-pokemon/dto/user-pokemon.error'
-import { UserPokemonRepo } from '../user-pokemon/user-pokemon.repo'
 import { UserPokemonService } from '../user-pokemon/user-pokemon.service'
-import { WalletTransactionRepo } from '../wallet-transaction/wallet-transaction.repo'
-import { WalletRepo } from '../wallet/wallet.repo'
 import {
   NotEnoughBalanceException,
   PurchaseLimitReachedException,
@@ -28,57 +23,40 @@ import {
   ShopPurchaseNotFoundException
 } from './dto/shop-purchase.error'
 import {
-  CreateShopPurchaseBodyType,
-  UpdateShopPurchaseBodyType
-} from './entities/shop-purchase.entity'
+  CreateShopPurchaseBody,
+  UpdateShopPurchaseBody
+} from './dto/shop-purchase.zod-dto'
 import { ShopPurchaseRepo } from './shop-purchase.repo'
 
 @Injectable()
 export class ShopPurchaseService {
   constructor(
     private shopPurchaseRepo: ShopPurchaseRepo,
-    private readonly i18nService: I18nService,
     private readonly shopItemRepo: ShopItemRepo,
     @Inject(forwardRef(() => ShopBannerRepo))
     private readonly shopBannerRepo: ShopBannerRepo,
-    private readonly walletRepo: WalletRepo,
-    private readonly walletTransRepo: WalletTransactionRepo,
-    private readonly userPokemonRepo: UserPokemonRepo,
+    private readonly walletService: WalletService,
     private readonly userPokemonService: UserPokemonService,
-    private readonly pokemonRepo: PokemonRepo
+    private readonly pokemonService: PokemonService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.shopPurchaseRepo.list(pagination)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(ShopPurchaseMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   // Helper method to calculate weaknesses for a Pokemon (copied from PokemonService)
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const shopPurchase = await this.shopPurchaseRepo.findById(id)
     if (!shopPurchase) {
       throw new ShopPurchaseNotFoundException()
     }
 
-    return {
-      statusCode: 200,
-      data: shopPurchase,
-      message: this.i18nService.translate(ShopPurchaseMessage.GET_LIST_SUCCESS, lang)
-    }
+    return shopPurchase
   }
 
-  async create(
-    { userId, data }: { userId: number; data: CreateShopPurchaseBodyType },
-    lang: string = 'vi'
-  ) {
+  async create({ userId, data }: { userId: number; data: CreateShopPurchaseBody }) {
     try {
-      // co item hong
-      console.log('tim item')
-
       const shopItem = await this.shopItemRepo.findById(data.shopItemId)
       if (!shopItem) throw new NotFoundRecordException()
 
@@ -87,12 +65,12 @@ export class ShopPurchaseService {
 
       // 3)may co du tien ko ?
       const [userWallet, existed, totalPurchased, shopBanner] = await Promise.all([
-        this.walletRepo.checkEnoughBalance({
+        this.walletService.checkEnoughBalance({
           userId,
           type: walletType.SPARKLES,
           amount: totalPrice
         }),
-        this.userPokemonRepo.findByUserAndPokemon(userId, shopItem.pokemonId),
+        this.userPokemonService.findByUserAndPokemon(userId, shopItem.pokemonId),
         this.shopPurchaseRepo.getTotalPurchasedQuantityByUserAndItem(
           userId,
           data.shopItemId
@@ -124,47 +102,37 @@ export class ShopPurchaseService {
 
       // 4) transaction
       const result = await this.shopPurchaseRepo.withTransaction(async (prismaTx) => {
-        // 4.1) tao lich su mua hang (tam thoi chua co walletTransId) va tru tien no
-        const [purchase, updatedWallet] = await Promise.all([
-          this.shopPurchaseRepo.create(
-            {
-              createdById: userId,
-              data: {
-                userId,
-                shopItemId: data.shopItemId,
-                walletTransId: null,
-                quantity: data.quantity,
-                totalPrice
-              }
-            },
-            prismaTx
-          ),
-          this.walletRepo.minusBalanceToWalletWithTypeUserId(
-            { userId, type: walletType.SPARKLES, amount: totalPrice },
-            prismaTx
-          )
-        ])
-
-        // ko du la chui
-        if (!updatedWallet) throw new NotEnoughBalanceException()
-
-        // 4.3) Create Wallet Transaction referencing the purchase
-        const walletTrans = await this.walletTransRepo.create(
+        // 4.1) tao lich su mua hang (tam thoi chua co walletTransId)
+        const purchase = await this.shopPurchaseRepo.create(
           {
             createdById: userId,
             data: {
-              walletId: updatedWallet.id,
               userId,
-              purpose: walletPurposeType.SHOP,
-              referenceId: purchase.id,
-              amount: totalPrice,
-              type: WalletTransactionType.DECREASE,
-              source: WalletTransactionSourceType.SHOP_PURCHASE,
-              description: `Shop purchase ${purchase.id}`
+              shopItemId: data.shopItemId,
+              walletTransId: null,
+              quantity: data.quantity,
+              totalPrice
             }
           },
           prismaTx
         )
+
+        // 4.2) tru tien + ghi wallet transaction tham chieu purchase; ko du la chui
+        const debited = await this.walletService.debit(
+          {
+            userId,
+            type: walletType.SPARKLES,
+            amount: totalPrice,
+            createdById: userId,
+            purpose: walletPurposeType.SHOP,
+            referenceId: purchase.id,
+            source: WalletTransactionSourceType.SHOP_PURCHASE,
+            description: `Shop purchase ${purchase.id}`
+          },
+          prismaTx
+        )
+        if (!debited) throw new NotEnoughBalanceException()
+        const walletTrans = debited.transaction
 
         // 4.4) Update purchase with walletTransId
         // Add Pokemon to user inventory (level 1, nickname null, isMain false)
@@ -192,32 +160,23 @@ export class ShopPurchaseService {
         return finalPurchase
       })
 
-      return {
-        statusCode: 201,
-        data: result,
-        message: this.i18nService.translate(ShopPurchaseMessage.CREATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
-      console.log('vo catch')
-
       if (isNotFoundPrismaError(error)) throw new NotFoundRecordException()
       if (isForeignKeyConstraintPrismaError(error)) throw new NotFoundRecordException()
       throw error
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      userId
-    }: {
-      id: number
-      data: UpdateShopPurchaseBodyType
-      userId?: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    userId
+  }: {
+    id: number
+    data: UpdateShopPurchaseBody
+    userId?: number
+  }) {
     try {
       // 0) lay cai purchase ra
       const existing = await this.shopPurchaseRepo.findById(id)
@@ -239,62 +198,35 @@ export class ShopPurchaseService {
       const result = await this.shopPurchaseRepo.withTransaction(async (prismaTx) => {
         // 4.1) If total changed: refund old, then charge new
         if (newTotal !== oldTotal) {
-          // nhet lai tien cu ve vi
-          const walletAfterRefund = await this.walletRepo.addBalanceToWalletWithType(
-            { userId: existing.userId, type: walletType.SPARKLES, amount: oldTotal },
-            prismaTx
-          )
-          if (!walletAfterRefund) throw new NotEnoughBalanceException()
-
-          // Log refund transaction (INCREASE)
-          await this.walletTransRepo.create(
-            {
-              createdById: userId,
-              data: {
-                walletId: walletAfterRefund.id,
-                userId: existing.userId,
-                purpose: walletPurposeType.SHOP,
-                referenceId: id,
-                amount: oldTotal,
-                type: WalletTransactionType.INCREASE,
-                source: WalletTransactionSourceType.SHOP_PURCHASE,
-                description: `Refund previous total for purchase ${id}`
-              }
-            },
-            prismaTx
-          )
-
-          //check coi du tien ko
-          if ((walletAfterRefund as any).balance < newTotal) {
-            // Optional: check current wallet if needed; here we guard via balance on returned entity
-            throw new NotEnoughBalanceException()
+          const movement = {
+            userId: existing.userId,
+            type: walletType.SPARKLES,
+            createdById: userId,
+            purpose: walletPurposeType.SHOP,
+            referenceId: id,
+            source: WalletTransactionSourceType.SHOP_PURCHASE
           }
-
-          // tru tien ra
-          const walletAfterCharge =
-            await this.walletRepo.minusBalanceToWalletWithTypeUserId(
-              { userId: existing.userId, type: walletType.SPARKLES, amount: newTotal },
-              prismaTx
-            )
-          if (!walletAfterCharge) throw new NotEnoughBalanceException()
-
-          // Log charge transaction (DECREASE)
-          await this.walletTransRepo.create(
+          // nhet lai tien cu ve vi (INCREASE)
+          const refunded = await this.walletService.credit(
             {
-              createdById: userId,
-              data: {
-                walletId: walletAfterCharge.id,
-                userId: existing.userId,
-                purpose: walletPurposeType.SHOP,
-                referenceId: id,
-                amount: newTotal,
-                type: WalletTransactionType.DECREASE,
-                source: WalletTransactionSourceType.SHOP_PURCHASE,
-                description: `Charge new total for purchase ${id}`
-              }
+              ...movement,
+              amount: oldTotal,
+              description: `Refund previous total for purchase ${id}`
             },
             prismaTx
           )
+          if (!refunded) throw new NotEnoughBalanceException()
+
+          // tru tien moi (DECREASE); ko du tien thi null
+          const charged = await this.walletService.debit(
+            {
+              ...movement,
+              amount: newTotal,
+              description: `Charge new total for purchase ${id}`
+            },
+            prismaTx
+          )
+          if (!charged) throw new NotEnoughBalanceException()
         }
 
         // 4.2) Update purchase record
@@ -314,11 +246,7 @@ export class ShopPurchaseService {
         return updated
       })
 
-      return {
-        statusCode: 200,
-        data: result,
-        message: this.i18nService.translate(ShopPurchaseMessage.UPDATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new ShopPurchaseNotFoundException()
@@ -331,50 +259,33 @@ export class ShopPurchaseService {
     }
   }
 
-  async delete({ id, userId }: { id: number; userId?: number }, lang: string = 'vi') {
+  async delete({ id, userId }: { id: number; userId?: number }) {
     try {
       const existShopPurchase = await this.shopPurchaseRepo.findById(id)
       if (!existShopPurchase) throw new ShopPurchaseNotFoundException()
 
       await this.shopPurchaseRepo.withTransaction(async (prismaTx) => {
-        // 1) Refund full amount to wallet
-        const walletAfterRefund = await this.walletRepo.addBalanceToWalletWithType(
+        // 1) Refund full amount to wallet + log refund transaction
+        const refunded = await this.walletService.credit(
           {
             userId: existShopPurchase.userId,
             type: walletType.SPARKLES,
-            amount: existShopPurchase.totalPrice
-          },
-          prismaTx
-        )
-        if (!walletAfterRefund) throw new NotFoundRecordException()
-
-        // 2) Log refund transaction
-        await this.walletTransRepo.create(
-          {
+            amount: existShopPurchase.totalPrice,
             createdById: userId,
-            data: {
-              walletId: walletAfterRefund.id,
-              userId: existShopPurchase.userId,
-              purpose: walletPurposeType.SHOP,
-              referenceId: id,
-              amount: existShopPurchase.totalPrice,
-              type: WalletTransactionType.INCREASE,
-              source: WalletTransactionSourceType.SHOP_PURCHASE,
-              description: `Refund on delete purchase ${id}`
-            }
+            purpose: walletPurposeType.SHOP,
+            referenceId: id,
+            source: WalletTransactionSourceType.SHOP_PURCHASE,
+            description: `Refund on delete purchase ${id}`
           },
           prismaTx
         )
+        if (!refunded) throw new NotFoundRecordException()
 
         // 3) Soft delete purchase
         await this.shopPurchaseRepo.delete(id, false, prismaTx)
       })
 
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(ShopPurchaseMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new ShopPurchaseNotFoundException()
@@ -383,12 +294,8 @@ export class ShopPurchaseService {
     }
   }
 
-  async getByUser(userId: number, lang: string = 'vi') {
+  async getByUser(userId: number) {
     const data = await this.shopPurchaseRepo.findByUserId(userId)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(ShopPurchaseMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 }

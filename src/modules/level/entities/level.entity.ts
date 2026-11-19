@@ -1,5 +1,4 @@
 import { LEVEL_TYPE } from '@/common/constants/level.constant'
-import { checkIdSchema } from '@/common/utils/id.validation'
 import { LevelMessage } from '@/i18n/message-keys'
 import { RewardSchema } from '@/modules/reward/entities/reward.entity'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
@@ -7,6 +6,8 @@ import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
+
+// Data shapes only; request and response schemas live in dto/level.zod-dto.ts
 
 export const LevelSchema = z.object({
   id: z.number(),
@@ -23,45 +24,14 @@ export const LevelSchema = z.object({
   updatedAt: z.date()
 })
 
-export const CreateLevelBodySchema = LevelSchema.pick({
-  levelNumber: true,
-  requiredExp: true,
-  levelType: true,
-  nextLevelId: true,
-  rewardId: true
-}).strict()
-
-export const CreateLevelResSchema = z.object({
-  statusCode: z.number(),
-  data: LevelSchema,
-  message: z.string()
+/** A level with its reward and the next level (without that level's own links) */
+export const LevelWithRelationsSchema = z.object({
+  ...LevelSchema.shape,
+  reward: RewardSchema.nullable(),
+  nextLevel: LevelSchema.omit({ nextLevelId: true, rewardId: true }).nullable()
 })
 
-export const UpdateLevelBodySchema = CreateLevelBodySchema.partial().strict()
+export type Level = z.infer<typeof LevelSchema>
 
-export const UpdateLevelResSchema = CreateLevelResSchema
-
-export const GetLevelParamsSchema = z
-  .object({
-    levelId: checkIdSchema(LevelMessage.INVALID_DATA)
-  })
-  .strict()
-
-export const GetLevelDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: z.object({
-    ...LevelSchema.shape,
-    reward: RewardSchema.nullable(),
-    nextLevel: LevelSchema.omit({ nextLevelId: true, rewardId: true }).nullable()
-  }),
-  message: z.string()
-})
-
-export type LevelType = z.infer<typeof LevelSchema>
-export type CreateLevelBodyType = z.infer<typeof CreateLevelBodySchema>
-export type UpdateLevelBodyType = z.infer<typeof UpdateLevelBodySchema>
-export type GetLevelParamsType = z.infer<typeof GetLevelParamsSchema>
-export type GetLevelDetailResType = z.infer<typeof GetLevelDetailResSchema>
-
-type LevelFieldType = keyof z.infer<typeof LevelSchema>
-export const LEVEL_FIELDS = Object.keys(LevelSchema.shape) as LevelFieldType[]
+type LevelField = keyof Level
+export const LEVEL_FIELDS = Object.keys(LevelSchema.shape) as LevelField[]

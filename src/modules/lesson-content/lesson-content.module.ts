@@ -5,7 +5,6 @@ import { LessonContentRepository } from './lesson-content.repo'
 import { SharedModule } from '@/shared/shared.module'
 import { VocabularyModule } from '../vocabulary/vocabulary.module'
 import { GrammarModule } from '../grammar/grammar.module'
-import { GrammarRepository } from '../grammar/grammar.repo'
 import { KanjiModule } from '../kanji/kanji.module'
 import { TranslationModule } from '../translation/translation.module'
 import { LanguagesModule } from '../languages/languages.module'
@@ -15,20 +14,20 @@ import { UserExerciseAttemptModule } from '../user-exercise-attempt/user-exercis
 import { ExercisesModule } from '../exercises/exercises.module'
 
 @Module({
-    imports: [
-        SharedModule,
-        VocabularyModule,
-        GrammarModule,
-        KanjiModule,
-        TranslationModule,
-        LanguagesModule,
-        MeaningModule,
-        LessonModule,
-        UserExerciseAttemptModule,
-        ExercisesModule
-    ],
-    controllers: [LessonContentController],
-    providers: [LessonContentService, LessonContentRepository, GrammarRepository],
-    exports: [LessonContentService, LessonContentRepository]
+  imports: [
+    SharedModule,
+    VocabularyModule,
+    GrammarModule,
+    KanjiModule,
+    TranslationModule,
+    LanguagesModule,
+    MeaningModule,
+    LessonModule,
+    UserExerciseAttemptModule,
+    ExercisesModule
+  ],
+  controllers: [LessonContentController],
+  providers: [LessonContentService, LessonContentRepository],
+  exports: [LessonContentService, LessonContentRepository]
 })
-export class LessonContentModule { }
+export class LessonContentModule {}

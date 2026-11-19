@@ -179,23 +179,6 @@ export const LEVEL_MESSAGE = {
     'Cấp độ tiếp theo không hợp lệ (phải cùng loại và số cấp độ phải là số liền kề)'
 }
 
-export const LANGUAGES_MESSAGE = {
-  CREATE_SUCCESS: 'Tạo ngôn ngữ thành công',
-  UPDATE_SUCCESS: 'Cập nhật ngôn ngữ thành công',
-  DELETE_SUCCESS: 'Xóa ngôn ngữ thành công',
-  GET_SUCCESS: 'Lấy thông tin ngôn ngữ thành công',
-  GET_LIST_SUCCESS: 'Lấy danh sách ngôn ngữ thành công',
-  NOT_FOUND: 'Không tìm thấy ngôn ngữ',
-  ALREADY_EXISTS: 'Ngôn ngữ đã tồn tại',
-  INVALID_DATA: 'Dữ liệu ngôn ngữ không hợp lệ',
-  CODE_REQUIRED: 'Mã ngôn ngữ không được để trống',
-  NAME_REQUIRED: 'Tên ngôn ngữ không được để trống',
-  CODE_TOO_LONG: 'Mã ngôn ngữ quá dài (tối đa 10 ký tự)',
-  NAME_TOO_LONG: 'Tên ngôn ngữ quá dài (tối đa 100 ký tự)',
-  CODE_TOO_SHORT: 'Mã ngôn ngữ quá ngắn (tối thiểu 2 ký tự)',
-  LANGUAGE_NOT_SUPPORTED: 'Ngôn ngữ không được hỗ trợ'
-}
-
 export const KANJI_MESSAGE = {
   CREATE_SUCCESS: 'Tạo kanji thành công',
   CREATE_WITH_READINGS_SUCCESS: 'Tạo Kanji cùng với cách đọc thành công',
@@ -386,7 +369,8 @@ export const USER_EXERCISE_ATTEMPT_MESSAGE = {
   ALREADY_EXISTS: 'Lần thử bài tập đã tồn tại',
   INVALID_DATA: 'Dữ liệu lần thử bài tập không hợp lệ',
   EXERCISE_NOT_FOUND: 'Không tìm thấy bài tập',
-  LESSON_BLOCKED: 'Bạn đang học lesson khác. Chỉ có thể làm bài tập trong lesson hiện tại',
+  LESSON_BLOCKED:
+    'Bạn đang học lesson khác. Chỉ có thể làm bài tập trong lesson hiện tại',
   EXERCISE_COMPLETED: 'Bài tập đã hoàn thành',
   EXERCISE_ABANDONED: 'Bài tập đã bị bỏ dở',
   CHECK_COMPLETION_SUCCESS: 'Kiểm tra trạng thái hoàn thành thành công',
@@ -471,7 +455,8 @@ export const Error = {
   SPEECH_CONVERSION_ERROR: 'Lỗi chuyển đổi âm thanh',
   CHECK_MICROPHONE_SUGGESTION: 'Vui lòng kiểm tra microphone và thử lại',
   NOT_JAPANESE_LANGUAGE: 'Vui lòng nói bằng tiếng Nhật',
-  NOT_JAPANESE_LANGUAGE_SUGGESTION: 'Kaiwa chỉ hỗ trợ hội thoại bằng tiếng Nhật. Vui lòng nói lại bằng tiếng Nhật.',
+  NOT_JAPANESE_LANGUAGE_SUGGESTION:
+    'Kaiwa chỉ hỗ trợ hội thoại bằng tiếng Nhật. Vui lòng nói lại bằng tiếng Nhật.',
   AI_ERROR: 'Lỗi AI',
   CHECK_GEMINI_API_KEY_SUGGESTION: 'Vui lòng kiểm tra GEMINI_API_KEY và thử lại',
   AUDIO_RESPONSE_FAILED: 'Không thể tạo audio response',

@@ -1,20 +1,17 @@
-import { HttpException, HttpStatus } from '@nestjs/common'
+import { UserAIConversationMessage as M } from '@/i18n/message-keys'
+import { BadRequestException, NotFoundException } from '@nestjs/common'
 
-export const UserAIConversationNotFoundException = new HttpException(
-    {
-        statusCode: HttpStatus.NOT_FOUND,
-        message: 'Không tìm thấy cuộc hội thoại AI',
-        error: 'USER_AI_CONVERSATION_NOT_FOUND'
-    },
-    HttpStatus.NOT_FOUND
-)
+// A new instance per throw; `message` is translated from errorKey by
+// ApiExceptionFilter (Accept-Language). Another user's message is "not found".
 
-export const InvalidUserAIConversationDataException = new HttpException(
-    {
-        statusCode: HttpStatus.BAD_REQUEST,
-        message: 'Dữ liệu cuộc hội thoại AI không hợp lệ',
-        error: 'INVALID_USER_AI_CONVERSATION_DATA'
-    },
-    HttpStatus.BAD_REQUEST
-)
+export class UserAIConversationNotFoundException extends NotFoundException {
+  constructor() {
+    super({ message: M.NOT_FOUND, errorKey: M.NOT_FOUND })
+  }
+}
 
+export class InvalidUserAIConversationDataException extends BadRequestException {
+  constructor() {
+    super({ message: M.INVALID_DATA, errorKey: M.INVALID_DATA })
+  }
+}

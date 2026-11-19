@@ -1,0 +1,331 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`User progress batch 5b contract (e2e) errors: bad query values 1`] = `
+{
+  "historyBadPageSize": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Page size must be a positive integer",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Kích thước trang phải là số nguyên dương",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "progressBadCategory": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid lesson category ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID danh mục bài học không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "progressBadPageSize": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Page size must be a positive integer",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Kích thước trang phải là số nguyên dương",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "progressUnknownField": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid data provided",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Dữ liệu không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "testsBadPage": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Page must be a positive integer",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Trang phải là số nguyên dương",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+}
+`;
+
+exports[`User progress batch 5b contract (e2e) user-history: exercises, tests, recent exercises 1`] = `
+{
+  "historyExercises": {
+    "body": {
+      "data": {
+        "abandonedAttempts": "number",
+        "allAttempts": "number",
+        "allTime": "number",
+        "completedAttempts": "number",
+        "failedAttempts": "number",
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "attemptId": "number",
+            "correctAnswers": "number",
+            "exerciseId": "number",
+            "exerciseName": "string",
+            "incorrectAnswers": "number",
+            "score": "null",
+            "status": "string",
+            "totalQuestions": "number",
+            "updatedAt": "string",
+          },
+        ],
+        "skippedAttempts": "number",
+      },
+      "message": "Lấy danh sách lịch sử làm bài thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "historyTests": {
+    "body": {
+      "data": {
+        "abandonedAttempts": "number",
+        "allAttempts": "number",
+        "allTime": "number",
+        "completedAttempts": "number",
+        "failedAttempts": "number",
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "attemptId": "number",
+            "correctAnswers": "number",
+            "incorrectAnswers": "number",
+            "score": "number",
+            "status": "string",
+            "testId": "number",
+            "testName": "string",
+            "testType": "string",
+            "totalQuestions": "number",
+            "updatedAt": "string",
+          },
+        ],
+        "skippedAttempts": "number",
+      },
+      "message": "Lấy danh sách lịch sử làm bài thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "recentExercises": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "exerciseId": "number",
+            "exerciseName": "string",
+            "lessonId": "number",
+            "lessonTitle": "string",
+            "status": "string",
+          },
+        ],
+      },
+      "message": "Lấy danh sách lịch sử làm bài thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`User progress batch 5b contract (e2e) user-progress: lessons of a category with my progress (as learn.tsx asks) 1`] = `
+{
+  "my": {
+    "en": {
+      "body": {
+        "data": {
+          "pagination": {
+            "current": "number",
+            "pageSize": "number",
+            "totalItem": "number",
+            "totalPage": "number",
+          },
+          "results": [
+            {
+              "completedAt": "null",
+              "createdAt": "string",
+              "id": "number",
+              "lastAccessedAt": "string",
+              "lesson": {
+                "id": "number",
+                "isPublished": "boolean",
+                "levelJlpt": "number",
+                "titleJp": "string",
+              },
+              "lessonId": "number",
+              "progressPercentage": "number",
+              "status": "string",
+              "testId": "null",
+              "updatedAt": "string",
+              "userId": "number",
+            },
+          ],
+        },
+        "message": "Your progress retrieved successfully",
+        "statusCode": 200,
+      },
+      "httpStatus": 200,
+    },
+    "vi": {
+      "body": {
+        "data": {
+          "pagination": {
+            "current": "number",
+            "pageSize": "number",
+            "totalItem": "number",
+            "totalPage": "number",
+          },
+          "results": [
+            {
+              "completedAt": "null",
+              "createdAt": "string",
+              "id": "number",
+              "lastAccessedAt": "string",
+              "lesson": {
+                "id": "number",
+                "isPublished": "boolean",
+                "levelJlpt": "number",
+                "titleJp": "string",
+              },
+              "lessonId": "number",
+              "progressPercentage": "number",
+              "status": "string",
+              "testId": "null",
+              "updatedAt": "string",
+              "userId": "number",
+            },
+          ],
+        },
+        "message": "Lấy tiến độ học tập của tôi thành công",
+        "statusCode": 200,
+      },
+      "httpStatus": 200,
+    },
+  },
+}
+`;

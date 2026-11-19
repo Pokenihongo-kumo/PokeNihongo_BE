@@ -1,6 +1,4 @@
 import { SubscriptionType } from '@/common/constants/subscription.constant'
-import { checkIdSchema } from '@/common/utils/id.validation'
-import { ENTITY_MESSAGE } from '@/i18n/message-keys'
 import { FeatureSchema } from '@/modules/feature/entities/feature.entity'
 import { SubscriptionFeatureSchema } from '@/modules/subscription-feature/entities/subscription-feature.entity'
 import { SubscriptionSchema } from '@/modules/subscription/entities/subscription.entity'
@@ -29,38 +27,6 @@ export const SubscriptionPlanSchema = z.object({
   updatedAt: z.date()
 })
 
-// Create Schema
-export const CreateSubscriptionPlanBodySchema = SubscriptionPlanSchema.pick({
-  subscriptionId: true,
-  isActive: true,
-  price: true,
-  type: true,
-  durationInDays: true
-}).strict()
-
-export const CreateSubscriptionPlanResSchema = z.object({
-  statusCode: z.number(),
-  data: SubscriptionPlanSchema,
-  message: z.string()
-})
-
-// Update Schema
-export const UpdateSubscriptionPlanBodySchema =
-  CreateSubscriptionPlanBodySchema.partial().strict()
-
-export const UpdateSubscriptionPlanResSchema = CreateSubscriptionPlanResSchema
-
-export const UpdateWithListItemResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(SubscriptionPlanSchema),
-  message: z.string()
-})
-
-// Query Schema
-export const GetSubscriptionPlanParamsSchema = z.object({
-  subscriptionPlanId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
-})
-
 export const GetSubscriptionPlanDetailSchema = SubscriptionPlanSchema.extend({
   subscription: SubscriptionSchema.extend({
     nameTranslation: z.string().nullable().optional(),
@@ -86,33 +52,8 @@ export const GetSubscriptionPlanDetailSchema = SubscriptionPlanSchema.extend({
   }).nullable()
 })
 
-export const GetDiscountBySubPlanResSchema = z.object({
-  statusCode: z.number(),
-  data: z.object({
-    availablePokeCoins: z.number(),
-    maxPokeCoinsCanUse: z.number(),
-    maxDiscountAllowed: z.number()
-  }),
-  message: z.string()
-})
-export const GetSubscriptionPlanDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: GetSubscriptionPlanDetailSchema,
-  message: z.string()
-})
-
 // Type exports
-export type SubscriptionPlanType = z.infer<typeof SubscriptionPlanSchema>
-export type CreateSubscriptionPlanBodyType = z.infer<
-  typeof CreateSubscriptionPlanBodySchema
->
-export type UpdateSubscriptionPlanBodyType = z.infer<
-  typeof UpdateSubscriptionPlanBodySchema
->
-export type GetSubscriptionPlanParamsType = z.infer<
-  typeof GetSubscriptionPlanParamsSchema
->
-
+export type SubscriptionPlan = z.infer<typeof SubscriptionPlanSchema>
 // Field for query
 export type SubscriptionPlanFieldType = keyof z.infer<typeof SubscriptionPlanSchema>
 export const USER_GACHA_PITY_FIELDS = Object.keys(

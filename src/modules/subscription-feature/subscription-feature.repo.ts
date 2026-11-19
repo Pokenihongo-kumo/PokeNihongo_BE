@@ -1,13 +1,15 @@
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
-  CreateSubscriptionFeatureBodyType,
-  SubscriptionFeatureType,
-  USER_GACHA_PITY_FIELDS,
-  UpdateSubscriptionFeatureBodyType
+  CreateSubscriptionFeatureBody,
+  UpdateSubscriptionFeatureBody
+} from './dto/subscription-feature.zod-dto'
+import {
+  SubscriptionFeature,
+  USER_GACHA_PITY_FIELDS
 } from './entities/subscription-feature.entity'
 
 @Injectable()
@@ -22,10 +24,10 @@ export class SubscriptionFeatureRepo {
       data
     }: {
       createdById: number
-      data: CreateSubscriptionFeatureBodyType
+      data: CreateSubscriptionFeatureBody
     },
     prismaTx?: PrismaClient
-  ): Promise<SubscriptionFeatureType> {
+  ): Promise<SubscriptionFeature> {
     const client = prismaTx || this.prismaService
     return client.subscriptionFeature.create({
       data: {
@@ -42,11 +44,11 @@ export class SubscriptionFeatureRepo {
       updatedById
     }: {
       id: number
-      data: UpdateSubscriptionFeatureBodyType
+      data: UpdateSubscriptionFeatureBody
       updatedById?: number
     },
     prismaTx?: PrismaClient
-  ): Promise<SubscriptionFeatureType> {
+  ): Promise<SubscriptionFeature> {
     const client = prismaTx || this.prismaService
     return client.subscriptionFeature.update({
       where: {
@@ -63,7 +65,7 @@ export class SubscriptionFeatureRepo {
     id: number,
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<SubscriptionFeatureType> {
+  ): Promise<SubscriptionFeature> {
     const client = prismaTx || this.prismaService
     return isHard
       ? client.subscriptionFeature.delete({
@@ -80,7 +82,7 @@ export class SubscriptionFeatureRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, USER_GACHA_PITY_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -115,12 +117,44 @@ export class SubscriptionFeatureRepo {
     }
   }
 
-  findById(id: number): Promise<SubscriptionFeatureType | null> {
+  findById(id: number): Promise<SubscriptionFeature | null> {
     return this.prismaService.subscriptionFeature.findUnique({
       where: {
         id,
         deletedAt: null
       }
+    })
+  }
+
+  // ---- Replacing a subscription's features (updateByList, one transaction) ----
+
+  deleteBySubscription(subscriptionId: number, prismaTx: PrismaClient) {
+    return prismaTx.subscriptionFeature.deleteMany({
+      where: { subscriptionId }
+    })
+  }
+
+  // id and key of the live features among these ids
+  findLiveFeatureKeys(featureIds: number[], prismaTx: PrismaClient) {
+    return prismaTx.feature.findMany({
+      where: { id: { in: featureIds }, deletedAt: null },
+      select: { id: true, featureKey: true }
+    })
+  }
+
+  createManyRows(
+    createData: Prisma.SubscriptionFeatureCreateManyInput[],
+    prismaTx: PrismaClient
+  ) {
+    return prismaTx.subscriptionFeature.createMany({
+      data: createData
+    })
+  }
+
+  listBySubscription(subscriptionId: number, prismaTx: PrismaClient) {
+    return prismaTx.subscriptionFeature.findMany({
+      where: { subscriptionId, deletedAt: null },
+      orderBy: { id: 'asc' }
     })
   }
 }

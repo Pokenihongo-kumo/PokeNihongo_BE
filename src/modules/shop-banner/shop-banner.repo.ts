@@ -1,4 +1,4 @@
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { pickNameTranslation } from '@/shared/utils/translation-helper'
 import { Injectable } from '@nestjs/common'
 
@@ -7,16 +7,12 @@ import {
   ShopBannerStatusType
 } from '@/common/constants/shop-banner.constant'
 import { parseQs } from '@/common/utils/qs-parser'
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import {
-  CreateShopBannerBodyType,
-  REWARD_FIELDS,
-  ShopBannerType,
-  UpdateShopBannerBodyType
-} from './entities/shop-banner.entity'
+import { CreateShopBannerBody, UpdateShopBannerBody } from './dto/shop-banner.zod-dto'
+import { REWARD_FIELDS, ShopBanner } from './entities/shop-banner.entity'
 
-type ShopBannerPrismaType = Omit<ShopBannerType, 'nameKey'> & { name: string }
+type ShopBannerPrismaType = Omit<ShopBanner, 'nameKey'> & { name: string }
 
 @Injectable()
 export class ShopBannerRepo {
@@ -33,10 +29,10 @@ export class ShopBannerRepo {
       data
     }: {
       createdById: number | null
-      data: CreateShopBannerBodyType
+      data: CreateShopBannerBody
     },
     prismaTx?: PrismaClient
-  ): Promise<ShopBannerType> {
+  ): Promise<ShopBanner> {
     const client = prismaTx || this.prismaService
     return client.shopBanner.create({
       data: {
@@ -54,10 +50,10 @@ export class ShopBannerRepo {
     }: {
       id: number
       updatedById?: number
-      data: UpdateShopBannerBodyType
+      data: UpdateShopBannerBody
     },
     prismaTx?: PrismaClient
-  ): Promise<ShopBannerType> {
+  ): Promise<ShopBanner> {
     const client = prismaTx || this.prismaService
     return client.shopBanner.update({
       where: { id, deletedAt: null },
@@ -78,7 +74,7 @@ export class ShopBannerRepo {
     },
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<ShopBannerType> {
+  ): Promise<ShopBanner> {
     const client = prismaTx || this.prismaService
     const result = isHard
       ? await this.prismaService.shopBanner.delete({
@@ -99,11 +95,7 @@ export class ShopBannerRepo {
     return result
   }
 
-  async list(
-    pagination: PaginationQueryType,
-    langId?: number,
-    isAllLang: boolean = false
-  ) {
+  async list(pagination: PaginationQuery, langId?: number, isAllLang: boolean = false) {
     const { where: rawWhere = {}, orderBy } = parseQs(pagination.qs, REWARD_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -186,7 +178,7 @@ export class ShopBannerRepo {
   }
 
   async listwithDetail(
-    pagination: PaginationQueryType,
+    pagination: PaginationQuery,
     langId?: number,
     isAllLang: boolean = false
   ) {
@@ -274,7 +266,7 @@ export class ShopBannerRepo {
     }
   }
 
-  findById(id: number): Promise<ShopBannerType | null> {
+  findById(id: number): Promise<ShopBanner | null> {
     return this.prismaService.shopBanner.findUnique({
       where: {
         id,
@@ -287,7 +279,7 @@ export class ShopBannerRepo {
     id: number,
     langId: number,
     isAllLang: boolean = false
-  ): Promise<ShopBannerType | null> {
+  ): Promise<ShopBanner | null> {
     return this.prismaService.shopBanner.findUnique({
       where: { id, deletedAt: null },
       include: {
@@ -317,7 +309,7 @@ export class ShopBannerRepo {
   async findValidByDateWithLangId(
     date: Date,
     langId: number
-  ): Promise<ShopBannerType | null> {
+  ): Promise<ShopBanner | null> {
     const data = await this.prismaService.shopBanner.findFirst({
       where: {
         deletedAt: null,
@@ -363,7 +355,7 @@ export class ShopBannerRepo {
   /**
    * Lấy thông tin shop banner để validate
    */
-  async findByIdForValidation(shopBannerId: number): Promise<ShopBannerType | null> {
+  async findByIdForValidation(shopBannerId: number): Promise<ShopBanner | null> {
     return this.prismaService.shopBanner.findUnique({
       where: { id: shopBannerId },
       select: {
@@ -387,11 +379,127 @@ export class ShopBannerRepo {
     })
   }
 
-  findByStatus(status: ShopBannerStatusType): Promise<ShopBannerType | null> {
+  findByStatus(status: ShopBannerStatusType): Promise<ShopBanner | null> {
     return this.prismaService.shopBanner.findFirst({
       where: {
         status,
         deletedAt: null
+      }
+    })
+  }
+
+  // ---- Daily banner rotation (HandleShopBannerCronjob) ----
+
+  // ACTIVE banners ended before today -> EXPIRED
+  expireActiveEndedBefore(now: Date) {
+    return this.prismaService.shopBanner.updateMany({
+      where: {
+        status: ShopBannerStatus.ACTIVE,
+        endDate: {
+          lt: now
+        },
+        deletedAt: null
+      },
+      data: {
+        status: ShopBannerStatus.EXPIRED
+      }
+    })
+  }
+
+  // PREVIEW banners whose dates include today, earliest start first
+  findPreviewValidOn(now: Date) {
+    return this.prismaService.shopBanner.findMany({
+      where: {
+        status: ShopBannerStatus.PREVIEW,
+        deletedAt: null,
+        AND: [
+          {
+            OR: [{ startDate: null }, { startDate: { lte: now } }]
+          },
+          {
+            OR: [{ endDate: null }, { endDate: { gte: now } }]
+          }
+        ]
+      },
+      orderBy: {
+        startDate: 'asc' // Sort theo startDate tăng dần
+      }
+    })
+  }
+
+  countActive() {
+    return this.prismaService.shopBanner.count({
+      where: {
+        status: ShopBannerStatus.ACTIVE,
+        deletedAt: null
+      }
+    })
+  }
+
+  activate(id: number) {
+    return this.prismaService.shopBanner.update({
+      where: {
+        id: id
+      },
+      data: {
+        status: ShopBannerStatus.ACTIVE
+      }
+    })
+  }
+
+  // ACTIVE banners that create their successor, with what is copied
+  findActiveWithPrecreate() {
+    return this.prismaService.shopBanner.findMany({
+      where: {
+        status: ShopBannerStatus.ACTIVE,
+        enablePrecreate: true,
+        deletedAt: null
+      },
+      include: {
+        nameTranslations: true,
+        shopItems: {
+          include: {
+            pokemon: true
+          }
+        }
+      }
+    })
+  }
+
+  findLiveByNameKeyPrefix(prefix: string) {
+    return this.prismaService.shopBanner.findFirst({
+      where: {
+        nameKey: {
+          startsWith: prefix
+        },
+        deletedAt: null
+      }
+    })
+  }
+
+  createSuccessor(data: Prisma.ShopBannerUncheckedCreateInput) {
+    return this.prismaService.shopBanner.create({ data })
+  }
+
+  setNameKeyAndTranslations(id: number, nameKey: string, nameUpserts: unknown[]) {
+    return this.prismaService.shopBanner.update({
+      where: { id: id },
+      data: {
+        nameKey,
+        ...(nameUpserts.length
+          ? { nameTranslations: { upsert: nameUpserts as any } }
+          : {})
+      }
+    })
+  }
+
+  // The successor exists: never create another one
+  disablePrecreate(id: number) {
+    return this.prismaService.shopBanner.update({
+      where: { id: id },
+      data: {
+        enablePrecreate: false,
+        precreateBeforeEndDays: 999
       }
     })
   }

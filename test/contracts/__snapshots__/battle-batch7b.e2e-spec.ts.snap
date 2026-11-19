@@ -1,0 +1,1364 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Battle batch 7b contract (e2e) a player cannot answer for the other's place 1`] = `
+{
+  "forOther": {
+    "body": {
+      "error": "NOT_FOUND",
+      "message": "Không tìm thấy người tham gia trận đấu",
+      "statusCode": 404,
+    },
+    "httpStatus": 404,
+  },
+  "match": {
+    "accepted": [
+      null,
+      null,
+    ],
+    "rounds": [],
+    "status": "PENDING",
+  },
+}
+`;
+
+exports[`Battle batch 7b contract (e2e) acceptance times out: the silent player counts as declining 1`] = `
+{
+  "events": [
+    {
+      "event": "matching-event",
+      "payload": {
+        "matchId": "number",
+        "message": "Đối thủ đã hủy trận đấu",
+        "status": "string",
+        "type": "string",
+      },
+      "room": "searching_N",
+    },
+    {
+      "event": "matching-event",
+      "payload": {
+        "matchId": "number",
+        "message": "Đối thủ đã hủy trận đấu",
+        "status": "string",
+        "type": "string",
+      },
+      "room": "searching_N",
+    },
+  ],
+  "jobs": [
+    {
+      "data": {
+        "matchId": "number",
+        "matchParticipantId": "number",
+        "userId": "number",
+      },
+      "delay": 25000,
+      "name": "check-acceptance-timeout",
+      "queue": "match-participant-timeout",
+    },
+  ],
+  "match": {
+    "accepted": [
+      true,
+      false,
+    ],
+    "rounds": [],
+    "status": "CANCELLED",
+  },
+  "timeoutJobsQueued": 2,
+}
+`;
+
+exports[`Battle batch 7b contract (e2e) both accept: the match starts, three rounds are made, the first picker is timed 1`] = `
+{
+  "acceptA": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "deletedAt": "null",
+        "hasAccepted": "boolean",
+        "id": "number",
+        "matchId": "number",
+        "updatedAt": "string",
+        "userId": "number",
+      },
+      "message": "Cập nhật người tham gia trận đấu thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "acceptAAgain": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Invalid action for match participant",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Hành động không hợp lệ cho người tham gia trận đấu",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+  "acceptB": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "deletedAt": "null",
+        "hasAccepted": "boolean",
+        "id": "number",
+        "matchId": "number",
+        "updatedAt": "string",
+        "userId": "number",
+      },
+      "message": "Cập nhật người tham gia trận đấu thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "afterOne": {
+    "events": [],
+    "match": {
+      "accepted": [
+        true,
+        null,
+      ],
+      "rounds": [],
+      "status": "PENDING",
+    },
+  },
+  "events": [
+    {
+      "event": "matching-event",
+      "payload": {
+        "matchId": "number",
+        "message": "Trận đấu sắp bắt đầu",
+        "status": "string",
+        "type": "string",
+      },
+      "room": "searching_N",
+    },
+    {
+      "event": "matching-event",
+      "payload": {
+        "matchId": "number",
+        "message": "Trận đấu sắp bắt đầu",
+        "status": "string",
+        "type": "string",
+      },
+      "room": "searching_N",
+    },
+  ],
+  "jobs": [
+    {
+      "data": {
+        "matchRoundParticipantId": "number",
+      },
+      "delay": 5000,
+      "name": "check-pokemon-selection-timeout",
+      "queue": "match-round-participant-timeout",
+    },
+  ],
+  "match": {
+    "accepted": [
+      true,
+      true,
+    ],
+    "rounds": [
+      {
+        "participants": [
+          {
+            "hasEndTime": true,
+            "orderSelected": 1,
+            "picked": false,
+            "status": "SELECTING_POKEMON",
+          },
+          {
+            "hasEndTime": false,
+            "orderSelected": 2,
+            "picked": false,
+            "status": "SELECTING_POKEMON",
+          },
+        ],
+        "roundNumber": "ONE",
+        "status": "SELECTING_POKEMON",
+      },
+      {
+        "participants": [
+          {
+            "hasEndTime": false,
+            "orderSelected": 3,
+            "picked": false,
+            "status": "SELECTING_POKEMON",
+          },
+          {
+            "hasEndTime": false,
+            "orderSelected": 4,
+            "picked": false,
+            "status": "SELECTING_POKEMON",
+          },
+        ],
+        "roundNumber": "TWO",
+        "status": "SELECTING_POKEMON",
+      },
+      {
+        "participants": [
+          {
+            "hasEndTime": false,
+            "orderSelected": 5,
+            "picked": false,
+            "status": "SELECTING_POKEMON",
+          },
+          {
+            "hasEndTime": false,
+            "orderSelected": 6,
+            "picked": false,
+            "status": "SELECTING_POKEMON",
+          },
+        ],
+        "roundNumber": "THREE",
+        "status": "SELECTING_POKEMON",
+      },
+    ],
+    "status": "IN_PROGRESS",
+  },
+  "queueWhileInMatch": {
+    "en": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "You are already in an active match",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+    "vi": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Bạn đang trong một trận đấu khác",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+  },
+  "roundPokemon": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [],
+      },
+      "message": "Lấy danh sách User Pokemon thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "roundsNowFirstPicker": {
+    "body": {
+      "data": {
+        "match": {
+          "id": "number",
+          "participants": [
+            {
+              "id": "number",
+              "user": {
+                "avatar": "null",
+                "eloscore": "number",
+                "email": "string",
+                "id": "number",
+                "name": "string",
+              },
+              "userId": "number",
+            },
+          ],
+          "status": "string",
+        },
+        "rounds": [
+          {
+            "endTimeRound": "null",
+            "id": "number",
+            "participants": [
+              {
+                "endTimeSelected": "string",
+                "id": "number",
+                "matchParticipantId": "number",
+                "orderSelected": "number",
+                "selectedUserPokemon": "null",
+                "selectedUserPokemonId": "null",
+              },
+            ],
+            "roundNumber": "string",
+            "status": "string",
+          },
+        ],
+      },
+      "message": "Lấy danh sách vòng đấu thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "roundsNowSecondPicker": {
+    "body": {
+      "data": {
+        "match": {
+          "id": "number",
+          "participants": [
+            {
+              "id": "number",
+              "user": {
+                "avatar": "null",
+                "eloscore": "number",
+                "email": "string",
+                "id": "number",
+                "name": "string",
+              },
+              "userId": "number",
+            },
+          ],
+          "status": "string",
+        },
+        "rounds": [
+          {
+            "endTimeRound": "null",
+            "id": "number",
+            "participants": [
+              {
+                "endTimeSelected": "string",
+                "id": "number",
+                "matchParticipantId": "number",
+                "orderSelected": "number",
+                "selectedUserPokemon": "null",
+                "selectedUserPokemonId": "null",
+              },
+            ],
+            "roundNumber": "string",
+            "status": "string",
+          },
+        ],
+      },
+      "message": "Lấy danh sách vòng đấu thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "trackingFirstPicker": {
+    "body": {
+      "data": {
+        "matchId": "number",
+        "round": {
+          "id": "number",
+          "opponent": {
+            "debuff": "null",
+            "id": "number",
+            "selectedUserPokemon": "null",
+            "status": "string",
+            "user": {
+              "avatar": "null",
+              "id": "number",
+              "name": "string",
+            },
+          },
+          "participant": {
+            "debuff": "null",
+            "id": "number",
+            "selectedUserPokemon": "null",
+            "status": "string",
+          },
+          "roundNumber": "string",
+          "status": "string",
+        },
+        "selectionEndTime": "string",
+        "timeLimitMs": "number",
+        "type": "string",
+      },
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "trackingSecondPicker": {
+    "body": {
+      "data": {
+        "matchId": "number",
+        "round": {
+          "id": "number",
+          "opponent": {
+            "debuff": "null",
+            "id": "number",
+            "selectedUserPokemon": "null",
+            "status": "string",
+            "user": {
+              "avatar": "null",
+              "id": "number",
+              "name": "string",
+            },
+          },
+          "participant": {
+            "debuff": "null",
+            "id": "number",
+            "selectedUserPokemon": "null",
+            "status": "string",
+          },
+          "roundNumber": "string",
+          "status": "string",
+        },
+        "selectionEndTime": "string",
+        "timeLimitMs": "number",
+        "type": "string",
+      },
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Battle batch 7b contract (e2e) errors 1`] = `
+{
+  "acceptBadId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "acceptMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Match participant not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy người tham gia trận đấu",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "events": [],
+  "leaveNotQueued": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Record not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bản ghi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "pickBadRound": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "pickMissingRound": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Match round participant not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy người tham gia vòng đấu",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "pickNoBody": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "This field is required",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Trường này là bắt buộc",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "queueWithoutLogin": {
+    "httpStatus": 401,
+  },
+}
+`;
+
+exports[`Battle batch 7b contract (e2e) joining the queue is refused: no season, season not joined, not enough pokemon 1`] = `
+{
+  "events": [],
+  "fewPokemon": {
+    "en": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "User does not meet the conditions to join the match queue: Required level  N Required number of Pokémon  N",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+    "vi": {
+      "body": {
+        "error": "CONFLICT",
+        "message": " Bạn không đủ điều kiện để tham gia hàng đợi trận đấu: Cấp độ cần có  N Số lượng Pokémon cần có  N",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+  },
+  "noSeason": {
+    "en": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Leaderboard season has not started yet",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+    "vi": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Mùa giải bảng xếp hạng chưa bắt đầu",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+  },
+  "notJoined": {
+    "en": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "You have not joined the current season",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+    "vi": {
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "Bạn chưa tham gia mùa giải hiện tại",
+        "statusCode": 400,
+      },
+      "httpStatus": 400,
+    },
+  },
+}
+`;
+
+exports[`Battle batch 7b contract (e2e) one player declines: the match is cancelled and both are told 1`] = `
+{
+  "accept": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "deletedAt": "null",
+        "hasAccepted": "boolean",
+        "id": "number",
+        "matchId": "number",
+        "updatedAt": "string",
+        "userId": "number",
+      },
+      "message": "Cập nhật người tham gia trận đấu thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "decline": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "deletedAt": "null",
+        "hasAccepted": "boolean",
+        "id": "number",
+        "matchId": "number",
+        "updatedAt": "string",
+        "userId": "number",
+      },
+      "message": "Cập nhật người tham gia trận đấu thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "events": [
+    {
+      "event": "matching-event",
+      "payload": {
+        "matchId": "number",
+        "message": "Đối thủ đã hủy trận đấu",
+        "status": "string",
+        "type": "string",
+      },
+      "room": "searching_N",
+    },
+    {
+      "event": "matching-event",
+      "payload": {
+        "matchId": "number",
+        "message": "Đối thủ đã hủy trận đấu",
+        "status": "string",
+        "type": "string",
+      },
+      "room": "searching_N",
+    },
+  ],
+  "jobs": [],
+  "match": {
+    "accepted": [
+      true,
+      false,
+    ],
+    "rounds": [],
+    "status": "CANCELLED",
+  },
+}
+`;
+
+exports[`Battle batch 7b contract (e2e) queue, queue twice, leave, queue again; matchmaking pairs the two players 1`] = `
+{
+  "again": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "deletedAt": "null",
+        "id": "number",
+        "status": "string",
+        "updatedAt": "string",
+        "userElo": "number",
+        "userId": "number",
+      },
+      "message": "Tham gia hàng đợi trận đấu thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "events": [
+    {
+      "event": "matching-event",
+      "payload": {
+        "match": {
+          "createdAt": {},
+          "endTime": {},
+          "id": "number",
+          "status": "string",
+          "timeLimitMs": "number",
+        },
+        "matchId": "number",
+        "opponent": {
+          "avatar": "null",
+          "id": "number",
+          "name": "string",
+        },
+        "participant": {
+          "hasAccepted": "null",
+          "id": "number",
+          "matchId": "number",
+          "userId": "number",
+        },
+        "type": "string",
+      },
+      "room": "searching_N",
+    },
+    {
+      "event": "matching-event",
+      "payload": {
+        "match": {
+          "createdAt": {},
+          "endTime": {},
+          "id": "number",
+          "status": "string",
+          "timeLimitMs": "number",
+        },
+        "matchId": "number",
+        "opponent": {
+          "avatar": "null",
+          "id": "number",
+          "name": "string",
+        },
+        "participant": {
+          "hasAccepted": "null",
+          "id": "number",
+          "matchId": "number",
+          "userId": "number",
+        },
+        "type": "string",
+      },
+      "room": "searching_N",
+    },
+  ],
+  "jobs": [
+    {
+      "data": {
+        "matchId": "number",
+        "matchParticipantId": "number",
+        "userId": "number",
+      },
+      "delay": 25000,
+      "name": "check-acceptance-timeout",
+      "queue": "match-participant-timeout",
+    },
+    {
+      "data": {
+        "matchId": "number",
+        "matchParticipantId": "number",
+        "userId": "number",
+      },
+      "delay": 25000,
+      "name": "check-acceptance-timeout",
+      "queue": "match-participant-timeout",
+    },
+  ],
+  "joined": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "deletedAt": "null",
+        "id": "number",
+        "status": "string",
+        "updatedAt": "string",
+        "userElo": "number",
+        "userId": "number",
+      },
+      "message": "Tham gia hàng đợi trận đấu thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "left": {
+    "body": {
+      "data": "null",
+      "message": "Thoát hàng đợi trận đấu thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "match": {
+    "accepted": [
+      null,
+      null,
+    ],
+    "rounds": [],
+    "status": "PENDING",
+  },
+  "second": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "deletedAt": "null",
+        "id": "number",
+        "status": "string",
+        "updatedAt": "string",
+        "userElo": "number",
+        "userId": "number",
+      },
+      "message": "Tham gia hàng đợi trận đấu thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "stillQueued": 0,
+  "twice": {
+    "en": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Match queue already exists",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+    "vi": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Hàng đợi trận đấu đã tồn tại",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+  },
+}
+`;
+
+exports[`Battle batch 7b contract (e2e) round one picks in turn: out of turn, not owned, first, second (round two's first picker is timed next) 1`] = `
+{
+  "afterFirst": {
+    "events": [
+      {
+        "event": "select-pokemon",
+        "payload": {
+          "data": {
+            "match": {
+              "id": "number",
+              "participants": [
+                {
+                  "id": "number",
+                  "user": {
+                    "avatar": "null",
+                    "eloscore": "number",
+                    "email": "string",
+                    "id": "number",
+                    "name": "string",
+                  },
+                  "userId": "number",
+                },
+              ],
+              "status": "string",
+            },
+            "rounds": [
+              {
+                "endTimeRound": "null",
+                "id": "number",
+                "participants": [
+                  {
+                    "endTimeSelected": {},
+                    "id": "number",
+                    "matchParticipantId": "number",
+                    "orderSelected": "number",
+                    "selectedUserPokemon": {
+                      "id": "number",
+                      "pokemon": {
+                        "id": "number",
+                        "imageUrl": "null",
+                        "nameJp": "string",
+                        "nameTranslations": {
+                          "en": "string",
+                          "ja": "string",
+                          "vi": "string",
+                        },
+                        "pokedex_number": "number",
+                        "rarity": "string",
+                      },
+                      "pokemonId": "number",
+                      "userId": "number",
+                    },
+                    "selectedUserPokemonId": "number",
+                  },
+                ],
+                "roundNumber": "string",
+                "status": "string",
+              },
+            ],
+          },
+          "matchId": "number",
+          "matchRoundId": "number",
+          "timeLimitMs": "number",
+          "type": "string",
+        },
+        "room": "matching_N",
+      },
+    ],
+    "jobs": [
+      {
+        "data": {
+          "matchRoundParticipantId": "number",
+        },
+        "delay": 5000,
+        "name": "check-pokemon-selection-timeout",
+        "queue": "match-round-participant-timeout",
+      },
+    ],
+    "match": {
+      "accepted": [
+        true,
+        true,
+      ],
+      "rounds": [
+        {
+          "participants": [
+            {
+              "hasEndTime": true,
+              "orderSelected": 1,
+              "picked": true,
+              "status": "PENDING",
+            },
+            {
+              "hasEndTime": true,
+              "orderSelected": 2,
+              "picked": false,
+              "status": "SELECTING_POKEMON",
+            },
+          ],
+          "roundNumber": "ONE",
+          "status": "SELECTING_POKEMON",
+        },
+        {
+          "participants": [
+            {
+              "hasEndTime": false,
+              "orderSelected": 3,
+              "picked": false,
+              "status": "SELECTING_POKEMON",
+            },
+            {
+              "hasEndTime": false,
+              "orderSelected": 4,
+              "picked": false,
+              "status": "SELECTING_POKEMON",
+            },
+          ],
+          "roundNumber": "TWO",
+          "status": "SELECTING_POKEMON",
+        },
+        {
+          "participants": [
+            {
+              "hasEndTime": false,
+              "orderSelected": 5,
+              "picked": false,
+              "status": "SELECTING_POKEMON",
+            },
+            {
+              "hasEndTime": false,
+              "orderSelected": 6,
+              "picked": false,
+              "status": "SELECTING_POKEMON",
+            },
+          ],
+          "roundNumber": "THREE",
+          "status": "SELECTING_POKEMON",
+        },
+      ],
+      "status": "IN_PROGRESS",
+    },
+  },
+  "events": [
+    {
+      "event": "select-pokemon",
+      "payload": {
+        "data": {
+          "match": {
+            "id": "number",
+            "participants": [
+              {
+                "id": "number",
+                "user": {
+                  "avatar": "null",
+                  "eloscore": "number",
+                  "email": "string",
+                  "id": "number",
+                  "name": "string",
+                },
+                "userId": "number",
+              },
+            ],
+            "status": "string",
+          },
+          "rounds": [
+            {
+              "endTimeRound": "null",
+              "id": "number",
+              "participants": [
+                {
+                  "endTimeSelected": {},
+                  "id": "number",
+                  "matchParticipantId": "number",
+                  "orderSelected": "number",
+                  "selectedUserPokemon": {
+                    "id": "number",
+                    "pokemon": {
+                      "id": "number",
+                      "imageUrl": "null",
+                      "nameJp": "string",
+                      "nameTranslations": {
+                        "en": "string",
+                        "ja": "string",
+                        "vi": "string",
+                      },
+                      "pokedex_number": "number",
+                      "rarity": "string",
+                    },
+                    "pokemonId": "number",
+                    "userId": "number",
+                  },
+                  "selectedUserPokemonId": "number",
+                },
+              ],
+              "roundNumber": "string",
+              "status": "string",
+            },
+          ],
+        },
+        "matchId": "number",
+        "matchRoundId": "number",
+        "timeLimitMs": "number",
+        "type": "string",
+      },
+      "room": "matching_N",
+    },
+  ],
+  "first": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "deletedAt": "null",
+        "endTimeSelected": "string",
+        "id": "number",
+        "matchParticipantId": "number",
+        "matchRoundId": "number",
+        "orderSelected": "number",
+        "points": "null",
+        "questionsTotal": "number",
+        "selectedUserPokemonId": "number",
+        "status": "string",
+        "totalTimeMs": "null",
+        "updatedAt": "string",
+      },
+      "message": "Cập nhật người tham gia vòng đấu thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "jobs": [
+    {
+      "data": {
+        "matchRoundParticipantId": "number",
+      },
+      "delay": 5000,
+      "name": "check-pokemon-selection-timeout",
+      "queue": "match-round-participant-timeout",
+    },
+  ],
+  "match": {
+    "accepted": [
+      true,
+      true,
+    ],
+    "rounds": [
+      {
+        "participants": [
+          {
+            "hasEndTime": true,
+            "orderSelected": 1,
+            "picked": true,
+            "status": "PENDING",
+          },
+          {
+            "hasEndTime": true,
+            "orderSelected": 2,
+            "picked": true,
+            "status": "PENDING",
+          },
+        ],
+        "roundNumber": "ONE",
+        "status": "PENDING",
+      },
+      {
+        "participants": [
+          {
+            "hasEndTime": true,
+            "orderSelected": 3,
+            "picked": false,
+            "status": "SELECTING_POKEMON",
+          },
+          {
+            "hasEndTime": false,
+            "orderSelected": 4,
+            "picked": false,
+            "status": "SELECTING_POKEMON",
+          },
+        ],
+        "roundNumber": "TWO",
+        "status": "SELECTING_POKEMON",
+      },
+      {
+        "participants": [
+          {
+            "hasEndTime": false,
+            "orderSelected": 5,
+            "picked": false,
+            "status": "SELECTING_POKEMON",
+          },
+          {
+            "hasEndTime": false,
+            "orderSelected": 6,
+            "picked": false,
+            "status": "SELECTING_POKEMON",
+          },
+        ],
+        "roundNumber": "THREE",
+        "status": "SELECTING_POKEMON",
+      },
+    ],
+    "status": "IN_PROGRESS",
+  },
+  "notOwned": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Record not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy bản ghi",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "outOfTurn": {
+    "en": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "It is not your turn to choose a Pokémon yet",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+    "vi": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Chưa đến lượt bạn chọn Pokémon",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+  },
+  "second": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "deletedAt": "null",
+        "endTimeSelected": "string",
+        "id": "number",
+        "matchParticipantId": "number",
+        "matchRoundId": "number",
+        "orderSelected": "number",
+        "points": "null",
+        "questionsTotal": "number",
+        "selectedUserPokemonId": "number",
+        "status": "string",
+        "totalTimeMs": "null",
+        "updatedAt": "string",
+      },
+      "message": "Cập nhật người tham gia vòng đấu thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Battle batch 7b contract (e2e) the first picker times out: the turn passes on 1`] = `
+{
+  "events": [
+    {
+      "event": "select-pokemon",
+      "payload": {
+        "data": {
+          "match": {
+            "id": "number",
+            "participants": [
+              {
+                "id": "number",
+                "user": {
+                  "email": "string",
+                  "id": "number",
+                },
+                "userId": "number",
+              },
+            ],
+            "status": "string",
+          },
+          "rounds": [
+            {
+              "endTimeRound": "null",
+              "id": "number",
+              "participants": [
+                {
+                  "endTimeSelected": {},
+                  "id": "number",
+                  "matchParticipantId": "number",
+                  "orderSelected": "number",
+                  "selectedUserPokemon": {
+                    "id": "number",
+                    "pokemon": {
+                      "id": "number",
+                      "imageUrl": "null",
+                      "nameJp": "string",
+                      "pokedex_number": "number",
+                      "rarity": "string",
+                    },
+                    "pokemonId": "number",
+                    "userId": "number",
+                  },
+                  "selectedUserPokemonId": "number",
+                },
+              ],
+              "roundNumber": "string",
+              "status": "string",
+            },
+          ],
+        },
+        "matchId": "number",
+        "matchRoundId": "number",
+        "timeLimitMs": "number",
+        "type": "string",
+      },
+      "room": "matching_N",
+    },
+  ],
+  "jobs": [
+    {
+      "data": {
+        "matchRoundParticipantId": "number",
+      },
+      "delay": 5000,
+      "name": "check-pokemon-selection-timeout",
+      "queue": "match-round-participant-timeout",
+    },
+  ],
+  "match": {
+    "accepted": [
+      true,
+      true,
+    ],
+    "rounds": [
+      {
+        "participants": [
+          {
+            "hasEndTime": true,
+            "orderSelected": 1,
+            "picked": true,
+            "status": "PENDING",
+          },
+          {
+            "hasEndTime": true,
+            "orderSelected": 2,
+            "picked": false,
+            "status": "SELECTING_POKEMON",
+          },
+        ],
+        "roundNumber": "ONE",
+        "status": "SELECTING_POKEMON",
+      },
+      {
+        "participants": [
+          {
+            "hasEndTime": false,
+            "orderSelected": 3,
+            "picked": false,
+            "status": "SELECTING_POKEMON",
+          },
+          {
+            "hasEndTime": false,
+            "orderSelected": 4,
+            "picked": false,
+            "status": "SELECTING_POKEMON",
+          },
+        ],
+        "roundNumber": "TWO",
+        "status": "SELECTING_POKEMON",
+      },
+      {
+        "participants": [
+          {
+            "hasEndTime": false,
+            "orderSelected": 5,
+            "picked": false,
+            "status": "SELECTING_POKEMON",
+          },
+          {
+            "hasEndTime": false,
+            "orderSelected": 6,
+            "picked": false,
+            "status": "SELECTING_POKEMON",
+          },
+        ],
+        "roundNumber": "THREE",
+        "status": "SELECTING_POKEMON",
+      },
+    ],
+    "status": "IN_PROGRESS",
+  },
+}
+`;

@@ -9,7 +9,7 @@ import {
   UpdateMatchRoundParticipantBodySchema,
   UpdateMatchRoundParticipantResSchema,
   UpdateWithListItemResSchema
-} from '../entities/match-round-participant.entity'
+} from './match-round-participant.zod-dto'
 
 // Request DTOs
 export class CreateMatchRoundParticipantBodyDTO extends createZodDto(

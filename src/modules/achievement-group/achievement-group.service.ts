@@ -1,6 +1,6 @@
 import { RoleName } from '@/common/constants/role.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { AchievementGroupMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { TranslationService } from '@/modules/translation/translation.service'
 import {
   LanguageNotExistToTranslateException,
   NotFoundRecordException
@@ -10,28 +10,25 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { PrismaService } from '@/shared/services/prisma.service'
-import { HttpStatus, Injectable } from '@nestjs/common'
-import { LanguagesRepository } from '../languages/languages.repo'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entities'
-import { TranslationRepository } from '../translation/translation.repo'
+import { Injectable } from '@nestjs/common'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { AchievementGroupRepo } from './achievement-group.repo'
 import { AchievementGroupAlreadyExistsException } from './dto/achievement-group.error'
 import {
-  CreateAchievementGroupBodyInputType,
-  CreateAchievementGroupBodyType,
-  UpdateAchievementGroupBodyInputType,
-  UpdateAchievementGroupBodyType
-} from './entities/achievement-group.entity'
+  CreateAchievementGroupBody,
+  CreateAchievementGroupBodyInput,
+  UpdateAchievementGroupBody,
+  UpdateAchievementGroupBodyInput
+} from './dto/achievement-group.zod-dto'
 
 @Injectable()
 export class AchievementGroupService {
   constructor(
     private achievementGroupRepo: AchievementGroupRepo,
-    private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepository,
-    private readonly translationRepo: TranslationRepository,
+    private readonly languagesService: LanguagesService,
+    private readonly translationService: TranslationService,
     private readonly prismaService: PrismaService
   ) {}
 
@@ -41,7 +38,7 @@ export class AchievementGroupService {
     if (!nameTranslations || nameTranslations.length === 0) return []
 
     const allLangIds = Array.from(new Set(nameTranslations.map((t) => t.languageId)))
-    const langs = await this.languageRepo.getWithListId(allLangIds)
+    const langs = await this.languagesService.getWithListId(allLangIds)
     const idToCode = new Map(langs.map((l) => [l.id, l.code]))
 
     return nameTranslations.map((t) => ({
@@ -50,8 +47,8 @@ export class AchievementGroupService {
     }))
   }
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi', roleName: string) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+  async list(pagination: PaginationQuery, lang: string = 'vi', roleName: string) {
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     const data = await this.achievementGroupRepo.list(
@@ -80,21 +77,15 @@ export class AchievementGroupService {
       }
     }
 
-    return {
-      data,
-      message: this.i18nService.translate(AchievementGroupMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   async findById(id: number, roleName: string, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     if (!langId) {
-      return {
-        data: null,
-        message: this.i18nService.translate(AchievementGroupMessage.GET_SUCCESS, lang)
-      }
+      return null
     }
 
     const achievementGroup = await this.achievementGroupRepo.findByIdWithLangId(
@@ -171,26 +162,16 @@ export class AchievementGroupService {
       })
     )
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: {
-        ...result,
-        achievements: achievements
-      },
-      message: this.i18nService.translate(AchievementGroupMessage.GET_SUCCESS, lang)
-    }
+    return { ...result, achievements: achievements }
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreateAchievementGroupBodyInputType
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({
+    data,
+    createdById
+  }: {
+    data: CreateAchievementGroupBodyInput
+    createdById: number
+  }) {
     let createdAchievementGroup: any = null
 
     try {
@@ -198,7 +179,7 @@ export class AchievementGroupService {
         const nameKey = `achievementGroup.name.${Date.now()}`
         let hasOpened = false
 
-        const dataCreate: CreateAchievementGroupBodyType = {
+        const dataCreate: CreateAchievementGroupBody = {
           nameKey,
           displayOrder: data.displayOrder,
           isActive: data.isActive
@@ -223,7 +204,7 @@ export class AchievementGroupService {
         const allLangCodes = Array.from(new Set(nameList))
 
         // Get languages corresponding to the keys
-        const languages = await this.languageRepo.getWithListCode(allLangCodes)
+        const languages = await this.languagesService.getWithListCode(allLangCodes)
 
         // Create map { code: id } for quick access
         const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
@@ -235,7 +216,7 @@ export class AchievementGroupService {
         }
 
         // Create translation records
-        const translationRecords: CreateTranslationBodyType[] = []
+        const translationRecords: CreateTranslationBody[] = []
 
         // nameTranslations → key = nameKey
         for (const item of data.nameTranslations) {
@@ -247,11 +228,11 @@ export class AchievementGroupService {
         }
 
         // Validate translations (check for duplicate names)
-        await this.translationRepo.validateTranslationRecords(translationRecords)
+        await this.translationService.validateTranslationRecords(translationRecords)
 
         // Create or update translations with transaction
         // const translationPromises = translationRecords.map((record) =>
-        //   this.translationRepo.createOrUpdateWithTransaction(record, prismaTx)
+        //   this.translationService.createOrUpdateWithTransaction(record, prismaTx)
         // )
         // await Promise.all(translationPromises)
 
@@ -268,14 +249,7 @@ export class AchievementGroupService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.CREATED,
-          data: result,
-          message: this.i18nService.translate(
-            AchievementGroupMessage.CREATE_SUCCESS,
-            lang
-          )
-        }
+        return result
       })
     } catch (error) {
       // Rollback: Delete achievementGroup if created
@@ -304,30 +278,27 @@ export class AchievementGroupService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateAchievementGroupBodyInputType
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateAchievementGroupBodyInput
+    updatedById: number
+  }) {
     let existingAchievementGroup: any = null
 
     try {
       return await this.achievementGroupRepo.withTransaction(async (prismaTx) => {
         let hasOpen = false
-        let translationRecords: CreateTranslationBodyType[] = []
+        let translationRecords: CreateTranslationBody[] = []
         // Get current record
         existingAchievementGroup = await this.achievementGroupRepo.findById(id)
         if (!existingAchievementGroup) throw new NotFoundRecordException()
 
         // Prepare data for update
-        const dataUpdate: Partial<UpdateAchievementGroupBodyType> = {}
+        const dataUpdate: Partial<UpdateAchievementGroupBody> = {}
 
         if (data.nameTranslations) {
           const nameList = data.nameTranslations.map((t) => t.key)
@@ -335,7 +306,7 @@ export class AchievementGroupService {
 
           if (allLangCodes.length > 0) {
             // Get languages
-            const languages = await this.languageRepo.getWithListCode(allLangCodes)
+            const languages = await this.languagesService.getWithListCode(allLangCodes)
             const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
 
             // Check missing language
@@ -355,11 +326,11 @@ export class AchievementGroupService {
             }
 
             // Validate translation records
-            await this.translationRepo.validateTranslationRecords(translationRecords)
+            await this.translationService.validateTranslationRecords(translationRecords)
 
             // Update translations with transaction
             // const translationPromises = translationRecords.map((record) =>
-            //   this.translationRepo.createOrUpdateWithTransaction(record, prismaTx)
+            //   this.translationService.createOrUpdateWithTransaction(record, prismaTx)
             // )
             // await Promise.all(translationPromises)
           }
@@ -385,14 +356,7 @@ export class AchievementGroupService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.OK,
-          data: updatedAchievementGroup,
-          message: this.i18nService.translate(
-            AchievementGroupMessage.UPDATE_SUCCESS,
-            lang
-          )
-        }
+        return updatedAchievementGroup
       })
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
@@ -408,10 +372,7 @@ export class AchievementGroupService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
       const existingAchievementGroup = await this.achievementGroupRepo.findById(id)
       if (!existingAchievementGroup) {
@@ -423,19 +384,23 @@ export class AchievementGroupService {
           id,
           deletedById
         }),
-        this.translationRepo.deleteByKey(existingAchievementGroup.nameKey)
+        this.translationService.deleteByKey(existingAchievementGroup.nameKey)
       ])
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(AchievementGroupMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
       }
       throw error
     }
+  }
+
+  // ---- For other modules (module-boundary plan B8) ----
+  // Same arguments and results as the repo methods.
+
+  // The repo's list (the service's own list answers the HTTP route)
+  listGroupRows(...args: Parameters<AchievementGroupRepo['list']>) {
+    return this.achievementGroupRepo.list(...args)
   }
 }

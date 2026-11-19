@@ -1,15 +1,24 @@
 import { RewardClaimStatus } from '@/common/constants/reward.constant'
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
-  CreateUserSeasonHistoryBodyType,
+  CreateUserSeasonHistoryBody,
+  UpdateUserSeasonHistoryBody
+} from './dto/user-season-history.zod-dto'
+import {
   USER_SEASON_HISTORY_FIELDS,
-  UpdateUserSeasonHistoryBodyType,
-  UserSeasonHistoryType
+  UserSeasonHistory
 } from './entities/user-season-history.entity'
+
+// Rank rewards given to everyone in the season (no position), with at least one reward
+const COMMON_SEASON_REWARD_WHERE = {
+  order: null,
+  deletedAt: null,
+  rewards: { some: {} }
+} satisfies Prisma.SeasonRankRewardWhereInput
 
 @Injectable()
 export class UserSeasonHistoryRepo {
@@ -23,10 +32,10 @@ export class UserSeasonHistoryRepo {
       data
     }: {
       createdById: number
-      data: CreateUserSeasonHistoryBodyType
+      data: CreateUserSeasonHistoryBody
     },
     prismaTx?: PrismaClient
-  ): Promise<UserSeasonHistoryType> {
+  ): Promise<UserSeasonHistory> {
     const client = prismaTx || this.prismaService
     return client.userSeasonHistory.create({
       data: {
@@ -43,11 +52,11 @@ export class UserSeasonHistoryRepo {
       updatedById
     }: {
       id: number
-      data: UpdateUserSeasonHistoryBodyType
+      data: UpdateUserSeasonHistoryBody
       updatedById?: number
     },
     prismaTx?: PrismaClient
-  ): Promise<UserSeasonHistoryType> {
+  ): Promise<UserSeasonHistory> {
     const client = prismaTx || this.prismaService
     return client.userSeasonHistory.update({
       where: {
@@ -64,7 +73,7 @@ export class UserSeasonHistoryRepo {
     id: number,
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<UserSeasonHistoryType> {
+  ): Promise<UserSeasonHistory> {
     const client = prismaTx || this.prismaService
     return isHard
       ? client.userSeasonHistory.delete({
@@ -81,7 +90,7 @@ export class UserSeasonHistoryRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, USER_SEASON_HISTORY_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -116,7 +125,7 @@ export class UserSeasonHistoryRepo {
     }
   }
 
-  findById(id: number): Promise<UserSeasonHistoryType | null> {
+  findById(id: number): Promise<UserSeasonHistory | null> {
     return this.prismaService.userSeasonHistory.findUnique({
       where: {
         id,
@@ -125,7 +134,7 @@ export class UserSeasonHistoryRepo {
     })
   }
 
-  findSeasonNowByUserId(userId: number): Promise<UserSeasonHistoryType | null> {
+  findSeasonNowByUserId(userId: number): Promise<UserSeasonHistory | null> {
     return this.prismaService.userSeasonHistory.findFirst({
       where: {
         userId,
@@ -137,7 +146,7 @@ export class UserSeasonHistoryRepo {
   checkUserHasSeasonHistoryInSeason(
     userId: number,
     seasonId: number
-  ): Promise<UserSeasonHistoryType | null> {
+  ): Promise<UserSeasonHistory | null> {
     return this.prismaService.userSeasonHistory.findFirst({
       where: {
         userId,
@@ -159,7 +168,11 @@ export class UserSeasonHistoryRepo {
         deletedAt: null,
         rewardsClaimed: RewardClaimStatus.CLAIMED,
         finalElo: { not: null }, // Must be finalized
-        seasonRankRewardId: { not: null } // Must have reward assigned
+        // Something to claim: a rank reward, or a season reward for everyone (order null)
+        OR: [
+          { seasonRankRewardId: { not: null } },
+          { season: { seasonRankRewards: { some: COMMON_SEASON_REWARD_WHERE } } }
+        ]
       },
       orderBy: {
         season: { endDate: 'desc' } // Most recent season first
@@ -167,7 +180,11 @@ export class UserSeasonHistoryRepo {
       include: {
         season: {
           include: {
-            nameTranslations: true
+            nameTranslations: true,
+            seasonRankRewards: {
+              where: COMMON_SEASON_REWARD_WHERE,
+              include: { rewards: { include: { nameTranslations: true } } }
+            }
           }
         },
         seasonRankReward: {
@@ -199,7 +216,7 @@ export class UserSeasonHistoryRepo {
 
   async getInfoPreSeaonUserSeasonHistory(
     userId: number
-  ): Promise<UserSeasonHistoryType | null> {
+  ): Promise<UserSeasonHistory | null> {
     return this.prismaService.userSeasonHistory.findFirst({
       where: {
         userId,
@@ -207,5 +224,32 @@ export class UserSeasonHistoryRepo {
       },
       orderBy: { season: { endDate: 'desc' } }
     })
+  }
+
+  // ---- Season cronjob: finalize (one transaction per call, as before) ----
+
+  setFinalResults(rows: { id: number; finalElo: number; finalRank: string }[]) {
+    return this.prismaService.$transaction(
+      rows.map((r) =>
+        this.prismaService.userSeasonHistory.update({
+          where: { id: r.id },
+          data: { finalElo: r.finalElo, finalRank: r.finalRank }
+        })
+      )
+    )
+  }
+
+  setRankRewardsClaimed(rows: { id: number; seasonRankRewardId: number | null }[]) {
+    return this.prismaService.$transaction(
+      rows.map((r) =>
+        this.prismaService.userSeasonHistory.update({
+          where: { id: r.id },
+          data: {
+            seasonRankRewardId: r.seasonRankRewardId,
+            rewardsClaimed: RewardClaimStatus.CLAIMED
+          }
+        })
+      )
+    )
   }
 }

@@ -1,3 +1,4 @@
+import { resSchema } from '@/shared/utils/res-schema'
 import { PermissionSchema } from 'src/shared/models/shared-permission.model'
 import { RoleSchema } from 'src/shared/models/shared-role.model'
 import { z } from 'zod'
@@ -27,15 +28,13 @@ export const GetRoleParamsSchema = z
   })
   .strict()
 
-export const GetRoleDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: z.object({
+export const GetRoleDetailResSchema = resSchema(
+  z.object({
     // role: RoleSchema,
     // return the full list of permissions available in the system
     permissions: z.array(PermissionSchema.extend({ hasPermission: z.boolean() }))
-  }),
-  message: z.string()
-})
+  })
+)
 
 export const CreateRoleBodySchema = RoleSchema.pick({
   name: true,
@@ -60,15 +59,15 @@ export const UpdateRoleBodySchema = RoleSchema.pick({
 
 export const UpdateRoleResSchema = CreateRoleResSchema
 
-export type RoleWithPermissionsType = z.infer<typeof RoleWithPermissionsSchema>
-export type GetRolesResType = z.infer<typeof GetRolesResSchema>
-export type GetRolesQueryType = z.infer<typeof GetRolesQuerySchema>
-export type GetRoleDetailResType = z.infer<typeof GetRoleDetailResSchema>
-export type CreateRoleResType = z.infer<typeof CreateRoleResSchema>
-export type CreateRoleBodyType = z.infer<typeof CreateRoleBodySchema>
-export type GetRoleParamsType = z.infer<typeof GetRoleParamsSchema>
-export type UpdateRoleBodyType = z.infer<typeof UpdateRoleBodySchema>
-export type UpdateRoleResType = z.infer<typeof UpdateRoleResSchema>
+export type RoleWithPermissions = z.infer<typeof RoleWithPermissionsSchema>
+export type GetRolesRes = z.infer<typeof GetRolesResSchema>
+export type GetRolesQuery = z.infer<typeof GetRolesQuerySchema>
+export type GetRoleDetailRes = z.infer<typeof GetRoleDetailResSchema>
+export type CreateRoleRes = z.infer<typeof CreateRoleResSchema>
+export type CreateRoleBody = z.infer<typeof CreateRoleBodySchema>
+export type GetRoleParams = z.infer<typeof GetRoleParamsSchema>
+export type UpdateRoleBody = z.infer<typeof UpdateRoleBodySchema>
+export type UpdateRoleRes = z.infer<typeof UpdateRoleResSchema>
 
 // field cho qs
 type RoleFieldType = keyof z.infer<typeof RoleSchema>

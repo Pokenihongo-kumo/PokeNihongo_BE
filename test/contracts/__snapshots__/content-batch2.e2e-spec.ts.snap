@@ -1,0 +1,681 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Content batch 2 contract (e2e) grammar create (as the web form sends it), list, detail 1`] = `
+{
+  "create": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "id": "number",
+        "level": "string",
+        "structure": "string",
+        "updatedAt": "string",
+      },
+      "message": "Tạo ngữ pháp thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "detail": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "id": "number",
+        "level": "string",
+        "structure": "string",
+        "updatedAt": "string",
+        "usages": [
+          {
+            "createdAt": "string",
+            "exampleSentenceJp": "string",
+            "exampleSentenceKey": "string",
+            "exampleTranslations": [
+              {
+                "language_code": "string",
+                "value": "string",
+              },
+            ],
+            "explanationKey": "string",
+            "explanationTranslations": [
+              {
+                "language_code": "string",
+                "value": "string",
+              },
+            ],
+            "grammar": {
+              "createdAt": "string",
+              "id": "number",
+              "level": "string",
+              "structure": "string",
+              "updatedAt": "string",
+            },
+            "grammarId": "number",
+            "id": "number",
+            "updatedAt": "string",
+          },
+        ],
+      },
+      "message": "Lấy thông tin ngữ pháp thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "list": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "createdAt": "string",
+            "id": "number",
+            "level": "string",
+            "structure": "string",
+            "updatedAt": "string",
+          },
+        ],
+      },
+      "message": "Lấy danh sách ngữ pháp thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Content batch 2 contract (e2e) grammar delete delete, then again 1`] = `
+{
+  "again": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Grammar not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Ngữ pháp không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "delete": {
+    "body": {},
+    "httpStatus": 204,
+  },
+}
+`;
+
+exports[`Content batch 2 contract (e2e) grammar update, errors 1`] = `
+{
+  "invalidBody": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Grammar structure is required",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Cấu trúc ngữ pháp không được để trống",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "invalidId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid grammar ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID ngữ pháp không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "notFound": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Grammar not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Ngữ pháp không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "update": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "id": "number",
+        "level": "string",
+        "structure": "string",
+        "updatedAt": "string",
+      },
+      "message": "Cập nhật ngữ pháp thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "updateNotFound": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Grammar not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Ngữ pháp không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+}
+`;
+
+exports[`Content batch 2 contract (e2e) grammar-usage create, list, detail, update 1`] = `
+{
+  "create": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "exampleSentenceJp": "string",
+        "exampleSentenceKey": "string",
+        "explanationKey": "string",
+        "grammar": {
+          "id": "number",
+          "level": "string",
+          "structure": "string",
+        },
+        "grammarId": "number",
+        "id": "number",
+        "updatedAt": "string",
+      },
+      "message": "Tạo cách sử dụng ngữ pháp thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "detail": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "exampleSentenceJp": "string",
+        "exampleSentenceKey": "string",
+        "explanationKey": "string",
+        "grammar": {
+          "id": "number",
+          "level": "string",
+          "structure": "string",
+        },
+        "grammarId": "number",
+        "id": "number",
+        "updatedAt": "string",
+      },
+      "message": "Lấy thông tin cách sử dụng ngữ pháp thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "list": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "createdAt": "string",
+            "exampleSentenceJp": "string",
+            "exampleSentenceKey": "string",
+            "explanationKey": "string",
+            "grammar": {
+              "id": "number",
+              "level": "string",
+              "structure": "string",
+            },
+            "grammarId": "number",
+            "id": "number",
+            "updatedAt": "string",
+          },
+        ],
+      },
+      "message": "Lấy danh sách cách sử dụng ngữ pháp thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "update": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "exampleSentenceJp": "string",
+        "exampleSentenceKey": "string",
+        "explanationKey": "string",
+        "grammar": {
+          "id": "number",
+          "level": "string",
+          "structure": "string",
+        },
+        "grammarId": "number",
+        "id": "number",
+        "updatedAt": "string",
+      },
+      "message": "Cập nhật cách sử dụng ngữ pháp thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Content batch 2 contract (e2e) grammar-usage errors, delete, delete again 1`] = `
+{
+  "delete": {
+    "body": {},
+    "httpStatus": 204,
+  },
+  "deleteAgain": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Grammar usage not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Cách sử dụng ngữ pháp không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "invalidBody": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid format",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Định dạng không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "invalidId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid grammar usage ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID cách sử dụng ngữ pháp không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "missingGrammar": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Grammar not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Ngữ pháp không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "notFound": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Grammar usage not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Cách sử dụng ngữ pháp không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+}
+`;
+
+exports[`Content batch 2 contract (e2e) lesson-category create through the API 1`] = `
+{
+  "body": {
+    "data": {
+      "createdAt": "string",
+      "id": "number",
+      "nameKey": "string",
+      "slug": "string",
+      "updatedAt": "string",
+    },
+    "message": "Tạo danh mục bài học thành công",
+    "statusCode": 201,
+  },
+  "httpStatus": 201,
+}
+`;
+
+exports[`Content batch 2 contract (e2e) lesson-category errors, delete, delete again 1`] = `
+{
+  "delete": {
+    "body": {},
+    "httpStatus": 204,
+  },
+  "deleteAgain": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Lesson category not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Danh mục bài học không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "duplicate": {
+    "en": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Lesson category already exists",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+    "vi": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Danh mục bài học đã tồn tại",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+  },
+  "invalidBody": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Name key is required",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Name key không được để trống",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "invalidId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid lesson category ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID danh mục bài học không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "notFoundById": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Lesson category not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Danh mục bài học không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "notFoundBySlug": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Lesson category not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Danh mục bài học không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+}
+`;
+
+exports[`Content batch 2 contract (e2e) lesson-category list (as mobile), by id, by slug, update 1`] = `
+{
+  "byId": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "id": "number",
+        "name": "string",
+        "slug": "string",
+        "updatedAt": "string",
+      },
+      "message": "Lấy thông tin danh mục bài học thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "bySlug": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "id": "number",
+        "name": "string",
+        "slug": "string",
+        "updatedAt": "string",
+      },
+      "message": "Lấy thông tin danh mục bài học thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "list": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "createdAt": "string",
+            "id": "number",
+            "name": "string",
+            "slug": "string",
+            "updatedAt": "string",
+          },
+        ],
+      },
+      "message": "Lấy danh sách danh mục bài học thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "update": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "id": "number",
+        "nameKey": "string",
+        "slug": "string",
+        "updatedAt": "string",
+      },
+      "message": "Cập nhật danh mục bài học thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;

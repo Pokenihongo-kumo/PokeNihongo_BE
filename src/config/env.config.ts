@@ -34,10 +34,19 @@ const configSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   GOOGLE_REDIRECT_URI: z.string().optional(),
   GOOGLE_CLIENT_REDIRECT_URI: z.string().optional(),
+  // Comma-separated client redirect URIs allowed for Google sign-in, besides
+  // GOOGLE_CLIENT_REDIRECT_URI (ADR D-auth §3)
+  GOOGLE_CLIENT_REDIRECT_URIS: z.string().optional(),
   FE_URL: z.string().url().optional(),
   MO_URL: z.string().optional(),
 
   //Google Cloud Text-to-Speech (Optional)
+  // LLM_DRIVER=fake: deterministic answers without Gemini (tests, local demo);
+  // refused in production (integration-ports plan I5, D-IP2)
+  LLM_DRIVER: z.enum(['gemini', 'fake']).default('gemini'),
+  // SPEECH_DRIVER=fake: deterministic speech without Google (tests, local
+  // demo); refused in production (integration-ports plan I4, D-IP2)
+  SPEECH_DRIVER: z.enum(['google', 'fake']).default('google'),
   GOOGLE_CLOUD_PROJECT_ID: z.string().optional(),
   GOOGLE_CLOUD_CLIENT_EMAIL: z.string().optional(),
   GOOGLE_CLOUD_PRIVATE_KEY: z.string().optional(),
@@ -47,13 +56,23 @@ const configSchema = z.object({
   // Gemini Flash API Key (Optional - riêng cho Flash models)
   GEMINI_FLASH_API_KEY: z.string().optional(),
 
-  // Mail
+  // Mail. MAIL_DRIVER=log writes a log line instead of sending (tests, local
+  // demo); refused in production (integration-ports plan I1, D-IP2)
+  MAIL_DRIVER: z.enum(['smtp', 'log']).default('smtp'),
   MAIL_HOST: z.string().optional(),
   MAIL_PORT: z.coerce.number().optional(),
   MAIL_USER: z.string().optional(),
   MAIL_PASSWORD: z.string().optional(),
 
-  //PAYOS
+  // Files. STORAGE_DRIVER=local keeps files on this machine (tests, local
+  // demo); refused in production (integration-ports plan I3, D-IP2)
+  STORAGE_DRIVER: z.enum(['cloudinary', 'local']).default('cloudinary'),
+  LOCAL_STORAGE_DIR: z.string().optional(),
+
+  //PAYOS. PAYMENT_DRIVER=fake: payments without PayOS (tests, local demo:
+  // opening the link pays); refused in production (integration-ports I2, D-IP2)
+  PAYMENT_DRIVER: z.enum(['payos', 'fake']).default('payos'),
+  FAKE_PAYMENT_SECRET: z.string().default('local-fake-payment-secret'),
   PAYOS_CLIENT_ID: z.string().optional(),
   PAYOS_API_KEY: z.string().optional(),
   PAYOS_CHECKSUM_KEY: z.string().optional(),
@@ -65,11 +84,45 @@ const configSchema = z.object({
   FIREBASE_PRIVATE_KEY_ID: z.string().optional() // Optional (not required for initialization)
 })
 
+// A fake integration driver must never run in production
+export const productionDriverErrors = (env: {
+  NODE_ENV?: string
+  MAIL_DRIVER?: string
+  STORAGE_DRIVER?: string
+  SPEECH_DRIVER?: string
+  LLM_DRIVER?: string
+  PAYMENT_DRIVER?: string
+}): string[] => {
+  const production = (env.NODE_ENV ?? '').toLowerCase() === 'production'
+  const errors: string[] = []
+  if (production && env.PAYMENT_DRIVER === 'fake')
+    errors.push('PAYMENT_DRIVER=fake is not allowed in production')
+  if (production && env.LLM_DRIVER === 'fake')
+    errors.push('LLM_DRIVER=fake is not allowed in production')
+  if (production && env.SPEECH_DRIVER === 'fake')
+    errors.push('SPEECH_DRIVER=fake is not allowed in production')
+  if (production && env.STORAGE_DRIVER === 'local')
+    errors.push('STORAGE_DRIVER=local is not allowed in production')
+  if (production && env.MAIL_DRIVER === 'log')
+    errors.push('MAIL_DRIVER=log is not allowed in production')
+  return errors
+}
+
 const configServer = configSchema.safeParse(process.env)
 
 if (!configServer.success) {
   console.error('Invalid environment variables')
   console.error(configServer.error.format())
+  process.exit(1)
+}
+
+const driverErrors = productionDriverErrors({
+  ...configServer.data,
+  NODE_ENV: process.env.NODE_ENV
+})
+if (driverErrors.length > 0) {
+  console.error('Invalid environment variables')
+  driverErrors.forEach((message) => console.error(message))
   process.exit(1)
 }
 

@@ -1,31 +1,12 @@
-import { BullQueueService } from '@/3rdService/bull/bull-queue.service'
-import { MailService } from '@/3rdService/mail/mail.service'
-import { UploadService } from '@/3rdService/upload/upload.service'
+import { BullQueueService } from '@/infrastructure/queue/bull-queue.service'
+import { UploadService } from '@/modules/upload/upload.service'
 import { TypeOfVerificationCode } from '@/common/constants/auth.constant'
 import { BullQueue } from '@/common/constants/bull-action.constant'
 import { RoleName } from '@/common/constants/role.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { AuthMessage } from '@/i18n/message-keys'
-import { AuthRepository } from '@/modules/auth/auth.repo'
-import {
-  EmailAlreadyExistsException,
-  EmailNotFoundException,
-  FailToLoginException,
-  InvalidOTPExceptionForEmail,
-  NeedDeviceVerificationException,
-  RefreshTokenAlreadyUsedException,
-  UnauthorizedAccessException
-} from '@/modules/auth/dto/auth.error'
-import {
-  ChangePasswordBodyType,
-  ForgotPasswordBodyType,
-  LoginBodyType,
-  RefreshTokenBodyType,
-  RegisterBodyType,
-  ResetPasswordBodyType,
-  UpdateMeBodyType,
-  verifyForgotPasswordBodyType
-} from '@/modules/auth/entities/auth.entities'
+import { maskEmail } from '@/common/utils/mask'
+import { RoleService } from '@/modules/role/role.service'
+import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
+import { UserCoreService } from '@/modules/user/user-core.service'
 import {
   InValidNewPasswordAndConfirmPasswordException,
   InValidNewPasswordAndConfirmPasswordRegisterException,
@@ -37,46 +18,67 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { SharedRoleRepository } from '@/shared/repositories/shared-role.repo'
-import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
 import { HashingService } from '@/shared/services/hashing.service'
 import { TokenService } from '@/shared/services/token.service'
 import { AccessTokenPayloadCreate } from '@/shared/types/jwt.type'
 import { InjectQueue } from '@nestjs/bull'
-import { HttpException, HttpStatus, Inject, Injectable, Logger } from '@nestjs/common'
+import { Inject, Injectable, Logger } from '@nestjs/common'
 import { Queue } from 'bull'
 import Redis from 'ioredis'
 import { LevelService } from '../level/level.service'
 import { UserProgressService } from '../user-progress/user-progress.service'
-import { UserSubscriptionRepo } from '../user-subscription/user-subscription.repo'
 import { UserTestService } from '../user-test/user-test.service'
 import { WalletService } from '../wallet/wallet.service'
+import { AuthRepository } from './auth.repo'
+import {
+  EmailAlreadyExistsException,
+  EmailNotFoundException,
+  FailToLoginException,
+  InvalidOTPExceptionForEmail,
+  NeedDeviceVerificationException,
+  RefreshTokenAlreadyUsedException,
+  RegistrationTokenInvalidException,
+  UnauthorizedAccessException
+} from './dto/auth.error'
+import {
+  ChangePasswordBody,
+  ForgotPasswordBody,
+  LoginBody,
+  RefreshTokenBody,
+  RegisterBody,
+  ResetPasswordBody,
+  UpdateMeBody
+} from './dto/auth.zod-dto'
+import { OtpPurpose } from './otp-value'
+import { OtpService } from './otp.service'
+import {
+  newRegistrationToken,
+  REGISTRATION_TOKEN_TTL_SECONDS,
+  registrationTokenKey,
+  TAKE
+} from './registration-token'
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name)
   constructor(
     private readonly hashingService: HashingService,
-    private readonly sharedRoleRepository: SharedRoleRepository,
+    private readonly roleService: RoleService,
     private readonly authRepository: AuthRepository,
-    private readonly sharedUserRepository: SharedUserRepository,
-    private readonly mailService: MailService,
+    private readonly userCoreService: UserCoreService,
+    private readonly otpService: OtpService,
     private readonly levelService: LevelService,
     private readonly bullQueueService: BullQueueService,
     private readonly uploadService: UploadService,
-    private readonly i18nService: I18nService,
     private readonly userProgressService: UserProgressService,
     private readonly userTestService: UserTestService,
     @InjectQueue(BullQueue.USER_DELETION) private readonly deletionQueue: Queue,
     @Inject('REDIS_CLIENT') private readonly redisClient: Redis,
     private readonly tokenService: TokenService,
     private readonly walletSer: WalletService,
-    private readonly userSubscriptionRepo: UserSubscriptionRepo
+    private readonly userSubscriptionService: UserSubscriptionService
   ) {}
 
-  async login(
-    body: LoginBodyType & { userAgent: string; ip: string },
-    lang: string = 'vi'
-  ) {
+  async login(body: LoginBody & { userAgent: string; ip: string }) {
     // 1. Lấy thông tin user, kiểm tra user có tồn tại hay không, mật khẩu có đúng không
     const user = await this.authRepository.findUniqueUserIncludeRole({
       email: body.email.toLowerCase()
@@ -93,12 +95,6 @@ export class AuthService {
     if (!isPasswordMatch) {
       throw new FailToLoginException()
     }
-
-    // // user verify chua ?
-    // if (user.status === UserStatus.INACTIVE) {
-    //   this.resendVerifiedEmail(user.email)
-    //   throw new UnverifiedAccountException()
-    // }
 
     // Kiểm tra xem device đã tồn tại chưa
     const existingDevice = await this.authRepository.findDeviceByUserAndAgent(
@@ -130,27 +126,28 @@ export class AuthService {
       ...userWithoutPassword,
       ...tokens
     }
-    return {
-      data,
-      message: this.i18nService.translate(AuthMessage.LOGIN_SUCCESS, lang)
-    }
+    return data
   }
 
-  async register(
-    body: RegisterBodyType,
-    userAgent: string,
-    ip: string,
-    lang: string = 'vi'
-  ) {
+  async register(body: RegisterBody, userAgent: string, ip: string) {
     try {
       if (body.password !== body.confirmPassword) {
         throw new InValidNewPasswordAndConfirmPasswordRegisterException()
+      }
+      // Only who verified the REGISTER OTP of this email (ADR D-auth §2)
+      const verifiedEmail = await this.redisClient.eval(
+        TAKE,
+        1,
+        registrationTokenKey(body.registrationToken)
+      )
+      if (verifiedEmail !== body.email) {
+        throw new RegistrationTokenInvalidException()
       }
 
       const hashedPassword = await this.hashingService.hash(body.password)
 
       // const firstLevel = await this.levelRepo.getFirstLevelUser()
-      const roleId = await this.sharedRoleRepository.getCustomerRoleId()
+      const roleId = await this.roleService.getCustomerRoleId()
       const [user] = await Promise.all([
         this.authRepository.registerUser({
           email: body.email.toLowerCase(),
@@ -162,7 +159,7 @@ export class AuthService {
       // tao device
       const device = await this.createUserDevice(user.id, userAgent, ip)
       // nhan role
-      const role = await this.sharedRoleRepository.getRoleById(roleId)
+      const role = await this.roleService.getRoleById(roleId)
 
       // Khởi tạo UserProgress cho tất cả lesson
       await this.userProgressService.initUserProgress(user.id)
@@ -187,20 +184,22 @@ export class AuthService {
         ...tokens
       }
 
-      return {
-        statusCode: HttpStatus.CREATED,
-        data: data,
-        message: this.i18nService.translate(AuthMessage.REGISTER_SUCCESS, lang)
-      }
+      return data
     } catch (error) {
       if (isUniqueConstraintPrismaError(error)) {
-        throw EmailAlreadyExistsException
+        throw new EmailAlreadyExistsException()
       }
       throw error
     }
   }
 
-  async generateTokens({ userId, deviceId, roleId, roleName }: AccessTokenPayloadCreate) {
+  // Signs an access/refresh token pair; nothing is stored
+  private async signTokens({
+    userId,
+    deviceId,
+    roleId,
+    roleName
+  }: AccessTokenPayloadCreate) {
     const [accessToken, refreshToken] = await Promise.all([
       this.tokenService.signAccessToken({
         userId,
@@ -213,11 +212,20 @@ export class AuthService {
       })
     ])
     const decodedRefreshToken = await this.tokenService.verifyRefreshToken(refreshToken)
+    return {
+      accessToken,
+      refreshToken,
+      expiresAt: new Date(decodedRefreshToken.exp * 1000)
+    }
+  }
+
+  async generateTokens(payload: AccessTokenPayloadCreate) {
+    const { accessToken, refreshToken, expiresAt } = await this.signTokens(payload)
     await this.authRepository.createRefreshToken({
       token: refreshToken,
-      userId,
-      expiresAt: new Date(decodedRefreshToken.exp * 1000),
-      deviceId
+      userId: payload.userId,
+      expiresAt,
+      deviceId: payload.deviceId
     })
     return { accessToken, refreshToken }
   }
@@ -226,61 +234,51 @@ export class AuthService {
     refreshToken,
     userAgent,
     ip
-  }: RefreshTokenBodyType & { userAgent: string; ip: string }) {
+  }: RefreshTokenBody & { userAgent: string; ip: string }) {
+    // 1. A token that is not ours, malformed or expired: the session is over.
+    // Other failures (database...) are not answered with 401: the client
+    // would end a session that is still valid
+    let userId: number
     try {
-      // 1. Kiểm tra refreshToken có hợp lệ không
-      const { userId } = await this.tokenService.verifyRefreshToken(refreshToken)
-      // 2. Kiểm tra refreshToken có tồn tại trong database không
-      const refreshTokenInDb =
-        await this.authRepository.findUniqueRefreshTokenIncludeUserRole({
-          token: refreshToken
-        })
-      if (!refreshTokenInDb) {
-        // Trường hợp đã refresh token rồi, hãy thông báo cho user biết
-        // refresh token của họ đã bị đánh cắp
-        throw RefreshTokenAlreadyUsedException
-      }
-      const {
-        deviceId,
-        user: {
-          roleId,
-          role: { name: roleName }
-        }
-      } = refreshTokenInDb
-      // 3. Cập nhật device
-      const $updateDevice = this.authRepository.updateDevice(deviceId, {
-        ip,
-        userAgent
-      })
-      // 4. Xóa refreshToken cũ
-      const $deleteRefreshToken = this.authRepository.deleteRefreshToken({
+      ;({ userId } = await this.tokenService.verifyRefreshToken(refreshToken))
+    } catch {
+      throw new UnauthorizedAccessException()
+    }
+    // 2. Not stored: already used (or revoked)
+    const refreshTokenInDb =
+      await this.authRepository.findUniqueRefreshTokenIncludeUserRole({
         token: refreshToken
       })
-      const userInfo = this.authRepository.findUniqueUserIncludeRole({ id: userId })
-      // 5. Tạo mới accessToken và refreshToken
-      const $tokens = this.generateTokens({ userId, roleId, roleName, deviceId })
-      const [, , tokens, userData] = await Promise.all([
-        $updateDevice,
-        $deleteRefreshToken,
-        $tokens,
-        userInfo
-      ])
-      return {
-        data: {
-          ...userData,
-          ...tokens
-        },
-        message: this.i18nService.translate(AuthMessage.REFRESH_TOKEN_SUCCESS)
+    if (!refreshTokenInDb) {
+      throw new RefreshTokenAlreadyUsedException()
+    }
+    const {
+      deviceId,
+      user: {
+        roleId,
+        role: { name: roleName }
       }
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error
-      }
-      throw UnauthorizedAccessException
+    } = refreshTokenInDb
+    // 3. Consume the old token and store the new one in one transaction; a
+    // concurrent refresh with the same token loses here
+    const tokens = await this.signTokens({ userId, roleId, roleName, deviceId })
+    const rotated = await this.authRepository.rotateRefreshToken({
+      oldToken: refreshToken,
+      next: { token: tokens.refreshToken, userId, expiresAt: tokens.expiresAt, deviceId },
+      device: { ip, userAgent }
+    })
+    if (!rotated) {
+      throw new RefreshTokenAlreadyUsedException()
+    }
+    const userData = await this.authRepository.findUniqueUserIncludeRole({ id: userId })
+    return {
+      ...userData,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken
     }
   }
 
-  async logout(refreshToken: string, lang: string = 'vi') {
+  async logout(refreshToken: string) {
     try {
       // 1. Kiểm tra refreshToken có hợp lệ không
       await this.tokenService.verifyRefreshToken(refreshToken)
@@ -292,10 +290,7 @@ export class AuthService {
       await this.authRepository.updateDevice(deletedRefreshToken.deviceId, {
         isActive: false
       })
-      return {
-        data: null,
-        message: this.i18nService.translate(AuthMessage.LOGOUT_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       // Trường hợp đã refresh token rồi, hãy thông báo cho user biết
       // refresh token của họ đã bị đánh cắp
@@ -306,10 +301,10 @@ export class AuthService {
     }
   }
 
-  async forgotPassword(body: ForgotPasswordBodyType, lang: string = 'vi') {
+  async forgotPassword(body: ForgotPasswordBody) {
     const { email } = body
     // 1. Kiểm tra email đã tồn tại trong database chưa
-    const user = await this.sharedUserRepository.findUnique({
+    const user = await this.userCoreService.findUnique({
       email
     })
     if (!user) {
@@ -325,73 +320,22 @@ export class AuthService {
     const template = 'otp'
     const content = 'Mã OTP của bạn là: '
     const bodyContent = 'Vui lòng nhập mã OTP để làm bước tiếp theo.'
-    this.mailService.generateAndSendOtp(
+    await this.otpService.generateAndSendOtp(
       registerEmailLowerCase,
+      TypeOfVerificationCode.FORGOT_PASSWORD,
       template,
       content,
       bodyContent
     )
     return {
-      statusCode: HttpStatus.OK,
-      data: {
-        type: TypeOfVerificationCode.FORGOT_PASSWORD
-      },
-      message: this.i18nService.translate(AuthMessage.SEND_OTP_SUCCESS, lang)
+      type: TypeOfVerificationCode.FORGOT_PASSWORD
     }
   }
 
-  async verifyForgotPassword(
-    body: verifyForgotPasswordBodyType,
-    userAgent: string,
-    ip: string
-  ) {
-    const { email, code } = body
-    // 1. Kiểm tra email đã tồn tại trong database chưa
-    const user = await this.sharedUserRepository.findUniqueIncludeRole({
-      email
-    })
-    if (!user) {
-      throw new InvalidOTPExceptionForEmail()
-    }
-
-    // Verify OTP
-    await this.mailService.verifyOtpStrict(email, code)
-
-    // 2. Xóa tất cả refreshToken và device cũ của user
-    await Promise.all([
-      this.authRepository.deleteManyRefreshTokenByUserId({ userId: user.id }),
-      this.authRepository.deleteManyDeviceByUserId({ userId: user.id })
-    ])
-
-    // 3. Tạo device mới sau khi xóa hết device cũ
-    const device = await this.authRepository.createDevice({
-      userId: user.id,
-      userAgent: userAgent,
-      ip: ip
-    })
-
-    // 4. Tạo accessToken cho device mới
-    const accessToken = await this.tokenService.signAccessToken({
-      userId: user.id,
-      deviceId: device.id,
-      roleId: user.roleId,
-      roleName: user.role.name
-    })
-
-    const data = {
-      accessToken
-    }
-
-    return {
-      data,
-      message: this.i18nService.translate(AuthMessage.VERIFY_OTP_FORGOT_PASSWORD_SUCCESS)
-    }
-  }
-
-  async resetPassword(body: ResetPasswordBodyType, userId: number, lang: string = 'vi') {
+  async resetPassword(body: ResetPasswordBody, userId: number) {
     const { newPassword, email, confirmNewPassword } = body
     // 1. Kiểm tra email đã tồn tại trong database chưa
-    const user = await this.sharedUserRepository.findUnique({ email })
+    const user = await this.userCoreService.findUnique({ email })
 
     if (!user || user.id !== userId) {
       throw new EmailNotFoundException()
@@ -400,7 +344,7 @@ export class AuthService {
     // tới đây đổi mật khẩu cho nó
     const hashedPassword = await this.hashingService.hash(newPassword)
     await Promise.all([
-      this.sharedUserRepository.update(
+      this.userCoreService.update(
         { id: user.id },
         {
           password: hashedPassword,
@@ -409,20 +353,13 @@ export class AuthService {
       )
     ])
 
-    return {
-      data: null,
-      message: this.i18nService.translate(AuthMessage.RESET_PASSWORD_SUCCESS, lang)
-    }
+    return
   }
 
-  async changePassword(
-    body: ChangePasswordBodyType,
-    userId: number,
-    lang: string = 'vi'
-  ) {
+  async changePassword(body: ChangePasswordBody, userId: number) {
     const { password, newPassword, confirmNewPassword } = body
     // 1. Kiểm tra email đã tồn tại trong database chưa
-    const user = await this.sharedUserRepository.findUnique({ id: userId })
+    const user = await this.userCoreService.findUnique({ id: userId })
 
     if (!user) {
       throw new EmailNotFoundException()
@@ -439,7 +376,7 @@ export class AuthService {
     // tới đây đổi mật khẩu cho nó
     const hashedPassword = await this.hashingService.hash(newPassword)
     await Promise.all([
-      this.sharedUserRepository.update(
+      this.userCoreService.update(
         { id: user.id },
         {
           password: hashedPassword,
@@ -448,14 +385,11 @@ export class AuthService {
       )
     ])
 
-    return {
-      data: null,
-      message: this.i18nService.translate(AuthMessage.CHANGE_PASSWORD_SUCCESS, lang)
-    }
+    return
   }
 
-  async getMe(userId: number, lang: string = 'vi') {
-    const user = await this.sharedUserRepository.findUniqueProfileWithStats({
+  async getMe(userId: number) {
+    const user = await this.userCoreService.findUniqueProfileWithStats({
       id: userId
     })
     if (!user) {
@@ -466,25 +400,18 @@ export class AuthService {
 
     // gọi checkActiveSubscriptionByUserId
     const subscription =
-      await this.userSubscriptionRepo.checkActiveSubscriptionByUserId(userId)
+      await this.userSubscriptionService.checkActiveSubscriptionByUserId(userId)
 
     return {
-      statusCode: 200,
-      data: {
-        ...user,
-        rankName,
-        pokemonCount: user._count.userPokemons,
-        subscription
-      },
-      message: this.i18nService.translate(AuthMessage.GET_PROFILE_SUCCESS, lang)
+      ...user,
+      rankName,
+      pokemonCount: user._count.userPokemons,
+      subscription
     }
   }
 
-  async updateMe(
-    { data, userId }: { data: UpdateMeBodyType; userId: number },
-    lang: string = 'vi'
-  ) {
-    const user = await this.sharedUserRepository.findUnique({
+  async updateMe({ data, userId }: { data: UpdateMeBody; userId: number }) {
+    const user = await this.userCoreService.findUnique({
       id: userId
     })
     if (!user) {
@@ -505,52 +432,17 @@ export class AuthService {
       }
     }
 
-    const updatedUser = await this.sharedUserRepository.update(
+    const updatedUser = await this.userCoreService.update(
       { id: userId },
       {
         ...data,
         updatedById: userId
       }
     )
-    return {
-      data: updatedUser,
-      message: this.i18nService.translate(AuthMessage.UPDATE_PROFILE_SUCCESS, lang)
-    }
+    return updatedUser
   }
 
-  async verifiedEmail(email: string) {
-    try {
-      const data = await this.authRepository.verifyEmail(email)
-      return {
-        data,
-        message: 'Xác thực email thành công'
-      }
-    } catch (error) {
-      if (isNotFoundPrismaError(error)) {
-        throw EmailNotFoundException
-      }
-      throw error
-    }
-  }
-
-  async resendVerifiedEmail(email: string) {
-    const template = 'otp'
-    const content = 'XÁC THỰC MAIL CỦA BẠN: '
-    const bodyContent = 'Vui lòng nhập nhấn nút XÁC THỰC để xác thực tài khoản của bạn.'
-    this.mailService.generateAndSendOtp(email, template, content, bodyContent)
-
-    return {
-      data: null,
-      message: 'Gửi lại email xác thực thành công'
-    }
-  }
-
-  async checkMailToAction(
-    email: string,
-    userAgent: string,
-    ip: string,
-    lang: string = 'vi'
-  ) {
+  async checkMailToAction(email: string, userAgent: string, ip: string) {
     const user = await this.authRepository.existEmail(email)
     if (!user) {
       // neu khong co -> register
@@ -560,13 +452,16 @@ export class AuthService {
       const template = 'otp'
       const content = 'MÃ OTP MAIL ĐĂNG KÝ CỦA BẠN: '
       const bodyContent = 'Vui lòng nhập mã OTP để tiếp tục bước tiếp theo.'
-      this.mailService.generateAndSendOtp(emailLower, template, content, bodyContent)
+      await this.otpService.generateAndSendOtp(
+        emailLower,
+        TypeOfVerificationCode.REGISTER,
+        template,
+        content,
+        bodyContent
+      )
       return {
-        statusCode: HttpStatus.OK,
-        data: {
-          type: TypeOfVerificationCode.REGISTER
-        },
-        message: this.i18nService.translate(AuthMessage.SEND_OTP_SUCCESS, lang)
+        type: TypeOfVerificationCode.REGISTER,
+        requiresOtp: true
       }
     }
 
@@ -587,67 +482,74 @@ export class AuthService {
       const bodyContent = `Chúng tôi phát hiện lần đăng nhập đầu tiên từ thiết bị mới
       Vui lòng nhập mã OTP để xác thực thiết bị này.`
 
-      this.mailService.generateAndSendOtp(email, template, content, bodyContent)
+      await this.otpService.generateAndSendOtp(
+        email,
+        TypeOfVerificationCode.LOGIN,
+        template,
+        content,
+        bodyContent
+      )
 
+      // Bước tiếp theo nằm ở `requiresOtp`, statusCode luôn là HTTP status (200)
       return {
-        statusCode: HttpStatus.UNAUTHORIZED,
-        data: {
-          type: TypeOfVerificationCode.LOGIN
-        },
-        message: this.i18nService.translate(AuthMessage.FIRST_LOGIN, lang)
+        type: TypeOfVerificationCode.LOGIN,
+        requiresOtp: true
       }
     }
     // neu la thiet bi da co
     //thi thoi
     return {
-      statusCode: HttpStatus.CREATED,
-      data: {
-        type: TypeOfVerificationCode.LOGIN
-      },
-      message: this.i18nService.translate(AuthMessage.NOT_FIRST_LOGIN, lang)
+      type: TypeOfVerificationCode.LOGIN,
+      requiresOtp: false
     }
   }
 
   async verifyOTP(
     body: { email: string; code: string; type: string },
     userAgent: string,
-    ip: string,
-    lang: string = 'vi'
+    ip: string
   ) {
     try {
       const { email, code, type } = body
-      const storedOtp = await this.redisClient.get(email)
-      console.log(type)
+      // The code of this purpose only, deleted in the same step (works once)
+      if (await this.otpService.consumeOtp(email, type as OtpPurpose, code)) {
+        this.logger.log(`OTP verified and deleted for ${maskEmail(email)}`)
 
-      if (storedOtp === code) {
-        // Xóa OTP sau khi xác thực thành công
-        await this.redisClient.del(email)
-        this.logger.log(`OTP verified and deleted for ${email}`)
+        // ADR D-auth §2: the proof POST /auth/register asks for
+        if (type === TypeOfVerificationCode.REGISTER) {
+          const registrationToken = newRegistrationToken()
+          await this.redisClient.set(
+            registrationTokenKey(registrationToken),
+            email,
+            'EX',
+            REGISTRATION_TOKEN_TTL_SECONDS
+          )
+          return { outcome: 'verified' as const, data: { registrationToken } }
+        }
 
         // neu type === 'login' thi tao device
         if (type === TypeOfVerificationCode.LOGIN) {
-          const user = await this.sharedUserRepository.findUnique({ email })
+          const user = await this.userCoreService.findUnique({ email })
           if (!user) {
             throw new EmailNotFoundException()
           }
           await this.createUserDevice(user.id, userAgent, ip)
         } else if (type === TypeOfVerificationCode.FORGOT_PASSWORD) {
-          return await this.verifyForgotPasswordByAction(email, userAgent, ip)
+          return {
+            outcome: 'forgot-password' as const,
+            data: await this.verifyForgotPasswordByAction(email, userAgent, ip)
+          }
         } else if (type === TypeOfVerificationCode.CHANGE_PASSWORD) {
         }
-        return {
-          data: null,
-          message: this.i18nService.translate(
-            AuthMessage.OTP_AUTHENTICATION_SUCCESS,
-            lang
-          )
-        }
+        return { outcome: 'verified' as const, data: null }
       }
       //
 
       throw new InvalidOTPExceptionForEmail()
     } catch (error) {
-      this.logger.error(`Failed to verify OTP for ${body.email}: ${error.message}`)
+      this.logger.error(
+        `Failed to verify OTP for ${maskEmail(body.email)}: ${error.message}`
+      )
       throw error
     }
   }
@@ -663,7 +565,7 @@ export class AuthService {
 
   async verifyForgotPasswordByAction(email: string, userAgent: string, ip: string) {
     // 1. Kiểm tra email đã tồn tại trong database chưa
-    const user = await this.sharedUserRepository.findUniqueIncludeRole({
+    const user = await this.userCoreService.findUniqueIncludeRole({
       email
     })
     if (!user) {
@@ -694,30 +596,19 @@ export class AuthService {
       accessToken
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data,
-      message: this.i18nService.translate(AuthMessage.VERIFY_OTP_FORGOT_PASSWORD_SUCCESS)
-    }
+    return data
   }
 
-  async updateFcmTokenDeviceWithDeviceId(
-    {
-      deviceId,
-      fcmToken
-    }: {
-      deviceId: number
-      fcmToken: string | null
-    },
-    lang: string = 'vi'
-  ) {
+  async updateFcmTokenDeviceWithDeviceId({
+    deviceId,
+    fcmToken
+  }: {
+    deviceId: number
+    fcmToken: string | null
+  }) {
     try {
       await this.authRepository.updateFcmTokenDeviceWithDeviceId(fcmToken, deviceId)
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(AuthMessage.UPDATE_SUCCESS)
-      }
+      return null
     } catch (error) {
       this.logger.error(
         `Failed to update FCM token for device ${deviceId}: ${error.message}`

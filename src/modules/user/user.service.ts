@@ -1,8 +1,9 @@
-import { MailService } from '@/3rdService/mail/mail.service'
-import { I18nService } from '@/i18n/i18n.service'
-import { AuthMessage, ENTITY_MESSAGE, UserMessage } from '@/i18n/message-keys'
-import { LevelRepo } from '@/modules/level/level.repo'
-import { UserPokemonRepo } from '@/modules/user-pokemon/user-pokemon.repo'
+import { MailService } from '@/modules/mail/mail.service'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
+import { LevelService } from '@/modules/level/level.service'
+import { MatchService } from '@/modules/match/match.service'
+import { UserPokemonService } from '@/modules/user-pokemon/user-pokemon.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   convertEloToRank,
@@ -10,25 +11,18 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
-import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
-import { HttpStatus, Injectable, Logger } from '@nestjs/common'
+import { PaginationQuery } from '@/shared/models/request.model'
+import { Injectable, Logger } from '@nestjs/common'
 import { UserStatus } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
-import { LanguagesRepository } from '../languages/languages.repo'
 import { NotStartedLeaderboardSeasonException } from '../leaderboard-season/dto/leaderboard-season.error'
-import { LeaderboardSeasonRepo } from '../leaderboard-season/leaderboard-season.repo'
-import { MatchRepo } from '../match/match.repo'
 import { UserPokemonNotFoundException } from '../user-pokemon/dto/user-pokemon.error'
 import { UserProgressService } from '../user-progress/user-progress.service'
 import { UserSeasonHistoryRepo } from '../user-season-history/user-season-history.repo'
 import { WalletService } from '../wallet/wallet.service'
 import { EmailAlreadyExistsException, UserNotFoundException } from './dto/user.error'
-import {
-  CreateUserBodyType,
-  SetMainPokemonBodyType,
-  UpdateUserBodyType
-} from './entities/user.entity'
+import { CreateUserBody, SetMainPokemonBody, UpdateUserBody } from './dto/user.zod-dto'
+import { UserCoreService } from './user-core.service'
 import { UserRepo } from './user.repo'
 
 @Injectable()
@@ -38,15 +32,16 @@ export class UserService {
   constructor(
     private userRepo: UserRepo,
     private mailService: MailService,
-    private userPokemonRepo: UserPokemonRepo,
-    private i18nService: I18nService,
-    private levelRepo: LevelRepo,
+    private userPokemonService: UserPokemonService,
+    private levelService: LevelService,
     private walletSer: WalletService,
-    private readonly sharedUserRepository: SharedUserRepository,
-    private readonly leaderboardSeasonRepo: LeaderboardSeasonRepo,
-    private readonly matchRepo: MatchRepo,
+    private readonly userCoreService: UserCoreService,
+    private readonly leaderboardSeasonService: LeaderboardSeasonService,
+    private readonly matchService: MatchService,
+    // Exception (B6): reads its season histories through the repo. The service
+    // is out of reach: user -> season history -> reward -> user (B5 cycle)
     private readonly userSeaHistoryRepo: UserSeasonHistoryRepo,
-    private readonly langRepo: LanguagesRepository,
+    private readonly languagesService: LanguagesService,
     private readonly userProgressService: UserProgressService
   ) {}
 
@@ -62,31 +57,20 @@ export class UserService {
     return password
   }
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.userRepo.list(pagination)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(UserMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const user = await this.userRepo.findById(id)
     if (!user) {
       throw new UserNotFoundException()
     }
-    return {
-      statusCode: 200,
-      data: user,
-      message: this.i18nService.translate(UserMessage.GET_DETAIL_SUCCESS, lang)
-    }
+    return user
   }
 
-  async create(
-    { data, createdById }: { data: CreateUserBodyType; createdById: number },
-    lang: string = 'vi'
-  ) {
+  async create({ data, createdById }: { data: CreateUserBody; createdById: number }) {
     try {
       // Check if email already exists
       const existingUser = await this.userRepo.findByEmail(data.email)
@@ -114,7 +98,6 @@ export class UserService {
       const template = 'account'
       const content = 'TÀI KHOẢN CỦA BẠN ĐÃ ĐƯỢC TẠO: '
       const bodyContent = 'Vui lòng nhập EMAIL và PASSWORD để có thể đăng nhập.'
-      console.log('password: ', randomPassword)
 
       await this.mailService.sendEmailPasswordAccount(
         emailLower,
@@ -131,11 +114,7 @@ export class UserService {
       //tao wallet
       await this.walletSer.generateWalletByUserId(userWithoutPassword.id)
 
-      return {
-        statusCode: 201,
-        data: userWithoutPassword,
-        message: this.i18nService.translate(UserMessage.CREATE_SUCCESS, lang)
-      }
+      return userWithoutPassword
     } catch (error) {
       if (isUniqueConstraintPrismaError(error)) {
         throw new EmailAlreadyExistsException()
@@ -147,18 +126,15 @@ export class UserService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateUserBodyType
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateUserBody
+    updatedById: number
+  }) {
     try {
       const existUser = await this.userRepo.findById(id)
       if (!existUser) {
@@ -192,11 +168,7 @@ export class UserService {
       // Remove password from response
       const { password, ...userWithoutPassword } = result
 
-      return {
-        statusCode: 200,
-        data: userWithoutPassword,
-        message: this.i18nService.translate(UserMessage.UPDATE_SUCCESS, lang)
-      }
+      return userWithoutPassword
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UserNotFoundException()
@@ -211,10 +183,7 @@ export class UserService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
       const existUser = await this.userRepo.findById(id)
       if (!existUser) {
@@ -226,11 +195,7 @@ export class UserService {
         deletedById
       })
 
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(UserMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UserNotFoundException()
@@ -239,11 +204,7 @@ export class UserService {
     }
   }
 
-  async setMainPokemon(
-    userId: number,
-    data: SetMainPokemonBodyType,
-    lang: string = 'vi'
-  ) {
+  async setMainPokemon(userId: number, data: SetMainPokemonBody) {
     try {
       // Check if user exists
       const user = await this.userRepo.findById(userId)
@@ -252,7 +213,7 @@ export class UserService {
       }
 
       // Check if user owns this Pokemon
-      const userPokemon = await this.userPokemonRepo.findByUserAndPokemon(
+      const userPokemon = await this.userPokemonService.findByUserAndPokemon(
         userId,
         data.pokemonId
       )
@@ -261,19 +222,15 @@ export class UserService {
       }
 
       // Unset main for all user's pokemon first
-      await this.userPokemonRepo.unsetMainPokemon(userId)
+      await this.userPokemonService.unsetMainPokemon(userId)
 
       // Set the selected pokemon as main
-      await this.userPokemonRepo.update({
+      await this.userPokemonService.updateUserPokemon({
         id: userPokemon.id,
         data: { isMain: true }
       })
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(UserMessage.SET_MAIN_POKEMON_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UserNotFoundException()
@@ -291,7 +248,7 @@ export class UserService {
    * @param lang - Language for response messages
    * @returns User level up result with details
    */
-  async userAddExp(userId: number, expToAdd: number, lang: string = 'vi') {
+  async userAddExp(userId: number, expToAdd: number) {
     try {
       // Find user with current level
       const user = await this.userRepo.findById(userId)
@@ -301,7 +258,7 @@ export class UserService {
 
       // If user doesn't have a level, assign first user level
       if (!(user as any).level) {
-        const firstLevel = await this.levelRepo.getFirstLevelUser()
+        const firstLevel = await this.levelService.getFirstLevelUser()
         if (firstLevel) {
           await this.userRepo.update({
             id: userId,
@@ -321,13 +278,9 @@ export class UserService {
       const levelUpResult = await this.handleUserLevelUp(user, newTotalExp)
 
       return {
-        statusCode: HttpStatus.OK,
-        data: {
-          ...levelUpResult,
-          levelRewardIds: levelUpResult.levelRewardIds || [],
-          levelUpDetails: levelUpResult.levelUpDetails || []
-        },
-        message: this.i18nService.translate(UserMessage.UPDATE_SUCCESS, lang)
+        ...levelUpResult,
+        levelRewardIds: levelUpResult.levelRewardIds || [],
+        levelUpDetails: levelUpResult.levelUpDetails || []
       }
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
@@ -369,7 +322,7 @@ export class UserService {
       )
 
       // Find next level
-      const nextLevel = await this.levelRepo.findByLevelAndType(
+      const nextLevel = await this.levelService.findByLevelAndType(
         currentLevel.levelNumber + 1,
         currentLevel.levelType as any
       )
@@ -478,7 +431,7 @@ export class UserService {
    * @param amount - Amount of coins to add
    * @param lang - Language for response messages
    */
-  async addFreeCoins(userId: number, amount: number, lang: string = 'vi') {
+  async addFreeCoins(userId: number, amount: number) {
     try {
       const user = await this.userRepo.findById(userId)
       if (!user) {
@@ -487,11 +440,7 @@ export class UserService {
 
       const updatedUser = await this.userRepo.incrementFreeCoins(userId, amount)
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: updatedUser,
-        message: this.i18nService.translate(UserMessage.UPDATE_SUCCESS, lang)
-      }
+      return updatedUser
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UserNotFoundException()
@@ -501,7 +450,7 @@ export class UserService {
   }
 
   async getInfoBattleWithUser(userId: number, lang: string) {
-    const langId = await this.langRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     if (!langId) {
       throw new NotFoundRecordException()
     }
@@ -509,9 +458,9 @@ export class UserService {
 
     const [currentSeason, totalMatches, totalWins, currentWinStreak, userInfo] =
       await Promise.all([
-        this.leaderboardSeasonRepo.findActiveSeasonWithLangIdAndUser(userId, langId),
-        this.matchRepo.countMatchesByUserId(userId),
-        this.matchRepo.countWinsByUserId(userId),
+        this.leaderboardSeasonService.findActiveSeasonWithLangIdAndUser(userId, langId),
+        this.matchService.countMatchesByUserId(userId),
+        this.matchService.countWinsByUserId(userId),
         this.getCurrentWinStreak(userId),
         this.userRepo.findById(userId)
       ])
@@ -534,11 +483,7 @@ export class UserService {
 
       if (!unclaimedHistory) {
         // No unclaimed rewards, return null data
-        return {
-          message: this.i18nService.translate(UserMessage.GET_DETAIL_SUCCESS, lang),
-          statusCode: HttpStatus.OK,
-          data: null
-        }
+        return null
       }
 
       // User has unclaimed rewards from previous season
@@ -546,36 +491,36 @@ export class UserService {
         (unclaimedHistory.season as any).nameTranslations || []
       ).find((t: any) => t.languageId === langId)
 
-      // Map rewards with translations
-      const rewards = ((unclaimedHistory.seasonRankReward as any)?.rewards || []).map(
-        (reward: any) => {
-          const rewardTranslation = (reward.nameTranslations || []).find(
-            (t: any) => t.languageId === langId
-          )
-          const { nameTranslations, ...rewardData } = reward
-          return {
-            ...rewardData,
-            nameTranslation: rewardTranslation?.value ?? null
-          }
+      // Map rewards with translations: rank position rewards, then the season
+      // rewards for everyone (what claiming gives)
+      const rewards = [
+        ...((unclaimedHistory.seasonRankReward as any)?.rewards || []),
+        ...((unclaimedHistory.season as any).seasonRankRewards || []).flatMap(
+          (srr: any) => srr.rewards || []
+        )
+      ].map((reward: any) => {
+        const rewardTranslation = (reward.nameTranslations || []).find(
+          (t: any) => t.languageId === langId
+        )
+        const { nameTranslations, ...rewardData } = reward
+        return {
+          ...rewardData,
+          nameTranslation: rewardTranslation?.value ?? null
         }
-      )
+      })
 
       return {
-        message: this.i18nService.translate(UserMessage.GET_DETAIL_SUCCESS, lang),
-        statusCode: HttpStatus.OK,
-        data: {
-          id: unclaimedHistory.id,
-          hasUnclaimedReward: true,
-          season: {
-            id: unclaimedHistory.seasonId,
-            name: seasonTranslation?.value ?? null,
-            startDate: (unclaimedHistory.season as any).startDate,
-            endDate: (unclaimedHistory.season as any).endDate
-          },
-          finalRank: unclaimedHistory.finalRank,
-          finalElo: unclaimedHistory.finalElo,
-          rewards
-        }
+        id: unclaimedHistory.id,
+        hasUnclaimedReward: true,
+        season: {
+          id: unclaimedHistory.seasonId,
+          name: seasonTranslation?.value ?? null,
+          startDate: (unclaimedHistory.season as any).startDate,
+          endDate: (unclaimedHistory.season as any).endDate
+        },
+        finalRank: unclaimedHistory.finalRank,
+        finalElo: unclaimedHistory.finalElo,
+        rewards
       }
     }
 
@@ -593,24 +538,20 @@ export class UserService {
         }
       : null
     return {
-      message: this.i18nService.translate(UserMessage.GET_DETAIL_SUCCESS, lang),
-      statusCode: HttpStatus.OK,
-      data: {
-        leaderboardSeason: seasonInfo,
-        rank: {
-          rankName: convertEloToRank((userInfo as any).eloscore || 0),
-          eloscore: (userInfo as any).eloscore
-        },
-        totalMatches,
-        totalWins,
-        rateWin: totalMatches > 0 ? (totalWins / totalMatches) * 100 : 0,
-        currentWinStreak
-      }
+      leaderboardSeason: seasonInfo,
+      rank: {
+        rankName: convertEloToRank((userInfo as any).eloscore || 0),
+        eloscore: (userInfo as any).eloscore
+      },
+      totalMatches,
+      totalWins,
+      rateWin: totalMatches > 0 ? (totalWins / totalMatches) * 100 : 0,
+      currentWinStreak
     }
   }
 
   async getCurrentWinStreak(userId: number) {
-    const matches = await this.matchRepo.getMatchesByUser(userId)
+    const matches = await this.matchService.getMatchesByUser(userId)
 
     let streak = 0
 
@@ -628,15 +569,15 @@ export class UserService {
   async getMatchingHisByUserId(
     userId: number,
     lang: string,
-    pagination?: PaginationQueryType
+    pagination?: PaginationQuery
   ) {
-    const langId = await this.langRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
 
     if (!langId) {
       throw new NotFoundRecordException()
     }
 
-    const matchHis = await this.matchRepo.getMatchesHistoryByUser(
+    const matchHis = await this.matchService.getMatchesHistoryByUser(
       userId,
       langId,
       pagination
@@ -690,36 +631,31 @@ export class UserService {
       // paginated response
       const results = matchHis.results.map(mapFn)
       return {
-        statusCode: HttpStatus.OK,
-        data: {
-          results,
-          pagination: matchHis.pagination
-        },
-        message: this.i18nService.translate(ENTITY_MESSAGE.GET_LIST_SUCCESS, lang)
+        results,
+        pagination: matchHis.pagination
       }
     }
 
     // legacy: full array
     const convertMatchHisInfo = (matchHis as any).map ? (matchHis as any).map(mapFn) : []
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: convertMatchHisInfo,
-      message: this.i18nService.translate(ENTITY_MESSAGE.GET_LIST_SUCCESS, lang)
-    }
+    return convertMatchHisInfo
   }
 
-  async updateLevelJLPT(
-    { userId, data }: { userId: number; data: { levelJLPT: number } },
-    lang: string = 'vi'
-  ) {
-    const user = await this.sharedUserRepository.findUnique({
+  async updateLevelJLPT({
+    userId,
+    data
+  }: {
+    userId: number
+    data: { levelJLPT: number }
+  }) {
+    const user = await this.userCoreService.findUnique({
       id: userId
     })
     if (!user) {
       throw new NotFoundRecordException()
     }
-    const updatedUser = await this.sharedUserRepository.update(
+    const updatedUser = await this.userCoreService.update(
       { id: userId },
       {
         levelJLPT: data.levelJLPT,
@@ -730,10 +666,14 @@ export class UserService {
     //Update user progress level JLPT
     await this.userProgressService.updateUserProgressLevelJlpt(userId, data.levelJLPT)
 
-    return {
-      statusCode: 200,
-      data: updatedUser,
-      message: this.i18nService.translate(AuthMessage.UPDATE_LEVEL_JLPT_SUCCESS, lang)
-    }
+    return updatedUser
+  }
+
+  // ---- For other modules (module-boundary plan B8) ----
+  // Same arguments and results as the repo methods.
+
+  // The repo's update (the service's own update answers the HTTP route)
+  updateUserRow(...args: Parameters<UserRepo['update']>) {
+    return this.userRepo.update(...args)
   }
 }

@@ -1,26 +1,21 @@
+import { paginatedResSchema } from '@/shared/utils/pagination'
+import { resSchema } from '@/shared/utils/res-schema'
 import { createZodDto } from 'nestjs-zod'
-import { z } from 'zod'
-import { GrammarUsageType, GrammarUsageWithGrammarType } from '../entities/grammar-usage.entities'
+import { GrammarUsageWithGrammarSchema } from '../entities/grammar-usage.entity'
 
-export const GrammarUsageResponseSchema = z.object({
-    data: GrammarUsageType,
-    message: z.string(),
-})
+// statusCode is part of the envelope: without it the serializer dropped it
+export const GrammarUsageWithGrammarResponseSchema = resSchema(
+  GrammarUsageWithGrammarSchema
+)
 
-export const GrammarUsageWithGrammarResponseSchema = z.object({
-    data: GrammarUsageWithGrammarType,
-    message: z.string(),
-})
+// { results, pagination } like every list (was { data[], total, page, limit, totalPages })
+export const GrammarUsageListResponseSchema = paginatedResSchema(
+  GrammarUsageWithGrammarSchema
+)
 
-export const GrammarUsageListResponseSchema = z.object({
-    data: z.array(GrammarUsageType),
-    total: z.number(),
-    page: z.number(),
-    limit: z.number(),
-    totalPages: z.number(),
-    message: z.string(),
-})
-
-export class GrammarUsageResponseDTO extends createZodDto(GrammarUsageResponseSchema) { }
-export class GrammarUsageWithGrammarResponseDTO extends createZodDto(GrammarUsageWithGrammarResponseSchema) { }
-export class GrammarUsageListResponseDTO extends createZodDto(GrammarUsageListResponseSchema) { }
+export class GrammarUsageWithGrammarResponseDTO extends createZodDto(
+  GrammarUsageWithGrammarResponseSchema
+) {}
+export class GrammarUsageListResponseDTO extends createZodDto(
+  GrammarUsageListResponseSchema
+) {}

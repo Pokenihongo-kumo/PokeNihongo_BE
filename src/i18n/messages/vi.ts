@@ -34,7 +34,15 @@ export const viMessages = {
     TOTP_NOT_ENABLED: 'TOTP chưa được kích hoạt',
     INVALID_TOTP_AND_CODE: 'Mã TOTP và mã xác thực không hợp lệ',
     OTP_AUTHENTICATION_SUCCESS: 'Xác thực OTP thành công',
+    REGISTRATION_TOKEN_INVALID:
+      'Phiên đăng ký không hợp lệ hoặc đã hết hạn, vui lòng xác thực email lại',
+    OAUTH_STATE_INVALID:
+      'Phiên đăng nhập Google không hợp lệ hoặc đã hết hạn, vui lòng thử lại',
+    EXCHANGE_CODE_INVALID: 'Mã đăng nhập Google không hợp lệ, đã dùng hoặc đã hết hạn',
+    GOOGLE_REDIRECT_NOT_ALLOWED: 'Địa chỉ chuyển hướng không được phép',
+    GOOGLE_EXCHANGE_SUCCESS: 'Đăng nhập bằng Google thành công',
     FAIL_TO_LOGIN: 'Sai email hoặc mật khẩu',
+    MISSING_ACCESS_TOKEN: 'Vui lòng đăng nhập để tiếp tục',
     FIRST_LOGIN:
       'Đây là lần đăng nhập đầu tiên từ thiết bị này. Vui lòng kiểm tra email để xác thực.',
     NOT_FIRST_LOGIN: 'Thiết bị đã được xác thực trước đó.',
@@ -47,7 +55,8 @@ export const viMessages = {
     MISSING_TOKEN: 'Thiếu token xác thực',
     INVALID_TOKEN: 'Token xác thực không hợp lệ',
     UPDATE_LEVEL_JLPT_SUCCESS: 'Cập nhật cấp độ JLPT thành công',
-    UPDATE_SUCCESS: 'Cập nhật thành công'
+    UPDATE_SUCCESS: 'Cập nhật thành công',
+    INVALID_EMAIL: 'Email không hợp lệ'
   },
   reward: {
     CREATE_SUCCESS: 'Tạo phần thưởng thành công',
@@ -60,6 +69,585 @@ export const viMessages = {
     INVALID_DATA: 'Dữ liệu phần thưởng không hợp lệ',
     NAME_REQUIRED: 'Tên phần thưởng không được để trống'
   },
+  grammar: {
+    CREATE_SUCCESS: 'Tạo ngữ pháp thành công',
+    CREATE_BASIC_SUCCESS: 'Tạo ngữ pháp cơ bản thành công',
+    UPDATE_SUCCESS: 'Cập nhật ngữ pháp thành công',
+    DELETE_SUCCESS: 'Xóa ngữ pháp thành công',
+    GET_SUCCESS: 'Lấy thông tin ngữ pháp thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách ngữ pháp thành công',
+    NOT_FOUND: 'Ngữ pháp không tồn tại',
+    ALREADY_EXISTS: 'Ngữ pháp đã tồn tại',
+    INVALID_DATA: 'Dữ liệu ngữ pháp không hợp lệ',
+    INVALID_ID: 'ID ngữ pháp không hợp lệ',
+    STRUCTURE_REQUIRED: 'Cấu trúc ngữ pháp không được để trống',
+    STRUCTURE_TOO_LONG: 'Cấu trúc ngữ pháp không được vượt quá 500 ký tự',
+    LEVEL_REQUIRED: 'Cấp độ không được để trống',
+    LEVEL_TOO_LONG: 'Cấp độ không được vượt quá 10 ký tự',
+    EXAMPLE_JP_REQUIRED: 'Câu ví dụ tiếng Nhật không được để trống',
+    EXAMPLE_JP_TOO_LONG: 'Câu ví dụ tiếng Nhật không được vượt quá 1000 ký tự',
+    LANGUAGE_CODE_TOO_SHORT: 'Mã ngôn ngữ phải có ít nhất 2 ký tự',
+    LANGUAGE_CODE_TOO_LONG: 'Mã ngôn ngữ không được vượt quá 5 ký tự',
+    EXPLANATION_REQUIRED: 'Giải thích không được để trống',
+    EXPLANATION_TOO_LONG: 'Giải thích không được vượt quá 2000 ký tự',
+    EXAMPLE_REQUIRED: 'Ví dụ không được để trống',
+    EXAMPLE_TOO_LONG: 'Ví dụ không được vượt quá 1000 ký tự'
+  },
+  grammar_usage: {
+    CREATE_SUCCESS: 'Tạo cách sử dụng ngữ pháp thành công',
+    UPDATE_SUCCESS: 'Cập nhật cách sử dụng ngữ pháp thành công',
+    DELETE_SUCCESS: 'Xóa cách sử dụng ngữ pháp thành công',
+    GET_SUCCESS: 'Lấy thông tin cách sử dụng ngữ pháp thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách cách sử dụng ngữ pháp thành công',
+    NOT_FOUND: 'Cách sử dụng ngữ pháp không tồn tại',
+    ALREADY_EXISTS: 'Cách sử dụng ngữ pháp đã tồn tại',
+    INVALID_DATA: 'Dữ liệu cách sử dụng ngữ pháp không hợp lệ',
+    INVALID_ID: 'ID cách sử dụng ngữ pháp không hợp lệ'
+  },
+  meaning: {
+    GET_LIST_SUCCESS: 'Lấy danh sách nghĩa thành công',
+    GET_SUCCESS: 'Lấy tất cả nghĩa theo từ vựng thành công',
+    CREATE_SUCCESS: 'Tạo nghĩa thành công',
+    UPDATE_SUCCESS: 'Cập nhật nghĩa thành công',
+    NOT_FOUND: 'Nghĩa không tồn tại',
+    INVALID_DATA: 'Dữ liệu nghĩa không hợp lệ',
+    INVALID_ID: 'ID nghĩa không hợp lệ',
+    VOCABULARY_NOT_FOUND: 'Từ vựng không tồn tại',
+    VOCABULARY_ID_INVALID: 'Vocabulary ID phải lớn hơn 0',
+    WORD_TYPE_ID_INVALID: 'WordType ID phải lớn hơn 0',
+    MEANING_KEY_REQUIRED: 'Meaning key không được để trống',
+    MEANING_KEY_TOO_LONG: 'Meaning key quá dài (tối đa 500 ký tự)',
+    EXAMPLE_KEY_REQUIRED: 'Example sentence key không được để trống',
+    EXAMPLE_KEY_TOO_LONG: 'Example sentence key quá dài (tối đa 500 ký tự)',
+    EXPLANATION_KEY_REQUIRED: 'Explanation key không được để trống',
+    EXPLANATION_KEY_TOO_LONG: 'Explanation key quá dài (tối đa 500 ký tự)',
+    TRANSLATION_KEY_FORMAT:
+      'Key dịch phải theo định dạng: module.id.field (ví dụ: meaning.1.definition)',
+    EXAMPLE_JP_REQUIRED: 'Câu ví dụ tiếng Nhật không được để trống',
+    EXAMPLE_JP_TOO_LONG: 'Câu ví dụ tiếng Nhật quá dài (tối đa 1000 ký tự)',
+    EXAMPLE_JP_NOT_JAPANESE:
+      'Phải là văn bản tiếng Nhật (chứa Hiragana, Katakana, hoặc Kanji)'
+  },
+  kanji_reading: {
+    GET_LIST_SUCCESS: 'Lấy danh sách cách đọc kanji thành công',
+    GET_SUCCESS: 'Lấy thông tin cách đọc kanji thành công',
+    GET_STATS_SUCCESS: 'Lấy thống kê cách đọc kanji thành công',
+    CREATE_SUCCESS: 'Tạo cách đọc kanji thành công',
+    UPDATE_SUCCESS: 'Cập nhật cách đọc kanji thành công',
+    DELETE_SUCCESS: 'Xóa cách đọc kanji thành công',
+    NOT_FOUND: 'Cách đọc Kanji không tồn tại',
+    ALREADY_EXISTS: 'Cách đọc Kanji đã tồn tại',
+    INVALID_DATA: 'Dữ liệu cách đọc Kanji không hợp lệ',
+    INVALID_ID: 'ID cách đọc kanji không hợp lệ',
+    KANJI_NOT_FOUND: 'Kanji không tồn tại',
+    KANJI_ID_INVALID: 'Kanji ID phải lớn hơn 0',
+    READING_TYPE_REQUIRED: 'Loại cách đọc không được để trống',
+    READING_TYPE_TOO_LONG: 'Loại cách đọc quá dài (tối đa 20 ký tự)',
+    READING_TYPE_INVALID: 'Loại cách đọc phải là onyomi, kunyomi, nanori, hoặc irregular',
+    READING_REQUIRED: 'Cách đọc không được để trống',
+    READING_TOO_LONG: 'Cách đọc quá dài (tối đa 100 ký tự)',
+    READING_NOT_KANA:
+      'Phải là cách đọc Onyomi/Kunyomi (chỉ chứa Hiragana, Katakana và dấu câu cơ bản)'
+  },
+  answer: {
+    GET_LIST_SUCCESS: 'Lấy danh sách câu trả lời thành công',
+    GET_SUCCESS: 'Lấy thông tin câu trả lời thành công',
+    CREATE_SUCCESS: 'Tạo câu trả lời thành công',
+    UPDATE_SUCCESS: 'Cập nhật câu trả lời thành công',
+    DELETE_SUCCESS: 'Xóa câu trả lời thành công',
+    NOT_FOUND: 'Không tìm thấy câu trả lời',
+    ALREADY_EXISTS: 'Câu trả lời đã tồn tại',
+    CONTENT_ALREADY_EXISTS: 'Câu trả lời này đã tồn tại trong câu hỏi',
+    INVALID_DATA: 'Dữ liệu câu trả lời không hợp lệ',
+    INVALID_ID: 'ID câu trả lời không hợp lệ',
+    QUESTION_NOT_FOUND: 'Không tìm thấy câu hỏi',
+    QUESTION_ID_INVALID: 'ID câu hỏi không hợp lệ',
+    ANSWER_JP_REQUIRED: 'Nội dung câu trả lời không được để trống',
+    ANSWER_JP_TOO_LONG: 'Nội dung câu trả lời không được vượt quá 1000 ký tự',
+    ANSWERS_REQUIRED: 'Phải có ít nhất 1 câu trả lời',
+    ANSWERS_TOO_MANY: 'Tối đa 10 câu trả lời',
+    MATCHING_SINGLE_ANSWER: 'MATCHING type chỉ cho phép tạo 1 answer duy nhất',
+    MATCHING_MUST_BE_CORRECT: 'MATCHING type bắt buộc phải có isCorrect = true',
+    MAX_ANSWERS_REACHED: 'Mỗi câu hỏi chỉ được tạo tối đa 4 câu trả lời',
+    CORRECT_ANSWER_EXISTS: 'Mỗi câu hỏi chỉ được có 1 câu trả lời đúng',
+    ANSWER_ID_NOT_FOUND: 'Không tìm thấy answer với ID {id}',
+    ANSWER_OF_OTHER_QUESTION:
+      'Answer ID {id} thuộc câu hỏi khác (questionBankId: {questionBankId})',
+    ANSWER_TEXT_TAKEN:
+      'answerJp "{answerJp}" đã tồn tại trong câu hỏi này (answer ID: {id})',
+    UNKNOWN_FAILURE: 'Lỗi không xác định khi xử lý câu trả lời',
+    MULTIPLE_CREATED: 'Tạo thành công {created} câu trả lời mới',
+    MULTIPLE_CREATED_UPDATED:
+      'Tạo thành công {created} câu trả lời mới, cập nhật {updated} câu trả lời',
+    MULTIPLE_CREATED_UPDATED_FAILED:
+      'Tạo thành công {created} câu trả lời mới, cập nhật {updated} câu trả lời, {failed} câu trả lời thất bại',
+    MULTIPLE_CREATED_FAILED:
+      'Tạo thành công {created} câu trả lời mới, {failed} câu trả lời thất bại',
+    MULTIPLE_UPDATED_FAILED:
+      'Cập nhật thành công {updated} câu trả lời, {failed} câu trả lời thất bại',
+    MULTIPLE_NONE_SAVED: 'Không thể tạo hoặc cập nhật câu trả lời nào'
+  },
+  testset_questionbank: {
+    GET_SUCCESS: 'Lấy thông tin TestSetQuestionBank thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách TestSetQuestionBank thành công',
+    CREATE_SUCCESS: 'Tạo TestSetQuestionBank thành công',
+    UPDATE_SUCCESS: 'Cập nhật TestSetQuestionBank thành công',
+    UPDATE_QUESTION_ORDER_SUCCESS: 'Cập nhật thứ tự câu hỏi thành công',
+    DELETE_SUCCESS: 'Xóa TestSetQuestionBank thành công',
+    DELETE_BY_TESTSET_SUCCESS: 'Xóa TestSetQuestionBank theo TestSet thành công',
+    NOT_FOUND: 'Không tìm thấy TestSetQuestionBank',
+    ALREADY_EXISTS: 'TestSetQuestionBank đã tồn tại',
+    INVALID_DATA: 'Dữ liệu TestSetQuestionBank không hợp lệ',
+    TYPE_INCOMPATIBLE:
+      'Loại TestSet và QuestionBank không tương thích. Chỉ có thể liên kết khi TestSet có loại GENERAL hoặc khớp với loại QuestionBank',
+    LEVEL_ABOVE_TEST_SET:
+      'Level không phù hợp: TestSet có level {testSetLevel} nhưng QuestionBank có level {questionLevel}. Với TestSet loại GENERAL, QuestionBank phải có level bằng hoặc nhỏ hơn TestSet',
+    LEVEL_MISMATCH:
+      'Level không phù hợp: TestSet có level {testSetLevel} nhưng QuestionBank có level {questionLevel}. Với TestSet loại cụ thể, QuestionBank phải có level bằng TestSet',
+    TEST_SET_NOT_FOUND: 'Không tìm thấy TestSet',
+    QUESTION_BANK_NOT_FOUND: 'Không tìm thấy QuestionBank',
+    INVALID_ID: 'ID TestSetQuestionBank không hợp lệ',
+    INVALID_TEST_SET_ID: 'ID TestSet không hợp lệ',
+    INVALID_QUESTION_BANK_ID: 'ID QuestionBank không hợp lệ',
+    INVALID_QUESTION_ORDER: 'Thứ tự câu hỏi phải là số nguyên dương',
+    QUESTION_BANK_IDS_REQUIRED: 'Phải có ít nhất 1 QuestionBank',
+    IDS_REQUIRED: 'Phải có ít nhất 1 id',
+    MULTIPLE_CREATED: 'Tạo thành công {created}/{total} liên kết',
+    MULTIPLE_PARTIAL:
+      'Tạo thành công {created}/{total} liên kết. {failed} liên kết không thể tạo',
+    MULTIPLE_NONE_CREATED: 'Không thể tạo liên kết nào',
+    UNKNOWN_FAILURE: 'Lỗi không xác định'
+  },
+  testset: {
+    GET_SUCCESS: 'Lấy thông tin bộ đề thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách bộ đề thành công',
+    CREATE_SUCCESS: 'Tạo bộ đề thành công',
+    UPDATE_SUCCESS: 'Cập nhật bộ đề thành công',
+    DELETE_SUCCESS: 'Xóa bộ đề thành công',
+    NOT_FOUND: 'Không tìm thấy bộ đề',
+    INVALID_DATA: 'Dữ liệu bộ đề không hợp lệ',
+    QUESTION_BANK_NOT_FOUND: 'QuestionBank với ID {id} không tồn tại',
+    CANNOT_CHANGE_LEVEL_HAS_QUESTIONS:
+      'Không thể thay đổi levelN khi testSet đã có câu hỏi, trừ khi testType là GENERAL',
+    CANNOT_CHANGE_TYPE_GENERAL_MULTIPLE:
+      'Không thể thay đổi testType từ GENERAL sang loại khác khi testSet đang chứa nhiều loại câu hỏi khác nhau',
+    CANNOT_CHANGE_TYPE_SPECIFIC:
+      'Không thể thay đổi testType. Chỉ có thể thay đổi thành cùng type hoặc GENERAL (từ {from} sang {to})',
+    CANNOT_CHANGE_TYPE_GENERAL_SINGLE:
+      'Không thể thay đổi testType từ GENERAL sang type khác. TestSet hiện đang chứa câu hỏi loại {questionType}',
+    INVALID_ID: 'ID bộ đề không hợp lệ',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương',
+    INVALID_CREATOR_ID: 'ID người tạo không hợp lệ',
+    INVALID_LEVEL: 'Cấp độ JLPT phải từ 0 đến 5 (0 = nhiều cấp độ)',
+    INVALID_QUESTION_LEVEL: 'Cấp độ câu hỏi phải từ 1 đến 5',
+    INVALID_PRICE: 'Giá bộ đề không được âm',
+    INVALID_AUDIO_URL: 'URL âm thanh không hợp lệ',
+    INVALID_TEST_TYPE: 'Loại đề thi không hợp lệ',
+    INVALID_STATUS: 'Trạng thái bộ đề không hợp lệ',
+    INVALID_QUESTION_TYPE: 'Loại câu hỏi không hợp lệ',
+    TEST_TYPE_REQUIRED: 'testType là bắt buộc khi tạo mới',
+    READING_CONTENT_REQUIRED:
+      'Khi testType là READING, content phải có và phải là tiếng Nhật (bài đọc)',
+    MEANINGS_REQUIRED: 'Phải có ít nhất 1 meaning',
+    NAME_MEANING_REQUIRED: 'Phải có ít nhất 1 meaning cho name',
+    TRANSLATIONS_REQUIRED: 'Phải có ít nhất 1 translation',
+    NAME_TRANSLATION_REQUIRED: 'Phải có ít nhất 1 translation cho name',
+    QUESTION_BANKS_REQUIRED: 'Phải có ít nhất 1 questionBank khi tạo mới',
+    DUPLICATE_QUESTION_IDS:
+      'Danh sách questionBanks có trùng lặp id (TestSetQuestionBank.id)',
+    QUESTION_JP_REQUIRED: 'questionJp không được để trống',
+    QUESTION_JP_NOT_JAPANESE: 'questionJp phải là tiếng Nhật (Hiragana/Katakana/Kanji)'
+  },
+  question_bank: {
+    GET_SUCCESS: 'Lấy thông tin câu hỏi thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách câu hỏi thành công',
+    CREATE_SUCCESS: 'Tạo câu hỏi thành công',
+    UPDATE_SUCCESS: 'Cập nhật câu hỏi thành công',
+    DELETE_SUCCESS: 'Xóa câu hỏi thành công',
+    DELETE_MANY_SUCCESS: 'Xóa thành công {deleted}/{requested} câu hỏi',
+    WITH_ANSWERS_CREATED: 'Tạo câu hỏi và {created}/{total} câu trả lời thành công',
+    WITH_ANSWERS_PARTIAL:
+      'Tạo câu hỏi thành công và {created}/{total} câu trả lời thành công',
+    WITH_ANSWERS_NONE: 'Tạo câu hỏi thành công nhưng không thể tạo câu trả lời nào',
+    NOT_FOUND: 'Không tìm thấy câu hỏi',
+    NONE_DELETED: 'Không tìm thấy câu hỏi nào để xóa',
+    ALREADY_EXISTS: 'Câu hỏi đã tồn tại',
+    INVALID_DATA: 'Dữ liệu câu hỏi không hợp lệ',
+    INVALID_ID: 'ID câu hỏi không hợp lệ',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương',
+    INVALID_TEST_SET_ID: 'ID bộ đề không hợp lệ',
+    INVALID_LEVEL: 'Cấp độ JLPT không hợp lệ (1-5)',
+    INVALID_QUESTION_TYPE: 'Loại câu hỏi không hợp lệ',
+    INVALID_ROLE: 'Vai trò không hợp lệ',
+    QUESTION_JP_REQUIRED: 'Nội dung câu hỏi không được để trống',
+    QUESTION_JP_NOT_JAPANESE: 'Nội dung phải chứa tiếng Nhật hoặc chỗ trống (＿＿＿)',
+    PRONUNCIATION_REQUIRED:
+      'SPEAKING type bắt buộc phải có pronunciation (cách phát âm romaji)',
+    INVALID_AUDIO_URL: 'audioUrl phải là một URL hợp lệ',
+    ANSWERS_REQUIRED: 'Phải có ít nhất 1 câu trả lời',
+    ANSWERS_TOO_MANY: 'Tối đa 4 câu trả lời',
+    MATCHING_SINGLE_ANSWER: 'MATCHING type chỉ cho phép 1 câu trả lời duy nhất',
+    MATCHING_MUST_BE_CORRECT: 'MATCHING type bắt buộc phải có isCorrect = true',
+    CORRECT_ANSWER_REQUIRED: 'Phải có ít nhất 1 câu trả lời đúng',
+    ONLY_ONE_CORRECT_ANSWER: 'Chỉ được có 1 câu trả lời đúng',
+    IDS_REQUIRED: 'Phải có ít nhất 1 ID',
+    IDS_TOO_MANY: 'Tối đa 100 ID',
+    QUESTION_IDS_REQUIRED: 'Phải có ít nhất 1 questionId',
+    QUESTION_IDS_TOO_MANY: 'Tối đa 100 questionIds'
+  },
+  exercises: {
+    GET_SUCCESS: 'Lấy thông tin bài tập thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách bài tập thành công',
+    CREATE_SUCCESS: 'Tạo bài tập thành công',
+    UPDATE_SUCCESS: 'Cập nhật bài tập thành công',
+    DELETE_SUCCESS: 'Xóa bài tập thành công',
+    NOT_FOUND: 'Không tìm thấy bài tập',
+    INVALID_DATA: 'Dữ liệu bài tập không hợp lệ',
+    LESSON_NOT_FOUND: 'Không tìm thấy bài học',
+    TEST_SET_NOT_FOUND: 'Không tìm thấy bộ đề',
+    REWARD_NOT_FOUND: 'Không tìm thấy phần thưởng',
+    LEVEL_INCOMPATIBLE:
+      'Level không tương thích: Lesson có level JLPT {lessonLevel} nhưng TestSet có level {testSetLevel}. Chỉ có thể tạo Exercise khi level của Lesson và TestSet khớp nhau',
+    LIMIT_PER_LESSON:
+      'Mỗi bài học chỉ được phép có tối đa 3 bài tập: VOCABULARY, GRAMMAR, KANJI',
+    TYPE_EXISTS_IN_LESSON: 'Mỗi loại bài tập chỉ được tạo 1 lần trong mỗi bài học',
+    TEST_SET_TYPE_MISMATCH:
+      'Loại TestSet không khớp với loại bài tập. Chỉ có thể gắn TestSet cùng loại (VOCABULARY/GRAMMAR/KANJI)',
+    TEST_SET_HAS_EXERCISE:
+      'TestSet này đã có exercise được gán. Mỗi testSet chỉ có thể có một exercise.',
+    INVALID_ID: 'ID bài tập không hợp lệ',
+    INVALID_LESSON_ID: 'ID bài học không hợp lệ',
+    INVALID_TEST_SET_ID: 'ID bộ đề không hợp lệ',
+    INVALID_REWARD_ID: 'ID phần thưởng không hợp lệ',
+    INVALID_EXERCISE_TYPE: 'Loại bài tập không hợp lệ',
+    INVALID_IS_BLOCKED: 'isBlocked phải là true hoặc false',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương'
+  },
+  lesson: {
+    GET_SUCCESS: 'Lấy thông tin bài học thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách bài học thành công',
+    CREATE_SUCCESS: 'Tạo bài học thành công',
+    UPDATE_SUCCESS: 'Cập nhật bài học thành công',
+    DELETE_SUCCESS: 'Xóa bài học thành công',
+    PUBLISH_SUCCESS: 'Xuất bản bài học thành công',
+    UNPUBLISH_SUCCESS: 'Hủy xuất bản bài học thành công',
+    NOT_FOUND: 'Bài học không tồn tại',
+    ALREADY_EXISTS: 'Bài học đã tồn tại',
+    INVALID_DATA: 'Dữ liệu bài học không hợp lệ',
+    CATEGORY_NOT_FOUND: 'Danh mục bài học không tồn tại',
+    REWARD_NOT_FOUND: 'Phần thưởng không tồn tại',
+    TEST_NOT_FOUND: 'Không tìm thấy bài test',
+    INVALID_ID: 'ID bài học không hợp lệ',
+    INVALID_CATEGORY_ID: 'ID danh mục bài học không hợp lệ',
+    INVALID_TEST_ID: 'ID bài test không hợp lệ',
+    INVALID_REWARD_ID: 'ID phần thưởng không hợp lệ',
+    INVALID_TITLE_JP: 'Tiêu đề tiếng Nhật phải từ 1 đến 500 ký tự',
+    INVALID_SLUG: 'Slug phải từ 1 đến 200 ký tự',
+    INVALID_LEVEL: 'Cấp độ JLPT phải từ 1 đến 5',
+    INVALID_ESTIMATED_TIME: 'Thời gian ước tính phải từ 1 đến 480 phút',
+    INVALID_LESSON_ORDER: 'Thứ tự bài học phải là số nguyên không âm',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương'
+  },
+  test: {
+    GET_SUCCESS: 'Lấy thông tin bài test thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách bài test thành công',
+    CREATE_SUCCESS: 'Tạo bài test thành công',
+    UPDATE_SUCCESS: 'Cập nhật bài test thành công',
+    DELETE_SUCCESS: 'Xóa bài test thành công',
+    DELETE_MANY_SUCCESS: 'Xóa thành công {deleted}/{requested} bài test',
+    ADD_TESTSETS_SUCCESS: 'Thêm TestSet vào Test thành công',
+    REMOVE_TESTSETS_SUCCESS: 'Xóa TestSet khỏi Test thành công',
+    PLACEMENT_QUESTIONS_SUCCESS: 'Lấy câu hỏi placement test thành công',
+    LEVEL_QUESTIONS_SUCCESS: 'Lấy {count} câu hỏi level N{level} thành công',
+    AUTO_ADD_SUCCESS: 'Đã thêm {added} TestSet vào {tests} Test PLACEMENT_TEST_DONE',
+    AUTO_ADD_NO_PLACEMENT: 'Không có Test PLACEMENT_TEST_DONE nào trong hệ thống',
+    AUTO_ADD_NO_FREE_TESTSETS: 'Không có TestSet free nào trong hệ thống',
+    NOT_FOUND: 'Không tìm thấy bài test',
+    PERMISSION_DENIED: 'Bạn không có quyền thực hiện hành động này',
+    NO_ACCESS: 'Bạn chưa có quyền làm bài test này',
+    INVALID_DATA: 'Dữ liệu bài test không hợp lệ',
+    CANNOT_GET: 'Không thể lấy thông tin bài test',
+    CANNOT_GET_QUESTIONS: 'Không thể lấy câu hỏi',
+    CANNOT_GET_PLACEMENT_QUESTIONS: 'Không thể lấy câu hỏi cho placement test',
+    CANNOT_GET_REVIEW_QUESTIONS: 'Không thể lấy câu hỏi bài test ôn tập',
+    CANNOT_CREATE: 'Không thể tạo bài test',
+    CANNOT_ADD_TESTSETS: 'Không thể thêm TestSet vào Test',
+    CANNOT_REMOVE_TESTSETS: 'Không thể xóa TestSet khỏi Test',
+    CANNOT_DELETE_MANY: 'Không thể xóa nhiều bài test',
+    CANNOT_AUTO_ADD: 'Không thể tự động thêm TestSet',
+    PLACEMENT_EXISTS:
+      'Chỉ được tạo 1 test PLACEMENT_TEST_DONE duy nhất trong toàn hệ thống',
+    TYPE_CHANGE_INVALID_TESTSETS:
+      'Không thể đổi testType sang {testType} vì test đang chứa TestSet loại khác. Vui lòng xóa các TestSet không hợp lệ trước: {ids}',
+    TESTSETS_NOT_FOUND: 'Không tìm thấy TestSet với ID: {ids}',
+    LESSON_REVIEW_INVALID_TYPES:
+      'Test loại LESSON_REVIEW chỉ được thêm TestSet loại VOCABULARY, GRAMMAR, KANJI. TestSet không hợp lệ (ID: {ids}, Type: {types})',
+    DUPLICATE_NEW_TYPES:
+      'Không được thêm nhiều TestSet cùng loại trong 1 lần. Loại bị trùng: {types}',
+    LESSON_REVIEW_DUPLICATE_TYPES:
+      'Test LESSON_REVIEW chỉ được có 1 TestSet cho mỗi loại (VOCABULARY, GRAMMAR, KANJI). Loại bị trùng: {types}',
+    LESSON_REVIEW_TOO_MANY:
+      'Test LESSON_REVIEW chỉ được có tối đa 3 TestSet (VOCABULARY, GRAMMAR, KANJI). Hiện có {existing}, đang cố thêm {adding}, tổng: {total}',
+    TESTSET_TYPE_NOT_ALLOWED:
+      'Test loại {testType} chỉ được thêm TestSet loại {allowed}. TestSet không hợp lệ: {ids}',
+    SPEAKING_TOO_MANY:
+      'Test SPEAKING_TEST chỉ được có tối đa 1 TestSet SPEAKING. Hiện có {existing}, đang cố thêm {adding}.',
+    LESSON_NOT_FOUND: 'Không tìm thấy Lesson với ID: {id}',
+    LESSON_HAS_NO_TEST:
+      'Lesson với ID {id} chưa có Test. Vui lòng tạo Test cho Lesson trước.',
+    NO_TESTSET_TO_REMOVE: 'Không có TestSet nào trong Test này để xóa',
+    TESTS_NOT_FOUND: 'Không tìm thấy bài test với ID: {ids}',
+    NOT_PLACEMENT_TEST: 'Chỉ có thể lấy câu hỏi từ Test loại PLACEMENT_TEST_DONE',
+    NO_TESTSETS: 'Test này chưa có TestSet nào',
+    MISSING_TESTSET_TYPES: 'Test này thiếu testSet loại: {types}',
+    NOT_ENOUGH_QUESTIONS: 'Không đủ câu hỏi. Tổng có {count} câu, cần ít nhất 10 câu',
+    INVALID_ID: 'ID bài test không hợp lệ',
+    INVALID_LESSON_ID: 'ID bài học không hợp lệ',
+    INVALID_TESTSET_ID: 'ID bộ đề không hợp lệ',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương',
+    INVALID_CREATOR_ID: 'ID người tạo không hợp lệ',
+    INVALID_LEVEL: 'Cấp độ JLPT phải từ 0 đến 5',
+    INVALID_LEVEL_N: 'Level phải từ 1 đến 5',
+    INVALID_COUNT: 'Số lượng câu hỏi phải lớn hơn 0',
+    INVALID_PRICE: 'Giá bài test không được âm',
+    INVALID_LIMIT: 'Số lần làm bài phải là số nguyên không âm',
+    INVALID_TEST_TYPE: 'Loại đề thi không hợp lệ',
+    INVALID_STATUS: 'Trạng thái bài test không hợp lệ',
+    MEANINGS_REQUIRED: 'Phải có ít nhất 1 meaning',
+    NAME_MEANING_REQUIRED: 'Phải có ít nhất 1 meaning cho name',
+    TESTSET_IDS_REQUIRED: 'Phải có ít nhất 1 TestSet ID',
+    IDS_REQUIRED: 'Phải có ít nhất 1 ID để xóa',
+    IDS_TOO_MANY: 'Chỉ được xóa tối đa 100 bài test cùng lúc'
+  },
+  kanji: {
+    GET_SUCCESS: 'Lấy thông tin kanji thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách kanji thành công',
+    GET_MANAGEMENT_LIST_SUCCESS: 'Lấy danh sách quản lý kanji thành công',
+    CREATE_SUCCESS: 'Tạo Kanji cùng với nghĩa thành công',
+    UPDATE_SUCCESS: 'Cập nhật Kanji cùng với nghĩa thành công',
+    DELETE_SUCCESS: 'Xóa kanji thành công',
+    DELETE_ALL_SUCCESS:
+      'Đã xóa toàn bộ dữ liệu Kanji thành công. Đã xóa {kanji} Kanji, {readings} cách đọc, {translations} bản dịch',
+    IMPORT_XLSX_SUCCESS:
+      'Import Kanji thành công: {created} tạo mới, {updated} cập nhật, {skipped} bỏ qua',
+    IMPORT_TXT_SUCCESS:
+      'Import Kanji từ TXT ({language}) thành công: {created} tạo mới, {updated} cập nhật, {skipped} bỏ qua',
+    NOT_FOUND: 'Kanji không tồn tại',
+    ALREADY_EXISTS: 'Kanji đã tồn tại',
+    INVALID_DATA: 'Dữ liệu Kanji không hợp lệ',
+    CHARACTER_INVALID:
+      'Phải là một ký tự Kanji (Hán tự) duy nhất. Không chấp nhận ký tự Latin hoặc số',
+    INVALID_FILE: 'File không hợp lệ',
+    INVALID_IMPORT_LANGUAGE: 'Ngôn ngữ không hợp lệ. Chỉ hỗ trợ vi hoặc en',
+    INVALID_ID: 'ID kanji không hợp lệ',
+    CHARACTER_REQUIRED: 'Ký tự Kanji không được để trống',
+    READING_TYPE_INVALID: 'Loại cách đọc phải là onyomi, kunyomi, nanori, hoặc irregular',
+    READING_INVALID:
+      'Phải là cách đọc Onyomi/Kunyomi (chỉ chứa Hiragana, Katakana và dấu câu cơ bản)',
+    READINGS_COUNT: 'Phải có từ 1 đến 10 cách đọc',
+    STROKE_COUNT_INVALID: 'Số nét vẽ phải từ 1 đến 50',
+    JLPT_LEVEL_INVALID: 'Cấp độ JLPT phải từ 1 đến 5',
+    IMG_INVALID: 'URL hình ảnh không hợp lệ (tối đa 500 ký tự)'
+  },
+  vocabulary: {
+    GET_SUCCESS: 'Lấy thông tin từ vựng thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách từ vựng thành công',
+    GET_STATS_SUCCESS: 'Lấy thống kê từ vựng thành công',
+    UPDATE_SUCCESS: 'Cập nhật từ vựng thành công',
+    DELETE_SUCCESS: 'Xóa từ vựng thành công',
+    CREATE_FULL_SUCCESS: 'Tạo từ vựng mới thành công với nghĩa và translations',
+    ADD_MEANING_SUCCESS: 'Từ vựng đã tồn tại. Đã thêm nghĩa mới với translations',
+    CREATE_SAMPLE_SUCCESS: 'Tạo từ vựng mẫu thành công. Đã tạo {count} từ vựng',
+    NOT_FOUND: 'Không tìm thấy từ vựng',
+    ALREADY_EXISTS: 'Từ vựng đã tồn tại',
+    INVALID_DATA: 'Dữ liệu từ vựng không hợp lệ',
+    MEANING_ALREADY_EXISTS: 'Nghĩa này đã tồn tại trong hệ thống',
+    JAPANESE_TEXT_INVALID: 'Từ vựng phải là tiếng Nhật thuần (Hiragana/Katakana/Kanji)',
+    INVALID_ID: 'ID từ vựng không hợp lệ'
+  },
+  srs_review: {
+    GET_SUCCESS: 'Lấy thông tin SRS thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách SRS thành công',
+    UPDATE_SUCCESS: 'Cập nhật SRS thành công',
+    UPSERT_SUCCESS: 'Tạo/cập nhật SRS thành công',
+    NOT_FOUND: 'Không tìm thấy bản ghi SRS',
+    FORBIDDEN: 'Bạn không có quyền truy cập bản ghi SRS này',
+    INVALID_DATA: 'Dữ liệu SRS không hợp lệ',
+    INVALID_ID: 'ID SRS không hợp lệ',
+    INVALID_CONTENT_TYPE: 'Loại nội dung không hợp lệ',
+    INVALID_CONTENT_ID: 'ID nội dung không hợp lệ',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải từ 1 đến 200',
+    INVALID_FLAG: 'Giá trị phải là true hoặc false'
+  },
+  user_progress: {
+    GET_SUCCESS: 'Lấy thông tin tiến độ học tập thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách tiến độ học tập thành công',
+    GET_MY_SUCCESS: 'Lấy tiến độ học tập của tôi thành công',
+    CREATE_SUCCESS: 'Tạo tiến độ học tập thành công',
+    UPDATE_SUCCESS: 'Cập nhật tiến độ học tập thành công',
+    DELETE_SUCCESS: 'Xóa tiến độ học tập thành công',
+    START_LESSON_SUCCESS: 'Bắt đầu bài học thành công',
+    COMPLETE_LESSON_SUCCESS: 'Hoàn thành bài học thành công',
+    NOT_FOUND: 'Không tìm thấy tiến độ học tập',
+    ALREADY_EXISTS: 'Tiến độ học tập đã tồn tại',
+    INVALID_DATA: 'Dữ liệu tiến độ học tập không hợp lệ',
+    INVALID_ID: 'ID tiến độ học tập không hợp lệ',
+    INVALID_LESSON_ID: 'ID bài học không hợp lệ',
+    INVALID_USER_ID: 'ID người dùng không hợp lệ',
+    INVALID_CATEGORY_ID: 'ID danh mục bài học không hợp lệ',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương',
+    INVALID_PERCENTAGE: 'Phần trăm tiến độ phải từ 0 đến 100',
+    INVALID_STATUS: 'Trạng thái tiến độ không hợp lệ'
+  },
+  user_answer_log: {
+    GET_SUCCESS: 'Lấy thông tin log câu trả lời thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách log câu trả lời thành công',
+    CREATE_SUCCESS: 'Tạo log câu trả lời thành công',
+    UPDATE_SUCCESS: 'Cập nhật log câu trả lời thành công',
+    DELETE_SUCCESS: 'Xóa log câu trả lời thành công',
+    NOT_FOUND: 'Không tìm thấy log câu trả lời',
+    INVALID_DATA: 'Dữ liệu log câu trả lời không hợp lệ',
+    ATTEMPT_NOT_FOUND: 'Lần thử bài tập không tồn tại',
+    ATTEMPT_NOT_OWNED: 'Bạn không có quyền ghi log cho lần thử này',
+    EXERCISE_HAS_NO_TEST_SET: 'Bài tập không có bộ đề (test set)',
+    QUESTION_NOT_IN_EXERCISE: 'Câu hỏi không thuộc về bài tập hiện tại',
+    ANSWER_NOT_FOUND: 'Không tìm thấy đáp án',
+    ANSWER_NOT_IN_QUESTION: 'Đáp án không thuộc về câu hỏi đã chọn',
+    INVALID_ID: 'ID log câu trả lời không hợp lệ',
+    INVALID_ATTEMPT_ID: 'ID lần thử bài tập không hợp lệ',
+    INVALID_QUESTION_ID: 'ID câu hỏi không hợp lệ',
+    INVALID_ANSWER_ID: 'ID đáp án không hợp lệ',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương',
+    INVALID_FLAG: 'Giá trị phải là true hoặc false'
+  },
+  user_test_answer_log: {
+    GET_SUCCESS: 'Lấy thông tin log câu trả lời test thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách log câu trả lời test thành công',
+    CREATE_SUCCESS: 'Tạo log câu trả lời test thành công',
+    UPDATE_SUCCESS: 'Cập nhật log câu trả lời test thành công',
+    DELETE_SUCCESS: 'Xóa log câu trả lời test thành công',
+    NOT_FOUND: 'Không tìm thấy log câu trả lời test',
+    INVALID_DATA: 'Dữ liệu log câu trả lời test không hợp lệ',
+    ATTEMPT_NOT_FOUND: 'Lần thử bài test không tồn tại',
+    ATTEMPT_NOT_OWNED: 'Bạn không có quyền ghi log cho lần thử này',
+    TEST_HAS_NO_TEST_SET: 'Bài test không có bộ đề (test set)',
+    QUESTION_NOT_IN_TEST: 'Câu hỏi không thuộc về bài test hiện tại',
+    ANSWER_NOT_FOUND: 'Không tìm thấy đáp án',
+    ANSWER_NOT_IN_QUESTION: 'Đáp án không thuộc về câu hỏi đã chọn',
+    INVALID_ID: 'ID log câu trả lời test không hợp lệ',
+    INVALID_ATTEMPT_ID: 'ID lần thử bài test không hợp lệ',
+    INVALID_QUESTION_ID: 'ID câu hỏi không hợp lệ',
+    INVALID_ANSWER_ID: 'ID đáp án không hợp lệ',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương',
+    INVALID_FLAG: 'Giá trị phải là true hoặc false'
+  },
+  user_test: {
+    CREATE_SUCCESS: 'Tạo UserTest thành công',
+    UPDATE_SUCCESS: 'Cập nhật UserTest thành công',
+    DELETE_SUCCESS: 'Xóa UserTest thành công',
+    GET_SUCCESS: 'Lấy thông tin UserTest thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách UserTest thành công',
+    INIT_ALL_SUCCESS: 'Khởi tạo thành công {tests} test cho {users} user',
+    INIT_ALL_NO_USERS: 'Không có user nào trong hệ thống',
+    INIT_ALL_NO_TESTS: 'Không có test nào ACTIVE trong hệ thống',
+    NOT_FOUND: 'Không tìm thấy UserTest',
+    ALREADY_EXISTS: 'UserTest đã tồn tại',
+    INVALID_DATA: 'Dữ liệu UserTest không hợp lệ',
+    INVALID_ID: 'ID UserTest không hợp lệ',
+    INVALID_USER_ID: 'ID người dùng không hợp lệ',
+    INVALID_TEST_ID: 'ID bài test không hợp lệ',
+    INVALID_STATUS: 'Trạng thái không hợp lệ',
+    INVALID_TEST_TYPE: 'Loại bài test không hợp lệ',
+    INVALID_ORDER: 'Thứ tự phải là asc hoặc desc',
+    INVALID_LIMIT: 'Số lượt phải là số nguyên không âm',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương'
+  },
+  dashboard: {
+    INVALID_PERIOD: 'Kỳ thống kê phải là day, week hoặc month',
+    INVALID_MONTH: 'Tháng phải từ 1 đến 12',
+    INVALID_YEAR: 'Năm không hợp lệ'
+  },
+  ai_conversation_room: {
+    CREATE_SUCCESS: 'Tạo phòng hội thoại AI thành công',
+    GET_SUCCESS: 'Lấy thông tin phòng hội thoại AI thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách phòng hội thoại AI thành công',
+    UPDATE_SUCCESS: 'Cập nhật phòng hội thoại AI thành công',
+    DELETE_SUCCESS: 'Xóa phòng hội thoại AI thành công',
+    NOT_FOUND: 'Không tìm thấy phòng hội thoại AI',
+    INVALID_DATA: 'Dữ liệu phòng hội thoại AI không hợp lệ',
+    INVALID_ID: 'ID phòng hội thoại AI không hợp lệ',
+    INVALID_CONVERSATION_ID: 'conversationId không hợp lệ',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải từ 1 đến 100',
+    CONVERSATION_TAKEN: 'conversationId này đã thuộc về người dùng khác',
+    INVALID_FLAG: 'Giá trị phải là true hoặc false',
+    INVALID_TITLE: 'Tiêu đề tối đa 200 ký tự',
+    INVALID_VOICE: 'Tên giọng đọc tối đa 50 ký tự'
+  },
+  user_ai_conversation: {
+    CREATE_SUCCESS: 'Tạo tin nhắn hội thoại AI thành công',
+    GET_SUCCESS: 'Lấy thông tin tin nhắn hội thoại AI thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách tin nhắn hội thoại AI thành công',
+    UPDATE_SUCCESS: 'Cập nhật tin nhắn hội thoại AI thành công',
+    DELETE_SUCCESS: 'Xóa tin nhắn hội thoại AI thành công',
+    NOT_FOUND: 'Không tìm thấy tin nhắn hội thoại AI',
+    INVALID_DATA: 'Dữ liệu tin nhắn hội thoại AI không hợp lệ',
+    INVALID_ID: 'ID tin nhắn hội thoại AI không hợp lệ',
+    INVALID_CONVERSATION_ID: 'conversationId không hợp lệ',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải từ 1 đến 100',
+    DELETE_BY_CONVERSATION_SUCCESS: 'Xóa {count} tin nhắn hội thoại AI thành công',
+    INVALID_ROLE: 'Vai trò phải là USER hoặc AI',
+    INVALID_MESSAGE: 'Nội dung tin nhắn không được để trống'
+  },
+  mail: {
+    UNAVAILABLE: 'Hiện không gửi được email, vui lòng thử lại sau'
+  },
+  lesson_category: {
+    CREATE_SUCCESS: 'Tạo danh mục bài học thành công',
+    UPDATE_SUCCESS: 'Cập nhật danh mục bài học thành công',
+    DELETE_SUCCESS: 'Xóa danh mục bài học thành công',
+    GET_SUCCESS: 'Lấy thông tin danh mục bài học thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách danh mục bài học thành công',
+    CREATE_DEFAULT_SUCCESS: 'Tạo danh mục bài học mặc định thành công',
+    NOT_FOUND: 'Danh mục bài học không tồn tại',
+    ALREADY_EXISTS: 'Danh mục bài học đã tồn tại',
+    INVALID_DATA: 'Dữ liệu danh mục bài học không hợp lệ',
+    INVALID_ID: 'ID danh mục bài học không hợp lệ',
+    NAME_KEY_REQUIRED: 'Name key không được để trống',
+    NAME_KEY_TOO_LONG: 'Name key quá dài (tối đa 200 ký tự)',
+    SLUG_REQUIRED: 'Slug không được để trống',
+    SLUG_TOO_LONG: 'Slug quá dài (tối đa 200 ký tự)'
+  },
+  languages: {
+    CREATE_SUCCESS: 'Tạo ngôn ngữ thành công',
+    UPDATE_SUCCESS: 'Cập nhật ngôn ngữ thành công',
+    DELETE_SUCCESS: 'Xóa ngôn ngữ thành công',
+    GET_SUCCESS: 'Lấy thông tin ngôn ngữ thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách ngôn ngữ thành công',
+    NOT_FOUND: 'Ngôn ngữ không tồn tại',
+    ALREADY_EXISTS: 'Ngôn ngữ đã tồn tại',
+    INVALID_DATA: 'Dữ liệu ngôn ngữ không hợp lệ',
+    INVALID_ID: 'ID ngôn ngữ không hợp lệ',
+    CODE_TOO_SHORT: 'Mã ngôn ngữ phải có ít nhất 2 ký tự',
+    CODE_TOO_LONG: 'Mã ngôn ngữ quá dài (tối đa 10 ký tự)',
+    CODE_INVALID: 'Mã ngôn ngữ phải là 2-3 ký tự chữ cái thường (ISO 639-1/639-2)',
+    CODE_REQUIRED: 'Mã ngôn ngữ không được để trống',
+    NAME_REQUIRED: 'Tên ngôn ngữ không được để trống',
+    NAME_TOO_LONG: 'Tên ngôn ngữ quá dài (tối đa 100 ký tự)',
+    NAME_INVALID:
+      'Tên ngôn ngữ chỉ được chứa chữ cái (bao gồm Unicode), khoảng trắng, dấu gạch ngang và dấu chấm'
+  },
   wordtype: {
     CREATE_SUCCESS: 'Tạo loại từ thành công',
     UPDATE_SUCCESS: 'Cập nhật loại từ thành công',
@@ -67,7 +655,11 @@ export const viMessages = {
     GET_SUCCESS: 'Lấy thông tin loại từ thành công',
     GET_LIST_SUCCESS: 'Lấy danh sách loại từ thành công',
     GET_STATS_SUCCESS: 'Lấy thống kê loại từ thành công',
-    CREATE_DEFAULT_SUCCESS: 'Tạo loại từ mặc định thành công'
+    CREATE_DEFAULT_SUCCESS: 'Tạo loại từ mặc định thành công',
+    NOT_FOUND: 'Loại từ không tồn tại',
+    ALREADY_EXISTS: 'Loại từ đã tồn tại',
+    INVALID_DATA: 'Dữ liệu loại từ không hợp lệ',
+    INVALID_ID: 'ID loại từ không hợp lệ'
   },
   system: {
     NOT_FOUND: 'Không tìm thấy bản ghi',
@@ -175,7 +767,9 @@ export const viMessages = {
     ADD_EXP_SUCCESS: 'Thêm EXP cho Pokemon thành công',
     LEVEL_UP_SUCCESS: 'Pokemon đã lên cấp!',
     GET_STATS_SUCCESS: 'Lấy thống kê User Pokemon thành công',
-    USER_NOT_IN_ROUND: 'Người dùng không tham gia vào vòng đấu nào'
+    USER_NOT_IN_ROUND: 'Người dùng không tham gia vào vòng đấu nào',
+    INVALID_POKEMON_ID: 'ID Pokemon không hợp lệ',
+    INVALID_HAS_POKEMON: 'hasPokemon phải là true hoặc false'
   },
   user: {
     GET_LIST_SUCCESS: 'Lấy danh sách người dùng thành công',
@@ -191,7 +785,8 @@ export const viMessages = {
     PASSWORD_MIN: 'Mật khẩu phải có ít nhất 6 ký tự',
     PHONE_INVALID: 'Số điện thoại không hợp lệ',
     SET_MAIN_POKEMON_SUCCESS: 'Đặt Pokemon chính thành công',
-    HAS_NOT_JOINED_SEASON: 'Bạn chưa tham gia mùa giải hiện tại'
+    HAS_NOT_JOINED_SEASON: 'Bạn chưa tham gia mùa giải hiện tại',
+    INVALID_POKEMON_ID: 'Pokemon ID không hợp lệ'
   },
   flashcard: {
     CREATE_DECK_SUCCESS: 'Tạo bộ flashcard thành công',
@@ -211,7 +806,16 @@ export const viMessages = {
     GET_LIBRARY_SUCCESS: 'Lấy thư viện flashcard thành công',
     GET_REVIEW_LIST_SUCCESS: 'Lấy danh sách thẻ đến hạn ôn tập thành công',
     REVIEW_CARD_SUCCESS: 'Cập nhật kết quả ôn tập thành công',
-    EXPORT_DECK_SUCCESS: 'Xuất dữ liệu flashcard thành công'
+    EXPORT_DECK_SUCCESS: 'Xuất dữ liệu flashcard thành công',
+    CONTENT_NOT_FOUND: '{contentType} với id {id} không tồn tại trong hệ thống',
+    UPDATE_ONE_FIELD: 'Ít nhất phải cập nhật một trường',
+    CUSTOM_NOT_SUPPORTED: 'CUSTOM không được hỗ trợ',
+    METADATA_REQUIRED: 'Khi không có id, phải cung cấp metadata để tạo card tùy chỉnh',
+    IMPORT_ITEMS_REQUIRED: 'Cần ít nhất một phần tử để import',
+    INVALID_DECK_ID: 'ID bộ flashcard không hợp lệ',
+    INVALID_CARD_ID: 'ID thẻ flashcard không hợp lệ',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương'
   },
   role: {
     CREATE_SUCCESS: 'Tạo vai trò thành công',
@@ -282,7 +886,21 @@ export const viMessages = {
   translation: {
     DUPLICATE_LANGUAGE: 'Ngôn ngữ bị trùng lặp',
     ALREADY_EXISTS: 'Bản dịch đã tồn tại',
-    DUPLICATE_VALUE: 'Giá trị bản dịch bị trùng lặp'
+    DUPLICATE_VALUE: 'Giá trị bản dịch bị trùng lặp',
+    GET_LIST_SUCCESS: 'Lấy danh sách bản dịch thành công',
+    GET_SUCCESS: 'Lấy bản dịch thành công',
+    CREATE_SUCCESS: 'Tạo bản dịch thành công',
+    UPDATE_SUCCESS: 'Cập nhật bản dịch thành công',
+    NOT_FOUND: 'Bản dịch không tồn tại',
+    INVALID_DATA: 'Dữ liệu bản dịch không hợp lệ',
+    INVALID_ID: 'ID bản dịch không hợp lệ',
+    LANGUAGE_NOT_FOUND: 'Ngôn ngữ không tồn tại',
+    LANGUAGE_ID_INVALID: 'Language ID phải lớn hơn 0',
+    KEY_REQUIRED: 'Key dịch không được để trống',
+    KEY_TOO_LONG: 'Key dịch quá dài (tối đa 500 ký tự)',
+    KEY_FORMAT: 'Key dịch phải theo định dạng: module.id.field (ví dụ: lesson.1.title)',
+    VALUE_REQUIRED: 'Nội dung dịch không được để trống',
+    VALUE_TOO_LONG: 'Nội dung dịch quá dài (tối đa 2000 ký tự)'
   },
   user_daily_request: {
     CREATE_SUCCESS: 'Tạo yêu cầu hàng ngày cho người dùng thành công',
@@ -295,6 +913,7 @@ export const viMessages = {
     USER_ALREADY_ATTENDED_TODAY: 'Người dùng đã điểm danh hôm nay'
   },
   achievement: {
+    INVALID_DATA: 'Dữ liệu thành tựu không hợp lệ',
     CREATE_SUCCESS: 'Tạo thành tích thành công',
     UPDATE_SUCCESS: 'Cập nhật thành tích thành công',
     DELETE_SUCCESS: 'Xóa thành tích thành công',
@@ -319,9 +938,12 @@ export const viMessages = {
     GET_SUCCESS: 'Lấy chi tiết cấu hình điểm danh thành công',
     GET_LIST_SUCCESS: 'Lấy danh sách cấu hình điểm danh thành công',
     NOT_FOUND: 'Không tìm thấy cấu hình điểm danh',
-    ALREADY_EXISTS: 'Cấu hình điểm danh đã tồn tại'
+    ALREADY_EXISTS: 'Cấu hình điểm danh đã tồn tại',
+    INVALID_DATA: 'Dữ liệu cấu hình điểm danh không hợp lệ',
+    INVALID_DAY_OF_WEEK: 'Ngày trong tuần không hợp lệ'
   },
   attendance: {
+    INVALID_DATA: 'Dữ liệu điểm danh không hợp lệ',
     CREATE_SUCCESS: 'Điểm danh thành công',
     UPDATE_SUCCESS: 'Cập nhật điểm danh thành công',
     DELETE_SUCCESS: 'Xóa điểm danh thành công',
@@ -419,6 +1041,7 @@ export const viMessages = {
     INVALID_DATA: 'Dữ liệu tỉ lệ vật phẩm gacha không hợp lệ'
   },
   gacha_item: {
+    GET_DETAIL_SUCCESS: 'Lấy chi tiết vật phẩm gacha thành công',
     CREATE_SUCCESS: 'Tạo vật phẩm gacha thành công',
     UPDATE_SUCCESS: 'Cập nhật vật phẩm gacha thành công',
     DELETE_SUCCESS: 'Xóa vật phẩm gacha thành công',
@@ -451,6 +1074,7 @@ export const viMessages = {
     INVALID_DATA: 'Dữ liệu giá theo độ hiếm không hợp lệ'
   },
   user_gacha_pity: {
+    DELETE_SUCCESS: 'Xóa pity gacha của người dùng thành công',
     CREATE_SUCCESS: 'Tạo hệ thống gacha pity cho người dùng thành công',
     UPDATE_SUCCESS: 'Cập nhật hệ thống gacha pity cho người dùng thành công',
     GET_SUCCESS: 'Lấy thông tin hệ thống gacha pity cho người dùng thành công',
@@ -484,7 +1108,39 @@ export const viMessages = {
     REVIEW_NOT_COMPLETED: 'Bài tập chưa hoàn thành',
     REVIEW_INSUFFICIENT_SCORE:
       'Bạn cần đạt ít nhất 80% số câu trả lời đúng để xem đáp án',
-    REVIEW_SUCCESS: 'Lấy thông tin đáp án bài tập thành công'
+    REVIEW_SUCCESS: 'Lấy thông tin đáp án bài tập thành công',
+    CREATE_SUCCESS: 'Tạo lần thử bài tập thành công',
+    UPDATE_SUCCESS: 'Cập nhật lần thử bài tập thành công',
+    DELETE_SUCCESS: 'Xóa lần thử bài tập thành công',
+    GET_SUCCESS: 'Lấy thông tin lần thử bài tập thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách lần thử bài tập thành công',
+    GET_STATUS_SUCCESS: 'Lấy trạng thái bài tập thành công',
+    ABANDON_SUCCESS: 'Đã đánh dấu bài tập là bỏ dở',
+    LATEST_BY_LESSON_SUCCESS: 'Lấy danh sách exercise gần nhất thành công',
+    QUESTIONS_SUCCESS: 'Lấy thông tin bài tập thành công',
+    NOT_ALL_ANSWERED: 'Bạn chưa trả lời đủ câu hỏi',
+    ALL_CORRECT: 'Chúc mừng! Bạn đã hoàn thành bài tập và trả lời đúng hết',
+    SOME_INCORRECT: 'Bạn đã hoàn thành bài tập nhưng có một số câu trả lời sai',
+    SUBMITTED_NO_ANSWER: 'Bạn đã nộp bài nhưng chưa trả lời câu hỏi nào',
+    SUBMITTED_INCOMPLETE: 'Bạn đã nộp bài nhưng chưa trả lời đủ câu hỏi',
+    NOT_FOUND: 'Không tìm thấy lần thử bài tập',
+    EXERCISE_NOT_FOUND: 'Không tìm thấy bài tập',
+    NOT_OWNED: 'Bạn không có quyền với lần thử bài tập này',
+    LESSON_BLOCKED:
+      'Bạn đang học lesson khác. Chỉ có thể làm bài tập trong lesson hiện tại',
+    LESSON_PREREQUISITE_NOT_MET:
+      'Bạn cần bắt đầu bài {previousLessonId} trước khi vào bài {lessonId}.',
+    NOT_IN_PROGRESS: 'Chỉ có thể bỏ dở bài tập đang trong trạng thái IN_PROGRESS',
+    EXERCISE_HAS_NO_TEST_SET: 'Bài tập chưa có bộ đề',
+    INVALID_DATA: 'Dữ liệu lần thử bài tập không hợp lệ',
+    INVALID_ID: 'ID lần thử bài tập không hợp lệ',
+    INVALID_EXERCISE_ID: 'ID bài tập không hợp lệ',
+    INVALID_LESSON_ID: 'ID bài học không hợp lệ',
+    INVALID_USER_ID: 'ID người dùng không hợp lệ',
+    INVALID_STATUS: 'Trạng thái không hợp lệ',
+    INVALID_TIME: 'Thời gian phải là số giây không âm',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương'
   },
   user_test_attempt: {
     REVIEW_NOT_COMPLETED: 'Bài test chưa hoàn thành',
@@ -497,10 +1153,43 @@ export const viMessages = {
       'Chúc mừng! Bạn đã hoàn thành bài test và trả lời đúng hết',
     TEST_COMPLETED_SOME_WRONG:
       'Bạn đã hoàn thành bài test nhưng có một số câu trả lời sai',
-    NOT_ENOUGH_ANSWERS: 'Bạn chưa trả lời đủ câu hỏi'
+    NOT_ENOUGH_ANSWERS: 'Bạn chưa trả lời đủ câu hỏi',
+    CREATE_SUCCESS: 'Tạo lần thử bài test thành công',
+    UPDATE_SUCCESS: 'Cập nhật lần thử bài test thành công',
+    DELETE_SUCCESS: 'Xóa lần thử bài test thành công',
+    GET_SUCCESS: 'Lấy thông tin lần thử bài test thành công',
+    GET_LIST_SUCCESS: 'Lấy danh sách lần thử bài test thành công',
+    GET_STATUS_SUCCESS: 'Lấy trạng thái bài test thành công',
+    ABANDON_SUCCESS: 'Đã đánh dấu bài test là bỏ dở',
+    QUESTIONS_SUCCESS: 'Lấy thông tin bài test thành công',
+    SUBMITTED_NO_ANSWER: 'Bạn đã nộp bài nhưng chưa trả lời câu hỏi nào',
+    SUBMITTED_INCOMPLETE: 'Bạn đã nộp bài nhưng chưa trả lời đủ câu hỏi',
+    LESSON_REVIEW_PASSED: 'Chúc mừng! Bạn đã hoàn thành bài test',
+    LESSON_REVIEW_FAILED:
+      'Bạn đã hoàn thành bài test nhưng chưa đạt yêu cầu (cần >= 80%)',
+    PLACEMENT_DONE: 'Đánh giá trình độ hoàn thành',
+    NOT_FOUND: 'Không tìm thấy lần thử bài test',
+    TEST_NOT_FOUND: 'Không tìm thấy bài test',
+    NOT_OWNED: 'Bạn không có quyền truy cập lần thử bài test này',
+    NOT_IN_PROGRESS: 'Chỉ có thể bỏ dở bài test đang trong trạng thái IN_PROGRESS',
+    TEST_HAS_NO_TEST_SET: 'Bài test chưa có bộ đề',
+    NO_ANSWERS: 'Không tìm thấy câu trả lời cho lần làm bài này',
+    INVALID_DATA: 'Dữ liệu lần thử bài test không hợp lệ',
+    INVALID_ID: 'ID lần thử bài test không hợp lệ',
+    INVALID_TEST_ID: 'ID bài test không hợp lệ',
+    INVALID_USER_ID: 'ID người dùng không hợp lệ',
+    INVALID_STATUS: 'Trạng thái không hợp lệ',
+    INVALID_TIME: 'Thời gian phải là số giây không âm',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương'
   },
   user_history: {
-    GET_LIST_SUCCESS: 'Lấy danh sách lịch sử làm bài thành công'
+    GET_LIST_SUCCESS: 'Lấy danh sách lịch sử làm bài thành công',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương',
+    INVALID_USER_ID: 'ID người dùng không hợp lệ',
+    INVALID_TYPE: 'Loại lịch sử không hợp lệ',
+    INVALID_STATUS: 'Trạng thái không hợp lệ'
   },
   leader_board_sesson: {
     CREATE_SUCCESS: 'Tạo mùa xếp hạng thành công',
@@ -568,7 +1257,8 @@ export const viMessages = {
     GET_LIST_SUCCESS: 'Lấy danh sách người tham gia vòng đấu thành công',
     NOT_FOUND: 'Không tìm thấy người tham gia vòng đấu',
     ALREADY_EXISTS: 'Người tham gia vòng đấu đã tồn tại',
-    INVALID_DATA: 'Dữ liệu người tham gia vòng đấu không hợp lệ'
+    INVALID_DATA: 'Dữ liệu người tham gia vòng đấu không hợp lệ',
+    NOT_YOUR_TURN: 'Chưa đến lượt bạn chọn Pokémon'
   },
   debuff_round: {
     CREATE_SUCCESS: 'Tạo debuff vòng đấu thành công',
@@ -581,6 +1271,7 @@ export const viMessages = {
     INVALID_DATA: 'Dữ liệu debuff vòng đấu không hợp lệ'
   },
   user_season_history: {
+    DELETE_SUCCESS: 'Xóa lịch sử mùa giải người dùng thành công',
     CREATE_SUCCESS: 'Tạo lịch sử mùa giải người dùng thành công',
     UPDATE_SUCCESS: 'Cập nhật lịch sử mùa giải người dùng thành công',
     GET_SUCCESS: 'Lấy thông tin lịch sử mùa giải người dùng thành công',
@@ -592,6 +1283,8 @@ export const viMessages = {
     GET_REWARD_SUCCESS: 'Nhận phần thưởng mùa giải thành công'
   },
   round_question: {
+    ANSWER_SUCCESS: 'Đã ghi nhận câu trả lời',
+    ALREADY_ANSWERED: 'Câu hỏi này đã được trả lời',
     CREATE_SUCCESS: 'Tạo câu hỏi vòng đấu thành công',
     UPDATE_SUCCESS: 'Cập nhật câu hỏi vòng đấu thành công',
     DELETE_SUCCESS: 'Xóa câu hỏi vòng đấu thành công',
@@ -602,6 +1295,7 @@ export const viMessages = {
     INVALID_DATA: 'Dữ liệu câu hỏi vòng đấu không hợp lệ'
   },
   round_questions_answer_log: {
+    DELETE_SUCCESS: 'Xóa nhật ký trả lời câu hỏi vòng đấu thành công',
     CREATE_SUCCESS: 'Tạo nhật ký câu trả lời câu hỏi vòng đấu thành công',
     UPDATE_SUCCESS: 'Cập nhật nhật ký câu trả lời câu hỏi vòng đấu thành công',
     GET_SUCCESS: 'Lấy thông tin nhật ký câu trả lời câu hỏi vòng đấu thành công',
@@ -639,6 +1333,7 @@ export const viMessages = {
     NOT_JOIN_NEW_SEASON: ' Bạn chưa tham gia mùa giải mới'
   },
   user_reward_history: {
+    DELETE_SUCCESS: 'Xóa lịch sử phần thưởng người dùng thành công',
     CREATE_SUCCESS: 'Tạo lịch sử phần thưởng người dùng thành công',
     UPDATE_SUCCESS: 'Cập nhật lịch sử phần thưởng người dùng thành công',
     GET_SUCCESS: 'Lấy thông tin lịch sử phần thưởng người dùng thành công',
@@ -648,6 +1343,8 @@ export const viMessages = {
     INVALID_DATA: 'Dữ liệu lịch sử phần thưởng người dùng không hợp lệ'
   },
   user_achievement: {
+    DELETE_SUCCESS: 'Xóa thành tựu người dùng thành công',
+    GET_REWARD_SUCCESS: 'Nhận phần thưởng thành tựu thành công',
     CREATE_SUCCESS: 'Tạo thành tích người dùng thành công',
     UPDATE_SUCCESS: 'Cập nhật thành tích người dùng thành công',
     GET_SUCCESS: 'Lấy thông tin thành tích người dùng thành công',
@@ -655,7 +1352,10 @@ export const viMessages = {
     NOT_FOUND: 'Không tìm thấy thành tích người dùng',
     ALREADY_EXISTS: 'Thành tích người dùng đã tồn tại',
     INVALID_DATA: 'Dữ liệu thành tích người dùng không hợp lệ',
-    INVALID_STATUS_CLAIM: 'Trạng thái nhận thành tích không hợp lệ'
+    INVALID_STATUS_CLAIM: 'Trạng thái nhận thành tích không hợp lệ',
+    INVALID_PAGE: 'Trang phải là số nguyên dương',
+    INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương',
+    INVALID_GROUP_ID: 'ID nhóm thành tích không hợp lệ'
   },
   subscription: {
     CREATE_SUCCESS: 'Tạo gói đăng ký thành công',
@@ -724,9 +1424,13 @@ export const viMessages = {
     GET_LIST_SUCCESS: 'Lấy danh sách hóa đơn thành công',
     NOT_FOUND: 'Không tìm thấy hóa đơn',
     ALREADY_EXISTS: 'Hóa đơn đã tồn tại',
-    INVALID_DATA: 'Dữ liệu hóa đơn không hợp lệ'
+    INVALID_DATA: 'Dữ liệu hóa đơn không hợp lệ',
+    DISCOUNT_TOO_HIGH:
+      'Số PokeCoin dùng để giảm giá vượt quá mức cho phép (tối đa 50% giá gói)',
+    NOT_ENOUGH_POKE_COINS: 'Không đủ PokeCoin để giảm giá'
   },
   payment: {
+    DELETE_SUCCESS: 'Xóa thanh toán thành công',
     CREATE_SUCCESS: 'Tạo giao dịch thanh toán thành công',
     UPDATE_SUCCESS: 'Cập nhật giao dịch thanh toán thành công',
 
@@ -741,7 +1445,8 @@ export const viMessages = {
     ALREADY_PAID: 'Giao dịch thanh toán đã được thanh toán',
     PAY_SUCCESS: 'Thanh toán thành công',
     PAY_FAILED: 'Thanh toán thất bại',
-    PAY_CANCELLED: 'Thanh toán bị hủy bỏ'
+    PAY_CANCELLED: 'Thanh toán bị hủy bỏ',
+    LINK_IN_PROGRESS: 'Link thanh toán đang được tạo, vui lòng thử lại sau giây lát'
   },
   notification: {
     CREATE_SUCCESS: 'Tạo thông báo thành công',

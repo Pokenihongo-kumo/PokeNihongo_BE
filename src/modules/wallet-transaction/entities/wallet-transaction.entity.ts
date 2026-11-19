@@ -3,9 +3,6 @@ import {
   WalletTransactionSourceType,
   WalletTransactionType
 } from '@/common/constants/wallet-transaction.constant'
-import { checkIdSchema } from '@/common/utils/id.validation'
-import { WalletTransactionMessage } from '@/i18n/message-keys'
-import { WalletSchema } from '@/modules/wallet/entities/wallet.entity'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -45,54 +42,7 @@ export const WalletTransactionSchema = z.object({
   updatedAt: z.date()
 })
 
-export const CreateWalletTransactionBodySchema = WalletTransactionSchema.pick({
-  walletId: true,
-  userId: true,
-  purpose: true,
-  referenceId: true,
-  amount: true,
-  type: true,
-  source: true,
-  description: true
-}).strict()
-
-export const CreateWalletTransactionResSchema = z.object({
-  statusCode: z.number(),
-  data: WalletTransactionSchema,
-  message: z.string()
-})
-
-export const UpdateWalletTransactionBodySchema = CreateWalletTransactionBodySchema
-
-export const UpdateWalletTransactionResSchema = CreateWalletTransactionResSchema
-
-export const GetWalletTransactionParamsSchema = z
-  .object({
-    walletTransactionId: checkIdSchema(WalletTransactionMessage.INVALID_DATA)
-  })
-  .strict()
-
-export const GetWalletTransactionDetailResSchema = CreateWalletTransactionResSchema
-
-export const GetWalletsWithUserResSchema = z.object({
-  statusCode: z.number(),
-  data: z.array(WalletSchema),
-  message: z.string()
-})
-export type WalletTransactionType = z.infer<typeof WalletTransactionSchema>
-export type CreateWalletTransactionBodyType = z.infer<
-  typeof CreateWalletTransactionBodySchema
->
-export type UpdateWalletTransactionBodyType = z.infer<
-  typeof UpdateWalletTransactionBodySchema
->
-export type GetWalletTransactionParamsType = z.infer<
-  typeof GetWalletTransactionParamsSchema
->
-export type GetWalletTransactionDetailResType = z.infer<
-  typeof GetWalletTransactionDetailResSchema
->
-
+export type WalletTransaction = z.infer<typeof WalletTransactionSchema>
 type WalletTransactionFieldType = keyof z.infer<typeof WalletTransactionSchema>
 export const WALLET_TRANSACTION_FIELDS = Object.keys(
   WalletTransactionSchema.shape

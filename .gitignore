@@ -39,6 +39,7 @@ lerna-debug.log*
 .env
 .env.production
 .env.development.local
+.env.test
 .env.test.local
 .env.production.local
 .env.local
@@ -46,6 +47,8 @@ lerna-debug.log*
 # Google Cloud credentials
 google-credentials.json
 *.json
+!scripts/arch/module-deps.baseline.json
+!test/docs/openapi.snapshot.json
 !package.json
 !tsconfig.json
 !tsconfig.build.json
@@ -71,3 +74,4 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 
 .cursorrules
+test/docs/openapi.snapshot.actual.json

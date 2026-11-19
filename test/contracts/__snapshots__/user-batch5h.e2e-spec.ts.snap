@@ -1,0 +1,553 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`User batch 5h contract (e2e) another user's room and message 1`] = `
+{
+  "messageDetail": {
+    "body": {
+      "error": "NOT_FOUND",
+      "message": "Không tìm thấy tin nhắn hội thoại AI",
+      "statusCode": 404,
+    },
+    "httpStatus": 404,
+  },
+  "messageUpdate": {
+    "body": {
+      "error": "NOT_FOUND",
+      "message": "Không tìm thấy tin nhắn hội thoại AI",
+      "statusCode": 404,
+    },
+    "httpStatus": 404,
+  },
+  "roomDetail": {
+    "body": {
+      "error": "NOT_FOUND",
+      "message": "Không tìm thấy phòng hội thoại AI",
+      "statusCode": 404,
+    },
+    "httpStatus": 404,
+  },
+  "roomUpdate": {
+    "body": {
+      "error": "NOT_FOUND",
+      "message": "Không tìm thấy phòng hội thoại AI",
+      "statusCode": 404,
+    },
+    "httpStatus": 404,
+  },
+}
+`;
+
+exports[`User batch 5h contract (e2e) errors 1`] = `
+{
+  "messageCreateBadRole": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Role must be USER or AI",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Vai trò phải là USER hoặc AI",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "messageCreateWithUserId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid data provided",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Dữ liệu không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "messageDeleteMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "AI conversation message not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy tin nhắn hội thoại AI",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "messageInvalidId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid AI conversation message ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID tin nhắn hội thoại AI không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "messageMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "AI conversation message not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy tin nhắn hội thoại AI",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "roomCreateInvalid": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid conversationId",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "conversationId không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "roomDeleteMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "AI conversation room not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy phòng hội thoại AI",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "roomListBadPage": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Page must be a positive integer",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Trang phải là số nguyên dương",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "roomMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "AI conversation room not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy phòng hội thoại AI",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "roomTakenConversation": {
+    "en": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "This conversationId belongs to another user",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+    "vi": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "conversationId này đã thuộc về người dùng khác",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+  },
+}
+`;
+
+exports[`User batch 5h contract (e2e) messages: create, list, by conversation, detail, update, delete, delete all 1`] = `
+{
+  "byConversation": {
+    "body": {
+      "data": [
+        {
+          "audioUrl": "null",
+          "conversationId": "string",
+          "createdAt": "string",
+          "deletedAt": "null",
+          "id": "number",
+          "message": "こんにちは",
+          "role": "string",
+          "updatedAt": "string",
+          "userId": "number",
+        },
+      ],
+      "message": "Lấy danh sách tin nhắn hội thoại AI thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "create": {
+    "body": {
+      "data": {
+        "audioUrl": "null",
+        "conversationId": "string",
+        "createdAt": "string",
+        "deletedAt": "null",
+        "id": "number",
+        "message": "こんにちは",
+        "role": "string",
+        "updatedAt": "string",
+        "userId": "number",
+      },
+      "message": "Tạo tin nhắn hội thoại AI thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "detail": {
+    "body": {
+      "data": {
+        "audioUrl": "null",
+        "conversationId": "string",
+        "createdAt": "string",
+        "deletedAt": "null",
+        "id": "number",
+        "message": "こんにちは",
+        "role": "string",
+        "updatedAt": "string",
+        "userId": "number",
+      },
+      "message": "Lấy thông tin tin nhắn hội thoại AI thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "list": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "audioUrl": "null",
+            "conversationId": "string",
+            "createdAt": "string",
+            "deletedAt": "null",
+            "id": "number",
+            "message": "こんにちは",
+            "role": "string",
+            "updatedAt": "string",
+            "userId": "number",
+          },
+        ],
+      },
+      "message": "Lấy danh sách tin nhắn hội thoại AI thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "remove": {
+    "body": {
+      "data": {
+        "audioUrl": "null",
+        "conversationId": "string",
+        "createdAt": "string",
+        "deletedAt": "string",
+        "id": "number",
+        "message": "こんばんは",
+        "role": "string",
+        "updatedAt": "string",
+        "userId": "number",
+      },
+      "message": "Xóa tin nhắn hội thoại AI thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "removeAll": {
+    "body": {
+      "data": {
+        "deletedCount": "number",
+      },
+      "message": "Xóa N tin nhắn hội thoại AI thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "update": {
+    "body": {
+      "data": {
+        "audioUrl": "null",
+        "conversationId": "string",
+        "createdAt": "string",
+        "deletedAt": "null",
+        "id": "number",
+        "message": "こんばんは",
+        "role": "string",
+        "updatedAt": "string",
+        "userId": "number",
+      },
+      "message": "Cập nhật tin nhắn hội thoại AI thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`User batch 5h contract (e2e) rooms: create, list (as the app asks), by conversation, detail, update, delete 1`] = `
+{
+  "byConversation": {
+    "body": {
+      "data": {
+        "conversationId": "string",
+        "createdAt": "string",
+        "deletedAt": "null",
+        "id": "string",
+        "isArchived": "boolean",
+        "lastMessage": "null",
+        "lastMessageAt": "null",
+        "title": "string",
+        "updatedAt": "string",
+        "userId": "number",
+        "voiceName": "string",
+      },
+      "message": "Lấy thông tin phòng hội thoại AI thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "create": {
+    "body": {
+      "data": {
+        "conversationId": "string",
+        "createdAt": "string",
+        "deletedAt": "null",
+        "id": "string",
+        "isArchived": "boolean",
+        "lastMessage": "null",
+        "lastMessageAt": "null",
+        "title": "string",
+        "updatedAt": "string",
+        "userId": "number",
+        "voiceName": "string",
+      },
+      "message": "Tạo phòng hội thoại AI thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "detail": {
+    "body": {
+      "data": {
+        "conversationId": "string",
+        "createdAt": "string",
+        "deletedAt": "null",
+        "id": "string",
+        "isArchived": "boolean",
+        "lastMessage": "null",
+        "lastMessageAt": "null",
+        "title": "string",
+        "updatedAt": "string",
+        "userId": "number",
+        "voiceName": "string",
+      },
+      "message": "Lấy thông tin phòng hội thoại AI thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "list": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "conversationId": "string",
+            "createdAt": "string",
+            "deletedAt": "null",
+            "id": "string",
+            "isArchived": "boolean",
+            "lastMessage": "null",
+            "lastMessageAt": "null",
+            "title": "string",
+            "updatedAt": "string",
+            "userId": "number",
+            "voiceName": "string",
+          },
+        ],
+      },
+      "message": "Lấy danh sách phòng hội thoại AI thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "remove": {
+    "body": {
+      "data": {
+        "conversationId": "string",
+        "createdAt": "string",
+        "deletedAt": "string",
+        "id": "string",
+        "isArchived": "boolean",
+        "lastMessage": "null",
+        "lastMessageAt": "null",
+        "title": "string",
+        "updatedAt": "string",
+        "userId": "number",
+        "voiceName": "string",
+      },
+      "message": "Xóa phòng hội thoại AI thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "update": {
+    "body": {
+      "data": {
+        "conversationId": "string",
+        "createdAt": "string",
+        "deletedAt": "null",
+        "id": "string",
+        "isArchived": "boolean",
+        "lastMessage": "null",
+        "lastMessageAt": "null",
+        "title": "string",
+        "updatedAt": "string",
+        "userId": "number",
+        "voiceName": "string",
+      },
+      "message": "Cập nhật phòng hội thoại AI thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;

@@ -1,5 +1,6 @@
-import { I18nService } from '@/i18n/i18n.service'
-import { MatchMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
+import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   addTimeUTC,
@@ -7,64 +8,44 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
-import { PrismaService } from '@/shared/services/prisma.service'
-import { HttpStatus, Injectable } from '@nestjs/common'
-import { LanguagesRepository } from '../languages/languages.repo'
-import { LeaderboardSeasonRepo } from '../leaderboard-season/leaderboard-season.repo'
-import { QuestionBankRepository } from '../question-bank/question-bank.repo'
+import { PaginationQuery } from '@/shared/models/request.model'
+import { Injectable } from '@nestjs/common'
 import {
   MatchAlreadyExistsException,
   NotHaveActiveLeaderboardSeasonException
 } from './dto/match.error'
-import { UpdateMatchBodyType } from './entities/match.entity'
+import { UpdateMatchBody } from './dto/match.zod-dto'
 import { MatchRepo } from './match.repo'
 
 @Injectable()
 export class MatchService {
   constructor(
     private matchRepo: MatchRepo,
-    private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepository,
-    private readonly leaderboardSeasonRepo: LeaderboardSeasonRepo,
-    private readonly prismaService: PrismaService,
-    private readonly questionBankRepo: QuestionBankRepository
+    private readonly languagesService: LanguagesService,
+    private readonly leaderboardSeasonService: LeaderboardSeasonService,
+    private readonly questionBankService: QuestionBankService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
+    const langId = await this.languagesService.getIdByCode(lang)
     const data = await this.matchRepo.list(pagination, langId ?? undefined)
-    return {
-      data,
-      message: this.i18nService.translate(MatchMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const match = await this.matchRepo.findById(id)
     if (!match) {
       throw new NotFoundRecordException()
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: match,
-      message: this.i18nService.translate(MatchMessage.GET_SUCCESS, lang)
-    }
+    return match
   }
 
-  async create(
-    {
-      createdById
-    }: {
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({ createdById }: { createdById: number }) {
     let createdMatch: any = null
 
     try {
-      const leaderboardActive = await this.leaderboardSeasonRepo.findActiveSeason()
+      const leaderboardActive = await this.leaderboardSeasonService.findActiveSeason()
       if (!leaderboardActive) {
         throw new NotHaveActiveLeaderboardSeasonException()
       }
@@ -79,11 +60,7 @@ export class MatchService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.CREATED,
-          data: result,
-          message: this.i18nService.translate(MatchMessage.CREATE_SUCCESS, lang)
-        }
+        return result
       })
     } catch (error) {
       // Rollback: Delete match if created
@@ -112,18 +89,15 @@ export class MatchService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateMatchBodyType
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateMatchBody
+    updatedById: number
+  }) {
     let existingMatch: any = null
 
     try {
@@ -141,11 +115,7 @@ export class MatchService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.OK,
-          data: updatedMatch,
-          message: this.i18nService.translate(MatchMessage.UPDATE_SUCCESS, lang)
-        }
+        return updatedMatch
       })
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
@@ -161,16 +131,9 @@ export class MatchService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(MatchMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -181,61 +144,7 @@ export class MatchService {
 
   async getTrackingMatch(userId: number, lang: string = 'vi') {
     // 1) Auto-find the user's active match by status (prefer IN_PROGRESS, then PENDING)
-    const includeForMatch = {
-      participants: {
-        include: {
-          user: { select: { id: true, name: true, avatar: true, eloscore: true } }
-        }
-      },
-      rounds: {
-        include: {
-          participants: {
-            include: {
-              matchParticipant: {
-                include: {
-                  user: { select: { id: true, name: true, avatar: true } }
-                }
-              },
-              selectedUserPokemon: { include: { pokemon: true } },
-              debuff: true,
-              roundQuestions: {
-                include: {
-                  debuff: true,
-                  roundQuestionsAnswerLogs: true,
-                  questionBank: { include: { answers: true } }
-                },
-                orderBy: { orderNumber: 'asc' }
-              }
-            }
-          }
-        },
-        orderBy: { id: 'asc' } // Ensure rounds are sorted by id (creation order)
-      }
-    } as const
-
-    const matchInProgress = await this.prismaService.match.findFirst({
-      where: {
-        deletedAt: null,
-        status: 'IN_PROGRESS',
-        participants: { some: { userId } }
-      },
-      orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],
-      include: includeForMatch as any
-    })
-
-    const matchPending = !matchInProgress
-      ? await this.prismaService.match.findFirst({
-          where: {
-            deletedAt: null,
-            status: 'PENDING',
-            participants: { some: { userId } }
-          },
-          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-          include: includeForMatch as any
-        })
-      : null
-
-    const match: any = matchInProgress ?? matchPending
+    const match: any = await this.matchRepo.findCurrentMatchForUser(userId)
 
     if (!match) {
       return {
@@ -400,7 +309,7 @@ export class MatchService {
         if (currentRq) {
           // Prefer canonical formatting via repository; fallback to included questionBank
           try {
-            const qbList = await this.questionBankRepo.findByIds(
+            const qbList = await this.questionBankService.getByIds(
               [currentRq.questionBankId],
               lang
             )
@@ -502,5 +411,102 @@ export class MatchService {
       matchId: match.id,
       match: { id: match.id, status: match.status }
     }
+  }
+
+  // ---- For other modules (module-boundary plan B6) ----
+  // Same arguments and results as the repo methods.
+
+  // The repo's update (the service's own update answers the HTTP route)
+  updateMatch(...args: Parameters<MatchRepo['update']>) {
+    return this.matchRepo.update(...args)
+  }
+
+  // The repo's create (the service's own create answers the HTTP route)
+  createMatch(...args: Parameters<MatchRepo['create']>) {
+    return this.matchRepo.create(...args)
+  }
+
+  findActiveMatchByUserId(...args: Parameters<MatchRepo['findActiveMatchByUserId']>) {
+    return this.matchRepo.findActiveMatchByUserId(...args)
+  }
+
+  checkUserHasJoinedSeason(...args: Parameters<MatchRepo['checkUserHasJoinedSeason']>) {
+    return this.matchRepo.checkUserHasJoinedSeason(...args)
+  }
+
+  findInProgressByUserId(...args: Parameters<MatchRepo['findInProgressByUserId']>) {
+    return this.matchRepo.findInProgressByUserId(...args)
+  }
+
+  findByIdWithParticipant(...args: Parameters<MatchRepo['findByIdWithParticipant']>) {
+    return this.matchRepo.findByIdWithParticipant(...args)
+  }
+
+  getMatchWithRoundsByUserId(
+    ...args: Parameters<MatchRepo['getMatchWithRoundsByUserId']>
+  ) {
+    return this.matchRepo.getMatchWithRoundsByUserId(...args)
+  }
+
+  countMatchesByUserId(...args: Parameters<MatchRepo['countMatchesByUserId']>) {
+    return this.matchRepo.countMatchesByUserId(...args)
+  }
+
+  countWinsByUserId(...args: Parameters<MatchRepo['countWinsByUserId']>) {
+    return this.matchRepo.countWinsByUserId(...args)
+  }
+
+  getMatchesByUser(...args: Parameters<MatchRepo['getMatchesByUser']>) {
+    return this.matchRepo.getMatchesByUser(...args)
+  }
+
+  getMatchesHistoryByUser(...args: Parameters<MatchRepo['getMatchesHistoryByUser']>) {
+    return this.matchRepo.getMatchesHistoryByUser(...args)
+  }
+
+  setStatus(...args: Parameters<MatchRepo['setStatus']>) {
+    return this.matchRepo.setStatus(...args)
+  }
+
+  // ---- For other modules: Completing a match (RoundQuestionService) (B7) ----
+
+  findStatusById(...args: Parameters<MatchRepo['findStatusById']>) {
+    return this.matchRepo.findStatusById(...args)
+  }
+
+  completeWithWinner(...args: Parameters<MatchRepo['completeWithWinner']>) {
+    return this.matchRepo.completeWithWinner(...args)
+  }
+
+  setEloResult(...args: Parameters<MatchRepo['setEloResult']>) {
+    return this.matchRepo.setEloResult(...args)
+  }
+
+  findCompletedWithDetails(...args: Parameters<MatchRepo['findCompletedWithDetails']>) {
+    return this.matchRepo.findCompletedWithDetails(...args)
+  }
+
+  // ---- For other modules: Completing a match (RoundQuestionTimeoutProcessor) (B7) ----
+
+  completeWithWinnerFull(...args: Parameters<MatchRepo['completeWithWinnerFull']>) {
+    return this.matchRepo.completeWithWinnerFull(...args)
+  }
+
+  // ---- For other modules: The pick flow (match-round-participant) (B7) ----
+
+  findWithPlayers(...args: Parameters<MatchRepo['findWithPlayers']>) {
+    return this.matchRepo.findWithPlayers(...args)
+  }
+
+  // ---- For other modules: The pick timeout (match-round-participant) (B7) ----
+
+  findInProgressByParticipant(
+    ...args: Parameters<MatchRepo['findInProgressByParticipant']>
+  ) {
+    return this.matchRepo.findInProgressByParticipant(...args)
+  }
+
+  findByRoundWithPlayers(...args: Parameters<MatchRepo['findByRoundWithPlayers']>) {
+    return this.matchRepo.findByRoundWithPlayers(...args)
   }
 }

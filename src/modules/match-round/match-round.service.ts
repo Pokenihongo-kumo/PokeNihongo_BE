@@ -1,7 +1,10 @@
 import { BullAction, BullQueue } from '@/common/constants/bull-action.constant'
 import { MatchRoundNumber } from '@/common/constants/match.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { MatchRoundMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
+import { MatchService } from '@/modules/match/match.service'
+import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
+import { RoundQuestionService } from '@/modules/round-question/round-question.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   addTimeUTC,
@@ -9,45 +12,31 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { InjectQueue } from '@nestjs/bull'
-import { HttpStatus, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { Queue } from 'bull'
-import { LanguagesRepository } from '../languages/languages.repo'
-import { LeaderboardSeasonRepo } from '../leaderboard-season/leaderboard-season.repo'
-import { MatchRoundParticipantRepo } from '../match-round-participant/match-round-participant.repo'
-import { MatchRepo } from '../match/match.repo'
-import { QuestionBankRepository } from '../question-bank/question-bank.repo'
-import { RoundQuestionRepo } from '../round-question/round-question.repo'
 import { MatchRoundAlreadyExistsException } from './dto/match-round.error'
-import {
-  CreateMatchRoundBodyType,
-  UpdateMatchRoundBodyType
-} from './entities/match-round.entity'
+import { CreateMatchRoundBody, UpdateMatchRoundBody } from './dto/match-round.zod-dto'
 import { MatchRoundRepo } from './match-round.repo'
 
 @Injectable()
 export class MatchRoundService {
   constructor(
     private matchRoundRepo: MatchRoundRepo,
-    private matchRepo: MatchRepo,
-    private matchRoundParticipantRepo: MatchRoundParticipantRepo,
-    private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepository,
-    private readonly leaderboardSeasonRepo: LeaderboardSeasonRepo,
+    private matchService: MatchService,
+    private readonly languagesService: LanguagesService,
+    private readonly leaderboardSeasonService: LeaderboardSeasonService,
     @InjectQueue(BullQueue.MATCH_ROUND_PARTICIPANT_TIMEOUT)
     private readonly matchRoundParticipantTimeoutQueue: Queue,
-    private readonly questionBankRepo: QuestionBankRepository,
-    private readonly roundQuestionRepo: RoundQuestionRepo
+    private readonly questionBankService: QuestionBankService,
+    private readonly roundQuestionService: RoundQuestionService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
+    const langId = await this.languagesService.getIdByCode(lang)
     const data = await this.matchRoundRepo.list(pagination, langId ?? undefined)
-    return {
-      data,
-      message: this.i18nService.translate(MatchRoundMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   async listNowByUser(
@@ -56,15 +45,12 @@ export class MatchRoundService {
     lang: string = 'vi'
   ) {
     // Lấy Match có status IN_PROGRESS của user
-    const match: any = await this.matchRepo.findInProgressByUserId(userId)
+    const match: any = await this.matchService.findInProgressByUserId(userId)
 
     if (!match) {
       return {
-        data: {
-          match: null,
-          rounds: []
-        },
-        message: this.i18nService.translate(MatchRoundMessage.GET_LIST_SUCCESS, lang)
+        match: null,
+        rounds: []
       }
     }
 
@@ -129,14 +115,15 @@ export class MatchRoundService {
       let questionsForUser: any[] = []
       if (userParticipant) {
         // Fetch roundQuestions for that participant and order them via RoundQuestionRepo
-        const roundQuestions = await this.roundQuestionRepo.findByMatchRoundParticipantId(
-          userParticipant.id
-        )
+        const roundQuestions =
+          await this.roundQuestionService.findByMatchRoundParticipantId(
+            userParticipant.id
+          )
 
         if ((roundQuestions || []).length > 0) {
           const qbIds = roundQuestions.map((rq: any) => rq.questionBankId)
-          // Use QuestionBankRepository to get formatted canonical question objects
-          const formattedQbs = await this.questionBankRepo.findByIds(qbIds, lang)
+          // Use QuestionBankRepo to get formatted canonical question objects
+          const formattedQbs = await this.questionBankService.getByIds(qbIds, lang)
           const qbMap = new Map<number, any>()
           for (const fq of formattedQbs) {
             qbMap.set(fq.id, fq)
@@ -166,42 +153,32 @@ export class MatchRoundService {
     }
 
     return {
-      data: {
-        match: matchSerialized,
-        rounds: roundsSerialized
-      },
-      message: this.i18nService.translate(MatchRoundMessage.GET_LIST_SUCCESS, lang)
+      match: matchSerialized,
+      rounds: roundsSerialized
     }
   }
 
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const matchRound = await this.matchRoundRepo.findById(id)
     if (!matchRound) {
       throw new NotFoundRecordException()
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: matchRound,
-      message: this.i18nService.translate(MatchRoundMessage.GET_SUCCESS, lang)
-    }
+    return matchRound
   }
 
-  async create(
-    {
-      createdById,
-      data
-    }: {
-      createdById: number
-      data: CreateMatchRoundBodyType
-    },
-    lang: string = 'vi'
-  ) {
+  async create({
+    createdById,
+    data
+  }: {
+    createdById: number
+    data: CreateMatchRoundBody
+  }) {
     let createdMatchRound: any = null
 
     try {
       // Check match có tồn tại không
-      const matchExist = await this.matchRepo.findByIdWithParticipant(data.matchId)
+      const matchExist = await this.matchService.findByIdWithParticipant(data.matchId)
       if (!matchExist) {
         throw new NotFoundRecordException()
       }
@@ -291,20 +268,13 @@ export class MatchRoundService {
           endTimeSelected: participant.endTimeSelected
         }))
 
-        await this.matchRoundParticipantRepo.createBulk(
-          matchRoundParticipantsData,
-          prismaTx
-        )
+        await this.matchRoundRepo.createParticipants(matchRoundParticipantsData, prismaTx)
 
         // Lấy danh sách match-round-participant vừa tạo để có ID
-        const createdParticipants = await prismaTx.matchRoundParticipant.findMany({
-          where: {
-            matchRoundId: createdMatchRound.id
-          },
-          orderBy: {
-            orderSelected: 'asc'
-          }
-        })
+        const createdParticipants = await this.matchRoundRepo.findParticipantsOfRound(
+          createdMatchRound.id,
+          prismaTx
+        )
 
         // Tạo Bull job cho participant đầu tiên (có endTimeSelected)
         const firstParticipant = createdParticipants.find(
@@ -326,11 +296,7 @@ export class MatchRoundService {
           )
         }
 
-        return {
-          statusCode: HttpStatus.CREATED,
-          data: createdMatchRound,
-          message: this.i18nService.translate(MatchRoundMessage.CREATE_SUCCESS, lang)
-        }
+        return createdMatchRound
       })
     } catch (error) {
       // Rollback: Delete matchRound if created
@@ -359,18 +325,15 @@ export class MatchRoundService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateMatchRoundBodyType
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateMatchRoundBody
+    updatedById: number
+  }) {
     let existingMatchRound: any = null
 
     try {
@@ -388,11 +351,7 @@ export class MatchRoundService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.OK,
-          data: updatedMatchRound,
-          message: this.i18nService.translate(MatchRoundMessage.UPDATE_SUCCESS, lang)
-        }
+        return updatedMatchRound
       })
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
@@ -408,21 +367,83 @@ export class MatchRoundService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(MatchRoundMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
       }
       throw error
     }
+  }
+
+  // ---- For other modules (module-boundary plan B6) ----
+  // Same arguments and results as the repo methods.
+
+  findByMatchIdAndRoundNumber(
+    ...args: Parameters<MatchRoundRepo['findByMatchIdAndRoundNumber']>
+  ) {
+    return this.matchRoundRepo.findByMatchIdAndRoundNumber(...args)
+  }
+
+  findByIdWithMatchAndParticipants(
+    ...args: Parameters<MatchRoundRepo['findByIdWithMatchAndParticipants']>
+  ) {
+    return this.matchRoundRepo.findByIdWithMatchAndParticipants(...args)
+  }
+
+  // ---- For other modules: A match's three rounds, made when both players accept (in their transaction) (B7) ----
+
+  createRoundRow(...args: Parameters<MatchRoundRepo['createRoundRow']>) {
+    return this.matchRoundRepo.createRoundRow(...args)
+  }
+
+  createParticipants(...args: Parameters<MatchRoundRepo['createParticipants']>) {
+    return this.matchRoundRepo.createParticipants(...args)
+  }
+
+  // ---- For other modules: Round rows for the pick flow (match-round-participant) (B7) ----
+
+  setRoundPending(...args: Parameters<MatchRoundRepo['setRoundPending']>) {
+    return this.matchRoundRepo.setRoundPending(...args)
+  }
+
+  findRoundsWithPicks(...args: Parameters<MatchRoundRepo['findRoundsWithPicks']>) {
+    return this.matchRoundRepo.findRoundsWithPicks(...args)
+  }
+
+  findRoundsWithParticipants(
+    ...args: Parameters<MatchRoundRepo['findRoundsWithParticipants']>
+  ) {
+    return this.matchRoundRepo.findRoundsWithParticipants(...args)
+  }
+
+  findRoundWithMatch(...args: Parameters<MatchRoundRepo['findRoundWithMatch']>) {
+    return this.matchRoundRepo.findRoundWithMatch(...args)
+  }
+
+  // ---- For other modules: Round rows for the pick timeout and round start (B7) ----
+
+  findMatchIdOfRound(...args: Parameters<MatchRoundRepo['findMatchIdOfRound']>) {
+    return this.matchRoundRepo.findMatchIdOfRound(...args)
+  }
+
+  findLiveRoundsOfMatch(...args: Parameters<MatchRoundRepo['findLiveRoundsOfMatch']>) {
+    return this.matchRoundRepo.findLiveRoundsOfMatch(...args)
+  }
+
+  findRoundByNumberWithParticipants(
+    ...args: Parameters<MatchRoundRepo['findRoundByNumberWithParticipants']>
+  ) {
+    return this.matchRoundRepo.findRoundByNumberWithParticipants(...args)
+  }
+
+  findRoundStatus(...args: Parameters<MatchRoundRepo['findRoundStatus']>) {
+    return this.matchRoundRepo.findRoundStatus(...args)
+  }
+
+  startRound(...args: Parameters<MatchRoundRepo['startRound']>) {
+    return this.matchRoundRepo.startRound(...args)
   }
 }

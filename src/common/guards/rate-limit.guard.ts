@@ -13,6 +13,16 @@ import {
 import { Reflector } from '@nestjs/core'
 import Redis from 'ioredis'
 
+// Counts one hit and starts the window on the first one, in one atomic step:
+// requests at the same moment cannot all read a count under the limit, and a
+// counter always has an expiry (a key left without one is given it again), so
+// no one is locked out for good. Fixed window from the first hit.
+const HIT = `local count = redis.call('INCR', KEYS[1])
+if count == 1 or redis.call('PTTL', KEYS[1]) < 0 then
+  redis.call('PEXPIRE', KEYS[1], ARGV[1])
+end
+return count`
+
 @Injectable()
 export class RateLimitGuard implements CanActivate {
   constructor(
@@ -21,51 +31,35 @@ export class RateLimitGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const rateLimitOptions = this.reflector.get<RateLimitOptions>(
+    const rules = this.reflector.get<RateLimitOptions[] | undefined>(
       RATE_LIMIT_KEY,
       context.getHandler()
     )
-
-    if (!rateLimitOptions) {
+    if (!rules?.length) {
       return true // Nếu không có rate limit config thì cho phép
     }
 
     const request = context.switchToHttp().getRequest()
-    const { windowMs, max, keyGenerator } = rateLimitOptions
-
-    // Tạo key unique cho rate limit
-    let key: string
-    if (keyGenerator) {
-      key = keyGenerator(request)
-    } else {
-      // Default key: IP + route + method
-      const ip = request.ip || request.connection.remoteAddress
-      const route = request.route?.path || request.url
-      const method = request.method
-      key = `rate_limit:${ip}:${method}:${route}`
+    for (const { windowMs, max, keyGenerator } of rules) {
+      const key = keyGenerator ? keyGenerator(request) : this.defaultKey(request)
+      const count = Number(await this.redisClient.eval(HIT, 1, key, String(windowMs)))
+      if (count > max) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.TOO_MANY_REQUESTS,
+            message: `Quá nhiều yêu cầu. Vui lòng thử lại sau ${Math.ceil(windowMs / 1000)} giây.`,
+            error: 'Too Many Requests'
+          },
+          HttpStatus.TOO_MANY_REQUESTS
+        )
+      }
     }
-
-    // Kiểm tra và cập nhật số lượng request
-    const current = await this.redisClient.get(key)
-    const requests = current ? parseInt(current) : 0
-
-    if (requests >= max) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.TOO_MANY_REQUESTS,
-          message: `Quá nhiều yêu cầu. Vui lòng thử lại sau ${Math.ceil(windowMs / 1000)} giây.`,
-          error: 'Too Many Requests'
-        },
-        HttpStatus.TOO_MANY_REQUESTS
-      )
-    }
-
-    // Tăng counter
-    const pipeline = this.redisClient.pipeline()
-    pipeline.incr(key)
-    pipeline.expire(key, Math.ceil(windowMs / 1000))
-    await pipeline.exec()
-
     return true
+  }
+
+  private defaultKey(request: any) {
+    const ip = request.ip || request.connection?.remoteAddress
+    const route = request.route?.path || request.url
+    return `rate_limit:${ip}:${request.method}:${route}`
   }
 }

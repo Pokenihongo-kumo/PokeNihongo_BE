@@ -1,13 +1,16 @@
+import { UserAchievementStatus } from '@/common/constants/achievement.constant'
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
-  CreateUserAchievementBodyType,
+  CreateUserAchievementBody,
+  UpdateUserAchievementBody
+} from './dto/user-achievement.zod-dto'
+import {
   USER_GACHA_PITY_FIELDS,
-  UpdateUserAchievementBodyType,
-  UserAchievementType
+  UserAchievement
 } from './entities/user-achievement.entity'
 
 @Injectable()
@@ -22,10 +25,10 @@ export class UserAchievementRepo {
       data
     }: {
       createdById: number
-      data: CreateUserAchievementBodyType
+      data: CreateUserAchievementBody
     },
     prismaTx?: PrismaClient
-  ): Promise<UserAchievementType> {
+  ): Promise<UserAchievement> {
     const client = prismaTx || this.prismaService
     return client.userAchievement.create({
       data: {
@@ -42,11 +45,11 @@ export class UserAchievementRepo {
       updatedById
     }: {
       id: number
-      data: UpdateUserAchievementBodyType
+      data: UpdateUserAchievementBody
       updatedById?: number
     },
     prismaTx?: PrismaClient
-  ): Promise<UserAchievementType> {
+  ): Promise<UserAchievement> {
     const client = prismaTx || this.prismaService
     return client.userAchievement.update({
       where: {
@@ -63,7 +66,7 @@ export class UserAchievementRepo {
     id: number,
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<UserAchievementType> {
+  ): Promise<UserAchievement> {
     const client = prismaTx || this.prismaService
     return isHard
       ? client.userAchievement.delete({
@@ -80,7 +83,7 @@ export class UserAchievementRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, USER_GACHA_PITY_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -115,11 +118,75 @@ export class UserAchievementRepo {
     }
   }
 
-  findById(id: number): Promise<UserAchievementType | null> {
+  findById(id: number): Promise<UserAchievement | null> {
     return this.prismaService.userAchievement.findUnique({
       where: {
         id,
         deletedAt: null
+      }
+    })
+  }
+
+  // ---- Achievement screen and claiming ----
+
+  countLiveAchievementsInGroup(groupId: number) {
+    return this.prismaService.achievement.count({
+      where: { groupId: groupId, deletedAt: null, isActive: true }
+    })
+  }
+
+  pageLiveAchievementsInGroup(groupId: number, skip: number, take: number) {
+    return this.prismaService.achievement.findMany({
+      where: { groupId: groupId, deletedAt: null, isActive: true },
+      include: {
+        nameTranslations: { select: { value: true, languageId: true } },
+        reward: {
+          include: { nameTranslations: { select: { value: true, languageId: true } } }
+        }
+      },
+      orderBy: [{ achievementTierType: 'asc' }, { id: 'asc' }],
+      skip,
+      take
+    })
+  }
+
+  findForUserAndAchievements(userId: number, achievementIds: number[]) {
+    return this.prismaService.userAchievement.findMany({
+      where: { userId, achievementId: { in: achievementIds }, deletedAt: null }
+    })
+  }
+
+  findLiveWithReward(id: number) {
+    return this.prismaService.userAchievement.findUnique({
+      where: { id, deletedAt: null },
+      include: {
+        achievement: {
+          include: {
+            reward: true
+          }
+        }
+      }
+    })
+  }
+
+  // Completed, waiting for its claim (a claimed one keeps CLAIMED)
+  markCompleted({
+    id,
+    currentStatus,
+    achievedAt
+  }: {
+    id: number
+    currentStatus: string
+    achievedAt: Date | null | undefined
+  }) {
+    return this.prismaService.userAchievement.update({
+      where: { id: id },
+      data: {
+        status:
+          currentStatus === UserAchievementStatus.CLAIMED
+            ? currentStatus
+            : UserAchievementStatus.COMPLETED_NOT_CLAIMED,
+        achievedAt: achievedAt ?? new Date()
       }
     })
   }

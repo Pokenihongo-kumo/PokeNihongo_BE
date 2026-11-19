@@ -1,13 +1,15 @@
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, RankName } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
-  CreateSeasonRankRewardBodyType,
-  SeasonRankRewardType,
-  USER_SEASON_HISTORY_FIELDS,
-  UpdateSeasonRankRewardBodyType
+  CreateSeasonRankRewardBody,
+  UpdateSeasonRankRewardBody
+} from './dto/season-rank-reward.zod-dto'
+import {
+  SeasonRankReward,
+  USER_SEASON_HISTORY_FIELDS
 } from './entities/season-rank-reward.entity'
 
 @Injectable()
@@ -22,10 +24,10 @@ export class SeasonRankRewardRepo {
       data
     }: {
       createdById: number
-      data: CreateSeasonRankRewardBodyType
+      data: CreateSeasonRankRewardBody
     },
     prismaTx?: PrismaClient
-  ): Promise<SeasonRankRewardType> {
+  ): Promise<SeasonRankReward> {
     const client = prismaTx || this.prismaService
     return client.seasonRankReward.create({
       data: {
@@ -42,11 +44,11 @@ export class SeasonRankRewardRepo {
       updatedById
     }: {
       id: number
-      data: UpdateSeasonRankRewardBodyType
+      data: UpdateSeasonRankRewardBody
       updatedById?: number
     },
     prismaTx?: PrismaClient
-  ): Promise<SeasonRankRewardType> {
+  ): Promise<SeasonRankReward> {
     const client = prismaTx || this.prismaService
     return client.seasonRankReward.update({
       where: {
@@ -64,7 +66,7 @@ export class SeasonRankRewardRepo {
     id: number,
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<SeasonRankRewardType> {
+  ): Promise<SeasonRankReward> {
     const client = prismaTx || this.prismaService
     return isHard
       ? client.seasonRankReward.delete({
@@ -81,7 +83,7 @@ export class SeasonRankRewardRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, USER_SEASON_HISTORY_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -116,11 +118,94 @@ export class SeasonRankRewardRepo {
     }
   }
 
-  findById(id: number): Promise<SeasonRankRewardType | null> {
+  findById(id: number): Promise<SeasonRankReward | null> {
     return this.prismaService.seasonRankReward.findUnique({
       where: {
         id,
         deletedAt: null
+      }
+    })
+  }
+
+  // ---- Replacing a season's rank rewards (updateByList, one transaction) ----
+
+  deleteBySeason(seasonId: number, prismaTx: PrismaClient) {
+    return prismaTx.seasonRankReward.deleteMany({ where: { seasonId } })
+  }
+
+  // Which of these reward ids exist
+  findRewardIds(ids: number[], prismaTx: PrismaClient) {
+    return prismaTx.reward.findMany({
+      where: { id: { in: ids } },
+      select: { id: true }
+    })
+  }
+
+  createWithRewards(
+    {
+      seasonId,
+      rankName,
+      order,
+      rewardIds,
+      updatedById
+    }: {
+      seasonId: number
+      rankName: string
+      order: number | null
+      rewardIds: number[]
+      updatedById: number
+    },
+    prismaTx: PrismaClient
+  ) {
+    return prismaTx.seasonRankReward.create({
+      data: {
+        seasonId,
+        rankName: rankName as any,
+        order: order,
+        createdById: updatedById,
+        updatedById,
+        rewards: {
+          connect: rewardIds.map((rid) => ({ id: rid }))
+        }
+      }
+    })
+  }
+
+  listBySeason(seasonId: number, prismaTx: PrismaClient) {
+    return prismaTx.seasonRankReward.findMany({
+      where: { seasonId },
+      orderBy: [{ rankName: 'asc' }, { order: 'asc' }]
+    })
+  }
+
+  // ---- Season cronjob ----
+
+  findBySeasonWithRewardIds(seasonId: number) {
+    return this.prismaService.seasonRankReward.findMany({
+      where: { seasonId, deletedAt: null },
+      include: { rewards: { select: { id: true } } }
+    })
+  }
+
+  // A rank reward of a new season, linked to rewardIds (none: no link)
+  createForSeason(
+    data: {
+      seasonId: number
+      rankName: RankName
+      order: number | null
+      rewardIds: number[]
+    },
+    prismaTx?: PrismaClient
+  ) {
+    const client = prismaTx || this.prismaService
+    return client.seasonRankReward.create({
+      data: {
+        seasonId: data.seasonId,
+        rankName: data.rankName,
+        order: data.order,
+        ...(data.rewardIds.length
+          ? { rewards: { connect: data.rewardIds.map((rid) => ({ id: rid })) } }
+          : {})
       }
     })
   }

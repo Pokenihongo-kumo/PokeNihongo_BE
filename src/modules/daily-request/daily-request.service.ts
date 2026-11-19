@@ -1,5 +1,5 @@
-import { I18nService } from '@/i18n/i18n.service'
-import { DailyRequestMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { TranslationService } from '@/modules/translation/translation.service'
 import {
   LanguageNotExistToTranslateException,
   NotFoundRecordException
@@ -9,44 +9,37 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
-import { HttpStatus, Injectable } from '@nestjs/common'
-import { LanguagesRepository } from '../languages/languages.repo'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entities'
-import { TranslationRepository } from '../translation/translation.repo'
+import { PaginationQuery } from '@/shared/models/request.model'
+import { Injectable } from '@nestjs/common'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { DailyRequestRepo } from './daily-request.repo'
 import { DailyRequestAlreadyExistsException } from './dto/daily-request.error'
 import {
-  CreateDailyRequestBodyInputType,
-  CreateDailyRequestBodyType,
-  UpdateDailyRequestBodyInputType,
-  UpdateDailyRequestBodyType
-} from './entities/daily-request.entity'
+  CreateDailyRequestBody,
+  CreateDailyRequestBodyInput,
+  UpdateDailyRequestBody,
+  UpdateDailyRequestBodyInput
+} from './dto/daily-request.zod-dto'
 
 @Injectable()
 export class DailyRequestService {
   constructor(
     private dailyRequestRepo: DailyRequestRepo,
-    private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepository,
-    private readonly translationRepo: TranslationRepository
+    private readonly languagesService: LanguagesService,
+    private readonly translationService: TranslationService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
+    const langId = await this.languagesService.getIdByCode(lang)
     if (!langId) {
       throw new NotFoundRecordException()
     }
     const data = await this.dailyRequestRepo.list(pagination, langId)
-    return {
-      status: HttpStatus.OK,
-      data,
-      message: this.i18nService.translate(DailyRequestMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
-  async getListwithAllLang(pagination: PaginationQueryType, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+  async getListwithAllLang(pagination: PaginationQuery, lang: string = 'vi') {
+    const langId = await this.languagesService.getIdByCode(lang)
     const data = await this.dailyRequestRepo.getListwithAllLang(
       pagination,
       langId ?? undefined
@@ -57,7 +50,7 @@ export class DailyRequestService {
       for (const t of item.nameTranslations ?? []) allLangIds.add(t.languageId)
       for (const t of item.descriptionTranslations ?? []) allLangIds.add(t.languageId)
     }
-    const languages = await this.languageRepo.getWithListId(Array.from(allLangIds))
+    const languages = await this.languagesService.getWithListId(Array.from(allLangIds))
     const codeMap = Object.fromEntries(languages.map((l) => [l.id, l.code]))
 
     const results = (data.results as any[]).map((item) => ({
@@ -72,15 +65,11 @@ export class DailyRequestService {
       }))
     }))
 
-    return {
-      status: HttpStatus.OK,
-      data: { ...data, results },
-      message: this.i18nService.translate(DailyRequestMessage.GET_LIST_SUCCESS, lang)
-    }
+    return { ...data, results }
   }
 
   async findById(id: number, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     if (!langId) {
       throw new NotFoundRecordException()
     }
@@ -94,15 +83,11 @@ export class DailyRequestService {
       nameTranslation: dr.nameTranslations?.[0]?.value ?? null,
       descriptionTranslation: dr.descriptionTranslations?.[0]?.value ?? null
     }
-    return {
-      statusCode: HttpStatus.OK,
-      data: resultRes,
-      message: this.i18nService.translate(DailyRequestMessage.GET_SUCCESS, lang)
-    }
+    return resultRes
   }
 
   async findByIdWithAllLang(id: number, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const dailyRequest: any = await this.dailyRequestRepo.findByIdWithAllLang(id)
     if (!dailyRequest) {
       throw new NotFoundRecordException()
@@ -122,7 +107,7 @@ export class DailyRequestService {
       ...(dailyRequest.nameTranslations ?? []).map((t: any) => t.languageId),
       ...(dailyRequest.descriptionTranslations ?? []).map((t: any) => t.languageId)
     ])
-    const languages = await this.languageRepo.getWithListId(Array.from(langIds))
+    const languages = await this.languagesService.getWithListId(Array.from(langIds))
     const codeMap = Object.fromEntries(languages.map((l) => [l.id, l.code]))
 
     const resultRes = {
@@ -140,23 +125,16 @@ export class DailyRequestService {
       nameTranslation,
       descriptionTranslation
     }
-    return {
-      statusCode: HttpStatus.OK,
-      data: resultRes,
-      message: this.i18nService.translate(DailyRequestMessage.GET_SUCCESS, lang)
-    }
+    return resultRes
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreateDailyRequestBodyInputType
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({
+    data,
+    createdById
+  }: {
+    data: CreateDailyRequestBodyInput
+    createdById: number
+  }) {
     let createdDailyRequest: any = null
 
     try {
@@ -165,7 +143,7 @@ export class DailyRequestService {
         const descKey = `daily_request.description.${Date.now()}`
 
         //convert data cho create
-        const dataCreate: CreateDailyRequestBodyType = {
+        const dataCreate: CreateDailyRequestBody = {
           conditionValue: data.conditionValue,
           nameKey,
           descriptionKey: descKey,
@@ -194,7 +172,7 @@ export class DailyRequestService {
         const allLangCodes = Array.from(new Set([...nameList, ...desList]))
 
         // Lấy danh sách ngôn ngữ tương ứng với các key
-        const languages = await this.languageRepo.getWithListCode(allLangCodes)
+        const languages = await this.languagesService.getWithListCode(allLangCodes)
 
         // Tạo map { code: id } để truy cập nhanh
         const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
@@ -206,7 +184,7 @@ export class DailyRequestService {
         }
 
         // Tạo danh sách bản dịch
-        const translationRecords: CreateTranslationBodyType[] = []
+        const translationRecords: CreateTranslationBody[] = []
 
         // nameTranslations → key = nameKey
         for (const item of data.nameTranslations) {
@@ -218,7 +196,7 @@ export class DailyRequestService {
         }
 
         //check khong cho trung name
-        await this.translationRepo.validateTranslationRecords(translationRecords)
+        await this.translationService.validateTranslationRecords(translationRecords)
 
         // descriptionTranslations → key = descriptionKey
         for (const item of data.descriptionTranslations ?? []) {
@@ -264,11 +242,7 @@ export class DailyRequestService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.CREATED,
-          data: result,
-          message: this.i18nService.translate(DailyRequestMessage.CREATE_SUCCESS, lang)
-        }
+        return result
       })
     } catch (error) {
       // Rollback: Xóa daily request đã tạo nếu có lỗi
@@ -297,18 +271,15 @@ export class DailyRequestService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateDailyRequestBodyInputType
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateDailyRequestBodyInput
+    updatedById: number
+  }) {
     let existingDailyRequest: any = null
 
     try {
@@ -319,7 +290,7 @@ export class DailyRequestService {
 
         // --- 2. Chuẩn bị data update ---
         // Chỉ include những field thực sự được gửi (không để undefined)
-        const dataUpdate: Partial<UpdateDailyRequestBodyType> = {}
+        const dataUpdate: Partial<UpdateDailyRequestBody> = {}
 
         if (data.isStreak !== undefined) dataUpdate.isStreak = data.isStreak
         if (data.conditionValue !== undefined)
@@ -340,7 +311,7 @@ export class DailyRequestService {
 
           if (allLangCodes.length > 0) {
             // Lấy languages tương ứng
-            const languages = await this.languageRepo.getWithListCode(allLangCodes)
+            const languages = await this.languagesService.getWithListCode(allLangCodes)
             const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
 
             // Kiểm tra missing language
@@ -348,7 +319,7 @@ export class DailyRequestService {
             if (missingLangs.length > 0) throw new LanguageNotExistToTranslateException()
 
             // --- 4. Tạo translation records ---
-            const translationRecords: CreateTranslationBodyType[] = []
+            const translationRecords: CreateTranslationBody[] = []
 
             // nameTranslations
             for (const t of data.nameTranslations ?? []) {
@@ -360,7 +331,7 @@ export class DailyRequestService {
             }
 
             // --- 5. Validate translation records: check name la dc, desc cho trung---
-            await this.translationRepo.validateTranslationRecords(translationRecords)
+            await this.translationService.validateTranslationRecords(translationRecords)
 
             // descriptionTranslations
             for (const t of data.descriptionTranslations ?? []) {
@@ -423,11 +394,7 @@ export class DailyRequestService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.OK,
-          data: updatedDailyRequest,
-          message: this.i18nService.translate(DailyRequestMessage.UPDATE_SUCCESS, lang)
-        }
+        return updatedDailyRequest
       })
     } catch (error) {
       // --- 8. Xử lý lỗi ---
@@ -447,7 +414,7 @@ export class DailyRequestService {
   ) {
     try {
       const [langId, existingDailyRequest] = await Promise.all([
-        this.languageRepo.getIdByCode(lang),
+        this.languagesService.getIdByCode(lang),
         this.dailyRequestRepo.findById(id)
       ])
       if (!langId) {
@@ -463,20 +430,39 @@ export class DailyRequestService {
           id,
           deletedById
         }),
-        this.translationRepo.deleteByKey(existingDailyRequest.nameKey),
-        this.translationRepo.deleteByKey(existingDailyRequest.descriptionKey)
+        this.translationService.deleteByKey(existingDailyRequest.nameKey),
+        this.translationService.deleteByKey(existingDailyRequest.descriptionKey)
       ])
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(DailyRequestMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
       }
       throw error
     }
+  }
+
+  // ---- For other modules (module-boundary plan B8) ----
+  // Same arguments and results as the repo methods.
+
+  checkDailyRequestIsStreak(
+    ...args: Parameters<DailyRequestRepo['checkDailyRequestIsStreak']>
+  ) {
+    return this.dailyRequestRepo.checkDailyRequestIsStreak(...args)
+  }
+
+  // The repo's findById (the service's own findById answers the HTTP route)
+  getById(...args: Parameters<DailyRequestRepo['findById']>) {
+    return this.dailyRequestRepo.findById(...args)
+  }
+
+  // The repo's list (the service's own list answers the HTTP route)
+  listRows(...args: Parameters<DailyRequestRepo['list']>) {
+    return this.dailyRequestRepo.list(...args)
+  }
+
+  findByType(...args: Parameters<DailyRequestRepo['findByType']>) {
+    return this.dailyRequestRepo.findByType(...args)
   }
 }

@@ -1,6 +1,6 @@
 import { RoleName } from '@/common/constants/role.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { AchievementMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { TranslationService } from '@/modules/translation/translation.service'
 import {
   LanguageNotExistToTranslateException,
   NotFoundRecordException
@@ -10,28 +10,25 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { PrismaService } from '@/shared/services/prisma.service'
-import { HttpStatus, Injectable } from '@nestjs/common'
-import { LanguagesRepository } from '../languages/languages.repo'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entities'
-import { TranslationRepository } from '../translation/translation.repo'
+import { Injectable } from '@nestjs/common'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { AchievementRepo } from './achievement.repo'
 import { AchievementAlreadyExistsException } from './dto/achievement.error'
 import {
-  CreateAchievementBodyInputType,
-  CreateAchievementBodyType,
-  UpdateAchievementBodyInputType,
-  UpdateAchievementBodyType
-} from './entities/achievement.entity'
+  CreateAchievementBody,
+  CreateAchievementBodyInput,
+  UpdateAchievementBody,
+  UpdateAchievementBodyInput
+} from './dto/achievement.zod-dto'
 
 @Injectable()
 export class AchievementService {
   constructor(
     private achievementRepo: AchievementRepo,
-    private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepository,
-    private readonly translationRepo: TranslationRepository,
+    private readonly languagesService: LanguagesService,
+    private readonly translationService: TranslationService,
     private readonly prismaService: PrismaService
   ) {}
 
@@ -41,7 +38,7 @@ export class AchievementService {
     if (!nameTranslations || nameTranslations.length === 0) return []
 
     const allLangIds = Array.from(new Set(nameTranslations.map((t) => t.languageId)))
-    const langs = await this.languageRepo.getWithListId(allLangIds)
+    const langs = await this.languagesService.getWithListId(allLangIds)
     const idToCode = new Map(langs.map((l) => [l.id, l.code]))
 
     return nameTranslations.map((t) => ({
@@ -50,8 +47,8 @@ export class AchievementService {
     }))
   }
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi', roleName: string) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+  async list(pagination: PaginationQuery, lang: string = 'vi', roleName: string) {
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     const data = await this.achievementRepo.list(pagination, langId ?? undefined, isAdmin)
@@ -76,7 +73,7 @@ export class AchievementService {
           )
         })
 
-        const langs = await this.languageRepo.getWithListId(Array.from(allLangIds))
+        const langs = await this.languagesService.getWithListId(Array.from(allLangIds))
         const idToCode = new Map(langs.map((l) => [l.id, l.code]))
 
         // Map each achievement's translations
@@ -121,21 +118,15 @@ export class AchievementService {
       }
     }
 
-    return {
-      data,
-      message: this.i18nService.translate(AchievementMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   async findById(id: number, roleName: string, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     if (!langId) {
-      return {
-        data: null,
-        message: this.i18nService.translate(AchievementMessage.GET_SUCCESS, lang)
-      }
+      return null
     }
 
     const achievement = await this.achievementRepo.findByIdWithLangId(id, isAdmin, langId)
@@ -207,23 +198,16 @@ export class AchievementService {
         : {})
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: result,
-      message: this.i18nService.translate(AchievementMessage.GET_SUCCESS, lang)
-    }
+    return result
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreateAchievementBodyInputType
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({
+    data,
+    createdById
+  }: {
+    data: CreateAchievementBodyInput
+    createdById: number
+  }) {
     let createdAchievement: any = null
 
     try {
@@ -233,7 +217,7 @@ export class AchievementService {
         const conditionTextKey = `achievement.conditionText.${Date.now()}`
         let hasOpened = false
 
-        const dataCreate: CreateAchievementBodyType = {
+        const dataCreate: CreateAchievementBody = {
           nameKey,
           descriptionKey,
           conditionTextKey,
@@ -272,7 +256,7 @@ export class AchievementService {
         )
 
         // Get languages corresponding to the keys
-        const languages = await this.languageRepo.getWithListCode(allLangCodes)
+        const languages = await this.languagesService.getWithListCode(allLangCodes)
 
         // Create map { code: id } for quick access
         const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
@@ -284,9 +268,9 @@ export class AchievementService {
         }
 
         // Create translation records for all three fields
-        const nameTranslationRecords: CreateTranslationBodyType[] = []
-        const descriptionTranslationRecords: CreateTranslationBodyType[] = []
-        const conditionTextTranslationRecords: CreateTranslationBodyType[] = []
+        const nameTranslationRecords: CreateTranslationBody[] = []
+        const descriptionTranslationRecords: CreateTranslationBody[] = []
+        const conditionTextTranslationRecords: CreateTranslationBody[] = []
 
         // nameTranslations → key = fNameKey
         for (const item of data.nameTranslations) {
@@ -316,7 +300,9 @@ export class AchievementService {
         }
 
         // Validate all translation records
-        await this.translationRepo.validateTranslationRecords([...nameTranslationRecords])
+        await this.translationService.validateTranslationRecords([
+          ...nameTranslationRecords
+        ])
 
         // Update achievement with final keys and translations
         const result = await this.achievementRepo.update(
@@ -337,11 +323,7 @@ export class AchievementService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.CREATED,
-          data: result,
-          message: this.i18nService.translate(AchievementMessage.CREATE_SUCCESS, lang)
-        }
+        return result
       })
     } catch (error) {
       // Rollback: Delete achievement if created
@@ -370,33 +352,30 @@ export class AchievementService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateAchievementBodyInputType
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateAchievementBodyInput
+    updatedById: number
+  }) {
     let existingAchievement: any = null
 
     try {
       return await this.achievementRepo.withTransaction(async (prismaTx) => {
         let hasOpen = false
-        let nameTranslationRecords: CreateTranslationBodyType[] = []
-        let descriptionTranslationRecords: CreateTranslationBodyType[] = []
-        let conditionTextTranslationRecords: CreateTranslationBodyType[] = []
+        let nameTranslationRecords: CreateTranslationBody[] = []
+        let descriptionTranslationRecords: CreateTranslationBody[] = []
+        let conditionTextTranslationRecords: CreateTranslationBody[] = []
 
         // Get current record
         existingAchievement = await this.achievementRepo.findById(id)
         if (!existingAchievement) throw new NotFoundRecordException()
 
         // Prepare data for update
-        const dataUpdate: Partial<UpdateAchievementBodyType> = {}
+        const dataUpdate: Partial<UpdateAchievementBody> = {}
 
         if (data.imageUrl !== undefined) dataUpdate.imageUrl = data.imageUrl
         if (data.achievementTierType !== undefined)
@@ -427,7 +406,7 @@ export class AchievementService {
           const uniqueLangCodes = Array.from(new Set(allLangCodes))
 
           // Get languages
-          const languages = await this.languageRepo.getWithListCode(uniqueLangCodes)
+          const languages = await this.languagesService.getWithListCode(uniqueLangCodes)
           const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
 
           // Check missing language
@@ -468,7 +447,7 @@ export class AchievementService {
           }
 
           // Validate translation records
-          await this.translationRepo.validateTranslationRecords([
+          await this.translationService.validateTranslationRecords([
             ...nameTranslationRecords
           ])
         }
@@ -498,11 +477,7 @@ export class AchievementService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.OK,
-          data: updatedAchievement,
-          message: this.i18nService.translate(AchievementMessage.UPDATE_SUCCESS, lang)
-        }
+        return updatedAchievement
       })
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
@@ -518,10 +493,7 @@ export class AchievementService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
       const existingAchievement = await this.achievementRepo.findById(id)
       if (!existingAchievement) {
@@ -533,16 +505,12 @@ export class AchievementService {
           id,
           deletedById
         }),
-        this.translationRepo.deleteByKey(existingAchievement.nameKey),
-        this.translationRepo.deleteByKey(existingAchievement.descriptionKey),
-        this.translationRepo.deleteByKey(existingAchievement.conditionTextKey)
+        this.translationService.deleteByKey(existingAchievement.nameKey),
+        this.translationService.deleteByKey(existingAchievement.descriptionKey),
+        this.translationService.deleteByKey(existingAchievement.conditionTextKey)
       ])
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(AchievementMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()

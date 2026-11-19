@@ -24,6 +24,12 @@ export class RegisterMultipartSwaggerDTO {
     description: 'Số điện thoại'
   })
   phoneNumber: string
+
+  @ApiProperty({
+    example: 'k3Jv...',
+    description: 'Token một lần từ POST /auth/verify-otp (type REGISTER) của email này'
+  })
+  registrationToken: string
 }
 
 export class LoginBodySwaggerDTO {

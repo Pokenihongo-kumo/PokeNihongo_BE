@@ -1,13 +1,11 @@
 import { RarityPokemonType } from '@/common/constants/pokemon.constant'
 import { ShopBannerStatus } from '@/common/constants/shop-banner.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { ShopRarityPriceMessage } from '@/i18n/message-keys'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { forwardRef, Inject, Injectable } from '@nestjs/common'
 import { ShopBannerRepo } from '../shop-banner/shop-banner.repo'
 import { ShopItemRepo } from '../shop-item/shop-item.repo'
@@ -16,49 +14,37 @@ import {
   ShopRarityPriceNotFoundException
 } from './dto/shop-rarity-price.error'
 import {
-  CreateShopRarityPriceBodyType,
-  UpdateShopRarityPriceBodyType
-} from './entities/shop-rarity-price.entity'
+  CreateShopRarityPriceBody,
+  UpdateShopRarityPriceBody
+} from './dto/shop-rarity-price.zod-dto'
 import { ShopRarityPriceRepo } from './shop-rarity-price.repo'
 
 @Injectable()
 export class ShopRarityPriceService {
   constructor(
     private shopRarityPriceRepo: ShopRarityPriceRepo,
-    private readonly i18nService: I18nService,
     @Inject(forwardRef(() => ShopBannerRepo))
     private shopBannerRepo: ShopBannerRepo,
     @Inject(forwardRef(() => ShopItemRepo))
     private shopItemRepo: ShopItemRepo
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.shopRarityPriceRepo.list(pagination)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(ShopRarityPriceMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   // Helper method to calculate weaknesses for a Pokemon (copied from PokemonService)
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const shopRarityPrice = await this.shopRarityPriceRepo.findById(id)
     if (!shopRarityPrice) {
       throw new ShopRarityPriceNotFoundException()
     }
 
-    return {
-      statusCode: 200,
-      data: shopRarityPrice,
-      message: this.i18nService.translate(ShopRarityPriceMessage.GET_LIST_SUCCESS, lang)
-    }
+    return shopRarityPrice
   }
 
-  async create(
-    { userId, data }: { userId: number; data: CreateShopRarityPriceBodyType },
-    lang: string = 'vi'
-  ) {
+  async create({ userId, data }: { userId: number; data: CreateShopRarityPriceBody }) {
     try {
       //check exist gacha item rate by star type
       const existShopRarityPrice = await this.shopRarityPriceRepo.getByType(data.rarity)
@@ -72,11 +58,7 @@ export class ShopRarityPriceService {
           ...data
         }
       })
-      return {
-        statusCode: 201,
-        data: result,
-        message: this.i18nService.translate(ShopRarityPriceMessage.CREATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -88,18 +70,15 @@ export class ShopRarityPriceService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      userId
-    }: {
-      id: number
-      data: UpdateShopRarityPriceBodyType
-      userId?: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    userId
+  }: {
+    id: number
+    data: UpdateShopRarityPriceBody
+    userId?: number
+  }) {
     try {
       // Get current rarity price to know which rarity is being updated
       const currentRarityPrice = await this.shopRarityPriceRepo.findById(id)
@@ -160,11 +139,7 @@ export class ShopRarityPriceService {
         }
       }
 
-      return {
-        statusCode: 200,
-        data: shopRarityPrice,
-        message: this.i18nService.translate(ShopRarityPriceMessage.UPDATE_SUCCESS, lang)
-      }
+      return shopRarityPrice
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new ShopRarityPriceNotFoundException()
@@ -177,7 +152,7 @@ export class ShopRarityPriceService {
     }
   }
 
-  async delete({ id, userId }: { id: number; userId?: number }, lang: string = 'vi') {
+  async delete({ id, userId }: { id: number; userId?: number }) {
     try {
       const existShopRarityPrice = await this.shopRarityPriceRepo.findById(id)
       if (!existShopRarityPrice) {
@@ -185,11 +160,7 @@ export class ShopRarityPriceService {
       }
 
       await this.shopRarityPriceRepo.delete(id)
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(ShopRarityPriceMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new ShopRarityPriceNotFoundException()

@@ -7,7 +7,7 @@ import {
   GetWalletsWithUserResSchema,
   UpdateWalletBodySchema,
   UpdateWalletResSchema
-} from '../entities/wallet.entity'
+} from './wallet.zod-dto'
 
 export class CreatedWalletBodyDTO extends createZodDto(CreateWalletBodySchema) {}
 

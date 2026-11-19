@@ -3,6 +3,7 @@ import {
   REQUEST_USER_KEY
 } from '@/common/constants/auth.constant'
 import { HTTPMethod } from '@/common/constants/role.constant'
+import { AuthMessage } from '@/i18n/message-keys'
 import {
   CanActivate,
   ExecutionContext,
@@ -10,7 +11,7 @@ import {
   Injectable,
   UnauthorizedException
 } from '@nestjs/common'
-import { PrismaService } from 'src/shared/services/prisma.service'
+import { RoleService } from '@/modules/role/role.service'
 import { TokenService } from 'src/shared/services/token.service'
 import { AccessTokenPayload } from 'src/shared/types/jwt.type'
 import { SYSTEM_MESSAGE } from '../constants/message'
@@ -19,7 +20,7 @@ import { SYSTEM_MESSAGE } from '../constants/message'
 export class AccessTokenGuard implements CanActivate {
   constructor(
     private readonly tokenService: TokenService,
-    private readonly prismaService: PrismaService
+    private readonly roleService: RoleService
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -47,7 +48,11 @@ export class AccessTokenGuard implements CanActivate {
   private extractAccessTokenFromHeader(request: any): string {
     const accessToken = request.headers.authorization?.split(' ')[1]
     if (!accessToken) {
-      throw new UnauthorizedException(SYSTEM_MESSAGE.SESSION_EXPIRED)
+      // Chưa gửi token (khác với token hết hạn/không hợp lệ bên dưới)
+      throw new UnauthorizedException({
+        message: AuthMessage.MISSING_ACCESS_TOKEN,
+        errorKey: AuthMessage.MISSING_ACCESS_TOKEN
+      })
     }
     return accessToken
   }
@@ -59,23 +64,8 @@ export class AccessTokenGuard implements CanActivate {
     const roleId: number = decodedAccessToken.roleId
     const path: string = request.route.path
     const method = request.method as keyof typeof HTTPMethod
-    const role = await this.prismaService.role
-      .findUniqueOrThrow({
-        where: {
-          id: roleId,
-          deletedAt: null,
-          isActive: true
-        },
-        include: {
-          permissions: {
-            where: {
-              deletedAt: null,
-              path,
-              method
-            }
-          }
-        }
-      })
+    const role = await this.roleService
+      .findActiveRoleWithPermission(roleId, path, method)
       .catch(() => {
         throw new ForbiddenException(SYSTEM_MESSAGE.UNAUTHTHORIZED)
       })

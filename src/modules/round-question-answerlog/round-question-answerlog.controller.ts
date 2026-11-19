@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { RoundQuestionsAnswerLogMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
@@ -16,71 +18,96 @@ import { RoundQuestionsAnswerLogService } from './round-question-answerlog.servi
 
 @Controller('round-question-answerlog')
 export class RoundQuestionsAnswerLogController {
-  constructor(private readonly roundQuestionService: RoundQuestionsAnswerLogService) {}
+  constructor(
+    private readonly roundQuestionService: RoundQuestionsAnswerLogService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseDTO)
-  list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return this.roundQuestionService.list(query, lang)
+  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(
+        RoundQuestionsAnswerLogMessage.GET_LIST_SUCCESS,
+        lang
+      ),
+      data: await this.roundQuestionService.list(query)
+    }
   }
 
   @Get(':roundQuestionsAnswerLogId')
   @ZodSerializerDto(GetRoundQuestionsAnswerLogDetailResDTO)
-  findById(
+  async findById(
     @Param() params: GetRoundQuestionsAnswerLogParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.roundQuestionService.findById(params.roundQuestionsAnswerLogId, lang)
+    return {
+      message: this.i18nService.translate(
+        RoundQuestionsAnswerLogMessage.GET_LIST_SUCCESS,
+        lang
+      ),
+      data: await this.roundQuestionService.findById(params.roundQuestionsAnswerLogId)
+    }
   }
 
   @Post()
   @ZodSerializerDto(CreateRoundQuestionsAnswerLogResDTO)
-  create(
+  async create(
     @Body() body: CreateRoundQuestionsAnswerLogBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.roundQuestionService.create(
-      {
+    return {
+      message: this.i18nService.translate(
+        RoundQuestionsAnswerLogMessage.CREATE_SUCCESS,
+        lang
+      ),
+      data: await this.roundQuestionService.create({
         userId,
         data: body
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Put(':roundQuestionsAnswerLogId')
   @ZodSerializerDto(UpdateRoundQuestionsAnswerLogResDTO)
-  update(
+  async update(
     @Body() body: UpdateRoundQuestionsAnswerLogBodyDTO,
     @Param() params: GetRoundQuestionsAnswerLogParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.roundQuestionService.update(
-      {
+    return {
+      message: this.i18nService.translate(
+        RoundQuestionsAnswerLogMessage.UPDATE_SUCCESS,
+        lang
+      ),
+      data: await this.roundQuestionService.update({
         data: body,
         id: params.roundQuestionsAnswerLogId,
         userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':roundQuestionsAnswerLogId')
   @ZodSerializerDto(MessageResDTO)
-  delete(
+  async delete(
     @Param() params: GetRoundQuestionsAnswerLogParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.roundQuestionService.delete(
-      {
-        id: params.roundQuestionsAnswerLogId,
-        userId
-      },
-      lang
-    )
+    await this.roundQuestionService.delete({
+      id: params.roundQuestionsAnswerLogId,
+      userId
+    })
+    return {
+      message: this.i18nService.translate(
+        RoundQuestionsAnswerLogMessage.DELETE_SUCCESS,
+        lang
+      ),
+      data: null
+    }
   }
 }

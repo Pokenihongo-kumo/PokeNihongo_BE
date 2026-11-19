@@ -15,7 +15,12 @@ export class I18nService {
     // I18n service initialized with vi, en, ja languages
   }
 
-  translate(key: string, lang: string = 'vi'): string {
+  // `args` fills `{name}` placeholders, e.g. ('answer.CREATED', 'en', { created: 2 })
+  translate(
+    key: string,
+    lang: string = 'vi',
+    args?: Record<string, string | number>
+  ): string {
     // Fallback order: requested language -> vi -> key itself
     const languages = [lang, 'vi']
 
@@ -23,12 +28,18 @@ export class I18nService {
       if (this.messages[currentLang]) {
         const translation = this.getNestedValue(this.messages[currentLang], key)
         if (translation) {
-          return translation
+          return args ? this.interpolate(translation, args) : translation
         }
       }
     }
 
     return key
+  }
+
+  private interpolate(text: string, args: Record<string, string | number>): string {
+    return text.replace(/\{(\w+)\}/g, (match, name: string) =>
+      name in args ? String(args[name]) : match
+    )
   }
 
   private getNestedValue(obj: any, key: string): string | null {

@@ -1,13 +1,23 @@
 import { RequestMethod, VersioningType } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
+import { NestExpressApplication } from '@nestjs/platform-express'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { AppModule } from './app.module'
 import envConfig from './config/env.config'
 import setupSwagger from './config/swagger.config'
+import {
+  LOCAL_FILES_PREFIX,
+  localStorageDir
+} from './infrastructure/integrations/storage/local-file-storage.adapter'
 import { WebsocketAdapter } from './websockets/websocket.adapter'
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule)
+  const app = await NestFactory.create<NestExpressApplication>(AppModule)
+
+  // STORAGE_DRIVER=local: stored files are served from this machine
+  if (envConfig.STORAGE_DRIVER === 'local') {
+    app.useStaticAssets(localStorageDir(), { prefix: LOCAL_FILES_PREFIX })
+  }
 
   // Enable WebSocket adapter for authentication
   app.useWebSocketAdapter(new WebsocketAdapter(app))

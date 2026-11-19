@@ -1,0 +1,74 @@
+{
+  "metrics": {
+    "crossModuleRepoImports": 16,
+    "moduleForeignRepoProviders": 1,
+    "forwardRefModuleFiles": 8,
+    "injectForwardRefFiles": 6,
+    "sharedModuleBusinessRepos": 0,
+    "sharedModuleBusinessProviders": 0,
+    "prismaOutsideRepoFiles": 0,
+    "httpSchemasInEntities": 0,
+    "handWrittenEnvelopes": 2,
+    "serviceEnvelopeFiles": 6,
+    "prismaOutsideRepoCalls": 0,
+    "serviceStatusCodes": 11,
+    "serviceMessages": 19
+  },
+  "details": {
+    "crossModuleRepoImports": [
+      "modules/gacha-banner/gacha-banner.service.ts -> modules/gacha-item/gacha-item.repo.ts",
+      "modules/gacha-item/gacha-item.service.ts -> modules/gacha-banner/gacha-banner.repo.ts",
+      "modules/shop-banner/shop-banner.service.ts -> modules/shop-item/shop-item.repo.ts",
+      "modules/shop-banner/shop-banner.service.ts -> modules/shop-purchase/shop-purchase.repo.ts",
+      "modules/shop-item/shop-item.service.ts -> modules/shop-banner/shop-banner.repo.ts",
+      "modules/shop-item/shop-item.service.ts -> modules/shop-rarity-price/shop-rarity-price.repo.ts",
+      "modules/shop-purchase/shop-purchase.service.ts -> modules/shop-banner/shop-banner.repo.ts",
+      "modules/shop-purchase/shop-purchase.service.ts -> modules/shop-item/shop-item.repo.ts",
+      "modules/shop-rarity-price/shop-rarity-price.service.ts -> modules/shop-banner/shop-banner.repo.ts",
+      "modules/shop-rarity-price/shop-rarity-price.service.ts -> modules/shop-item/shop-item.repo.ts",
+      "modules/test/test.module.ts -> modules/user-test-attempt/user-test-attempt.repo.ts",
+      "modules/test/test.service.ts -> modules/user-test-attempt/user-test-attempt.repo.ts",
+      "modules/test/test.service.ts -> modules/user-test/user-test.repo.ts",
+      "modules/user-reward-history/user-reward-history.service.ts -> modules/reward/reward.repo.ts",
+      "modules/user-test-attempt/user-test-attempt.service.ts -> modules/test/test.repo.ts",
+      "modules/user/user.service.ts -> modules/user-season-history/user-season-history.repo.ts"
+    ],
+    "moduleForeignRepoProviders": [
+      "modules/test/test.module.ts provides UserTestAttemptRepo"
+    ],
+    "forwardRefModuleFiles": [
+      "modules/gacha-item/gacha-item.module.ts",
+      "modules/match-participant/match-participant.module.ts",
+      "modules/match/match.module.ts",
+      "modules/reward/reward.module.ts",
+      "modules/shop-item/shop-item.module.ts",
+      "modules/shop-purchase/shop-purchase.module.ts",
+      "modules/shop-rarity-price/shop-rarity-price.module.ts",
+      "modules/user-reward-history/user-reward-history.module.ts"
+    ],
+    "injectForwardRefFiles": [
+      "modules/gacha-item/gacha-item.service.ts",
+      "modules/match-round-participant/match-round-participant-timeout.processor.ts",
+      "modules/round-question/round-question.service.ts",
+      "modules/shop-item/shop-item.service.ts",
+      "modules/shop-purchase/shop-purchase.service.ts",
+      "modules/shop-rarity-price/shop-rarity-price.service.ts"
+    ],
+    "sharedModuleBusinessRepos": [],
+    "sharedModuleBusinessProviders": [],
+    "prismaOutsideRepoFiles": [],
+    "httpSchemasInEntities": [],
+    "handWrittenEnvelopes": [
+      "modules/match-round/dto/match-round.zod-dto.ts",
+      "shared/models/response.model.ts"
+    ],
+    "serviceEnvelopeFiles": [
+      "modules/gemini-config/gemini-config.service.ts",
+      "modules/lesson-content/lesson-content.service.ts",
+      "modules/payment/payment.service.ts",
+      "modules/pokemon/pokemon.service.ts",
+      "modules/upload/upload.service.ts",
+      "modules/vocabulary/vocabulary.service.ts"
+    ]
+  }
+}

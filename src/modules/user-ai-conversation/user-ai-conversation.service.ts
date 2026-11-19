@@ -1,143 +1,107 @@
+import { toPaginationMeta } from '@/shared/utils/pagination'
+import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
 import {
-    CreateUserAIConversationBodyType,
-    GetUserAIConversationByIdParamsType,
-    GetUserAIConversationListQueryType,
-    UpdateUserAIConversationBodyType
-} from '@/modules/user-ai-conversation/entities/user-ai-conversation.entities'
+  InvalidUserAIConversationDataException,
+  UserAIConversationNotFoundException
+} from './dto/user-ai-conversation.error'
 import {
-    InvalidUserAIConversationDataException,
-    UserAIConversationNotFoundException
-} from '@/modules/user-ai-conversation/dto/user-ai-conversation.error'
-import { UserAIConversationRepository } from '@/modules/user-ai-conversation/user-ai-conversation.repo'
-import { isNotFoundPrismaError } from '@/shared/helpers'
-import { Injectable, Logger, HttpException } from '@nestjs/common'
+  CreateUserAIConversationInput,
+  GetUserAIConversationListQuery,
+  UpdateUserAIConversationBody
+} from './dto/user-ai-conversation.zod-dto'
+import { UserAIConversationRepo } from './user-ai-conversation.repo'
 
 @Injectable()
 export class UserAIConversationService {
-    private readonly logger = new Logger(UserAIConversationService.name)
+  private readonly logger = new Logger(UserAIConversationService.name)
 
-    constructor(private readonly userAIConversationRepository: UserAIConversationRepository) { }
+  constructor(private readonly userAIConversationRepository: UserAIConversationRepo) {}
 
-    async create(body: CreateUserAIConversationBodyType) {
-        try {
-            const userAIConversation = await this.userAIConversationRepository.create(body)
-
-            return {
-                data: userAIConversation,
-                message: 'Tạo cuộc hội thoại AI thành công'
-            }
-        } catch (error) {
-            this.logger.error('Error creating user AI conversation:', error)
-            if (error instanceof HttpException || error.message?.includes('không tồn tại') || error.message?.includes('đã tồn tại')) {
-                throw error
-            }
-            throw InvalidUserAIConversationDataException
-        }
+  async create(body: CreateUserAIConversationInput) {
+    try {
+      const row = await this.userAIConversationRepository.create(body)
+      return row
+    } catch (error) {
+      throw this.toMessageError(error)
     }
+  }
 
-    async findAll(query: GetUserAIConversationListQueryType, userId?: number) {
-        const { currentPage, pageSize, conversationId, role } = query
+  async findAll(query: GetUserAIConversationListQuery, userId: number) {
+    const { currentPage, pageSize, conversationId, role } = query
+    const { items, total } = await this.userAIConversationRepository.findMany({
+      currentPage,
+      pageSize,
+      userId,
+      conversationId,
+      role
+    })
+    return { results: items, pagination: toPaginationMeta(currentPage, pageSize, total) }
+  }
 
-        const result = await this.userAIConversationRepository.findMany({
-            currentPage,
-            pageSize,
-            userId,
-            conversationId,
-            role
-        })
+  async findByConversationId(conversationId: string, userId: number) {
+    const rows = await this.userAIConversationRepository.findByConversationId(
+      conversationId,
+      userId
+    )
+    return rows
+  }
 
-        return {
-            statusCode: 200,
-            message: 'Lấy danh sách cuộc hội thoại AI thành công',
-            data: {
-                results: result.items,
-                pagination: {
-                    current: result.page,
-                    pageSize: result.limit,
-                    totalPage: Math.ceil(result.total / result.limit),
-                    totalItem: result.total
-                }
-            }
-        }
+  async findOne(id: number, userId: number) {
+    const row = await this.ownMessage(id, userId)
+    return row
+  }
+
+  // The user's own message (REST)
+  async updateOwned(id: number, userId: number, body: UpdateUserAIConversationBody) {
+    await this.ownMessage(id, userId)
+    return this.update(id, body)
+  }
+
+  // The kaiwa gateway sets the audio of a message it wrote
+  async update(id: number, body: UpdateUserAIConversationBody) {
+    try {
+      const row = await this.userAIConversationRepository.update(id, body)
+      return row
+    } catch (error) {
+      throw this.toMessageError(error)
     }
+  }
 
-    async findByConversationId(conversationId: string, userId?: number) {
-        const results = await this.userAIConversationRepository.findByConversationId(conversationId, userId)
-
-        return {
-            statusCode: 200,
-            message: 'Lấy danh sách cuộc hội thoại AI thành công',
-            data: results
-        }
+  async remove(id: number, userId: number) {
+    try {
+      await this.ownMessage(id, userId)
+      const row = await this.userAIConversationRepository.delete(id)
+      return row
+    } catch (error) {
+      throw this.toMessageError(error)
     }
+  }
 
-    async findOne(params: GetUserAIConversationByIdParamsType) {
-        const userAIConversation = await this.userAIConversationRepository.findUnique({
-            id: params.id
-        })
+  async removeByConversationId(conversationId: string, userId: number) {
+    const count = await this.userAIConversationRepository.deleteByConversationId(
+      conversationId,
+      userId
+    )
+    return { deletedCount: count }
+  }
 
-        if (!userAIConversation) {
-            throw UserAIConversationNotFoundException
-        }
+  //#region helpers
+  // Another user's message is "not found"
+  private async ownMessage(id: number, userId: number) {
+    const row = await this.userAIConversationRepository.findOwned(id, userId)
+    if (!row) throw new UserAIConversationNotFoundException()
+    return row
+  }
 
-        return {
-            data: userAIConversation,
-            message: 'Lấy thông tin cuộc hội thoại AI thành công'
-        }
-    }
-
-    async update(id: number, body: UpdateUserAIConversationBodyType) {
-        try {
-            const userAIConversation = await this.userAIConversationRepository.update({ id }, body)
-
-            return {
-                data: userAIConversation,
-                message: 'Cập nhật cuộc hội thoại AI thành công'
-            }
-        } catch (error) {
-            this.logger.error('Error updating user AI conversation:', error)
-            if (isNotFoundPrismaError(error)) {
-                throw UserAIConversationNotFoundException
-            }
-            if (error instanceof HttpException || error.message?.includes('không tồn tại')) {
-                throw error
-            }
-            throw InvalidUserAIConversationDataException
-        }
-    }
-
-    async remove(id: number) {
-        try {
-            const userAIConversation = await this.userAIConversationRepository.delete({ id })
-
-            return {
-                data: userAIConversation,
-                message: 'Xóa cuộc hội thoại AI thành công'
-            }
-        } catch (error) {
-            this.logger.error('Error deleting user AI conversation:', error)
-            if (isNotFoundPrismaError(error)) {
-                throw UserAIConversationNotFoundException
-            }
-            if (error instanceof HttpException || error.message?.includes('không tồn tại')) {
-                throw error
-            }
-            throw InvalidUserAIConversationDataException
-        }
-    }
-
-    async removeByConversationId(conversationId: string, userId?: number) {
-        try {
-            const count = await this.userAIConversationRepository.deleteByConversationId(conversationId, userId)
-
-            return {
-                data: { deletedCount: count },
-                message: `Xóa ${count} cuộc hội thoại AI thành công`
-            }
-        } catch (error) {
-            this.logger.error('Error deleting user AI conversations by conversationId:', error)
-            throw InvalidUserAIConversationDataException
-        }
-    }
+  private toMessageError(error: unknown): HttpException {
+    if (error instanceof HttpException) return error
+    this.logger.error(
+      'AI conversation message request failed',
+      error instanceof Error ? error.stack : error
+    )
+    if (isNotFoundPrismaError(error)) return new UserAIConversationNotFoundException()
+    return new InvalidUserAIConversationDataException()
+  }
+  //#endregion
 }
-

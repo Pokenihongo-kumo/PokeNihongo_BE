@@ -1,20 +1,24 @@
-import { HttpException, HttpStatus } from '@nestjs/common'
+import { AIConversationRoomMessage as M } from '@/i18n/message-keys'
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common'
 
-export const AIConversationRoomNotFoundException = new HttpException(
-    {
-        statusCode: HttpStatus.NOT_FOUND,
-        message: 'Không tìm thấy phòng hội thoại AI',
-        error: 'AI_CONVERSATION_ROOM_NOT_FOUND'
-    },
-    HttpStatus.NOT_FOUND
-)
+// A new instance per throw; `message` is translated from errorKey by
+// ApiExceptionFilter (Accept-Language). Another user's room is "not found".
 
-export const InvalidAIConversationRoomDataException = new HttpException(
-    {
-        statusCode: HttpStatus.BAD_REQUEST,
-        message: 'Dữ liệu phòng hội thoại AI không hợp lệ',
-        error: 'INVALID_AI_CONVERSATION_ROOM_DATA'
-    },
-    HttpStatus.BAD_REQUEST
-)
+export class AIConversationRoomNotFoundException extends NotFoundException {
+  constructor() {
+    super({ message: M.NOT_FOUND, errorKey: M.NOT_FOUND })
+  }
+}
 
+// The conversationId is another user's room (create used to update it)
+export class AIConversationTakenException extends ConflictException {
+  constructor() {
+    super({ message: M.CONVERSATION_TAKEN, errorKey: M.CONVERSATION_TAKEN })
+  }
+}
+
+export class InvalidAIConversationRoomDataException extends BadRequestException {
+  constructor() {
+    super({ message: M.INVALID_DATA, errorKey: M.INVALID_DATA })
+  }
+}

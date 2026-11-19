@@ -4,16 +4,16 @@ import { Injectable, Logger } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { GachaStarType } from '@prisma/client'
 import { GachaItemService } from 'src/modules/gacha-item/gacha-item.service'
-import { LanguagesRepository } from 'src/modules/languages/languages.repo'
-import { PrismaService } from 'src/shared/services/prisma.service'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { GachaBannerService } from '@/modules/gacha-banner/gacha-banner.service'
 
 @Injectable()
 export class HandleGachaBannerCronjob {
   private readonly logger = new Logger(HandleGachaBannerCronjob.name)
   constructor(
-    private prismaService: PrismaService,
+    private gachaBannerService: GachaBannerService,
     private gachaItemService: GachaItemService,
-    private languageRepo: LanguagesRepository
+    private languagesService: LanguagesService
   ) {}
 
   // Chạy mỗi ngày lúc 00:00
@@ -24,50 +24,18 @@ export class HandleGachaBannerCronjob {
 
     try {
       // 1. Chuyển các banner ACTIVE có endDate < today sang EXPIRED
-      const expiredResult = await this.prismaService.gachaBanner.updateMany({
-        where: {
-          status: GachaBannerStatus.ACTIVE,
-          endDate: {
-            lt: now
-          },
-          deletedAt: null
-        },
-        data: {
-          status: GachaBannerStatus.EXPIRED
-        }
-      })
+      const expiredResult = await this.gachaBannerService.expireActiveEndedBefore(now)
       this.logger.verbose(
         `[GachaBanner Cronjob] Expired ${expiredResult.count} ACTIVE banners`
       )
 
       // 2. Lấy danh sách banner có status PREVIEW, hợp lệ về thời gian
       // Điều kiện: startDate <= today AND endDate >= today
-      const previewBanners = await this.prismaService.gachaBanner.findMany({
-        where: {
-          status: GachaBannerStatus.PREVIEW,
-          deletedAt: null,
-          AND: [
-            {
-              OR: [{ startDate: null }, { startDate: { lte: now } }]
-            },
-            {
-              OR: [{ endDate: null }, { endDate: { gte: now } }]
-            }
-          ]
-        },
-        orderBy: {
-          startDate: 'asc' // Sort theo startDate tăng dần
-        }
-      })
+      const previewBanners = await this.gachaBannerService.findPreviewValidOn(now)
 
       // 3. Nếu có ít nhất 1 banner PREVIEW hợp lệ, chỉ activate khi có ít hơn 2 banner ACTIVE
       if (previewBanners.length > 0) {
-        const activeCount = await this.prismaService.gachaBanner.count({
-          where: {
-            status: GachaBannerStatus.ACTIVE,
-            deletedAt: null
-          }
-        })
+        const activeCount = await this.gachaBannerService.countActive()
 
         const MAX_ACTIVE_BANNERS = 2
 
@@ -77,14 +45,7 @@ export class HandleGachaBannerCronjob {
           )
         } else {
           const bannerToActivate = previewBanners[0]
-          await this.prismaService.gachaBanner.update({
-            where: {
-              id: bannerToActivate.id
-            },
-            data: {
-              status: GachaBannerStatus.ACTIVE
-            }
-          })
+          await this.gachaBannerService.activate(bannerToActivate.id)
           this.logger.log(
             `[GachaBanner Cronjob] Activated PREVIEW banner: ID=${bannerToActivate.id}, nameKey=${bannerToActivate.nameKey}`
           )
@@ -109,22 +70,7 @@ export class HandleGachaBannerCronjob {
     try {
       // 1. Tìm các banner ACTIVE có enablePrecreate = true
       //    và endDate - precreateBeforeEndDays <= now (đã đến thời điểm cần tạo banner mới)
-      const activeBanners = await this.prismaService.gachaBanner.findMany({
-        where: {
-          status: GachaBannerStatus.ACTIVE,
-          enablePrecreate: true,
-          deletedAt: null
-        },
-        include: {
-          nameTranslations: true,
-          items: {
-            include: {
-              pokemon: true,
-              gachaItemRate: true
-            }
-          }
-        }
-      })
+      const activeBanners = await this.gachaBannerService.findActiveWithPrecreate()
 
       for (const banner of activeBanners) {
         try {
@@ -150,14 +96,8 @@ export class HandleGachaBannerCronjob {
 
           // Kiểm tra xem đã tạo banner mới chưa (tránh tạo trùng)
           const newBannerNameKey = `${banner.nameKey}.next`
-          const existingNext = await this.prismaService.gachaBanner.findFirst({
-            where: {
-              nameKey: {
-                startsWith: newBannerNameKey
-              },
-              deletedAt: null
-            }
-          })
+          const existingNext =
+            await this.gachaBannerService.findLiveByNameKeyPrefix(newBannerNameKey)
 
           if (existingNext) {
             this.logger.log(
@@ -174,24 +114,22 @@ export class HandleGachaBannerCronjob {
           const timestamp = Date.now()
 
           // Tạo banner mới
-          const newBanner = await this.prismaService.gachaBanner.create({
-            data: {
-              nameKey: `temp.${timestamp}`, // Tạm thời, sẽ update sau
-              startDate: newStartDate,
-              endDate: newEndDate,
-              status: GachaBannerStatus.PREVIEW,
-              hardPity5Star: banner.hardPity5Star,
-              costRoll: banner.costRoll,
-              enablePrecreate: banner.enablePrecreate,
-              precreateBeforeEndDays: banner.precreateBeforeEndDays,
-              isRandomItemAgain: banner.isRandomItemAgain,
-              amount5Star: banner.amount5Star,
-              amount4Star: banner.amount4Star,
-              amount3Star: banner.amount3Star,
-              amount2Star: banner.amount2Star,
-              amount1Star: banner.amount1Star,
-              createdById: banner.createdById
-            }
+          const newBanner = await this.gachaBannerService.createSuccessor({
+            nameKey: `temp.${timestamp}`, // Tạm thời, sẽ update sau
+            startDate: newStartDate,
+            endDate: newEndDate,
+            status: GachaBannerStatus.PREVIEW,
+            hardPity5Star: banner.hardPity5Star,
+            costRoll: banner.costRoll,
+            enablePrecreate: banner.enablePrecreate,
+            precreateBeforeEndDays: banner.precreateBeforeEndDays,
+            isRandomItemAgain: banner.isRandomItemAgain,
+            amount5Star: banner.amount5Star,
+            amount4Star: banner.amount4Star,
+            amount3Star: banner.amount3Star,
+            amount2Star: banner.amount2Star,
+            amount1Star: banner.amount1Star,
+            createdById: banner.createdById
           })
 
           // 3. Update nameKey và tạo translations cùng lúc
@@ -220,15 +158,11 @@ export class HandleGachaBannerCronjob {
             `[GachaBanner Precreate] Will upsert ${nameUpserts.length} translations`
           )
 
-          await this.prismaService.gachaBanner.update({
-            where: { id: newBanner.id },
-            data: {
-              nameKey: finalNameKeyWithId,
-              ...(nameUpserts.length
-                ? { nameTranslations: { upsert: nameUpserts as any } }
-                : {})
-            }
-          })
+          await this.gachaBannerService.setNameKeyAndTranslations(
+            newBanner.id,
+            finalNameKeyWithId,
+            nameUpserts
+          )
 
           this.logger.log(
             `[GachaBanner Precreate] Translations upserted for banner ${newBanner.id}`
@@ -275,16 +209,13 @@ export class HandleGachaBannerCronjob {
               })
             }
 
-            const randomResult = await this.gachaItemService.getRandomListItem(
-              {
-                bannerId: newBanner.id,
-                items: randomItems
-              },
-              'vi'
-            )
+            const randomResult = await this.gachaItemService.getRandomListItem({
+              bannerId: newBanner.id,
+              items: randomItems
+            })
 
             // Prepare items để tạo
-            const itemsToCreate = randomResult.data.items.flatMap((item: any) =>
+            const itemsToCreate = randomResult.items.flatMap((item: any) =>
               item.pokemons.map((pokemon: any) => ({
                 starType: item.starType,
                 pokemons: [pokemon.id]
@@ -306,14 +237,10 @@ export class HandleGachaBannerCronjob {
             }, [])
 
             // Gọi createByList
-            await this.gachaItemService.createByList(
-              banner.createdById ?? 1,
-              {
-                bannerId: newBanner.id,
-                items: groupedItems
-              },
-              'vi'
-            )
+            await this.gachaItemService.createByList(banner.createdById ?? 1, {
+              bannerId: newBanner.id,
+              items: groupedItems
+            })
           } else {
             // Copy items từ banner cũ
             this.logger.log(
@@ -337,14 +264,10 @@ export class HandleGachaBannerCronjob {
               })
             )
 
-            await this.gachaItemService.createByList(
-              banner.createdById ?? 1,
-              {
-                bannerId: newBanner.id,
-                items: itemsToCreate
-              },
-              'vi'
-            )
+            await this.gachaItemService.createByList(banner.createdById ?? 1, {
+              bannerId: newBanner.id,
+              items: itemsToCreate
+            })
           }
 
           this.logger.log(
@@ -352,13 +275,7 @@ export class HandleGachaBannerCronjob {
           )
 
           // 5. Update banner cũ: disable precreate để không tạo lại nữa
-          await this.prismaService.gachaBanner.update({
-            where: { id: banner.id },
-            data: {
-              enablePrecreate: false,
-              precreateBeforeEndDays: 999
-            }
-          })
+          await this.gachaBannerService.disablePrecreate(banner.id)
 
           this.logger.log(
             `[GachaBanner Precreate] Disabled precreate for old banner ${banner.id}`

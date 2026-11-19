@@ -1,13 +1,15 @@
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { IsPublic } from '@/common/decorators/auth.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
+import { I18nService } from '@/i18n/i18n.service'
+import { LevelMessage } from '@/i18n/message-keys'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
 import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { PaginationResponseSchema } from '@/shared/models/response.model'
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common'
 import { ZodSerializerDto } from 'nestjs-zod'
 import {
-  CreatedLevelBodyDTO,
+  CreateLevelBodyDTO,
   CreateLevelResDTO,
   GetLevelDetailResDTO,
   GetLevelParamsDTO,
@@ -18,69 +20,76 @@ import { LevelService } from './level.service'
 
 @Controller('level')
 export class LevelController {
-  constructor(private readonly levelService: LevelService) {}
+  // The service returns levels; the message is the HTTP layer's
+  // (statusCode is set by TransformInterceptor from the HTTP status)
+  constructor(
+    private readonly levelService: LevelService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @IsPublic()
   @ZodSerializerDto(PaginationResponseSchema)
-  list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return this.levelService.list(query, lang)
+  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(LevelMessage.GET_LIST_SUCCESS, lang),
+      data: await this.levelService.list(query)
+    }
   }
 
   @Get(':levelId')
   @IsPublic()
   @ZodSerializerDto(GetLevelDetailResDTO)
-  findById(@Param() params: GetLevelParamsDTO, @I18nLang() lang: string) {
-    return this.levelService.findById(params.levelId, lang)
+  async findById(@Param() params: GetLevelParamsDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(LevelMessage.GET_SUCCESS, lang),
+      data: await this.levelService.findById(params.levelId)
+    }
   }
 
   @Post()
   @ZodSerializerDto(CreateLevelResDTO)
-  create(
-    @Body() body: CreatedLevelBodyDTO,
+  async create(
+    @Body() body: CreateLevelBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.levelService.create(
-      {
-        data: body,
-        createdById: userId
-      },
-      lang
-    )
+    return {
+      message: this.i18nService.translate(LevelMessage.CREATE_SUCCESS, lang),
+      data: await this.levelService.create({ data: body, createdById: userId })
+    }
   }
 
   @Put(':levelId')
   @ZodSerializerDto(UpdateLevelResDTO)
-  update(
+  async update(
     @Body() body: UpdateLevelBodyDTO,
     @Param() params: GetLevelParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.levelService.update(
-      {
+    return {
+      message: this.i18nService.translate(LevelMessage.UPDATE_SUCCESS, lang),
+      data: await this.levelService.update({
         data: body,
         id: params.levelId,
         updatedById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':levelId')
   @ZodSerializerDto(MessageResDTO)
-  delete(
+  async delete(
     @Param() params: GetLevelParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.levelService.delete(
-      {
-        id: params.levelId,
-        deletedById: userId
-      },
-      lang
-    )
+    await this.levelService.delete({ id: params.levelId, deletedById: userId })
+    // data: null as before (MessageResDTO)
+    return {
+      message: this.i18nService.translate(LevelMessage.DELETE_SUCCESS, lang),
+      data: null
+    }
   }
 }

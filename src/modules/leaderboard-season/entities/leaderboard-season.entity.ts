@@ -1,6 +1,4 @@
 import { LeaderboardStatus } from '@/common/constants/leaderboard.constants'
-import { checkIdSchema } from '@/common/utils/id.validation'
-import { LeaderboardSeasonMessage } from '@/i18n/message-keys'
 import { RewardSchema } from '@/modules/reward/entities/reward.entity'
 import { SeasonRankRewardSchema } from '@/modules/season-rank-reward/entities/season-rank-reward.entity'
 import { TranslationInputSchema } from '@/shared/models/translation-input.model'
@@ -35,66 +33,6 @@ export const LeaderboardSeasonSchema = z.object({
   updatedAt: z.date()
 })
 
-export const CreateLeaderboardSeasonBodyInputSchema = LeaderboardSeasonSchema.pick({
-  startDate: true,
-  endDate: true,
-  status: true,
-  enablePrecreate: true,
-  precreateBeforeEndDays: true,
-  isRandomItemAgain: true
-})
-  .strict()
-  .extend({
-    nameTranslations: TranslationInputSchema,
-    startDate: z.coerce.date().nullable().optional(),
-    endDate: z.coerce.date().nullable().optional()
-  })
-
-export const CreateLeaderboardSeasonBodySchema = LeaderboardSeasonSchema.pick({
-  nameKey: true,
-  startDate: true,
-  endDate: true,
-  status: true,
-  enablePrecreate: true,
-  precreateBeforeEndDays: true,
-  isRandomItemAgain: true
-}).strict()
-
-export const CreateLeaderboardSeasonResSchema = z.object({
-  statusCode: z.number(),
-  data: LeaderboardSeasonSchema,
-  message: z.string()
-})
-
-export const UpdateLeaderboardSeasonBodyInputSchema =
-  CreateLeaderboardSeasonBodyInputSchema.partial().strict()
-
-export const UpdateLeaderboardSeasonBodySchema =
-  CreateLeaderboardSeasonBodySchema.partial().strict()
-
-export const UpdateLeaderboardSeasonResSchema = CreateLeaderboardSeasonResSchema
-
-export const GetLeaderboardSeasonParamsSchema = z
-  .object({
-    leaderboardSeasonId: checkIdSchema(LeaderboardSeasonMessage.INVALID_DATA)
-  })
-  .strict()
-
-export const GetLeaderboardSeasonDetailWithAllLangResSchema = z.object({
-  statusCode: z.number(),
-  data: LeaderboardSeasonSchema.extend({
-    nameTranslations: z
-      .array(
-        z.object({
-          key: z.string(),
-          value: z.string()
-        })
-      )
-      .optional()
-  }),
-  message: z.string()
-})
-
 export const GetLeaderboardWithRewardSeasonDetailSchema = LeaderboardSeasonSchema.pick({
   id: true,
   startDate: true,
@@ -124,59 +62,7 @@ export const GetLeaderboardWithRewardSeasonDetailSchema = LeaderboardSeasonSchem
   )
 })
 
-export const GetLeaderboardWithRewardSeasonDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: GetLeaderboardWithRewardSeasonDetailSchema,
-  message: z.string()
-})
-export const GetLeaderboardSeasonDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: LeaderboardSeasonSchema.extend({
-    nameTranslation: z.string().nullable().optional(),
-    nameTranslations: TranslationInputSchema.nullable().optional(),
-    seasonRankRewards: z.array(
-      SeasonRankRewardSchema.pick({ id: true, rankName: true, order: true })
-        .extend({
-          rewards: z.array(
-            RewardSchema.pick({
-              id: true,
-              rewardType: true,
-              rewardItem: true,
-              rewardTarget: true
-            })
-              .extend({
-                nameTranslation: z.string().nullable().optional(),
-                nameTranslations: TranslationInputSchema.optional().nullable()
-              })
-              .nullable()
-          )
-        })
-        .nullable()
-    )
-  }),
-  message: z.string()
-})
-
-export type LeaderboardSeasonType = z.infer<typeof LeaderboardSeasonSchema>
-export type CreateLeaderboardSeasonBodyInputType = z.infer<
-  typeof CreateLeaderboardSeasonBodyInputSchema
->
-export type CreateLeaderboardSeasonBodyType = z.infer<
-  typeof CreateLeaderboardSeasonBodySchema
->
-export type UpdateLeaderboardSeasonBodyInputType = z.infer<
-  typeof UpdateLeaderboardSeasonBodyInputSchema
->
-export type UpdateLeaderboardSeasonBodyType = z.infer<
-  typeof UpdateLeaderboardSeasonBodySchema
->
-export type GetLeaderboardSeasonParamsType = z.infer<
-  typeof GetLeaderboardSeasonParamsSchema
->
-export type GetLeaderboardSeasonDetailResType = z.infer<
-  typeof GetLeaderboardSeasonDetailResSchema
->
-
+export type LeaderboardSeason = z.infer<typeof LeaderboardSeasonSchema>
 type LeaderboardSeasonFieldType = keyof z.infer<typeof LeaderboardSeasonSchema>
 export const LEADERBOARD_SEASON_FIELDS = [
   ...Object.keys(LeaderboardSeasonSchema.shape),

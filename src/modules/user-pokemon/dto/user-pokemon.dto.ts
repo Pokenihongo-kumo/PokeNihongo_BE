@@ -9,11 +9,12 @@ import {
   GetUserPokemonByPokemonIdParamsSchema,
   GetUserPokemonByPokemonIdwithListOwnershipResSchema,
   GetUserPokemonDetailResSchema,
+  GetUserPokemonListWithUserQuerySchema,
   GetUserPokemonParamsSchema,
   GetUserPokemonStatsResSchema,
   UpdateUserPokemonBodySchema,
   UpdateUserPokemonResSchema
-} from '../entities/user-pokemon.entity'
+} from './user-pokemon.zod-dto'
 
 // Request DTOs
 export class CreateUserPokemonBodyDTO extends createZodDto(CreateUserPokemonBodySchema) {}
@@ -44,4 +45,8 @@ export class GetUserPokemonStatsResDTO extends createZodDto(
 
 export class GetUserPokemonByPokemonIdwithListOwnershipResDTO extends createZodDto(
   GetUserPokemonByPokemonIdwithListOwnershipResSchema
+) {}
+
+export class GetUserPokemonListWithUserQueryDTO extends createZodDto(
+  GetUserPokemonListWithUserQuerySchema
 ) {}

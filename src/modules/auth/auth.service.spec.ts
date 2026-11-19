@@ -1,0 +1,59 @@
+import { AuthService } from './auth.service'
+
+// Only the dependencies touched by checkMailToAction are faked.
+function createService() {
+  const authRepository = { existEmail: jest.fn(), findDeviceByUserAndAgent: jest.fn() }
+  const otpService = { generateAndSendOtp: jest.fn() }
+  const service = new AuthService(
+    {} as any,
+    {} as any,
+    authRepository as any,
+    {} as any,
+    otpService as any,
+    {} as any,
+    {} as any,
+    {} as any,
+    {} as any,
+    {} as any,
+    {} as any,
+    {} as any,
+    {} as any,
+    {} as any,
+    {} as any
+  )
+  return { service, authRepository, otpService }
+}
+
+describe('AuthService.checkMailToAction', () => {
+  it('new email: OTP sent, requiresOtp true', async () => {
+    const { service, authRepository, otpService } = createService()
+    authRepository.existEmail.mockResolvedValue(null)
+
+    const res = await service.checkMailToAction('new@example.test', 'agent', '1.2.3.4')
+
+    expect(res).toEqual({ type: 'REGISTER', requiresOtp: true })
+    expect(otpService.generateAndSendOtp).toHaveBeenCalled()
+  })
+
+  it('known user on a new device: OTP sent, requiresOtp true', async () => {
+    const { service, authRepository, otpService } = createService()
+    authRepository.existEmail.mockResolvedValue({ id: 1 })
+    authRepository.findDeviceByUserAndAgent.mockResolvedValue(null)
+
+    const res = await service.checkMailToAction('user@example.test', 'agent', '1.2.3.4')
+
+    expect(res).toEqual({ type: 'LOGIN', requiresOtp: true })
+    expect(otpService.generateAndSendOtp).toHaveBeenCalled()
+  })
+
+  it('known user on a known device: no OTP, requiresOtp false', async () => {
+    const { service, authRepository, otpService } = createService()
+    authRepository.existEmail.mockResolvedValue({ id: 1 })
+    authRepository.findDeviceByUserAndAgent.mockResolvedValue({ id: 9 })
+
+    const res = await service.checkMailToAction('user@example.test', 'agent', '1.2.3.4')
+
+    expect(res).toEqual({ type: 'LOGIN', requiresOtp: false })
+    expect(otpService.generateAndSendOtp).not.toHaveBeenCalled()
+  })
+})

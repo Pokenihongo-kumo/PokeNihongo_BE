@@ -1,126 +1,128 @@
-import { WordType, CreateWordTypeBodyType, UpdateWordTypeBodyType } from './entities/wordtype.entities'
 import { PrismaService } from '@/shared/services/prisma.service'
+import { toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
+import { Prisma, WordType as WordTypeRow } from '@prisma/client'
+import { CreateWordTypeBody, UpdateWordTypeBody } from './dto/wordtype.zod-dto'
+import { WordType } from './entities/wordtype.entity'
 
 @Injectable()
-export class WordTypeRepository {
-    constructor(private readonly prismaService: PrismaService) { }
+export class WordTypeRepo {
+  constructor(private readonly prismaService: PrismaService) {}
 
-    async findMany(params: {
-        page: number
-        limit: number
-        sortBy?: string
-        sortOrder?: 'asc' | 'desc'
-    }) {
-        const { page, limit, sortBy = 'id', sortOrder = 'asc' } = params
-        const skip = (page - 1) * limit
+  async findMany(params: {
+    page: number
+    limit: number
+    sortBy?: string
+    sortOrder?: 'asc' | 'desc'
+  }) {
+    const { page, limit, sortBy = 'id', sortOrder = 'asc' } = params
 
-        const where: any = {}
+    const [data, total] = await Promise.all([
+      this.prismaService.wordType.findMany({
+        ...toSkipTake(page, limit),
+        orderBy: { [sortBy]: sortOrder }
+      }),
+      this.prismaService.wordType.count()
+    ])
 
-        const [data, total] = await Promise.all([
-            this.prismaService.wordType.findMany({
-                where,
-                skip,
-                take: limit,
-                orderBy: { [sortBy]: sortOrder }
-            }),
-            this.prismaService.wordType.count({ where })
-        ])
+    return { data: data.map((item) => this.transformWordType(item)), total }
+  }
 
-        return {
-            data: data.map(item => this.transformWordType(item)),
-            total,
-            page,
-            limit,
-            totalPages: Math.ceil(total / limit)
-        }
+  async findById(id: number): Promise<WordType | null> {
+    const result = await this.prismaService.wordType.findUnique({
+      where: { id }
+    })
+
+    if (!result) return null
+
+    return this.transformWordType(result)
+  }
+
+  // Removed findByTag - use findByNameKey instead
+
+  async findByNameKey(nameKey: string): Promise<WordType | null> {
+    const result = await this.prismaService.wordType.findUnique({
+      where: { nameKey }
+    })
+
+    if (!result) return null
+
+    return this.transformWordType(result)
+  }
+
+  async create(data: CreateWordTypeBody): Promise<WordType> {
+    const createData: Prisma.WordTypeCreateInput = {
+      nameKey: data.nameKey,
+      ...(data.id && { id: data.id })
     }
 
-    async findById(id: number): Promise<WordType | null> {
-        const result = await this.prismaService.wordType.findUnique({
-            where: { id }
-        })
+    const result = await this.prismaService.wordType.create({
+      data: createData
+    })
 
-        if (!result) return null
-
-        return this.transformWordType(result)
+    // An explicit id (startup seed, admin) does not move the id sequence; without
+    // this the next create without id collides on the primary key
+    if (data.id) {
+      await this.syncIdSequence()
     }
 
-    // Removed findByTag - use findByNameKey instead
+    return this.transformWordType(result)
+  }
 
-    async findByNameKey(nameKey: string): Promise<WordType | null> {
-        const result = await this.prismaService.wordType.findUnique({
-            where: { nameKey }
-        })
+  // Moves the id sequence past the highest id (rows inserted with explicit ids)
+  async syncIdSequence(): Promise<void> {
+    await this.prismaService.$executeRaw`
+      SELECT setval(
+        pg_get_serial_sequence('"WordType"', 'id'),
+        GREATEST((SELECT MAX(id) FROM "WordType"), 1)
+      )`
+  }
 
-        if (!result) return null
+  async update(id: number, data: UpdateWordTypeBody): Promise<WordType> {
+    const result = await this.prismaService.wordType.update({
+      where: { id },
+      data: {
+        ...(data.nameKey && { nameKey: data.nameKey })
+      }
+    })
 
-        return this.transformWordType(result)
+    return this.transformWordType(result)
+  }
+
+  async delete(id: number): Promise<void> {
+    await this.prismaService.wordType.delete({
+      where: { id }
+    })
+  }
+
+  async count(where?: Prisma.WordTypeWhereInput): Promise<number> {
+    return this.prismaService.wordType.count({ where })
+  }
+
+  async existsByNameKey(nameKey: string, excludeId?: number): Promise<boolean> {
+    const count = await this.prismaService.wordType.count({
+      where: {
+        nameKey,
+        ...(excludeId && { id: { not: excludeId } })
+      }
+    })
+    return count > 0
+  }
+
+  async getStats() {
+    const total = await this.prismaService.wordType.count()
+
+    return {
+      total
     }
+  }
 
-    async create(data: CreateWordTypeBodyType): Promise<WordType> {
-        const createData: any = {
-            nameKey: data.nameKey
-        }
-
-        // Nếu có ID, thêm vào data
-        if (data.id) {
-            createData.id = data.id
-        }
-
-        const result = await this.prismaService.wordType.create({
-            data: createData
-        })
-
-        return this.transformWordType(result)
+  private transformWordType(wordType: WordTypeRow): WordType {
+    return {
+      id: wordType.id,
+      nameKey: wordType.nameKey,
+      createdAt: wordType.createdAt,
+      updatedAt: wordType.updatedAt
     }
-
-    async update(id: number, data: UpdateWordTypeBodyType): Promise<WordType> {
-        const result = await this.prismaService.wordType.update({
-            where: { id },
-            data: {
-                ...(data.nameKey && { nameKey: data.nameKey })
-            }
-        })
-
-        return this.transformWordType(result)
-    }
-
-    async delete(id: number): Promise<void> {
-        await this.prismaService.wordType.delete({
-            where: { id }
-        })
-    }
-
-    async count(where?: any): Promise<number> {
-        return this.prismaService.wordType.count({ where })
-    }
-
-    async existsByNameKey(nameKey: string, excludeId?: number): Promise<boolean> {
-        const count = await this.prismaService.wordType.count({
-            where: {
-                nameKey,
-                ...(excludeId && { id: { not: excludeId } })
-            }
-        })
-        return count > 0
-    }
-
-    async getStats() {
-        const total = await this.prismaService.wordType.count()
-
-        return {
-            total
-        }
-    }
-
-    private transformWordType(wordType: any): WordType {
-        return {
-            id: wordType.id,
-            nameKey: wordType.nameKey,
-            createdAt: wordType.createdAt,
-            updatedAt: wordType.updatedAt
-        }
-    }
+  }
 }
-

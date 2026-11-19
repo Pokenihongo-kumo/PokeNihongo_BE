@@ -1,16 +1,16 @@
 import { UserStatus } from '@/common/constants/auth.constant'
-import { DeviceType, RefreshTokenType } from '@/modules/auth/entities/auth.entities'
+import { Device, RefreshToken } from '@/modules/auth/entities/auth.entities'
+import { WhereUniqueUserType } from '@/shared/models/shared-user.model'
 import { Injectable } from '@nestjs/common'
-import { RoleType } from 'src/shared/models/shared-role.model'
-import { UserType } from 'src/shared/models/shared-user.model'
-import { WhereUniqueUserType } from 'src/shared/repositories/shared-user.repo'
+import { Role } from 'src/shared/models/shared-role.model'
+import { User } from 'src/shared/models/shared-user.model'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
 @Injectable()
 export class AuthRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async findUniqueUser(where: WhereUniqueUserType): Promise<UserType | null> {
+  async findUniqueUser(where: WhereUniqueUserType): Promise<User | null> {
     return this.prismaService.user.findFirst({
       where: {
         ...where,
@@ -20,26 +20,20 @@ export class AuthRepository {
   }
 
   async createUser(
-    user: Pick<
-      UserType,
-      'email' | 'name' | 'password' | 'phoneNumber' | 'roleId' | 'avatar'
-    >
-  ): Promise<Omit<UserType, 'password'>> {
+    user: Pick<User, 'email' | 'name' | 'password' | 'phoneNumber' | 'roleId' | 'avatar'>
+  ): Promise<Omit<User, 'password'>> {
     const { password, ...userData } = user
     const createdUser = await this.prismaService.user.create({
       data: user
     })
     // Loại bỏ password khỏi kết quả trả về
     const { password: _, ...result } = createdUser
-    return result as Omit<UserType, 'password'>
+    return result as Omit<User, 'password'>
   }
 
   async createUserInclueRole(
-    user: Pick<
-      UserType,
-      'email' | 'name' | 'password' | 'phoneNumber' | 'avatar' | 'roleId'
-    >
-  ): Promise<UserType & { role: RoleType }> {
+    user: Pick<User, 'email' | 'name' | 'password' | 'phoneNumber' | 'avatar' | 'roleId'>
+  ): Promise<User & { role: Role }> {
     return this.prismaService.user.create({
       data: {
         email: user.email,
@@ -56,10 +50,10 @@ export class AuthRepository {
   }
 
   async registerUser(
-    user: Pick<UserType, 'email' | 'roleId' | 'password'> & {
+    user: Pick<User, 'email' | 'roleId' | 'password'> & {
       name: string
     }
-  ): Promise<Omit<UserType, 'password'>> {
+  ): Promise<Omit<User, 'password'>> {
     const { password, ...userData } = user
     const createdUser = await this.prismaService.user.create({
       data: {
@@ -73,7 +67,7 @@ export class AuthRepository {
     })
     // Loại bỏ password khỏi kết quả trả về
     const { password: _, ...result } = createdUser
-    return result as Omit<UserType, 'password'>
+    return result as Omit<User, 'password'>
   }
   createRefreshToken(data: {
     token: string
@@ -87,8 +81,8 @@ export class AuthRepository {
   }
 
   createDevice(
-    data: Pick<DeviceType, 'userId' | 'userAgent' | 'ip'> &
-      Partial<Pick<DeviceType, 'lastActive' | 'isActive'>>
+    data: Pick<Device, 'userId' | 'userAgent' | 'ip'> &
+      Partial<Pick<Device, 'lastActive' | 'isActive'>>
   ) {
     return this.prismaService.device.create({
       data
@@ -106,8 +100,8 @@ export class AuthRepository {
   }
 
   async createOrUpdateDevice(
-    data: Pick<DeviceType, 'userId' | 'userAgent' | 'ip'> &
-      Partial<Pick<DeviceType, 'lastActive' | 'isActive'>>
+    data: Pick<Device, 'userId' | 'userAgent' | 'ip'> &
+      Partial<Pick<Device, 'lastActive' | 'isActive'>>
   ) {
     // Kiểm tra device đã tồn tại chưa
     const existingDevice = await this.findDeviceByUserAndAgent(
@@ -131,7 +125,7 @@ export class AuthRepository {
 
   async findUniqueUserIncludeRole(
     where: WhereUniqueUserType
-  ): Promise<(UserType & { role: RoleType }) | null> {
+  ): Promise<(User & { role: Role }) | null> {
     return this.prismaService.user.findFirst({
       where: {
         ...where,
@@ -146,7 +140,7 @@ export class AuthRepository {
 
   async findUniqueRefreshTokenIncludeUserRole(where: {
     token: string
-  }): Promise<(RefreshTokenType & { user: UserType & { role: RoleType } }) | null> {
+  }): Promise<(RefreshToken & { user: User & { role: Role } }) | null> {
     return this.prismaService.refreshToken.findUnique({
       where,
       include: {
@@ -159,7 +153,7 @@ export class AuthRepository {
     })
   }
 
-  updateDevice(deviceId: number, data: Partial<DeviceType>): Promise<DeviceType> {
+  updateDevice(deviceId: number, data: Partial<Device>): Promise<Device> {
     return this.prismaService.device.update({
       where: {
         id: deviceId
@@ -168,7 +162,29 @@ export class AuthRepository {
     })
   }
 
-  deleteRefreshToken(where: { token: string }): Promise<RefreshTokenType> {
+  // Consumes `oldToken` and stores `next` in one transaction. Of concurrent
+  // calls with the same old token only one finds it (the others wait for its
+  // row lock, then delete nothing) and the rest return false with nothing
+  // written; any failure rolls back, so the old token stays usable
+  rotateRefreshToken({
+    oldToken,
+    next,
+    device
+  }: {
+    oldToken: string
+    next: { token: string; userId: number; expiresAt: Date; deviceId: number }
+    device: Pick<Device, 'ip' | 'userAgent'>
+  }): Promise<boolean> {
+    return this.prismaService.$transaction(async (tx) => {
+      const { count } = await tx.refreshToken.deleteMany({ where: { token: oldToken } })
+      if (count === 0) return false
+      await tx.refreshToken.create({ data: next })
+      await tx.device.update({ where: { id: next.deviceId }, data: device })
+      return true
+    })
+  }
+
+  deleteRefreshToken(where: { token: string }): Promise<RefreshToken> {
     return this.prismaService.refreshToken.delete({
       where
     })
@@ -190,10 +206,13 @@ export class AuthRepository {
   //   })
   // }
 
-  verifyEmail(email: string): Promise<UserType> {
-    return this.prismaService.user.update({
-      where: { email },
-      data: { status: UserStatus.ACTIVE }
+  deleteExpiredRefreshTokens(): Promise<{ count: number }> {
+    return this.prismaService.refreshToken.deleteMany({
+      where: {
+        expiresAt: {
+          lt: new Date()
+        }
+      }
     })
   }
 
@@ -209,7 +228,7 @@ export class AuthRepository {
     })
   }
 
-  existEmail(email: string): Promise<UserType | null> {
+  existEmail(email: string): Promise<User | null> {
     return this.prismaService.user.findFirst({
       where: {
         email,

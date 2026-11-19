@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { ShopItemMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
@@ -22,115 +24,126 @@ import { ShopItemService } from './shop-item.service'
 
 @Controller('shop-item')
 export class ShopItemController {
-  constructor(private readonly shopItemService: ShopItemService) {}
+  constructor(
+    private readonly shopItemService: ShopItemService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseDTO)
-  list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return this.shopItemService.list(query, lang)
+  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(ShopItemMessage.GET_LIST_SUCCESS, lang),
+      data: await this.shopItemService.list(query)
+    }
   }
 
   @Get('random')
   @ZodSerializerDto(GetRandomShopItemResDTO)
-  getRandomListItem(
+  async getRandomListItem(
     @Query() query: GetRamdomAmountShopItemBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.shopItemService.getRandomListItem(query, lang)
+    return {
+      message: this.i18nService.translate(ShopItemMessage.GET_SUCCESS, lang),
+      data: await this.shopItemService.getRandomListItem(query)
+    }
   }
 
   @Get(':shopItemId')
   @ZodSerializerDto(GetShopItemDetailResDTO)
-  findById(
+  async findById(
     @Param() params: GetShopItemParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.shopItemService.findById(params.shopItemId, lang)
+    return {
+      message: this.i18nService.translate(ShopItemMessage.GET_LIST_SUCCESS, lang),
+      data: await this.shopItemService.findById(params.shopItemId)
+    }
   }
 
   @Post('list')
   @ZodSerializerDto(CreateWithListItemResDTO)
-  createByList(
+  async createByList(
     @Body() body: CreateWithListItemBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.shopItemService.createByList(
-      {
+    return {
+      message: this.i18nService.translate(ShopItemMessage.CREATE_SUCCESS, lang),
+      data: await this.shopItemService.createByList({
         userId,
         data: body
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Post()
   @ZodSerializerDto(CreateShopItemResDTO)
-  create(
+  async create(
     @Body() body: CreateShopItemBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.shopItemService.create(
-      {
+    return {
+      message: this.i18nService.translate(ShopItemMessage.CREATE_SUCCESS, lang),
+      data: await this.shopItemService.create({
         userId,
         data: body
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Put('list')
   @ZodSerializerDto(UpdateWithListItemResDTO)
-  updateByList(
+  async updateByList(
     @Body() body: UpdateWithListItemBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    console.log('updatelist ne')
-
-    return this.shopItemService.updateByList(
-      {
+    return {
+      message: this.i18nService.translate(ShopItemMessage.UPDATE_SUCCESS, lang),
+      data: await this.shopItemService.updateByList({
         userId,
         data: body
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Put(':shopItemId')
   @ZodSerializerDto(UpdateShopItemResDTO)
-  update(
+  async update(
     @Body() body: UpdateShopItemBodyDTO,
     @Param() params: GetShopItemParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.shopItemService.update(
-      {
+    return {
+      message: this.i18nService.translate(ShopItemMessage.UPDATE_SUCCESS, lang),
+      data: await this.shopItemService.update({
         data: body,
         id: params.shopItemId,
         userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':shopItemId')
   @ZodSerializerDto(MessageResDTO)
-  delete(
+  async delete(
     @Param() params: GetShopItemParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.shopItemService.delete(
-      {
-        id: params.shopItemId,
-        userId
-      },
-      lang
-    )
+    await this.shopItemService.delete({
+      id: params.shopItemId,
+      userId
+    })
+    return {
+      message: this.i18nService.translate(ShopItemMessage.DELETE_SUCCESS, lang),
+      data: null
+    }
   }
 }

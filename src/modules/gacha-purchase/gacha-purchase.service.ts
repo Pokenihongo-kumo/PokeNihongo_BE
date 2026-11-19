@@ -3,88 +3,68 @@ import { GachaBannerStatus } from '@/common/constants/shop-banner.constant'
 import { FeatureKey } from '@/common/constants/subscription.constant'
 import {
   WalletTransactionSourceType,
-  WalletTransactionType,
   walletPurposeType
 } from '@/common/constants/wallet-transaction.constant'
 import { walletType } from '@/common/constants/wallet.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { GachaPurchaseMessage } from '@/i18n/message-keys'
+import { GachaBannerService } from '@/modules/gacha-banner/gacha-banner.service'
+import { GachaRollHistoryService } from '@/modules/gacha-roll-history/gacha-roll-history.service'
+import { UserGachaPityService } from '@/modules/user-gacha-pity/user-gacha-pity.service'
+import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
+import { WalletService } from '@/modules/wallet/wallet.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
-import { SharedUserSubscriptionService } from '@/shared/services/user-subscription.service'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
-import { GachaBannerRepo } from '../gacha-banner/gacha-banner.repo'
-import { GachaItemRateType } from '../gacha-item-rate/entities/gacha-item-rate.entity'
+import { GachaItemRate } from '../gacha-item-rate/entities/gacha-item-rate.entity'
 import { InvalidGachaBannerException } from '../gacha-item/dto/gacha-item.error'
-import { GachaItemType } from '../gacha-item/entities/gacha-item.entity'
-import { GachaRollHistoryRepo } from '../gacha-roll-history/gacha-roll-history.repo'
-import { UserGachaPityRepo } from '../user-gacha-pity/user-gacha-pity.repo'
-import { UserPokemonRepo } from '../user-pokemon/user-pokemon.repo'
+import { GachaItem } from '../gacha-item/entities/gacha-item.entity'
 import { UserPokemonService } from '../user-pokemon/user-pokemon.service'
-import { WalletTransactionRepo } from '../wallet-transaction/wallet-transaction.repo'
-import { WalletRepo } from '../wallet/wallet.repo'
 import {
   GachaPurchaseNotFoundException,
   NotEnoughBalanceException
 } from './dto/gacha-purchase.error'
-import { CreateGachaPurchaseBodyType } from './entities/gacha-purchase.entity'
+import { CreateGachaPurchaseBody } from './dto/gacha-purchase.zod-dto'
 import { GachaPurchaseRepo } from './gacha-purchase.repo'
 
 @Injectable()
 export class GachaPurchaseService {
   constructor(
     private gachaPurchaseRepo: GachaPurchaseRepo,
-    private readonly i18nService: I18nService,
-    private readonly gachaBannerRepo: GachaBannerRepo,
+    private readonly gachaBannerService: GachaBannerService,
     // private readonly gachaItemRepo: GachaItemRepo,
-    private readonly gachaRollHistoryRepo: GachaRollHistoryRepo,
-    private readonly userGachaPityRepo: UserGachaPityRepo,
-    private readonly walletRepo: WalletRepo,
-    private readonly walletTransRepo: WalletTransactionRepo,
-    private readonly userPokemonRepo: UserPokemonRepo,
+    private readonly gachaRollHistoryService: GachaRollHistoryService,
+    private readonly userGachaPityService: UserGachaPityService,
+    private readonly walletService: WalletService,
     private readonly userPokemonService: UserPokemonService,
-    private readonly userSubService: SharedUserSubscriptionService
+    private readonly userSubService: UserSubscriptionService
     // private readonly pokemonRepo: PokemonRepo
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.gachaPurchaseRepo.list(pagination)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(GachaPurchaseMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   // Helper method to calculate weaknesses for a Pokemon (copied from PokemonService)
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const gachaPurchase = await this.gachaPurchaseRepo.findById(id)
     if (!gachaPurchase) {
       throw new GachaPurchaseNotFoundException()
     }
 
-    return {
-      statusCode: 200,
-      data: gachaPurchase,
-      message: this.i18nService.translate(GachaPurchaseMessage.GET_LIST_SUCCESS, lang)
-    }
+    return gachaPurchase
   }
 
-  async create(
-    { userId, data }: { userId: number; data: CreateGachaPurchaseBodyType },
-    lang: string = 'vi'
-  ) {
+  async create({ userId, data }: { userId: number; data: CreateGachaPurchaseBody }) {
     try {
       //tìm ra gachabanner và pity user
 
-      const [gachaBanner, userPityExist] = await Promise.all([
-        this.gachaBannerRepo.findByIdWithItemWithitemRate(data.bannerId),
-        this.userGachaPityRepo.findStatusByUserId(userId, GachaPityType.PENDING)
-      ])
+      const gachaBanner = await this.gachaBannerService.findByIdWithItemWithitemRate(
+        data.bannerId
+      )
       if (
         !gachaBanner ||
         gachaBanner.status !== GachaBannerStatus.ACTIVE ||
@@ -93,24 +73,12 @@ export class GachaPurchaseService {
         throw new InvalidGachaBannerException()
       }
 
-      let userPity =
-        userPityExist === null
-          ? await this.userGachaPityRepo.create({
-              createdById: userId,
-              data: {
-                userId,
-                status: GachaPityType.PENDING,
-                pityCount: 0
-              }
-            })
-          : userPityExist
-      console.log('userPity: ', userPity)
       // Tách 2 mảng
       // 1 cái là list để random, 1 cái là tỉ lệ
-      const items: GachaItemType[] = gachaBanner.items.map(
+      const items: GachaItem[] = gachaBanner.items.map(
         ({ gachaItemRate, ...rest }) => rest
       )
-      const gachaItemRates: GachaItemRateType[] = gachaBanner.items.map(
+      const gachaItemRates: GachaItemRate[] = gachaBanner.items.map(
         ({ gachaItemRate }) => gachaItemRate
       )
       const rollCount = data.rollCount || 1
@@ -124,65 +92,53 @@ export class GachaPurchaseService {
         }
       })
 
-      // Gacha roll logic
-      let pityCount = userPity.pityCount
-      const results: typeof gachaPool = []
       const totalCost = gachaBanner.costRoll * rollCount
-      const userWallet = await this.walletRepo.checkEnoughBalance({
+      const userWallet = await this.walletService.checkEnoughBalance({
         userId,
         type: walletType.SPARKLES,
         amount: totalCost
       })
       if (!userWallet) throw new NotEnoughBalanceException()
 
-      console.log('cost: ', totalCost)
-
       // 4) transaction
       // 1. Create purchase and minus balance
       const result = await this.gachaPurchaseRepo.withTransaction(async (prismaTx) => {
         // xem có tăng không
 
-        const [purchase, updatedWallet, valueIncrease] = await Promise.all([
-          this.gachaPurchaseRepo.create(
-            {
-              createdById: userId,
-              data: {
-                userId,
-                bannerId: data.bannerId,
-                walletTransId: null,
-                rollCount: data.rollCount,
-                totalCost: totalCost
-              }
-            },
-            prismaTx
-          ),
-          this.walletRepo.minusBalanceToWalletWithTypeUserId(
-            { userId, type: walletType.SPARKLES, amount: totalCost },
-            prismaTx
-          ),
+        const valueIncrease =
           await this.userSubService.getValueConvertByfeatureKeyAndUserId(
             FeatureKey.COIN_MULTIPLIER,
             userId
           )
-        ])
-        if (!updatedWallet) throw new NotEnoughBalanceException()
-        // 2. Create Wallet Transaction referencing the purchase
-        const walletTrans = await this.walletTransRepo.create(
+        const purchase = await this.gachaPurchaseRepo.create(
           {
             createdById: userId,
             data: {
-              walletId: updatedWallet.id,
               userId,
-              purpose: walletPurposeType.GACHA,
-              referenceId: purchase.id,
-              amount: totalCost,
-              type: WalletTransactionType.DECREASE,
-              source: WalletTransactionSourceType.SHOP_PURCHASE,
-              description: `Gacha purchase ${purchase.id}`
+              bannerId: data.bannerId,
+              walletTransId: null,
+              rollCount: data.rollCount,
+              totalCost: totalCost
             }
           },
           prismaTx
         )
+        // 2. Debit + wallet transaction referencing the purchase
+        const debited = await this.walletService.debit(
+          {
+            userId,
+            type: walletType.SPARKLES,
+            amount: totalCost,
+            createdById: userId,
+            purpose: walletPurposeType.GACHA,
+            referenceId: purchase.id,
+            source: WalletTransactionSourceType.SHOP_PURCHASE,
+            description: `Gacha purchase ${purchase.id}`
+          },
+          prismaTx
+        )
+        if (!debited) throw new NotEnoughBalanceException()
+        const walletTrans = debited.transaction
 
         // 3. Update purchase with walletTransId
         const [finalPurchase] = await Promise.all([
@@ -196,7 +152,25 @@ export class GachaPurchaseService {
           )
         ])
 
-        // 4. Roll logic (collect all results first)
+        // 4. The pity is read (or started) here, inside the transaction: the
+        // wallet debit above holds this user's wallet row, so purchases of one
+        // user count pity one after another (it used to be read before the
+        // transaction, and a concurrent purchase overwrote the count)
+        const userPity =
+          (await this.userGachaPityService.findStatusByUserId(
+            userId,
+            GachaPityType.PENDING,
+            prismaTx
+          )) ??
+          (await this.userGachaPityService.createPity(
+            {
+              createdById: userId,
+              data: { userId, status: GachaPityType.PENDING, pityCount: 0 }
+            },
+            prismaTx
+          ))
+
+        // Roll logic (collect all results first)
         let pityCount = userPity.pityCount
         let currentPityId = userPity.id
         let currentPityStatus = userPity.status
@@ -274,15 +248,11 @@ export class GachaPurchaseService {
 
         const pokemonIds = rollResults.map((r) => r.id)
         // Use findMany to get all userPokemons with userId and pokemonId in list
-        const userPokemons = await this.userPokemonRepo[
-          'prismaService'
-        ].userPokemon.findMany({
-          where: {
-            userId,
-            pokemonId: { in: pokemonIds },
-            deletedAt: null
-          }
-        })
+        const userPokemons = await this.userPokemonService.findOwnedAmong(
+          userId,
+          pokemonIds,
+          prismaTx
+        )
         const ownedPokemonIds = new Set(userPokemons.map((up: any) => up.pokemonId))
 
         // 6. Prepare bulk create for userPokemon and wallet
@@ -300,7 +270,7 @@ export class GachaPurchaseService {
           // Lấy thông tin pokemon từ items[].pokemon (gachaBanner.items)
           const itemInfo = gachaBanner.items.find((it) => it.pokemonId === roll.id)
 
-          let parseItem: any = {
+          const parseItem: any = {
             ...roll,
             isDuplicate: isOwned,
             pokemon:
@@ -318,6 +288,9 @@ export class GachaPurchaseService {
 
           if (!isOwned) {
             addPokemonList.push({ userId, data: { pokemonId: roll.id } })
+            // owned from here on: the same Pokemon later in this purchase is a
+            // duplicate (it used to be added once per roll)
+            ownedPokemonIds.add(roll.id)
             parseItem.parseItem = null
           } else {
             const reward =
@@ -331,21 +304,26 @@ export class GachaPurchaseService {
         // 7. Bulk create userPokemon
 
         if (addPokemonList.length > 0) {
-          await Promise.all(
-            addPokemonList.map((item) =>
-              this.userPokemonService.addPokemonByGacha(item, prismaTx)
-            )
-          )
+          // one after another: adding reads the user's Pokemon (first one is main)
+          for (const item of addPokemonList) {
+            await this.userPokemonService.addPokemonByGacha(item, prismaTx)
+          }
         }
-        // 8. Bulk add SPARKLES
+        // 8. Bulk add SPARKLES for duplicates, recorded like the debit above
+        // (purpose GACHA, same source, referencing the purchase)
         if (addSparklesList.length > 0) {
           const totalSparkles = addSparklesList.reduce((a, b) => a + b, 0)
 
-          await this.walletRepo.addBalanceToWalletWithType(
+          await this.walletService.credit(
             {
               userId,
               type: walletType.SPARKLES,
-              amount: totalSparkles
+              amount: totalSparkles,
+              createdById: userId,
+              purpose: walletPurposeType.GACHA,
+              referenceId: purchase.id,
+              source: WalletTransactionSourceType.SHOP_PURCHASE,
+              description: `Gacha duplicates payout ${purchase.id}`
             },
             prismaTx
           )
@@ -354,7 +332,7 @@ export class GachaPurchaseService {
         // 9. Create GachaRollHistory for each roll
         for (let i = 0; i < rollResults.length; i++) {
           const roll = rollResults[i]
-          await this.gachaRollHistoryRepo.create(
+          await this.gachaRollHistoryService.createRollHistory(
             {
               createdById: userId,
               data: {
@@ -376,9 +354,9 @@ export class GachaPurchaseService {
         // (for simplicity, just update the last one)
         if (gachaRollHistoryToCreate.length > 0) {
           for (const pityAction of gachaRollHistoryToCreate) {
-            await this.userGachaPityRepo.update(pityAction.updatePity, prismaTx)
+            await this.userGachaPityService.updatePity(pityAction.updatePity, prismaTx)
             if (pityAction.createNewPity) {
-              const newPityObj = await this.userGachaPityRepo.create(
+              const newPityObj = await this.userGachaPityService.createPity(
                 {
                   createdById: userId,
                   data: {
@@ -398,27 +376,17 @@ export class GachaPurchaseService {
         return { finalPurchase, parseItems }
       })
 
-      return {
-        statusCode: 201,
-        data: result.parseItems,
-        message: this.i18nService.translate(GachaPurchaseMessage.CREATE_SUCCESS, lang)
-      }
+      return result.parseItems
     } catch (error) {
-      console.log('vo catch')
-
       if (isNotFoundPrismaError(error)) throw new NotFoundRecordException()
       if (isForeignKeyConstraintPrismaError(error)) throw new NotFoundRecordException()
       throw error
     }
   }
 
-  async getByUser(userId: number, lang: string = 'vi') {
+  async getByUser(userId: number) {
     const data = await this.gachaPurchaseRepo.findByUserId(userId)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(GachaPurchaseMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   rollGacha(

@@ -1,0 +1,949 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Catalog batch 3 contract (e2e) kanji-reading create, list, stats, by kanji, by type, detail, update 1`] = `
+{
+  "byKanji": {
+    "body": {
+      "data": [
+        {
+          "createdAt": "string",
+          "id": "number",
+          "kanjiId": "number",
+          "reading": "string",
+          "readingType": "string",
+          "updatedAt": "string",
+        },
+      ],
+      "message": "Lấy danh sách cách đọc kanji thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "byType": {
+    "body": {
+      "data": [
+        {
+          "createdAt": "string",
+          "id": "number",
+          "kanjiId": "number",
+          "reading": "string",
+          "readingType": "string",
+          "updatedAt": "string",
+        },
+      ],
+      "message": "Lấy danh sách cách đọc kanji thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "create": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "id": "number",
+        "kanjiId": "number",
+        "reading": "string",
+        "readingType": "string",
+        "updatedAt": "string",
+      },
+      "message": "Tạo cách đọc kanji thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "detail": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "id": "number",
+        "kanjiId": "number",
+        "reading": "string",
+        "readingType": "string",
+        "updatedAt": "string",
+      },
+      "message": "Lấy thông tin cách đọc kanji thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "list": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "createdAt": "string",
+            "id": "number",
+            "kanjiId": "number",
+            "reading": "string",
+            "readingType": "string",
+            "updatedAt": "string",
+          },
+        ],
+      },
+      "message": "Lấy danh sách cách đọc kanji thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "stats": {
+    "body": {
+      "data": {
+        "byReadingType": [
+          {
+            "count": "number",
+            "readingType": "string",
+          },
+        ],
+        "total": "number",
+      },
+      "message": "Lấy thống kê cách đọc kanji thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "statsByType": {
+    "body": {
+      "data": [
+        {
+          "count": "number",
+          "readingType": "string",
+        },
+      ],
+      "message": "Lấy thống kê cách đọc kanji thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "update": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "id": "number",
+        "kanjiId": "number",
+        "reading": "string",
+        "readingType": "string",
+        "updatedAt": "string",
+      },
+      "message": "Cập nhật cách đọc kanji thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Catalog batch 3 contract (e2e) kanji-reading errors, delete, delete by kanji 1`] = `
+{
+  "byKanjiInvalid": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Kanji ID must be greater than 0",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Kanji ID phải lớn hơn 0",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "delete": {
+    "body": {
+      "data": "null",
+      "message": "Xóa cách đọc kanji thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "deleteAgain": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Kanji reading not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Cách đọc Kanji không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "deleteByKanji": {
+    "body": {
+      "data": "null",
+      "message": "Xóa cách đọc kanji thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "invalidBody": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Reading type must be onyomi, kunyomi, nanori or irregular",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Loại cách đọc phải là onyomi, kunyomi, nanori, hoặc irregular",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "invalidId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid kanji reading ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID cách đọc kanji không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "missingKanji": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Kanji not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Kanji không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "notFound": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Kanji reading not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Cách đọc Kanji không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+}
+`;
+
+exports[`Catalog batch 3 contract (e2e) meaning create, list, by vocabulary, update 1`] = `
+{
+  "byVocabulary": {
+    "body": {
+      "data": [
+        {
+          "createdAt": "string",
+          "exampleSentenceJp": "string",
+          "exampleSentenceKey": "string",
+          "exampleTranslations": [],
+          "explanationKey": "string",
+          "id": "number",
+          "meaningKey": "string",
+          "meaningTranslations": [],
+          "updatedAt": "string",
+          "vocabularyId": "number",
+        },
+      ],
+      "message": "Lấy tất cả nghĩa theo từ vựng thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "create": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "exampleSentenceJp": "string",
+        "exampleSentenceKey": "string",
+        "explanationKey": "string",
+        "id": "number",
+        "meaningKey": "string",
+        "updatedAt": "string",
+        "vocabularyId": "number",
+      },
+      "message": "Tạo nghĩa thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "list": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "createdAt": "string",
+            "exampleSentenceJp": "string",
+            "exampleSentenceKey": "string",
+            "explanationKey": "string",
+            "id": "number",
+            "meaningKey": "string",
+            "updatedAt": "string",
+            "vocabularyId": "number",
+          },
+        ],
+      },
+      "message": "Lấy danh sách nghĩa thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "update": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "exampleSentenceJp": "string",
+        "exampleSentenceKey": "string",
+        "explanationKey": "string",
+        "id": "number",
+        "meaningKey": "string",
+        "updatedAt": "string",
+        "vocabularyId": "number",
+      },
+      "message": "Cập nhật nghĩa thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Catalog batch 3 contract (e2e) meaning errors, delete, delete by vocabulary 1`] = `
+{
+  "byVocabularyInvalid": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Vocabulary ID must be greater than 0",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Vocabulary ID phải lớn hơn 0",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "delete": {
+    "body": {},
+    "httpStatus": 204,
+  },
+  "deleteAgain": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Meaning not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Nghĩa không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "deleteByVocabulary": {
+    "body": {},
+    "httpStatus": 204,
+  },
+  "invalidBody": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Vocabulary ID must be greater than 0",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Vocabulary ID phải lớn hơn 0",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "missingVocabulary": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Vocabulary not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Từ vựng không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "updateInvalidId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid meaning ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID nghĩa không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "updateNotFound": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Meaning not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Nghĩa không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+}
+`;
+
+exports[`Catalog batch 3 contract (e2e) translation create, bulk, list, by key, by language, detail, update 1`] = `
+{
+  "bulk": {
+    "body": {
+      "data": {
+        "count": "number",
+      },
+      "message": "Tạo bản dịch thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "byKey": {
+    "body": {
+      "data": {
+        "key": "string",
+        "translations": [
+          {
+            "achievementConditionTextKey": "null",
+            "achievementDescriptionKey": "null",
+            "achievementGroupNameKey": "null",
+            "achievementNameKey": "null",
+            "createdAt": "string",
+            "dailyRequestDescriptionKey": "null",
+            "dailyRequestNameKey": "null",
+            "debuffRoundNameKey": "null",
+            "featureNameKey": "null",
+            "gachaBannerNameKey": "null",
+            "id": "number",
+            "key": "string",
+            "languageId": "number",
+            "leaderboardSeasonNameKey": "null",
+            "rewardNameKey": "null",
+            "shopBannerNameKey": "null",
+            "subscriptionDescriptionKey": "null",
+            "subscriptionNameKey": "null",
+            "updatedAt": "string",
+            "value": "string",
+          },
+        ],
+      },
+      "message": "Lấy bản dịch thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "byLanguage": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "achievementConditionTextKey": "null",
+            "achievementDescriptionKey": "null",
+            "achievementGroupNameKey": "null",
+            "achievementNameKey": "null",
+            "createdAt": "string",
+            "dailyRequestDescriptionKey": "null",
+            "dailyRequestNameKey": "null",
+            "debuffRoundNameKey": "null",
+            "featureNameKey": "null",
+            "gachaBannerNameKey": "null",
+            "id": "number",
+            "key": "string",
+            "languageId": "number",
+            "leaderboardSeasonNameKey": "null",
+            "rewardNameKey": "null",
+            "shopBannerNameKey": "null",
+            "subscriptionDescriptionKey": "null",
+            "subscriptionNameKey": "null",
+            "updatedAt": "string",
+            "value": "string",
+          },
+        ],
+      },
+      "message": "Lấy danh sách bản dịch thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "create": {
+    "body": {
+      "data": {
+        "achievementConditionTextKey": "null",
+        "achievementDescriptionKey": "null",
+        "achievementGroupNameKey": "null",
+        "achievementNameKey": "null",
+        "createdAt": "string",
+        "dailyRequestDescriptionKey": "null",
+        "dailyRequestNameKey": "null",
+        "debuffRoundNameKey": "null",
+        "featureNameKey": "null",
+        "gachaBannerNameKey": "null",
+        "id": "number",
+        "key": "string",
+        "languageId": "number",
+        "leaderboardSeasonNameKey": "null",
+        "rewardNameKey": "null",
+        "shopBannerNameKey": "null",
+        "subscriptionDescriptionKey": "null",
+        "subscriptionNameKey": "null",
+        "updatedAt": "string",
+        "value": "string",
+      },
+      "message": "Tạo bản dịch thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "detail": {
+    "body": {
+      "data": {
+        "achievementConditionTextKey": "null",
+        "achievementDescriptionKey": "null",
+        "achievementGroupNameKey": "null",
+        "achievementNameKey": "null",
+        "createdAt": "string",
+        "dailyRequestDescriptionKey": "null",
+        "dailyRequestNameKey": "null",
+        "debuffRoundNameKey": "null",
+        "featureNameKey": "null",
+        "gachaBannerNameKey": "null",
+        "id": "number",
+        "key": "string",
+        "languageId": "number",
+        "leaderboardSeasonNameKey": "null",
+        "rewardNameKey": "null",
+        "shopBannerNameKey": "null",
+        "subscriptionDescriptionKey": "null",
+        "subscriptionNameKey": "null",
+        "updatedAt": "string",
+        "value": "string",
+      },
+      "message": "Lấy bản dịch thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "list": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "achievementConditionTextKey": "null",
+            "achievementDescriptionKey": "null",
+            "achievementGroupNameKey": "null",
+            "achievementNameKey": "null",
+            "createdAt": "string",
+            "dailyRequestDescriptionKey": "null",
+            "dailyRequestNameKey": "null",
+            "debuffRoundNameKey": "null",
+            "featureNameKey": "null",
+            "gachaBannerNameKey": "null",
+            "id": "number",
+            "key": "string",
+            "languageId": "number",
+            "leaderboardSeasonNameKey": "null",
+            "rewardNameKey": "null",
+            "shopBannerNameKey": "null",
+            "subscriptionDescriptionKey": "null",
+            "subscriptionNameKey": "null",
+            "updatedAt": "string",
+            "value": "string",
+          },
+        ],
+      },
+      "message": "Lấy danh sách bản dịch thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "update": {
+    "body": {
+      "data": {
+        "achievementConditionTextKey": "null",
+        "achievementDescriptionKey": "null",
+        "achievementGroupNameKey": "null",
+        "achievementNameKey": "null",
+        "createdAt": "string",
+        "dailyRequestDescriptionKey": "null",
+        "dailyRequestNameKey": "null",
+        "debuffRoundNameKey": "null",
+        "featureNameKey": "null",
+        "gachaBannerNameKey": "null",
+        "id": "number",
+        "key": "string",
+        "languageId": "number",
+        "leaderboardSeasonNameKey": "null",
+        "rewardNameKey": "null",
+        "shopBannerNameKey": "null",
+        "subscriptionDescriptionKey": "null",
+        "subscriptionNameKey": "null",
+        "updatedAt": "string",
+        "value": "string",
+      },
+      "message": "Cập nhật bản dịch thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Catalog batch 3 contract (e2e) translation errors, delete, delete by key 1`] = `
+{
+  "byKeyMissing": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "This field is required",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Trường này là bắt buộc",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "delete": {
+    "body": {},
+    "httpStatus": 204,
+  },
+  "deleteAgain": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Translation not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Bản dịch không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "deleteByKey": {
+    "body": {},
+    "httpStatus": 204,
+  },
+  "duplicate": {
+    "en": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Translation already exists",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+    "vi": {
+      "body": {
+        "error": "CONFLICT",
+        "message": "Bản dịch đã tồn tại",
+        "statusCode": 409,
+      },
+      "httpStatus": 409,
+    },
+  },
+  "invalidBody": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Language ID must be greater than 0",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Language ID phải lớn hơn 0",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "invalidId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid translation ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID bản dịch không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "notFound": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Translation not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Bản dịch không tồn tại",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "numericKeySegment": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Translation key must look like module.id.field (e.g. lesson.1.title)",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Key dịch phải theo định dạng: module.id.field (ví dụ: lesson.1.title)",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+}
+`;

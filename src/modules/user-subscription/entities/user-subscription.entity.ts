@@ -1,6 +1,4 @@
 import { UserSubscriptionStatus } from '@/common/constants/subscription.constant'
-import { checkIdSchema } from '@/common/utils/id.validation'
-import { ENTITY_MESSAGE } from '@/i18n/message-keys'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -32,60 +30,10 @@ export const UserSubscriptionSchema = z.object({
   updatedAt: z.date()
 })
 
-// Create Schema
-export const CreateUserSubscriptionBodySchema = UserSubscriptionSchema.pick({
-  subscriptionPlanId: true,
-  invoiceId: true
-})
-
-  .strict()
-
-export const CreateUserSubscriptionResSchema = z.object({
-  statusCode: z.number(),
-  data: UserSubscriptionSchema,
-  message: z.string()
-})
-
-// Update Schema
-export const UpdateUserSubscriptionBodySchema = UserSubscriptionSchema.pick({
-  startDate: true,
-  expiresAt: true,
-  status: true
-})
-  .partial()
-  .strict()
-
-export const UpdateUserSubscriptionResSchema = CreateUserSubscriptionResSchema
-
-// Query Schema
-export const GetUserSubscriptionParamsSchema = z.object({
-  userSubscriptionId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
-})
-
-export const GetRewardByLeaderboardParamsSchema = z.object({
-  leaderboardSeasonId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
-})
-
 export const GetUserSubscriptionDetailSchema = UserSubscriptionSchema
 
-export const GetUserSubscriptionDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: GetUserSubscriptionDetailSchema,
-  message: z.string()
-})
-
 // Type exports
-export type UserSubscriptionType = z.infer<typeof UserSubscriptionSchema>
-export type CreateUserSubscriptionBodyType = z.infer<
-  typeof CreateUserSubscriptionBodySchema
->
-export type UpdateUserSubscriptionBodyType = z.infer<
-  typeof UpdateUserSubscriptionBodySchema
->
-export type GetUserSubscriptionParamsType = z.infer<
-  typeof GetUserSubscriptionParamsSchema
->
-
+export type UserSubscription = z.infer<typeof UserSubscriptionSchema>
 // Field for query
 export type UserSubscriptionFieldType = keyof z.infer<typeof UserSubscriptionSchema>
 export const USER_SEASON_HISTORY_FIELDS = Object.keys(

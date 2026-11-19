@@ -1,32 +1,46 @@
 import { TranslationMessage } from '@/i18n/message-keys'
-import { ConflictException, HttpException, HttpStatus } from '@nestjs/common'
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common'
 
-export const TranslationNotFoundException = new HttpException(
-  {
-    statusCode: HttpStatus.NOT_FOUND,
-    message: 'Bản dịch không tồn tại',
-    error: 'TRANSLATION_NOT_FOUND'
-  },
-  HttpStatus.NOT_FOUND
-)
+// A new instance per throw; `message` is translated from errorKey by
+// ApiExceptionFilter (Accept-Language), the old Vietnamese text is the vi value
 
-export const TranslationAlreadyExistsException = new HttpException(
-  {
-    statusCode: HttpStatus.CONFLICT,
-    message: 'Bản dịch đã tồn tại',
-    error: 'TRANSLATION_ALREADY_EXISTS'
-  },
-  HttpStatus.CONFLICT
-)
+export class TranslationNotFoundException extends NotFoundException {
+  constructor() {
+    super({
+      message: TranslationMessage.NOT_FOUND,
+      errorKey: TranslationMessage.NOT_FOUND
+    })
+  }
+}
 
-export const InvalidTranslationDataException = new HttpException(
-  {
-    statusCode: HttpStatus.BAD_REQUEST,
-    message: 'Dữ liệu bản dịch không hợp lệ',
-    error: 'INVALID_TRANSLATION_DATA'
-  },
-  HttpStatus.BAD_REQUEST
-)
+// Same (languageId, key) pair already exists
+export class TranslationAlreadyExistsException extends ConflictException {
+  constructor() {
+    super({
+      message: TranslationMessage.ALREADY_EXISTS,
+      errorKey: TranslationMessage.ALREADY_EXISTS
+    })
+  }
+}
+
+export class InvalidTranslationDataException extends BadRequestException {
+  constructor() {
+    super({
+      message: TranslationMessage.INVALID_DATA,
+      errorKey: TranslationMessage.INVALID_DATA
+    })
+  }
+}
+
+// The language the translation points to does not exist
+export class TranslationLanguageNotFoundException extends NotFoundException {
+  constructor() {
+    super({
+      message: TranslationMessage.LANGUAGE_NOT_FOUND,
+      errorKey: TranslationMessage.LANGUAGE_NOT_FOUND
+    })
+  }
+}
 
 export class DuplicateLanguageException extends ConflictException {
   constructor() {

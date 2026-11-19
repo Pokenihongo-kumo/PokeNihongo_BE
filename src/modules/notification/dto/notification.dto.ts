@@ -9,7 +9,7 @@ import {
   UpdateNotificationReadListBodySchema,
   UpdateNotificationReadListResSchema,
   UpdateNotificationResSchema
-} from '../entities/notification.entity'
+} from './notification.zod-dto'
 
 // Request DTOs
 export class CreateNotificationBodyDTO extends createZodDto(

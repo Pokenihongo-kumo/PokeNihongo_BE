@@ -1,6 +1,6 @@
 import { RoleName } from '@/common/constants/role.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { DebuffRoundMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { TranslationService } from '@/modules/translation/translation.service'
 import {
   LanguageNotExistToTranslateException,
   NotFoundRecordException
@@ -10,27 +10,24 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
-import { HttpStatus, Injectable } from '@nestjs/common'
-import { LanguagesRepository } from '../languages/languages.repo'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entities'
-import { TranslationRepository } from '../translation/translation.repo'
+import { PaginationQuery } from '@/shared/models/request.model'
+import { Injectable } from '@nestjs/common'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { DebuffRoundRepo } from './debuff-round.repo'
 import { DebuffRoundAlreadyExistsException } from './dto/debuff-round.error'
 import {
-  CreateDebuffRoundBodyInputType,
-  CreateDebuffRoundBodyType,
-  UpdateDebuffRoundBodyInputType,
-  UpdateDebuffRoundBodyType
-} from './entities/debuff-round.entity'
+  CreateDebuffRoundBody,
+  CreateDebuffRoundBodyInput,
+  UpdateDebuffRoundBody,
+  UpdateDebuffRoundBodyInput
+} from './dto/debuff-round.zod-dto'
 
 @Injectable()
 export class DebuffRoundService {
   constructor(
     private debuffRoundRepo: DebuffRoundRepo,
-    private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepository,
-    private readonly translationRepo: TranslationRepository
+    private readonly languagesService: LanguagesService,
+    private readonly translationService: TranslationService
   ) {}
 
   private async convertTranslationsToLangCodes(
@@ -39,7 +36,7 @@ export class DebuffRoundService {
     if (!nameTranslations || nameTranslations.length === 0) return []
 
     const allLangIds = Array.from(new Set(nameTranslations.map((t) => t.languageId)))
-    const langs = await this.languageRepo.getWithListId(allLangIds)
+    const langs = await this.languagesService.getWithListId(allLangIds)
     const idToCode = new Map(langs.map((l) => [l.id, l.code]))
 
     return nameTranslations.map((t) => ({
@@ -48,15 +45,12 @@ export class DebuffRoundService {
     }))
   }
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi', roleName: string) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+  async list(pagination: PaginationQuery, lang: string = 'vi', roleName: string) {
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     if (!langId) {
-      return {
-        data: null,
-        message: this.i18nService.translate(DebuffRoundMessage.GET_LIST_SUCCESS, lang)
-      }
+      return null
     }
 
     const data = await this.debuffRoundRepo.list(pagination, langId ?? undefined, isAdmin)
@@ -79,29 +73,20 @@ export class DebuffRoundService {
       )
 
       return {
-        data: {
-          ...data,
-          results: resultsWithConvertedTranslations
-        },
-        message: this.i18nService.translate(DebuffRoundMessage.GET_LIST_SUCCESS, lang)
+        ...data,
+        results: resultsWithConvertedTranslations
       }
     }
 
-    return {
-      data,
-      message: this.i18nService.translate(DebuffRoundMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   async findById(id: number, roleName: string, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     if (!langId) {
-      return {
-        data: null,
-        message: this.i18nService.translate(DebuffRoundMessage.GET_SUCCESS, lang)
-      }
+      return null
     }
 
     const debuffRound = await this.debuffRoundRepo.findByIdWithLangId(id, isAdmin, langId)
@@ -128,30 +113,23 @@ export class DebuffRoundService {
       ...(isAdmin ? { nameTranslations } : {})
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: result,
-      message: this.i18nService.translate(DebuffRoundMessage.GET_SUCCESS, lang)
-    }
+    return result
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreateDebuffRoundBodyInputType
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({
+    data,
+    createdById
+  }: {
+    data: CreateDebuffRoundBodyInput
+    createdById: number
+  }) {
     let createdDebuffRound: any = null
 
     try {
       return await this.debuffRoundRepo.withTransaction(async (prismaTx) => {
         const nameKey = `debuffRound.name.${Date.now()}`
 
-        const dataCreate: CreateDebuffRoundBodyType = {
+        const dataCreate: CreateDebuffRoundBody = {
           nameKey,
           typeDebuff: data.typeDebuff,
           valueDebuff: data.valueDebuff
@@ -174,7 +152,7 @@ export class DebuffRoundService {
         const allLangCodes = Array.from(new Set(nameList))
 
         // Get languages corresponding to the keys
-        const languages = await this.languageRepo.getWithListCode(allLangCodes)
+        const languages = await this.languagesService.getWithListCode(allLangCodes)
 
         // Create map { code: id } for quick access
         const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
@@ -186,7 +164,7 @@ export class DebuffRoundService {
         }
 
         // Create translation records
-        const translationRecords: CreateTranslationBodyType[] = []
+        const translationRecords: CreateTranslationBody[] = []
 
         // nameTranslations → key = nameKey
         for (const item of data.nameTranslations) {
@@ -198,11 +176,11 @@ export class DebuffRoundService {
         }
 
         // Validate translations (check for duplicate names)
-        await this.translationRepo.validateTranslationRecords(translationRecords)
+        await this.translationService.validateTranslationRecords(translationRecords)
 
         // Create or update translations with transaction
         // const translationPromises = translationRecords.map((record) =>
-        //   this.translationRepo.createOrUpdateWithTransaction(record, prismaTx)
+        //   this.translationService.createOrUpdateWithTransaction(record, prismaTx)
         // )
         // await Promise.all(translationPromises)
 
@@ -219,11 +197,7 @@ export class DebuffRoundService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.CREATED,
-          data: result,
-          message: this.i18nService.translate(DebuffRoundMessage.CREATE_SUCCESS, lang)
-        }
+        return result
       })
     } catch (error) {
       // Rollback: Delete debuffRound if created
@@ -252,29 +226,26 @@ export class DebuffRoundService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateDebuffRoundBodyInputType
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateDebuffRoundBodyInput
+    updatedById: number
+  }) {
     let existingDebuffRound: any = null
 
     try {
       return await this.debuffRoundRepo.withTransaction(async (prismaTx) => {
-        let translationRecords: CreateTranslationBodyType[] = []
+        let translationRecords: CreateTranslationBody[] = []
         // Get current record
         existingDebuffRound = await this.debuffRoundRepo.findById(id)
         if (!existingDebuffRound) throw new NotFoundRecordException()
 
         // Prepare data for update
-        const dataUpdate: Partial<UpdateDebuffRoundBodyType> = {}
+        const dataUpdate: Partial<UpdateDebuffRoundBody> = {}
 
         if (data.typeDebuff !== undefined) {
           dataUpdate.typeDebuff = data.typeDebuff
@@ -290,7 +261,7 @@ export class DebuffRoundService {
 
           if (allLangCodes.length > 0) {
             // Get languages
-            const languages = await this.languageRepo.getWithListCode(allLangCodes)
+            const languages = await this.languagesService.getWithListCode(allLangCodes)
             const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
 
             // Check missing language
@@ -310,11 +281,11 @@ export class DebuffRoundService {
             }
 
             // Validate translation records
-            await this.translationRepo.validateTranslationRecords(translationRecords)
+            await this.translationService.validateTranslationRecords(translationRecords)
 
             // Update translations with transaction
             // const translationPromises = translationRecords.map((record) =>
-            //   this.translationRepo.createOrUpdateWithTransaction(record, prismaTx)
+            //   this.translationService.createOrUpdateWithTransaction(record, prismaTx)
             // )
             // await Promise.all(translationPromises)
           }
@@ -334,11 +305,7 @@ export class DebuffRoundService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.OK,
-          data: updatedDebuffRound,
-          message: this.i18nService.translate(DebuffRoundMessage.UPDATE_SUCCESS, lang)
-        }
+        return updatedDebuffRound
       })
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
@@ -354,10 +321,7 @@ export class DebuffRoundService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
       const existingDebuffRound = await this.debuffRoundRepo.findById(id)
       if (!existingDebuffRound) {
@@ -369,19 +333,21 @@ export class DebuffRoundService {
           id,
           deletedById
         }),
-        this.translationRepo.deleteByKey(existingDebuffRound.nameKey)
+        this.translationService.deleteByKey(existingDebuffRound.nameKey)
       ])
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(DebuffRoundMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
       }
       throw error
     }
+  }
+
+  // ---- For other modules: Debuffs a round can draw (B7) ----
+
+  findLiveDebuffs(...args: Parameters<DebuffRoundRepo['findLiveDebuffs']>) {
+    return this.debuffRoundRepo.findLiveDebuffs(...args)
   }
 }

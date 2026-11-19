@@ -1,7 +1,7 @@
 import { I18nService } from '@/i18n/i18n.service'
 import { MatchingSocketMessage } from '@/i18n/message-keys'
 import { addTimeUTC } from '@/shared/helpers'
-import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
+import { UserCoreService } from '@/modules/user/user-core.service'
 import { TokenService } from '@/shared/services/token.service'
 import { Injectable, Logger } from '@nestjs/common'
 import {
@@ -47,7 +47,7 @@ export class MatchingGateway {
   private readonly logger = new Logger(MatchingGateway.name)
 
   constructor(
-    private readonly sharedUserRepo: SharedUserRepository,
+    private readonly userCoreService: UserCoreService,
     private readonly tokenService: TokenService,
     private readonly i18nService: I18nService,
     private readonly socketServerService: SocketServerService
@@ -142,8 +142,8 @@ export class MatchingGateway {
     try {
       // Fetch user details for both users
       const [user1, user2] = await Promise.all([
-        this.sharedUserRepo.findUnique({ id: participant1.userId }),
-        this.sharedUserRepo.findUnique({ id: participant2.userId })
+        this.userCoreService.findUnique({ id: participant1.userId }),
+        this.userCoreService.findUnique({ id: participant2.userId })
       ])
 
       if (!user1 || !user2) {
@@ -725,7 +725,7 @@ export class MatchingGateway {
       type: 'MATCH_COMPLETED',
       matchId,
       match: matchData,
-      message: `${this.i18nService.translate(MatchingSocketMessage.MATCH_COMPLETED_WITH_WINNER, lang)} ${matchData.winner?.name || 'Unknown'}`
+      message: `${this.i18nService.translate(MatchingSocketMessage.MATCH_COMPLETED_WITH_WINNER, lang).trimEnd()} ${matchData.winner?.name || 'Unknown'}`
     }
 
     this.server.to(userMatchRoom1).emit(MATCHING_EVENTS.MATCH_COMPLETED, payload)

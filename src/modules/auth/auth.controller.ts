@@ -1,16 +1,23 @@
+import { TypeOfVerificationCode } from '@/common/constants/auth.constant'
+import { I18nService } from '@/i18n/i18n.service'
+import { AuthMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { IsPublic } from '@/common/decorators/auth.decorator'
 import { RateLimit } from '@/common/decorators/rate-limit.decorator'
+import { otpSendLimits, otpVerifyLimits } from '@/common/constants/otp-rate-limit'
 import { UserAgent } from '@/common/decorators/user-agent.decorator'
 import { RateLimitGuard } from '@/common/guards/rate-limit.guard'
-import envConfig from '@/config/env.config'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import {
   AccountResDTO,
   ChangePasswordBodyDTO,
+  CheckEmailParamsDTO,
   ForgotPasswordBodyDTO,
   GetAccountProfileResDTO,
   GetAuthorizationUrlResDTO,
+  GoogleExchangeBodyDTO,
+  GoogleExchangeResDTO,
+  GoogleLinkQueryDTO,
   LoginBodyDTO,
   LoginResDTO,
   LogoutBodyDTO,
@@ -51,19 +58,32 @@ import { GoogleService } from './google.service'
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly googleService: GoogleService
+    private readonly googleService: GoogleService,
+    private readonly i18nService: I18nService
   ) {}
 
   @Post('verify-otp')
   @IsPublic()
+  // A forgot-password OTP gives an access token: guesses are counted per email
+  // (and per IP) with /mail/verify-otp
+  @UseGuards(RateLimitGuard)
+  @RateLimit(otpVerifyLimits((req) => req.body?.email))
   @ZodSerializerDto(MessageResDTO)
-  sendOTP(
+  async sendOTP(
     @Body() body: VerifyOTPBodyDTO,
     @UserAgent() userAgent: string,
     @Ip() ip: string,
     @I18nLang() lang: string
   ) {
-    return this.authService.verifyOTP(body, userAgent, ip, lang)
+    const { outcome, data } = await this.authService.verifyOTP(body, userAgent, ip)
+    return {
+      data,
+      // the forgot-password message was always Vietnamese
+      message:
+        outcome === 'forgot-password'
+          ? this.i18nService.translate(AuthMessage.VERIFY_OTP_FORGOT_PASSWORD_SUCCESS)
+          : this.i18nService.translate(AuthMessage.OTP_AUTHENTICATION_SUCCESS, lang)
+    }
   }
 
   @Post('login')
@@ -71,20 +91,20 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @IsPublic()
   @ZodSerializerDto(LoginResDTO)
-  login(
+  async login(
     @Body() body: LoginBodyDTO,
     @UserAgent() userAgent: string,
     @Ip() ip: string,
     @I18nLang() lang: string
   ) {
-    return this.authService.login(
-      {
+    return {
+      message: this.i18nService.translate(AuthMessage.LOGIN_SUCCESS, lang),
+      data: await this.authService.login({
         ...body,
         userAgent,
         ip
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Post('register')
@@ -93,29 +113,36 @@ export class AuthController {
   @UseInterceptors(AnyFilesInterceptor())
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: RegisterMultipartSwaggerDTO }) // dùng class để render form đẹp
-  register(
+  async register(
     @Body() body: RegisterBodyDTO,
     @UserAgent() userAgent: string,
     @Ip() ip: string,
     @I18nLang() lang: string
   ) {
-    return this.authService.register(body, userAgent, ip, lang)
+    return {
+      message: this.i18nService.translate(AuthMessage.REGISTER_SUCCESS, lang),
+      data: await this.authService.register(body, userAgent, ip)
+    }
   }
 
   @Post('refresh-token')
   @ApiBearerAuth()
   @IsPublic()
   @ZodSerializerDto(RefreshTokenResDTO)
-  refreshToken(
+  async refreshToken(
     @Body() body: RefreshTokenBodyDTO,
     @UserAgent() userAgent: string,
-    @Ip() ip: string
+    @Ip() ip: string,
+    @I18nLang() lang: string
   ) {
-    return this.authService.refreshToken({
-      refreshToken: body.refreshToken,
-      userAgent,
-      ip
-    })
+    return {
+      message: this.i18nService.translate(AuthMessage.REFRESH_TOKEN_SUCCESS, lang),
+      data: await this.authService.refreshToken({
+        refreshToken: body.refreshToken,
+        userAgent,
+        ip
+      })
+    }
   }
 
   @Post('logout')
@@ -123,134 +150,135 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @ZodSerializerDto(MessageResDTO)
-  logout(@Body() body: LogoutBodyDTO, @I18nLang() lang: string) {
-    return this.authService.logout(body.refreshToken, lang)
+  async logout(@Body() body: LogoutBodyDTO, @I18nLang() lang: string) {
+    await this.authService.logout(body.refreshToken)
+    return {
+      message: this.i18nService.translate(AuthMessage.LOGOUT_SUCCESS, lang),
+      data: null
+    }
   }
 
   // gui otp qua email
 
   @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
   @IsPublic()
   @UseGuards(RateLimitGuard)
-  @RateLimit({
-    windowMs: 60 * 1000, // 1 phút
-    max: 3, // tối đa 3 lần
-    keyGenerator: (req) => `forgot_password:${req.ip}:${req.body.email}` // rate limit theo IP + email
-  })
+  @RateLimit(otpSendLimits((req) => req.body?.email))
   @ZodSerializerDto(MessageResDTO)
-  forgotPassword(@Body() body: ForgotPasswordBodyDTO, @I18nLang() lang: string) {
-    return this.authService.forgotPassword(body, lang)
+  async forgotPassword(@Body() body: ForgotPasswordBodyDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(AuthMessage.SEND_OTP_SUCCESS, lang),
+      data: await this.authService.forgotPassword(body)
+    }
   }
 
   @Post('reset-password')
   @ApiBearerAuth()
   @ZodSerializerDto(MessageResDTO)
-  resetPassword(
+  async resetPassword(
     @Body() body: ResetPasswordBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.authService.resetPassword(body, userId, lang)
+    await this.authService.resetPassword(body, userId)
+    return {
+      message: this.i18nService.translate(AuthMessage.RESET_PASSWORD_SUCCESS, lang),
+      data: null
+    }
   }
 
   // change-password
   @Post('change-password')
   @ZodSerializerDto(MessageResDTO)
-  changePassword(
+  async changePassword(
     @Body() body: ChangePasswordBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.authService.changePassword(body, userId, lang)
+    await this.authService.changePassword(body, userId)
+    return {
+      message: this.i18nService.translate(AuthMessage.CHANGE_PASSWORD_SUCCESS, lang),
+      data: null
+    }
   }
-
-  // @Get('verified-email/:email')
-  // @IsPublic()
-  // async verifiedEmail(@Param('email') email: string, @Res() res: Response) {
-  //   const data = await this.authService.verifiedEmail(email)
-  //   return res.redirect(`${envConfig.FE_URL}/auth/login?message=${data.message}`)
-  // }
 
   // neu mail ton tai la login, khong thi la register
   @Get('check-email/:email')
   @IsPublic()
   @UseGuards(RateLimitGuard)
-  @RateLimit({
-    windowMs: 60 * 1000, // 1 phút
-    max: 3, // tối đa 3 lần
-    keyGenerator: (req) => `check_email:${req.ip}:${req.params.email}` // rate limit theo IP + email
-  })
-  checkEmailExist(
-    @Param('email') email: string,
+  @RateLimit(otpSendLimits((req) => req.params?.email))
+  async checkEmailExist(
+    @Param() { email }: CheckEmailParamsDTO,
     @UserAgent() userAgent: string,
     @Ip() ip: string,
     @I18nLang() lang: string
   ) {
-    return this.authService.checkMailToAction(email, userAgent, ip, lang)
+    const data = await this.authService.checkMailToAction(email, userAgent, ip)
+    // new email: OTP to register; known user: OTP only on a new device
+    const key =
+      data.type === TypeOfVerificationCode.REGISTER
+        ? AuthMessage.SEND_OTP_SUCCESS
+        : data.requiresOtp
+          ? AuthMessage.FIRST_LOGIN
+          : AuthMessage.NOT_FIRST_LOGIN
+    return { data, message: this.i18nService.translate(key, lang) }
   }
-
-  // @Post('resend-verified-email/:email')
-  // @IsPublic()
-  // @UseGuards(RateLimitGuard)
-  // @RateLimit({
-  //   windowMs: 60 * 1000, // 1 phút
-  //   max: 3, // tối đa 3 lần
-  //   keyGenerator: (req) => `resend_email:${req.ip}:${req.params.email}` // rate limit theo IP + email
-  // })
-  // @ZodSerializerDto(MessageResDTO)
-  // resendVerifiedEmail(@Param('email') email: string, @I18nLang() lang: string) {
-  //   return this.authService.resendVerifiedEmail(email)
-  // }
 
   @Get('me')
   @ApiBearerAuth()
   @ZodSerializerDto(GetAccountProfileResDTO)
-  me(@ActiveUser('userId') userId: number, @I18nLang() lang: string) {
-    return this.authService.getMe(userId, lang)
+  async me(@ActiveUser('userId') userId: number, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(AuthMessage.GET_PROFILE_SUCCESS, lang),
+      data: await this.authService.getMe(userId)
+    }
   }
 
   @Put('me')
   @ZodSerializerDto(AccountResDTO)
   @ApiBearerAuth()
   @ApiBody({ type: UpdateMeBodyDTO })
-  updateMe(
+  async updateMe(
     @Body() body: UpdateMeBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.authService.updateMe(
-      {
+    return {
+      message: this.i18nService.translate(AuthMessage.UPDATE_PROFILE_SUCCESS, lang),
+      data: await this.authService.updateMe({
         userId,
         data: body
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Put('fcm-token')
   @ZodSerializerDto(MessageResDTO)
   @ApiBearerAuth()
   @ApiBody({ type: UpdateFcmTokenDeviceBodyDTO })
-  updateFcmTokenDeviceWithDeviceId(
+  async updateFcmTokenDeviceWithDeviceId(
     @Body() body: UpdateFcmTokenDeviceBodyDTO,
-    @ActiveUser('deviceId') deviceId: number,
-    @I18nLang() lang: string
+    @ActiveUser('deviceId') deviceId: number
   ) {
-    return this.authService.updateFcmTokenDeviceWithDeviceId(
-      {
-        deviceId,
-        fcmToken: body.fcmToken
-      },
-      lang
-    )
+    await this.authService.updateFcmTokenDeviceWithDeviceId({
+      deviceId,
+      fcmToken: body.fcmToken
+    })
+    // always Vietnamese, as before
+    return { data: null, message: this.i18nService.translate(AuthMessage.UPDATE_SUCCESS) }
   }
 
-  //oauth
+  // Google sign-in (ADR D-auth §3): PKCE challenge in, one-time code out,
+  // tokens only from POST google/exchange (never in a URL)
   @Get('google-link')
   @IsPublic()
   @ZodSerializerDto(GetAuthorizationUrlResDTO)
-  getAuthorizationUrl(@UserAgent() userAgent: string, @Ip() ip: string) {
-    return this.googleService.getAuthorizationUrl({ userAgent, ip })
+  async getAuthorizationUrl(@Query() query: GoogleLinkQueryDTO) {
+    return {
+      data: await this.googleService.getAuthorizationUrl(query),
+      message: 'Lấy URL đăng nhập Google thành công'
+    }
   }
 
   @Get('google/callback')
@@ -260,19 +288,22 @@ export class AuthController {
     @Query('state') state: string,
     @Res() res: Response
   ) {
-    try {
-      const data = await this.googleService.googleCallback({ code, state })
-      return res.redirect(
-        `${envConfig.GOOGLE_CLIENT_REDIRECT_URI}?accessToken=${data.accessToken}&refreshToken=${data.refreshToken}`
-      )
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : 'Đã xảy ra lỗi khi đăng nhập bằng Google, vui lòng thử lại bằng cách khác'
-      return res.redirect(
-        `${envConfig.GOOGLE_CLIENT_REDIRECT_URI}?errorMessage=${message}`
-      )
+    return res.redirect(await this.googleService.callbackRedirect({ code, state }))
+  }
+
+  @Post('google/exchange')
+  @IsPublic()
+  @HttpCode(HttpStatus.OK)
+  @ZodSerializerDto(GoogleExchangeResDTO)
+  async googleExchange(
+    @Body() body: GoogleExchangeBodyDTO,
+    @UserAgent() userAgent: string,
+    @Ip() ip: string,
+    @I18nLang() lang: string
+  ) {
+    return {
+      message: this.i18nService.translate(AuthMessage.GOOGLE_EXCHANGE_SUCCESS, lang),
+      data: await this.googleService.exchange(body, userAgent, ip)
     }
   }
 }

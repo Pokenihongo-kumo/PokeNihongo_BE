@@ -63,7 +63,8 @@ export class EmailAlreadyActiveException extends NotFoundException {
   }
 }
 
-export class FailToLoginException extends NotFoundException {
+// 401: sai email hoặc mật khẩu (trước đây trả 404)
+export class FailToLoginException extends UnauthorizedException {
   constructor() {
     super({
       message: 'Sai email hoặc mật khẩu',
@@ -186,6 +187,38 @@ export class NeedDeviceVerificationException extends UnauthorizedException {
       message:
         'Đây là lần đăng nhập đầu tiên từ thiết bị này. Vui lòng kiểm tra email để xác thực.',
       errorKey: AuthMessage.NEED_DEVICE_VERIFICATION
+    })
+  }
+}
+
+// POST /auth/register without a valid one-time token from a verified REGISTER
+// OTP for that email (missing, wrong, expired, already used or another email)
+export class RegistrationTokenInvalidException extends UnauthorizedException {
+  constructor() {
+    super({
+      message: AuthMessage.REGISTRATION_TOKEN_INVALID,
+      errorKey: AuthMessage.REGISTRATION_TOKEN_INVALID
+    })
+  }
+}
+
+// POST /auth/google/exchange: unknown, used or expired code, or a code
+// verifier that does not match the challenge sign-in started with
+export class ExchangeCodeInvalidException extends UnauthorizedException {
+  constructor() {
+    super({
+      message: AuthMessage.EXCHANGE_CODE_INVALID,
+      errorKey: AuthMessage.EXCHANGE_CODE_INVALID
+    })
+  }
+}
+
+// GET /auth/google-link with a redirectUri outside the allowlist
+export class GoogleRedirectNotAllowedException extends UnprocessableEntityException {
+  constructor() {
+    super({
+      message: AuthMessage.GOOGLE_REDIRECT_NOT_ALLOWED,
+      errorKey: AuthMessage.GOOGLE_REDIRECT_NOT_ALLOWED
     })
   }
 }

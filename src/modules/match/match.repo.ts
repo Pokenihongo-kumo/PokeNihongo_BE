@@ -1,19 +1,15 @@
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 
 import { MatchStatus, MatchStatusType } from '@/common/constants/match.constant'
 import { parseQs } from '@/common/utils/qs-parser'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import { MatchParticipantType } from '../match-participant/entities/match-participant.entity'
-import {
-  CreateMatchBodyType,
-  MATCH_FIELDS,
-  MatchType,
-  UpdateMatchBodyType
-} from './entities/match.entity'
+import { MatchParticipant } from '../match-participant/entities/match-participant.entity'
+import { CreateMatchBody, UpdateMatchBody } from './dto/match.zod-dto'
+import { MATCH_FIELDS, Match } from './entities/match.entity'
 
-type MatchPrismaType = Omit<MatchType, 'nameKey'> & { name: string }
+type MatchPrismaType = Omit<Match, 'nameKey'> & { name: string }
 
 @Injectable()
 export class MatchRepo {
@@ -30,10 +26,10 @@ export class MatchRepo {
       data
     }: {
       createdById: number | null
-      data: CreateMatchBodyType & { leaderboardSeasonId: number }
+      data: CreateMatchBody & { leaderboardSeasonId: number }
     },
     prismaTx?: PrismaClient
-  ): Promise<MatchType> {
+  ): Promise<Match> {
     const client = prismaTx || this.prismaService
     return client.match.create({
       data: {
@@ -50,10 +46,10 @@ export class MatchRepo {
     }: {
       id: number
       updatedById?: number
-      data: UpdateMatchBodyType
+      data: UpdateMatchBody
     },
     prismaTx?: PrismaClient
-  ): Promise<MatchType> {
+  ): Promise<Match> {
     const client = prismaTx || this.prismaService
 
     const updatedMatch = await client.match.update({
@@ -76,7 +72,7 @@ export class MatchRepo {
     },
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<MatchType> {
+  ): Promise<Match> {
     const client = prismaTx || this.prismaService
     const result = isHard
       ? await this.prismaService.match.delete({
@@ -96,7 +92,7 @@ export class MatchRepo {
     return result
   }
 
-  async list(pagination: PaginationQueryType, langId?: number) {
+  async list(pagination: PaginationQuery, langId?: number) {
     const { where: rawWhere = {}, orderBy } = parseQs(pagination.qs, MATCH_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -129,7 +125,7 @@ export class MatchRepo {
     }
   }
 
-  findById(id: number): Promise<MatchType | null> {
+  findById(id: number): Promise<Match | null> {
     return this.prismaService.match.findUnique({
       where: {
         id,
@@ -139,7 +135,7 @@ export class MatchRepo {
   }
   findByIdWithParticipant(
     id: number
-  ): Promise<(MatchType & { participants: MatchParticipantType[] }) | null> {
+  ): Promise<(Match & { participants: MatchParticipant[] }) | null> {
     return this.prismaService.match.findUnique({
       where: {
         id,
@@ -151,7 +147,7 @@ export class MatchRepo {
     })
   }
 
-  findInProgressByUserId(userId: number): Promise<MatchType | null> {
+  findInProgressByUserId(userId: number): Promise<Match | null> {
     return this.prismaService.match.findFirst({
       where: {
         status: 'IN_PROGRESS',
@@ -197,7 +193,7 @@ export class MatchRepo {
     })
   }
 
-  updateWithStatusById(status: MatchStatusType, id: number): Promise<MatchType> {
+  updateWithStatusById(status: MatchStatusType, id: number): Promise<Match> {
     return this.prismaService.match.update({
       where: {
         id,
@@ -218,7 +214,7 @@ export class MatchRepo {
       eloLost: number
     }
     id: number
-  }): Promise<MatchType> {
+  }): Promise<Match> {
     return this.prismaService.match.update({
       where: {
         id,
@@ -232,7 +228,7 @@ export class MatchRepo {
     })
   }
 
-  findActiveMatchByUserId(userId: number): Promise<MatchType | null> {
+  findActiveMatchByUserId(userId: number): Promise<Match | null> {
     return this.prismaService.match.findFirst({
       where: {
         status: { in: ['IN_PROGRESS', 'PENDING'] },
@@ -271,7 +267,7 @@ export class MatchRepo {
     })
   }
 
-  getMatchesByUser(userId: number, langId?: number): Promise<MatchType[]> {
+  getMatchesByUser(userId: number, langId?: number): Promise<Match[]> {
     return this.prismaService.match.findMany({
       where: {
         participants: {
@@ -303,7 +299,7 @@ export class MatchRepo {
   async getMatchesHistoryByUser(
     userId: number,
     langId?: number,
-    pagination?: PaginationQueryType
+    pagination?: PaginationQuery
   ): Promise<any> {
     const baseWhere: any = {
       participants: {
@@ -379,5 +375,377 @@ export class MatchRepo {
     })) > 0
       ? true
       : false
+  }
+
+  // GET /match/tracking: the user's latest IN_PROGRESS match, else the latest
+  // PENDING one, with everything the tracking screen shows
+  async findCurrentMatchForUser(userId: number) {
+    const includeForMatch = {
+      participants: {
+        include: {
+          user: { select: { id: true, name: true, avatar: true, eloscore: true } }
+        }
+      },
+      rounds: {
+        include: {
+          participants: {
+            include: {
+              matchParticipant: {
+                include: {
+                  user: { select: { id: true, name: true, avatar: true } }
+                }
+              },
+              selectedUserPokemon: { include: { pokemon: true } },
+              debuff: true,
+              roundQuestions: {
+                include: {
+                  debuff: true,
+                  roundQuestionsAnswerLogs: true,
+                  questionBank: { include: { answers: true } }
+                },
+                orderBy: { orderNumber: 'asc' }
+              }
+            }
+          }
+        },
+        orderBy: { id: 'asc' } // Ensure rounds are sorted by id (creation order)
+      }
+    } as const
+
+    const matchInProgress = await this.prismaService.match.findFirst({
+      where: {
+        deletedAt: null,
+        status: 'IN_PROGRESS',
+        participants: { some: { userId } }
+      },
+      orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],
+      include: includeForMatch as any
+    })
+
+    const matchPending = !matchInProgress
+      ? await this.prismaService.match.findFirst({
+          where: {
+            deletedAt: null,
+            status: 'PENDING',
+            participants: { some: { userId } }
+          },
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+          include: includeForMatch as any
+        })
+      : null
+
+    return matchInProgress ?? matchPending
+  }
+
+  // Status only, by id (the acceptance timeout decides the match)
+  setStatus(id: number, status: MatchStatusType, prismaTx: PrismaClient) {
+    return prismaTx.match.update({
+      where: { id },
+      data: { status }
+    })
+  }
+
+  // ---- Completing a match (RoundQuestionService) ----
+
+  findStatusById(matchId: number) {
+    return this.prismaService.match.findUnique({
+      where: { id: matchId },
+      select: { status: true }
+    })
+  }
+
+  // COMPLETED with its winner (null on a tie), with what match-completed shows
+  completeWithWinner(matchId: number, winnerId: number | null, prismaTx: PrismaClient) {
+    return prismaTx.match.update({
+      where: { id: matchId },
+      data: { status: 'COMPLETED', winnerId },
+      include: {
+        winner: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+            eloscore: true
+          }
+        },
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+                eloscore: true
+              }
+            }
+          }
+        },
+        rounds: {
+          include: {
+            roundWinner: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    avatar: true,
+                    eloscore: true
+                  }
+                }
+              }
+            },
+            participants: {
+              include: {
+                matchParticipant: { include: { user: true } },
+                selectedUserPokemon: {
+                  include: {
+                    pokemon: {
+                      select: {
+                        id: true,
+                        pokedex_number: true,
+                        nameJp: true,
+                        nameTranslations: true,
+                        rarity: true,
+                        imageUrl: true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          orderBy: { roundNumber: 'asc' }
+        }
+      }
+    })
+  }
+
+  setEloResult(
+    matchId: number,
+    eloGained: number,
+    eloLost: number,
+    prismaTx: PrismaClient
+  ) {
+    return prismaTx.match.update({
+      where: { id: matchId },
+      data: { eloGained, eloLost }
+    })
+  }
+
+  findCompletedWithDetails(matchId: number) {
+    return this.prismaService.match.findUnique({
+      where: { id: matchId },
+      include: {
+        winner: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+            eloscore: true
+          }
+        },
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+                eloscore: true
+              }
+            }
+          }
+        },
+        rounds: {
+          include: {
+            roundWinner: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    avatar: true,
+                    eloscore: true
+                  }
+                }
+              }
+            },
+            participants: {
+              include: {
+                matchParticipant: {
+                  include: {
+                    user: {
+                      select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        avatar: true,
+                        eloscore: true
+                      }
+                    }
+                  }
+                },
+                selectedUserPokemon: {
+                  include: {
+                    pokemon: {
+                      select: {
+                        id: true,
+                        pokedex_number: true,
+                        nameJp: true,
+                        nameTranslations: true,
+                        rarity: true,
+                        imageUrl: true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          orderBy: { roundNumber: 'asc' }
+        }
+      }
+    })
+  }
+
+  // ---- Completing a match (RoundQuestionTimeoutProcessor) ----
+
+  // As completeWithWinner, with the full winner row (the timeout path reads it so)
+  completeWithWinnerFull(
+    matchId: number,
+    winnerId: number | null,
+    prismaTx: PrismaClient
+  ) {
+    return prismaTx.match.update({
+      where: { id: matchId },
+      data: {
+        status: 'COMPLETED',
+        winnerId
+      },
+      include: {
+        winner: true,
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+                eloscore: true
+              }
+            }
+          }
+        },
+        rounds: {
+          include: {
+            roundWinner: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    avatar: true,
+                    eloscore: true
+                  }
+                }
+              }
+            },
+            participants: {
+              include: {
+                matchParticipant: {
+                  include: {
+                    user: {
+                      select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        avatar: true,
+                        eloscore: true
+                      }
+                    }
+                  }
+                },
+                selectedUserPokemon: {
+                  include: {
+                    pokemon: {
+                      select: {
+                        id: true,
+                        pokedex_number: true,
+                        nameJp: true,
+                        nameTranslations: true,
+                        rarity: true,
+                        imageUrl: true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          orderBy: { roundNumber: 'asc' }
+        }
+      }
+    })
+  }
+
+  // ---- The pick flow (match-round-participant) ----
+
+  findWithPlayers(id: number) {
+    return this.prismaService.match.findUnique({
+      where: { id },
+      include: { participants: { include: { user: true } } }
+    })
+  }
+
+  // ---- The pick timeout (match-round-participant) ----
+
+  findInProgressByParticipant(matchParticipantId: number) {
+    return this.prismaService.match.findFirst({
+      where: {
+        participants: {
+          some: { id: matchParticipantId }
+        },
+        status: 'IN_PROGRESS'
+      },
+      include: {
+        rounds: {
+          include: {
+            participants: {
+              select: {
+                selectedUserPokemonId: true,
+                selectedUserPokemon: {
+                  select: {
+                    pokemonId: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
+  }
+
+  findByRoundWithPlayers(matchRoundId: number) {
+    return this.prismaService.match.findFirst({
+      where: {
+        rounds: {
+          some: { id: matchRoundId }
+        }
+      },
+      include: {
+        participants: {
+          include: { user: true }
+        }
+      }
+    })
   }
 }

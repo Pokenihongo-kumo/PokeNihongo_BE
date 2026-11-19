@@ -2,20 +2,16 @@ import {
   AchievementType as AchievementTypeEnum,
   UserAchievementStatus
 } from '@/common/constants/achievement.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { UserAchievementMessage } from '@/i18n/message-keys'
+import { AchievementGroupService } from '@/modules/achievement-group/achievement-group.service'
+import { LanguagesService } from '@/modules/languages/languages.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
-import { PrismaService } from '@/shared/services/prisma.service'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { UserRewardSourceType } from '@prisma/client'
-import { AchievementGroupRepo } from '../achievement-group/achievement-group.repo'
-import { AchievementRepo } from '../achievement/achievement.repo'
-import { LanguagesRepository } from '../languages/languages.repo'
 import { RewardService } from '../reward/reward.service'
 import { UserProgressService } from '../user-progress/user-progress.service'
 import {
@@ -23,52 +19,38 @@ import {
   UserAchievementNotFoundException
 } from './dto/user-achievement.error'
 import {
-  CreateUserAchievementBodyType,
-  UpdateUserAchievementBodyType
-} from './entities/user-achievement.entity'
+  CreateUserAchievementBody,
+  UpdateUserAchievementBody
+} from './dto/user-achievement.zod-dto'
 import { UserAchievementRepo } from './user-achievement.repo'
 
 @Injectable()
 export class UserAchievementService {
   constructor(
     private userAchievementRepo: UserAchievementRepo,
-    private achievementGroupRepo: AchievementGroupRepo,
-    private achievementRepo: AchievementRepo,
-    private readonly languageRepo: LanguagesRepository,
-    private readonly prismaService: PrismaService,
-    private readonly i18nService: I18nService,
+    private achievementGroupService: AchievementGroupService,
+    private readonly languagesService: LanguagesService,
     private readonly userProgressService: UserProgressService,
 
     private readonly rewardService: RewardService
   ) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.userAchievementRepo.list(pagination)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(UserAchievementMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   // Helper method to calculate weaknesses for a Pokemon (copied from PokemonService)
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const userAchievement = await this.userAchievementRepo.findById(id)
     if (!userAchievement) {
       throw new UserAchievementNotFoundException()
     }
 
-    return {
-      statusCode: 200,
-      data: userAchievement,
-      message: this.i18nService.translate(UserAchievementMessage.GET_LIST_SUCCESS, lang)
-    }
+    return userAchievement
   }
 
-  async create(
-    { userId, data }: { userId: number; data: CreateUserAchievementBodyType },
-    lang: string = 'vi'
-  ) {
+  async create({ userId, data }: { userId: number; data: CreateUserAchievementBody }) {
     try {
       const result = await this.userAchievementRepo.create({
         createdById: userId,
@@ -76,11 +58,7 @@ export class UserAchievementService {
           ...data
         }
       })
-      return {
-        statusCode: 201,
-        data: result,
-        message: this.i18nService.translate(UserAchievementMessage.CREATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -92,29 +70,22 @@ export class UserAchievementService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      userId
-    }: {
-      id: number
-      data: UpdateUserAchievementBodyType
-      userId?: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    userId
+  }: {
+    id: number
+    data: UpdateUserAchievementBody
+    userId?: number
+  }) {
     try {
       const userAchievement = await this.userAchievementRepo.update({
         id,
         data: data,
         updatedById: userId
       })
-      return {
-        statusCode: 200,
-        data: userAchievement,
-        message: this.i18nService.translate(UserAchievementMessage.UPDATE_SUCCESS, lang)
-      }
+      return userAchievement
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UserAchievementNotFoundException()
@@ -127,7 +98,7 @@ export class UserAchievementService {
     }
   }
 
-  async delete({ id, userId }: { id: number; userId?: number }, lang: string = 'vi') {
+  async delete({ id, userId }: { id: number; userId?: number }) {
     try {
       const existUserAchievement = await this.userAchievementRepo.findById(id)
       if (!existUserAchievement) {
@@ -135,11 +106,7 @@ export class UserAchievementService {
       }
 
       await this.userAchievementRepo.delete(id)
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(UserAchievementMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UserAchievementNotFoundException()
@@ -151,19 +118,19 @@ export class UserAchievementService {
   async getListAchieveforUser(
     userId: number,
     lang: string = 'vi',
-    pagination: PaginationQueryType,
+    pagination: PaginationQuery,
     achCurrentPage?: number,
     achPageSize?: number,
     achievementGroupId?: number
   ) {
     // 1. Resolve language id
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
 
     // 2. Fetch paginated achievement groups (non-admin view)
     // NOTE: even when achievementGroupId is provided we still return the groups list
     // and only apply achievementGroupId to which group's achievements are paginated by
     // the provided achCurrentPage/achPageSize. This prevents losing other groups.
-    const groupsPage: any = await this.achievementGroupRepo.list(
+    const groupsPage: any = await this.achievementGroupService.listGroupRows(
       pagination,
       langId ?? undefined,
       false
@@ -171,11 +138,7 @@ export class UserAchievementService {
 
     const groupIds = (groupsPage.results || []).map((g: any) => g.id)
     if (groupIds.length === 0) {
-      return {
-        statusCode: 200,
-        data: groupsPage,
-        message: this.i18nService.translate(UserAchievementMessage.GET_LIST_SUCCESS, lang)
-      }
+      return groupsPage
     }
 
     // 3. Fetch achievements for these groups (only active ones for user)
@@ -197,21 +160,8 @@ export class UserAchievementService {
         achCurrentPage && achPageSize && isTargetGroup ? achTake : defaultPageSize
 
       const [count, rows] = await Promise.all([
-        this.prismaService.achievement.count({
-          where: { groupId: g.id, deletedAt: null, isActive: true }
-        }),
-        this.prismaService.achievement.findMany({
-          where: { groupId: g.id, deletedAt: null, isActive: true },
-          include: {
-            nameTranslations: { select: { value: true, languageId: true } },
-            reward: {
-              include: { nameTranslations: { select: { value: true, languageId: true } } }
-            }
-          },
-          orderBy: [{ achievementTierType: 'asc' }, { id: 'asc' }],
-          skip,
-          take
-        })
+        this.userAchievementRepo.countLiveAchievementsInGroup(g.id),
+        this.userAchievementRepo.pageLiveAchievementsInGroup(g.id, skip, take)
       ])
       perGroupAchievementCounts.set(g.id, count)
       return { groupId: g.id, rows }
@@ -226,9 +176,7 @@ export class UserAchievementService {
 
     // 4. Fetch existing userAchievement for this user and these achievements
     const existingUserAchievements = achievementIds.length
-      ? await this.prismaService.userAchievement.findMany({
-          where: { userId, achievementId: { in: achievementIds }, deletedAt: null }
-        })
+      ? await this.userAchievementRepo.findForUserAndAchievements(userId, achievementIds)
       : []
 
     const existingMap = new Map<number, any>()
@@ -341,28 +289,15 @@ export class UserAchievementService {
     })
 
     return {
-      statusCode: 200,
-      data: {
-        results,
-        pagination: groupsPage.pagination
-      },
-      message: this.i18nService.translate(UserAchievementMessage.GET_LIST_SUCCESS, lang)
+      results,
+      pagination: groupsPage.pagination
     }
   }
 
-  async getReward({ id, userId }: { id: number; userId: number }, lang: string = 'vi') {
+  async getReward({ id, userId }: { id: number; userId: number }) {
     try {
       // 1. Fetch user achievement with achievement details
-      const userAchievement = await this.prismaService.userAchievement.findUnique({
-        where: { id, deletedAt: null },
-        include: {
-          achievement: {
-            include: {
-              reward: true
-            }
-          }
-        }
-      })
+      const userAchievement = await this.userAchievementRepo.findLiveWithReward(id)
 
       if (!userAchievement) {
         throw new UserAchievementNotFoundException()
@@ -402,14 +337,7 @@ export class UserAchievementService {
         updatedById: userId
       })
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: rewardResults,
-        message: this.i18nService.translate(
-          UserAchievementMessage.GET_REWARD_SUCCESS,
-          lang
-        )
-      }
+      return rewardResults
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UserAchievementNotFoundException()
@@ -475,15 +403,10 @@ export class UserAchievementService {
       if (!qualified) continue
 
       if (ua.status !== UserAchievementStatus.COMPLETED_NOT_CLAIMED || !ua.achievedAt) {
-        const updated = await this.prismaService.userAchievement.update({
-          where: { id: ua.id },
-          data: {
-            status:
-              ua.status === UserAchievementStatus.CLAIMED
-                ? ua.status
-                : UserAchievementStatus.COMPLETED_NOT_CLAIMED,
-            achievedAt: achievedAt ?? new Date()
-          }
+        const updated = await this.userAchievementRepo.markCompleted({
+          id: ua.id,
+          currentStatus: ua.status,
+          achievedAt
         })
         userAchievementMap.set(achievement.id, updated)
       }

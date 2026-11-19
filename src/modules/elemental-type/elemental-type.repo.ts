@@ -1,24 +1,25 @@
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
+import { PrismaService } from '@/shared/services/prisma.service'
+import { toPaginationMeta, toSkipTake } from '@/shared/utils/pagination'
 import { Injectable } from '@nestjs/common'
 import { ElementalType } from '@prisma/client'
-import { PrismaService } from 'src/shared/services/prisma.service'
 import {
-  CreateElementalTypeBodyType,
-  ELEMENTAL_TYPE_FIELDS,
-  UpdateElementalTypeBodyType
-} from './entities/elemental-type.entity'
+  CreateElementalTypeBody,
+  UpdateElementalTypeBody
+} from './dto/elemental-type.zod-dto'
+import { ELEMENTAL_TYPE_FIELDS } from './entities/elemental-type.entity'
 
 @Injectable()
 export class ElementalTypeRepo {
-  constructor(private prismaService: PrismaService) {}
+  constructor(private readonly prismaService: PrismaService) {}
 
   create({
     createdById,
     data
   }: {
     createdById: number | null
-    data: CreateElementalTypeBodyType
+    data: CreateElementalTypeBody
   }): Promise<ElementalType> {
     return this.prismaService.elementalType.create({
       data: {
@@ -35,7 +36,7 @@ export class ElementalTypeRepo {
   }: {
     id: number
     updatedById: number
-    data: UpdateElementalTypeBodyType
+    data: UpdateElementalTypeBody
   }): Promise<ElementalType> {
     return this.prismaService.elementalType.update({
       where: {
@@ -77,11 +78,10 @@ export class ElementalTypeRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, ELEMENTAL_TYPE_FIELDS)
 
-    const skip = (pagination.currentPage - 1) * pagination.pageSize
-    const take = pagination.pageSize
+    const { skip, take } = toSkipTake(pagination.currentPage, pagination.pageSize)
 
     const [totalItems, data] = await Promise.all([
       this.prismaService.elementalType.count({
@@ -97,12 +97,11 @@ export class ElementalTypeRepo {
 
     return {
       results: data,
-      pagination: {
-        current: pagination.currentPage,
-        pageSize: pagination.pageSize,
-        totalPage: Math.ceil(totalItems / pagination.pageSize),
-        totalItem: totalItems
-      }
+      pagination: toPaginationMeta(
+        pagination.currentPage,
+        pagination.pageSize,
+        totalItems
+      )
     }
   }
 

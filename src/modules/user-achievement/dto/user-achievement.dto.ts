@@ -3,11 +3,12 @@ import {
   CreateUserAchievementBodySchema,
   CreateUserAchievementResSchema,
   GetUserAchievementDetailResSchema,
+  GetUserAchievementListForUserQuerySchema,
   GetUserAchievementParamsSchema,
   UpdateUserAchievementBodySchema,
   UpdateUserAchievementResSchema,
   UpdateWithListItemResSchema
-} from '../entities/user-achievement.entity'
+} from './user-achievement.zod-dto'
 
 // Request DTOs
 export class CreateUserAchievementBodyDTO extends createZodDto(
@@ -32,4 +33,8 @@ export class UpdateUserAchievementResDTO extends createZodDto(
 export class UpdateWithListItemResDTO extends createZodDto(UpdateWithListItemResSchema) {}
 export class GetUserAchievementDetailResDTO extends createZodDto(
   GetUserAchievementDetailResSchema
+) {}
+
+export class GetUserAchievementListForUserQueryDTO extends createZodDto(
+  GetUserAchievementListForUserQuerySchema
 ) {}

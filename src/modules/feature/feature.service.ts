@@ -1,6 +1,6 @@
 import { RoleName } from '@/common/constants/role.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { FeatureMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { TranslationService } from '@/modules/translation/translation.service'
 import {
   LanguageNotExistToTranslateException,
   NotFoundRecordException
@@ -10,27 +10,24 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
-import { HttpStatus, Injectable } from '@nestjs/common'
-import { LanguagesRepository } from '../languages/languages.repo'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entities'
-import { TranslationRepository } from '../translation/translation.repo'
+import { PaginationQuery } from '@/shared/models/request.model'
+import { Injectable } from '@nestjs/common'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { FeatureAlreadyExistsException } from './dto/feature.error'
 import {
-  CreateFeatureBodyInputType,
-  CreateFeatureBodyType,
-  UpdateFeatureBodyInputType,
-  UpdateFeatureBodyType
-} from './entities/feature.entity'
+  CreateFeatureBody,
+  CreateFeatureBodyInput,
+  UpdateFeatureBody,
+  UpdateFeatureBodyInput
+} from './dto/feature.zod-dto'
 import { FeatureRepo } from './feature.repo'
 
 @Injectable()
 export class FeatureService {
   constructor(
     private featureRepo: FeatureRepo,
-    private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepository,
-    private readonly translationRepo: TranslationRepository
+    private readonly languagesService: LanguagesService,
+    private readonly translationService: TranslationService
   ) {}
 
   private async convertTranslationsToLangCodes(
@@ -39,7 +36,7 @@ export class FeatureService {
     if (!nameTranslations || nameTranslations.length === 0) return []
 
     const allLangIds = Array.from(new Set(nameTranslations.map((t) => t.languageId)))
-    const langs = await this.languageRepo.getWithListId(allLangIds)
+    const langs = await this.languagesService.getWithListId(allLangIds)
     const idToCode = new Map(langs.map((l) => [l.id, l.code]))
 
     return nameTranslations.map((t) => ({
@@ -48,8 +45,8 @@ export class FeatureService {
     }))
   }
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi', roleName: string) {
-    const langId = await this.languageRepo.getIdByCode(lang)
+  async list(pagination: PaginationQuery, lang: string = 'vi', roleName: string) {
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     const data = await this.featureRepo.list(pagination, langId ?? undefined, isAdmin)
@@ -83,21 +80,15 @@ export class FeatureService {
       }
     }
 
-    return {
-      data,
-      message: this.i18nService.translate(FeatureMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   async findById(id: number, roleName: string, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     if (!langId) {
-      return {
-        data: null,
-        message: this.i18nService.translate(FeatureMessage.GET_SUCCESS, lang)
-      }
+      return null
     }
 
     const feature = await this.featureRepo.findByIdWithLangId(id, isAdmin, langId)
@@ -131,19 +122,15 @@ export class FeatureService {
       : null
 
     return {
-      statusCode: HttpStatus.OK,
-      data: {
-        ...transformed,
-        nameTranslation: currentNameTranslation?.value ?? null,
-        descriptionTranslation: currentDescriptionTranslation?.value ?? null,
-        ...(isAdmin ? { nameTranslations, descriptionTranslations } : {})
-      },
-      message: this.i18nService.translate(FeatureMessage.GET_SUCCESS, lang)
+      ...transformed,
+      nameTranslation: currentNameTranslation?.value ?? null,
+      descriptionTranslation: currentDescriptionTranslation?.value ?? null,
+      ...(isAdmin ? { nameTranslations, descriptionTranslations } : {})
     }
   }
 
   async findByIdWithAllLang(id: number, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
 
     const feature: any = await this.featureRepo.findByIdWithAllLang(id)
     if (!feature) {
@@ -157,7 +144,7 @@ export class FeatureService {
       : null
 
     // map array to { key: code, value }
-    const languages = await this.languageRepo.getWithListId(
+    const languages = await this.languagesService.getWithListId(
       Array.from(new Set((feature.nameTranslations ?? []).map((t: any) => t.languageId)))
     )
     const codeMap = Object.fromEntries(languages.map((l) => [l.id, l.code]))
@@ -170,30 +157,23 @@ export class FeatureService {
       }))
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: result,
-      message: this.i18nService.translate(FeatureMessage.GET_SUCCESS, lang)
-    }
+    return result
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreateFeatureBodyInputType
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({
+    data,
+    createdById
+  }: {
+    data: CreateFeatureBodyInput
+    createdById: number
+  }) {
     let createdFeature: any = null
 
     try {
       return await this.featureRepo.withTransaction(async (prismaTx) => {
         const nameKey = `feature.name.${Date.now()}`
 
-        const dataCreate: CreateFeatureBodyType = {
+        const dataCreate: CreateFeatureBody = {
           nameKey,
           featureKey: data.featureKey
         }
@@ -218,7 +198,7 @@ export class FeatureService {
         const allLangCodes = Array.from(new Set([...nameList]))
 
         // Get languages corresponding to the keys
-        const languages = await this.languageRepo.getWithListCode(allLangCodes)
+        const languages = await this.languagesService.getWithListCode(allLangCodes)
 
         // Create map { code: id } for quick access
         const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
@@ -230,7 +210,7 @@ export class FeatureService {
         }
 
         // Create translation records
-        const nameTranslationRecords: CreateTranslationBodyType[] = []
+        const nameTranslationRecords: CreateTranslationBody[] = []
 
         // nameTranslations → key = fNameKey
         for (const item of data.nameTranslations) {
@@ -242,7 +222,9 @@ export class FeatureService {
         }
 
         // Validate translations (check for duplicate names)
-        await this.translationRepo.validateTranslationRecords([...nameTranslationRecords])
+        await this.translationService.validateTranslationRecords([
+          ...nameTranslationRecords
+        ])
 
         // Update feature with final keys and translations
         const result = await this.featureRepo.update(
@@ -257,11 +239,7 @@ export class FeatureService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.CREATED,
-          data: result,
-          message: this.i18nService.translate(FeatureMessage.CREATE_SUCCESS, lang)
-        }
+        return result
       })
     } catch (error) {
       // Rollback: Delete feature if created
@@ -290,18 +268,15 @@ export class FeatureService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateFeatureBodyInputType
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateFeatureBodyInput
+    updatedById: number
+  }) {
     let existingFeature: any = null
 
     try {
@@ -311,14 +286,14 @@ export class FeatureService {
         if (!existingFeature) throw new NotFoundRecordException()
 
         // Prepare data for update
-        const dataUpdate: Partial<UpdateFeatureBodyType> = {}
+        const dataUpdate: Partial<UpdateFeatureBody> = {}
 
         if (data.featureKey) {
           dataUpdate.featureKey = data.featureKey
         }
 
         // Handle translations if provided
-        let nameTranslationRecords: CreateTranslationBodyType[] = []
+        let nameTranslationRecords: CreateTranslationBody[] = []
 
         if (data.nameTranslations) {
           const nameList = data.nameTranslations?.map((t) => t.key) || []
@@ -327,7 +302,7 @@ export class FeatureService {
 
           if (allLangCodes.length > 0) {
             // Get languages
-            const languages = await this.languageRepo.getWithListCode(allLangCodes)
+            const languages = await this.languagesService.getWithListCode(allLangCodes)
             const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
 
             // Check missing language
@@ -346,7 +321,7 @@ export class FeatureService {
             }
 
             // Validate translation records
-            await this.translationRepo.validateTranslationRecords([
+            await this.translationService.validateTranslationRecords([
               ...nameTranslationRecords
             ])
           }
@@ -369,11 +344,7 @@ export class FeatureService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.OK,
-          data: updatedFeature,
-          message: this.i18nService.translate(FeatureMessage.UPDATE_SUCCESS, lang)
-        }
+        return updatedFeature
       })
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
@@ -389,10 +360,7 @@ export class FeatureService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
       const existingFeature = await this.featureRepo.findById(id)
       if (!existingFeature) {
@@ -404,14 +372,10 @@ export class FeatureService {
           id,
           deletedById
         }),
-        this.translationRepo.deleteByKey(existingFeature.nameKey)
+        this.translationService.deleteByKey(existingFeature.nameKey)
       ])
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(FeatureMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()

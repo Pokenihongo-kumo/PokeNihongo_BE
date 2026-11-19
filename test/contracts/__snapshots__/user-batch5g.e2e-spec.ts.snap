@@ -1,0 +1,619 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`User batch 5g contract (e2e) dashboard: the web admin routes 1`] = `
+{
+  "accountActivation": {
+    "data": [
+      "pending_choose_level_jlpt",
+      "pending_choose_pokemon",
+      "pending_test",
+      "summary",
+      "test_again",
+    ],
+    "httpStatus": 200,
+    "message": undefined,
+  },
+  "activeUsers": {
+    "data": [
+      "activeUsers",
+      "period",
+    ],
+    "httpStatus": 200,
+    "message": undefined,
+  },
+  "battleActivity": {
+    "data": [
+      "seasons",
+    ],
+    "httpStatus": 200,
+    "message": undefined,
+  },
+  "completionRate": {
+    "data": [
+      "lessonCompletionRates",
+      "stats",
+    ],
+    "httpStatus": 200,
+    "message": undefined,
+  },
+  "gachaOverview": {
+    "data": [
+      "summary",
+    ],
+    "httpStatus": 200,
+    "message": undefined,
+  },
+  "jlptDistribution": {
+    "data": [
+      "summary",
+      "totalUsers",
+    ],
+    "httpStatus": 200,
+    "message": undefined,
+  },
+  "newUsers": {
+    "data": [
+      "count",
+      "period",
+    ],
+    "httpStatus": 200,
+    "message": undefined,
+  },
+  "popularContent": {
+    "data": [
+      "stats",
+      "topContent",
+    ],
+    "httpStatus": 200,
+    "message": undefined,
+  },
+  "revenue": {
+    "data": [
+      "period",
+      "plans",
+      "totalRevenue",
+    ],
+    "httpStatus": 200,
+    "message": undefined,
+  },
+  "seasonOverview": {
+    "data": [
+      "activeSeasons",
+      "currentParticipants",
+      "participationChange",
+      "participationChangeRate",
+      "previousParticipants",
+      "totalSeasons",
+    ],
+    "httpStatus": 200,
+    "message": undefined,
+  },
+  "sparkles": {
+    "data": [
+      "averageSparkles",
+      "distribution",
+      "totalUsers",
+    ],
+    "httpStatus": 200,
+    "message": undefined,
+  },
+  "starterPokemon": {
+    "data": [
+      "starters",
+      "totalCount",
+    ],
+    "httpStatus": 200,
+    "message": undefined,
+  },
+  "streakRetention": {
+    "data": [
+      "daily_streak",
+      "monthly_streak",
+      "totalUsers",
+    ],
+    "httpStatus": 200,
+    "message": undefined,
+  },
+  "subscriptionStats": {
+    "data": [
+      "plans",
+      "totalActivePlans",
+    ],
+    "httpStatus": 200,
+    "message": undefined,
+  },
+  "totalUsers": {
+    "data": [
+      "total",
+    ],
+    "httpStatus": 200,
+    "message": undefined,
+  },
+}
+`;
+
+exports[`User batch 5g contract (e2e) errors 1`] = `
+{
+  "createInvalidBody": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "This field is required",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Trường này là bắt buộc",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "evolvesInvalidId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid Pokemon ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID Pokemon không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "evolvesMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "User Pokemon not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy User Pokemon",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "gachaInvalidId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "gachaMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Gacha banner not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy banner gacha",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "mineBadHasPokemon": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "hasPokemon must be true or false",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "hasPokemon phải là true hoặc false",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "newUsersBadPeriod": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Period must be day, week or month",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Kỳ thống kê phải là day, week hoặc month",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "readInvalidId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "readListEmpty": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid data provided",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Dữ liệu không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "readMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Notification not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy thông báo",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "revenueBadMonth": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Month must be from 1 to 12",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Tháng phải từ 1 đến 12",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "seasonInvalidId": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid ID",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "ID không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "seasonMissing": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Leaderboard season not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy mùa giải bảng xếp hạng",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+}
+`;
+
+exports[`User batch 5g contract (e2e) notification: list, read one, read a list 1`] = `
+{
+  "list": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "body": "string",
+            "bodyKey": "string",
+            "createdAt": "string",
+            "data": {
+              "attendanceId": "number",
+              "sparkle": "number",
+              "sparkleTotal": "number",
+              "streakCount": "number",
+              "totalCoin": "number",
+            },
+            "deletedAt": "null",
+            "id": "number",
+            "isRead": "boolean",
+            "title": "string",
+            "titleKey": "string",
+            "type": "string",
+            "updatedAt": "string",
+            "userId": "number",
+          },
+        ],
+      },
+      "message": "Lấy danh sách thông báo thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "readList": {
+    "body": {
+      "data": [
+        {
+          "bodyKey": "string",
+          "createdAt": "string",
+          "data": "null",
+          "deletedAt": "null",
+          "id": "number",
+          "isRead": "boolean",
+          "titleKey": "string",
+          "type": "string",
+          "updatedAt": "string",
+          "userId": "number",
+        },
+      ],
+      "message": "Cập nhật thông báo thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "readOne": {
+    "body": {
+      "data": {
+        "bodyKey": "string",
+        "createdAt": "string",
+        "data": "null",
+        "deletedAt": "null",
+        "id": "number",
+        "isRead": "boolean",
+        "titleKey": "string",
+        "type": "string",
+        "updatedAt": "string",
+        "userId": "number",
+      },
+      "message": "Cập nhật thông báo thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`User batch 5g contract (e2e) user-pokemon: the lists and stats the app asks for 1`] = `
+{
+  "list": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [],
+      },
+      "message": "Lấy danh sách User Pokemon thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "mine": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [],
+      },
+      "message": "Lấy danh sách User Pokemon thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "rounds": {
+    "body": {
+      "error": "BAD_REQUEST",
+      "message": "Người dùng không tham gia vào vòng đấu nào",
+      "statusCode": 400,
+    },
+    "httpStatus": 400,
+  },
+  "stats": {
+    "body": {
+      "data": {
+        "ownershipPercentage": "number",
+        "totalPokemons": "number",
+        "userPokemonsCount": "number",
+      },
+      "message": "Lấy thống kê User Pokemon thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;

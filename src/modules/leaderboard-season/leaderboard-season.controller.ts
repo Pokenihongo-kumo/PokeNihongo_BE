@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { LeaderboardSeasonMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { AuthenticationGuard } from '@/common/guards/authentication.guard'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
@@ -32,106 +34,134 @@ import { LeaderboardSeasonService } from './leaderboard-season.service'
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class LeaderboardSeasonController {
-  constructor(private readonly leaderboardSeasonService: LeaderboardSeasonService) {}
+  constructor(
+    private readonly leaderboardSeasonService: LeaderboardSeasonService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseSchema)
-  list(
+  async list(
     @Query() query: PaginationQueryDTO,
     @I18nLang() lang: string,
     @ActiveUser('roleName') roleName: string
   ) {
-    return this.leaderboardSeasonService.list(query, lang, roleName)
+    return {
+      message: this.i18nService.translate(
+        LeaderboardSeasonMessage.GET_LIST_SUCCESS,
+        lang
+      ),
+      data: await this.leaderboardSeasonService.list(query, lang, roleName)
+    }
   }
 
   @Get('rank-list')
   // @ZodSerializerDto(PaginationResponseSchema)
-  getListRankByLeaderboard(
+  async getListRankByLeaderboard(
     @Query() pagination: PaginationQueryDTO,
     @I18nLang() lang: string,
     @ActiveUser('userId') userId: number,
     @Query('rankName') rankName?: string,
     @Query('leaderboardSeasonId') leaderboardSeasonId?: string
   ) {
-    return this.leaderboardSeasonService.getListRankByLeaderboard({
-      id: leaderboardSeasonId ? +leaderboardSeasonId : undefined,
-      lang,
-      userId,
-      rankName,
-      pagination
-    })
+    return {
+      message: this.i18nService.translate(
+        LeaderboardSeasonMessage.GET_LIST_SUCCESS,
+        lang
+      ),
+      data: await this.leaderboardSeasonService.getListRankByLeaderboard({
+        id: leaderboardSeasonId ? +leaderboardSeasonId : undefined,
+        lang,
+        userId,
+        rankName,
+        pagination
+      })
+    }
   }
 
   @Post()
   @ZodSerializerDto(CreateLeaderboardSeasonResDTO)
-  create(
+  async create(
     @Body() body: CreatedLeaderboardSeasonBodyInputDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.leaderboardSeasonService.create(
-      {
+    return {
+      message: this.i18nService.translate(LeaderboardSeasonMessage.CREATE_SUCCESS, lang),
+      data: await this.leaderboardSeasonService.create({
         data: body,
         createdById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Get('reward-now')
   @ZodSerializerDto(GetLeaderboardWithRewardSeasonDetailResDTO)
-  getRewardLeaderboardSeasonNow(
+  async getRewardLeaderboardSeasonNow(
     @I18nLang() lang: string,
     @ActiveUser('roleName') roleName: string
   ) {
-    return this.leaderboardSeasonService.getRewardLeaderboardSeasonNow(roleName, lang)
+    return {
+      message: this.i18nService.translate(
+        LeaderboardSeasonMessage.GET_LIST_SUCCESS,
+        lang
+      ),
+      data: await this.leaderboardSeasonService.getRewardLeaderboardSeasonNow(
+        roleName,
+        lang
+      )
+    }
   }
 
   @Get(':leaderboardSeasonId')
   @ZodSerializerDto(GetLeaderboardSeasonDetailResDTO)
-  findById(
+  async findById(
     @Param() params: GetLeaderboardSeasonParamsDTO,
     @I18nLang() lang: string,
     @ActiveUser('roleName') roleName: string
   ) {
-    return this.leaderboardSeasonService.findById(
-      params.leaderboardSeasonId,
-      roleName,
-      lang
-    )
+    return {
+      message: this.i18nService.translate(LeaderboardSeasonMessage.GET_SUCCESS, lang),
+      data: await this.leaderboardSeasonService.findById(
+        params.leaderboardSeasonId,
+        roleName,
+        lang
+      )
+    }
   }
 
   @Put(':leaderboardSeasonId')
   @ZodSerializerDto(UpdateLeaderboardSeasonResDTO)
-  update(
+  async update(
     @Body() body: UpdateLeaderboardSeasonBodyInputDTO,
     @Param() params: GetLeaderboardSeasonParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.leaderboardSeasonService.update(
-      {
+    return {
+      message: this.i18nService.translate(LeaderboardSeasonMessage.UPDATE_SUCCESS, lang),
+      data: await this.leaderboardSeasonService.update({
         data: body,
         id: params.leaderboardSeasonId,
         updatedById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':leaderboardSeasonId')
   @ZodSerializerDto(MessageResDTO)
-  delete(
+  async delete(
     @Param() params: GetLeaderboardSeasonParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.leaderboardSeasonService.delete(
-      {
-        id: params.leaderboardSeasonId,
-        deletedById: userId
-      },
-      lang
-    )
+    await this.leaderboardSeasonService.delete({
+      id: params.leaderboardSeasonId,
+      deletedById: userId
+    })
+    return {
+      message: this.i18nService.translate(LeaderboardSeasonMessage.DELETE_SUCCESS, lang),
+      data: null
+    }
   }
 }

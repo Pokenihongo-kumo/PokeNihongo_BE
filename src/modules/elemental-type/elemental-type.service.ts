@@ -1,57 +1,42 @@
-import { I18nService } from '@/i18n/i18n.service'
-import { ElementalTypeMessage } from '@/i18n/message-keys'
 import { NotFoundRecordException } from '@/shared/error'
+import { PaginationQuery } from '@/shared/models/request.model'
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
-} from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
+} from '@/shared/utils/prisma-errors'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { ElementalTypeAlreadyExistsException } from './dto/elemental-type.error'
-import { ElementalTypeRepo } from './elemental-type.repo'
 import {
-  CreateElementalTypeBodyType,
-  UpdateElementalTypeBodyType
-} from './entities/elemental-type.entity'
+  CreateElementalTypeBody,
+  UpdateElementalTypeBody
+} from './dto/elemental-type.zod-dto'
+import { ElementalTypeRepo } from './elemental-type.repo'
 
 @Injectable()
 export class ElementalTypeService {
-  constructor(
-    private elementalTypeRepo: ElementalTypeRepo,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly elementalTypeRepo: ElementalTypeRepo) {}
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.elementalTypeRepo.list(pagination)
-    return {
-      statusCode: HttpStatus.OK,
-      data,
-      message: this.i18nService.translate(ElementalTypeMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const elementalType = await this.elementalTypeRepo.findById(id)
     if (!elementalType) {
       throw new NotFoundRecordException()
     }
-    return {
-      data: elementalType,
-      message: this.i18nService.translate(ElementalTypeMessage.GET_SUCCESS, lang)
-    }
+    return elementalType
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreateElementalTypeBodyType
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({
+    data,
+    createdById
+  }: {
+    data: CreateElementalTypeBody
+    createdById: number
+  }) {
     try {
       // Kiểm tra xem type_name đã tồn tại chưa
       const existingType = await this.elementalTypeRepo.findByTypeName(data.type_name)
@@ -63,11 +48,7 @@ export class ElementalTypeService {
         createdById,
         data
       })
-      return {
-        statusCode: HttpStatus.CREATED,
-        data: result,
-        message: this.i18nService.translate(ElementalTypeMessage.CREATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isUniqueConstraintPrismaError(error)) {
         throw new ElementalTypeAlreadyExistsException()
@@ -79,18 +60,15 @@ export class ElementalTypeService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateElementalTypeBodyType
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateElementalTypeBody
+    updatedById: number
+  }) {
     try {
       const existElementalType = await this.elementalTypeRepo.findById(id)
       if (!existElementalType) {
@@ -110,11 +88,7 @@ export class ElementalTypeService {
         updatedById,
         data
       })
-      return {
-        statusCode: HttpStatus.OK,
-        data: elementalType,
-        message: this.i18nService.translate(ElementalTypeMessage.UPDATE_SUCCESS, lang)
-      }
+      return elementalType
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -129,20 +103,13 @@ export class ElementalTypeService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
       await this.elementalTypeRepo.delete({
         id,
         deletedById
       })
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(ElementalTypeMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -151,12 +118,8 @@ export class ElementalTypeService {
     }
   }
 
-  async getAllActiveTypes(lang: string = 'vi') {
+  async getAllActiveTypes() {
     const data = await this.elementalTypeRepo.getAllActiveTypes()
-    return {
-      statusCode: HttpStatus.OK,
-      data,
-      message: this.i18nService.translate(ElementalTypeMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 }

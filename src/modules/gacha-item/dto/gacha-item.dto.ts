@@ -12,7 +12,7 @@ import {
   UpdateGachaItemResSchema,
   UpdateWithListItemBodySchema,
   UpdateWithListItemResSchema
-} from '../entities/gacha-item.entity'
+} from './gacha-item.zod-dto'
 
 // Request DTOs
 export class CreateGachaItemBodyDTO extends createZodDto(CreateGachaItemBodySchema) {}

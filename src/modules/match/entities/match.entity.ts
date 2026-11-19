@@ -1,6 +1,4 @@
 import { MatchStatus } from '@/common/constants/match.constant'
-import { checkIdSchema } from '@/common/utils/id.validation'
-import { MatchMessage } from '@/i18n/message-keys'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -26,45 +24,7 @@ export const MatchSchema = z.object({
   updatedAt: z.date()
 })
 
-export const CreateMatchBodySchema = MatchSchema.pick({})
-
-  .strict()
-
-export const CreateMatchResSchema = z.object({
-  statusCode: z.number(),
-  data: MatchSchema,
-  message: z.string()
-})
-
-export const UpdateMatchBodySchema = CreateMatchBodySchema.partial().strict()
-
-export const UpdateMatchResSchema = CreateMatchResSchema
-
-export const GetMatchParamsSchema = z
-  .object({
-    matchId: checkIdSchema(MatchMessage.INVALID_DATA)
-  })
-  .strict()
-
-export const GetMatchDetailWithAllLangResSchema = z.object({
-  statusCode: z.number(),
-  data: MatchSchema,
-  message: z.string()
-})
-
-export const GetMatchDetailResSchema = z.object({
-  statusCode: z.number(),
-  data: MatchSchema,
-  message: z.string()
-})
-
-export type MatchType = z.infer<typeof MatchSchema>
-
-export type CreateMatchBodyType = z.infer<typeof CreateMatchBodySchema>
-
-export type UpdateMatchBodyType = z.infer<typeof UpdateMatchBodySchema>
-export type GetMatchParamsType = z.infer<typeof GetMatchParamsSchema>
-export type GetMatchDetailResType = z.infer<typeof GetMatchDetailResSchema>
+export type Match = z.infer<typeof MatchSchema>
 
 type MatchFieldType = keyof z.infer<typeof MatchSchema>
 export const MATCH_FIELDS = [...Object.keys(MatchSchema.shape)] as MatchFieldType[]

@@ -1,64 +1,30 @@
-import { BullQueueModule } from '@/3rdService/bull/bull-queue.module'
+import { RoleModule } from '@/modules/role/role.module'
+import { BullQueueModule } from '@/infrastructure/queue/bull-queue.module'
 import { AccessTokenGuard } from '@/common/guards/access-token.guard'
 import { APIKeyGuard } from '@/common/guards/api-key.guard'
 import { AuthenticationGuard } from '@/common/guards/authentication.guard'
-import { InvoiceRepo } from '@/modules/invoice/invoice.repo'
-import { LanguagesRepository } from '@/modules/languages/languages.repo'
-import { PokemonRepo } from '@/modules/pokemon/pokemon.repo'
-import { QuestionBankRepository } from '@/modules/question-bank/question-bank.repo'
-import { UserSubscriptionRepo } from '@/modules/user-subscription/user-subscription.repo'
-import { WalletTransactionRepo } from '@/modules/wallet-transaction/wallet-transaction.repo'
-import { WalletRepo } from '@/modules/wallet/wallet.repo'
 
 import { HashingService } from '@/shared/services/hashing.service'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { TokenService } from '@/shared/services/token.service'
-import { UserGateway } from '@/websockets/user.gateway'
-import { Global, Module, forwardRef } from '@nestjs/common'
+import { Global, Module } from '@nestjs/common'
 import { APP_GUARD } from '@nestjs/core'
 import { JwtModule } from '@nestjs/jwt'
-import { WebsocketsModule } from 'src/websockets/websockets.module'
-import { SharedNotificationRepo } from './repositories/shared-notification.repo'
-import { SharedRoleRepository } from './repositories/shared-role.repo'
-import { SharedUserRepository } from './repositories/shared-user.repo'
-import { PayOSService } from './services/payos.service'
-import { SharedNotificationService } from './services/shared-notification.service'
-import { SharedUserSubscriptionService } from './services/user-subscription.service'
-import { InvoiceExpirationProcessor } from './workers/invoice-expiration.processor'
 
-const sharedServices = [
-  PrismaService,
-  HashingService,
-  TokenService,
-  SharedUserSubscriptionService,
-  SharedNotificationService,
-  LanguagesRepository,
-  // EmailService,
-  SharedUserRepository,
-  SharedRoleRepository,
-  SharedNotificationRepo,
-  QuestionBankRepository,
-  PokemonRepo,
-  PayOSService,
-  InvoiceRepo,
-  UserSubscriptionRepo,
-  WalletRepo,
-  WalletTransactionRepo,
-  UserGateway
-]
+const sharedServices = [PrismaService, HashingService, TokenService]
+
 @Global()
 @Module({
   imports: [
+    RoleModule, // AccessTokenGuard reads role permissions through RoleService
     JwtModule,
-    BullQueueModule.forRoot(), // Only keep forRoot() here - queues registered in domain modules
-    forwardRef(() => WebsocketsModule)
+    BullQueueModule.forRoot() // Only keep forRoot() here - queues registered in domain modules
   ],
   controllers: [],
   providers: [
     ...sharedServices,
     AccessTokenGuard,
     APIKeyGuard,
-    InvoiceExpirationProcessor, // Keep this if Invoice module doesn't exist yet
     {
       provide: APP_GUARD,
       useClass: AuthenticationGuard

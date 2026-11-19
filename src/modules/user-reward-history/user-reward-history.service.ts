@@ -1,20 +1,19 @@
-import {
-  InvalidUserRewardHistoryDataException,
-  USER_REWARD_HISTORY_MESSAGE,
-  UserRewardHistoryNotFoundException
-} from '@/modules/user-reward-history/dto/user-reward-history.error'
-import {
-  CreateUserRewardHistoryBodyType,
-  GetMyRewardHistoryQueryType,
-  GetUserRewardHistoryListQueryType,
-  UpdateUserRewardHistoryBodyType
-} from '@/modules/user-reward-history/entities/user-reward-history.entities'
-import { UserRewardHistoryRepository } from '@/modules/user-reward-history/user-reward-history.repo'
+import { LanguagesService } from '@/modules/languages/languages.service'
 import { RewardRepo } from '@/modules/reward/reward.repo'
 import { TranslationService } from '@/modules/translation/translation.service'
-import { LanguagesService } from '@/modules/languages/languages.service'
 import { HttpException, Injectable, Logger } from '@nestjs/common'
 import { RewardTarget, UserRewardSourceType } from '@prisma/client'
+import {
+  InvalidUserRewardHistoryDataException,
+  UserRewardHistoryNotFoundException
+} from './dto/user-reward-history.error'
+import {
+  CreateUserRewardHistoryBody,
+  GetMyRewardHistoryQuery,
+  GetUserRewardHistoryListQuery,
+  UpdateUserRewardHistoryBody
+} from './dto/user-reward-history.zod-dto'
+import { UserRewardHistoryRepository } from './user-reward-history.repo'
 
 @Injectable()
 export class UserRewardHistoryService {
@@ -25,7 +24,7 @@ export class UserRewardHistoryService {
     private readonly rewardRepo: RewardRepo,
     private readonly translationService: TranslationService,
     private readonly languagesService: LanguagesService
-  ) { }
+  ) {}
 
   // Reusable builder for history payload
   createEntryPayload(params: {
@@ -47,11 +46,11 @@ export class UserRewardHistoryService {
       note: params.note,
       meta: params.meta,
       sourceId: params.sourceId
-    } as CreateUserRewardHistoryBodyType
+    } as CreateUserRewardHistoryBody
   }
 
   appendEntriesFromRewards(
-    entries: CreateUserRewardHistoryBodyType[],
+    entries: CreateUserRewardHistoryBody[],
     rewards: { id: number; rewardItem: number }[],
     userId: number,
     rewardTarget: RewardTarget,
@@ -76,7 +75,7 @@ export class UserRewardHistoryService {
     }
   }
 
-  async create(body: CreateUserRewardHistoryBodyType) {
+  async create(body: CreateUserRewardHistoryBody) {
     try {
       // Nếu có rewardId, lấy thông tin reward và lưu vào meta
       let meta = body.meta
@@ -102,42 +101,38 @@ export class UserRewardHistoryService {
         ...body,
         meta
       })
-      return {
-        statusCode: 201,
-        data: history,
-        message: USER_REWARD_HISTORY_MESSAGE.CREATE_SUCCESS
-      }
+      return history
     } catch (error) {
       this.logger.error('Error creating user reward history:', error)
       if (error instanceof HttpException) {
         throw error
       }
-      throw InvalidUserRewardHistoryDataException
+      throw new InvalidUserRewardHistoryDataException()
     }
   }
 
-  async findAll(query: GetUserRewardHistoryListQueryType) {
+  async findAll(query: GetUserRewardHistoryListQuery) {
     const { currentPage, pageSize } = query
     const result = await this.userRewardHistoryRepository.findMany(query)
 
     return {
-      statusCode: 200,
-      message: USER_REWARD_HISTORY_MESSAGE.GET_LIST_SUCCESS,
-      data: {
-        results: result.items,
-        pagination: {
-          current: currentPage,
-          pageSize,
-          totalPage: Math.ceil(result.total / pageSize),
-          totalItem: result.total
-        }
+      results: result.items,
+      pagination: {
+        current: currentPage,
+        pageSize,
+        totalPage: Math.ceil(result.total / pageSize),
+        totalItem: result.total
       }
     }
   }
 
-  async getMy(userId: number, query: GetMyRewardHistoryQueryType, languageCode: string = 'vi') {
+  async getMy(
+    userId: number,
+    query: GetMyRewardHistoryQuery,
+    languageCode: string = 'vi'
+  ) {
     if (!userId) {
-      throw InvalidUserRewardHistoryDataException
+      throw new InvalidUserRewardHistoryDataException()
     }
     const result = await this.userRewardHistoryRepository.findMany({
       ...query,
@@ -149,7 +144,7 @@ export class UserRewardHistoryService {
     let languageId: number | undefined
     try {
       const language = await this.languagesService.findByCode({ code: normalizedLang })
-      languageId = language?.data?.id
+      languageId = language?.id
     } catch {
       this.logger.warn(`Language ${normalizedLang} not found, using default`)
     }
@@ -180,16 +175,26 @@ export class UserRewardHistoryService {
         // Lấy translation nếu có nameKey và languageId
         if (nameKey && languageId) {
           try {
-            this.logger.debug(`Looking for translation: key=${nameKey}, languageId=${languageId}`)
-            const translation = await this.translationService.findByKeyAndLanguage(nameKey, languageId)
+            this.logger.debug(
+              `Looking for translation: key=${nameKey}, languageId=${languageId}`
+            )
+            const translation = await this.translationService.findByKeyAndLanguage(
+              nameKey,
+              languageId
+            )
             nameTranslation = translation?.value || null
             if (nameTranslation) {
               this.logger.debug(`Found translation: ${nameTranslation}`)
             } else {
-              this.logger.warn(`Translation not found for key ${nameKey} with languageId ${languageId}`)
+              this.logger.warn(
+                `Translation not found for key ${nameKey} with languageId ${languageId}`
+              )
             }
           } catch (error) {
-            this.logger.warn(`Failed to get translation for key ${nameKey} with languageId ${languageId}:`, error)
+            this.logger.warn(
+              `Failed to get translation for key ${nameKey} with languageId ${languageId}:`,
+              error
+            )
           }
         } else {
           if (!nameKey) {
@@ -202,32 +207,32 @@ export class UserRewardHistoryService {
 
         const resultItem = {
           ...item,
-          reward: item.reward ? {
-            id: item.reward.id,
-            name: nameTranslation ?? null,
-            rewardType: item.reward.rewardType,
-            rewardItem: item.reward.rewardItem,
-            rewardTarget: item.reward.rewardTarget
-          } : undefined
+          reward: item.reward
+            ? {
+                id: item.reward.id,
+                name: nameTranslation ?? null,
+                rewardType: item.reward.rewardType,
+                rewardItem: item.reward.rewardItem,
+                rewardTarget: item.reward.rewardTarget
+              }
+            : undefined
         }
 
-        this.logger.debug(`Item ${item.id} - name: ${nameTranslation}, reward exists: ${!!item.reward}`)
+        this.logger.debug(
+          `Item ${item.id} - name: ${nameTranslation}, reward exists: ${!!item.reward}`
+        )
 
         return resultItem
       })
     )
 
     return {
-      statusCode: 200,
-      message: USER_REWARD_HISTORY_MESSAGE.GET_LIST_SUCCESS,
-      data: {
-        results: resultsWithTranslation,
-        pagination: {
-          current: result.page,
-          pageSize: result.limit,
-          totalPage: Math.ceil(result.total / result.limit),
-          totalItem: result.total
-        }
+      results: resultsWithTranslation,
+      pagination: {
+        current: result.page,
+        pageSize: result.limit,
+        totalPage: Math.ceil(result.total / result.limit),
+        totalItem: result.total
       }
     }
   }
@@ -235,32 +240,26 @@ export class UserRewardHistoryService {
   async findOne(id: number) {
     const history = await this.userRewardHistoryRepository.findUnique(id)
     if (!history) {
-      throw UserRewardHistoryNotFoundException
+      throw new UserRewardHistoryNotFoundException()
     }
-    return {
-      data: history,
-      message: USER_REWARD_HISTORY_MESSAGE.GET_SUCCESS
-    }
+    return history
   }
 
-  async update(id: number, body: UpdateUserRewardHistoryBodyType) {
+  async update(id: number, body: UpdateUserRewardHistoryBody) {
     try {
       const existing = await this.userRewardHistoryRepository.findUnique(id)
       if (!existing) {
-        throw UserRewardHistoryNotFoundException
+        throw new UserRewardHistoryNotFoundException()
       }
 
       const history = await this.userRewardHistoryRepository.update(id, body)
-      return {
-        data: history,
-        message: USER_REWARD_HISTORY_MESSAGE.UPDATE_SUCCESS
-      }
+      return history
     } catch (error) {
       this.logger.error(`Error updating user reward history ${id}:`, error)
       if (error instanceof HttpException) {
         throw error
       }
-      throw InvalidUserRewardHistoryDataException
+      throw new InvalidUserRewardHistoryDataException()
     }
   }
 
@@ -268,20 +267,17 @@ export class UserRewardHistoryService {
     try {
       const existing = await this.userRewardHistoryRepository.findUnique(id)
       if (!existing) {
-        throw UserRewardHistoryNotFoundException
+        throw new UserRewardHistoryNotFoundException()
       }
 
       const history = await this.userRewardHistoryRepository.delete(id)
-      return {
-        data: history,
-        message: USER_REWARD_HISTORY_MESSAGE.DELETE_SUCCESS
-      }
+      return history
     } catch (error) {
       this.logger.error(`Error deleting user reward history ${id}:`, error)
       if (error instanceof HttpException) {
         throw error
       }
-      throw InvalidUserRewardHistoryDataException
+      throw new InvalidUserRewardHistoryDataException()
     }
   }
 }

@@ -7,16 +7,17 @@ import {
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { SharedUserRepository } from '@/shared/repositories/shared-user.repo'
+import { UserCoreService } from '@/modules/user/user-core.service'
 import { InjectQueue } from '@nestjs/bull'
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { QueueStatus } from '@prisma/client'
 import { Queue } from 'bull'
 import { MatchingGateway } from 'src/websockets/matching.gateway'
-import { LeaderboardSeasonRepo } from '../leaderboard-season/leaderboard-season.repo'
-import { MatchParticipantRepo } from '../match-participant/match-participant.repo'
-import { MatchRepo } from '../match/match.repo'
-import { UserPokemonRepo } from '../user-pokemon/user-pokemon.repo'
+import { NotStartedLeaderboardSeasonException } from '../leaderboard-season/dto/leaderboard-season.error'
+import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
+import { MatchParticipantService } from '@/modules/match-participant/match-participant.service'
+import { MatchService } from '@/modules/match/match.service'
+import { UserPokemonService } from '@/modules/user-pokemon/user-pokemon.service'
 import {
   UserHasNotBeenJoinedSeasonException,
   UserNotFoundException
@@ -41,11 +42,11 @@ export class MatchQueueService implements OnModuleInit {
   constructor(
     private matchQueueRepo: MatchQueueRepo,
     private readonly i18nService: I18nService,
-    private readonly sharedUserRepo: SharedUserRepository,
-    private readonly userPokeRepo: UserPokemonRepo,
-    private readonly matchRepo: MatchRepo,
-    private readonly matchParticipantRepo: MatchParticipantRepo,
-    private readonly leaderboardSeasonRepo: LeaderboardSeasonRepo,
+    private readonly userCoreService: UserCoreService,
+    private readonly userPokemonService: UserPokemonService,
+    private readonly matchService: MatchService,
+    private readonly matchParticipantService: MatchParticipantService,
+    private readonly leaderboardSeasonService: LeaderboardSeasonService,
     @InjectQueue(BullQueue.MATCH_PARTICIPANT_TIMEOUT)
     private readonly matchParticipantTimeoutQueue: Queue,
     private readonly matchingGateway: MatchingGateway
@@ -137,7 +138,7 @@ export class MatchQueueService implements OnModuleInit {
       )
 
       // Lấy active leaderboard season
-      const activeSeason = await this.leaderboardSeasonRepo.findActiveSeason()
+      const activeSeason = await this.leaderboardSeasonService.findActiveSeason()
       if (!activeSeason) {
         this.logger.error('[MatchmakingRun] No active leaderboard season found')
         return
@@ -148,9 +149,9 @@ export class MatchQueueService implements OnModuleInit {
       let participant1Data: any
       let participant2Data: any
 
-      await this.matchRepo.withTransaction(async (prismaTx) => {
+      await this.matchQueueRepo.withTransaction(async (prismaTx) => {
         // 1. Tạo Match
-        const match = await this.matchRepo.create(
+        const match = await this.matchService.createMatch(
           {
             createdById: null,
             data: {
@@ -165,7 +166,7 @@ export class MatchQueueService implements OnModuleInit {
 
         // 2. Tạo 2 MatchParticipant
         const [participant1, participant2] = await Promise.all([
-          this.matchParticipantRepo.create(
+          this.matchParticipantService.createParticipant(
             {
               createdById: userId1,
               data: {
@@ -175,7 +176,7 @@ export class MatchQueueService implements OnModuleInit {
             },
             prismaTx
           ),
-          this.matchParticipantRepo.create(
+          this.matchParticipantService.createParticipant(
             {
               createdById: userId2,
               data: {
@@ -223,8 +224,8 @@ export class MatchQueueService implements OnModuleInit {
 
         // 4. Xóa 2 users khỏi MatchQueue (DB)
         await Promise.all([
-          prismaTx.matchQueue.delete({ where: { userId: userId1 } }),
-          prismaTx.matchQueue.delete({ where: { userId: userId2 } })
+          this.matchQueueRepo.removeQueuedUser(userId1, prismaTx),
+          this.matchQueueRepo.removeQueuedUser(userId2, prismaTx)
         ])
 
         this.logger.log(
@@ -275,17 +276,18 @@ export class MatchQueueService implements OnModuleInit {
     lang: string = 'vi'
   ) {
     try {
-      const activeSeasonNow = await this.leaderboardSeasonRepo.findActiveSeason()
+      const activeSeasonNow = await this.leaderboardSeasonService.findActiveSeason()
+      // no season running: the error joining a season gives (was a 404)
       if (!activeSeasonNow) {
-        throw new NotFoundRecordException()
+        throw new NotStartedLeaderboardSeasonException()
       }
       const [user, existingMatching, hasJoinedSeason, userPokemons] = await Promise.all([
-        this.sharedUserRepo.findUniqueWithLevel({
+        this.userCoreService.findUniqueWithLevel({
           id: createdById
         }),
-        this.matchRepo.findActiveMatchByUserId(createdById),
-        this.matchRepo.checkUserHasJoinedSeason(createdById, activeSeasonNow.id),
-        this.userPokeRepo.countPokemonByUser(createdById)
+        this.matchService.findActiveMatchByUserId(createdById),
+        this.matchService.checkUserHasJoinedSeason(createdById, activeSeasonNow.id),
+        this.userPokemonService.countPokemonByUser(createdById)
       ])
 
       if (!user) {
@@ -335,10 +337,7 @@ export class MatchQueueService implements OnModuleInit {
 
       this.logger.log(`[MatchQueue] User ${createdById} joined queue with ELO ${userElo}`)
 
-      return {
-        data: result,
-        message: this.i18nService.translate(MatchQueueMessage.CREATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isUniqueConstraintPrismaError(error)) {
         throw new MatchQueueAlreadyExistsException()
@@ -350,7 +349,7 @@ export class MatchQueueService implements OnModuleInit {
     }
   }
 
-  async delete({ deletedById }: { deletedById: number }, lang: string = 'vi') {
+  async delete({ deletedById }: { deletedById: number }) {
     try {
       await this.matchQueueRepo.delete({
         deletedById
@@ -361,10 +360,7 @@ export class MatchQueueService implements OnModuleInit {
 
       this.logger.log(`[MatchQueue] User ${deletedById} left queue`)
 
-      return {
-        data: null,
-        message: this.i18nService.translate(MatchQueueMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()

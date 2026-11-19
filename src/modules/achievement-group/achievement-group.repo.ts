@@ -1,19 +1,21 @@
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 
 import { parseQs } from '@/common/utils/qs-parser'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import { AchievementType } from '../achievement/entities/achievement.entity'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entities'
+import { Achievement } from '../achievement/entities/achievement.entity'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
+import {
+  CreateAchievementGroupBody,
+  UpdateAchievementGroupBody
+} from './dto/achievement-group.zod-dto'
 import {
   ACHIEVEMENT_GROUP_FIELDS,
-  AchievementGroupType,
-  CreateAchievementGroupBodyType,
-  UpdateAchievementGroupBodyType
+  AchievementGroup
 } from './entities/achievement-group.entity'
 
-type AchievementGroupPrismaType = Omit<AchievementGroupType, 'nameKey'> & {
+type AchievementGroupPrismaType = Omit<AchievementGroup, 'nameKey'> & {
   name: string
 }
 
@@ -32,10 +34,10 @@ export class AchievementGroupRepo {
       data
     }: {
       createdById: number | null
-      data: CreateAchievementGroupBodyType
+      data: CreateAchievementGroupBody
     },
     prismaTx?: PrismaClient
-  ): Promise<AchievementGroupType> {
+  ): Promise<AchievementGroup> {
     const client = prismaTx || this.prismaService
     return client.achievementGroup.create({
       data: {
@@ -53,13 +55,13 @@ export class AchievementGroupRepo {
     }: {
       id: number
       updatedById?: number
-      data: UpdateAchievementGroupBodyType & {
-        nameTranslations: CreateTranslationBodyType[]
+      data: UpdateAchievementGroupBody & {
+        nameTranslations: CreateTranslationBody[]
         achievementGroupNameKey: string
       }
     },
     prismaTx?: PrismaClient
-  ): Promise<AchievementGroupType> {
+  ): Promise<AchievementGroup> {
     const client = prismaTx || this.prismaService
     const { nameTranslations, achievementGroupNameKey, ...achievementGroupData } = data
 
@@ -107,7 +109,7 @@ export class AchievementGroupRepo {
     },
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<AchievementGroupType> {
+  ): Promise<AchievementGroup> {
     const client = prismaTx || this.prismaService
     const result = isHard
       ? await this.prismaService.achievementGroup.delete({
@@ -128,7 +130,7 @@ export class AchievementGroupRepo {
     return result
   }
 
-  async list(pagination: PaginationQueryType, langId?: number, isAdmin: boolean = false) {
+  async list(pagination: PaginationQuery, langId?: number, isAdmin: boolean = false) {
     const { where: rawWhere = {}, orderBy } = parseQs(
       pagination.qs,
       ACHIEVEMENT_GROUP_FIELDS
@@ -212,7 +214,7 @@ export class AchievementGroupRepo {
       }
     }
   }
-  findById(id: number): Promise<AchievementGroupType | null> {
+  findById(id: number): Promise<AchievementGroup | null> {
     return this.prismaService.achievementGroup.findUnique({
       where: {
         id,
@@ -225,7 +227,7 @@ export class AchievementGroupRepo {
     id: number,
     isAllLang: boolean,
     langId: number
-  ): Promise<(AchievementGroupType & { achievements: AchievementType[] }) | null> {
+  ): Promise<(AchievementGroup & { achievements: Achievement[] }) | null> {
     return this.prismaService.achievementGroup.findUnique({
       where: {
         id,

@@ -1,5 +1,5 @@
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { GachaItem, Prisma, PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
@@ -231,7 +231,7 @@ export class GachaItemRepo {
     })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where: rawWhere = {}, orderBy } = parseQs(pagination.qs, [
       ...GACHA_ITEM_FIELDS
     ])
@@ -283,7 +283,7 @@ export class GachaItemRepo {
     }
   }
 
-  async getListItemsByBannerId(bannerId: number, pagination: PaginationQueryType) {
+  async getListItemsByBannerId(bannerId: number, pagination: PaginationQuery) {
     // const { where: rawWhere = {}, orderBy } = parseQs(pagination.qs, [
     //   ...GACHA_ITEM_FIELDS
     // ])
@@ -399,6 +399,58 @@ export class GachaItemRepo {
       })
 
       return created
+    })
+  }
+
+  // ---- Replacing a banner's items (updateByList, one transaction) ----
+
+  deleteByBanner(bannerId: number, prismaTx: PrismaClient) {
+    return prismaTx.gachaItem.deleteMany({
+      where: { bannerId }
+    })
+  }
+
+  createManyForBanner(
+    itemsToCreate: { bannerId: number; pokemonId: number; gachaItemRateId: number }[],
+    updatedById: number,
+    prismaTx: PrismaClient
+  ) {
+    return prismaTx.gachaItem.createMany({
+      data: itemsToCreate.map((item) => ({
+        bannerId: item.bannerId,
+        pokemonId: item.pokemonId,
+        gachaItemRateId: item.gachaItemRateId,
+        createdById: updatedById,
+        updatedById
+      }))
+    })
+  }
+
+  // The items just created, with pokemon and rate for the response
+  findCreatedForBanner(bannerId: number, pokemonIds: number[], prismaTx: PrismaClient) {
+    return prismaTx.gachaItem.findMany({
+      where: {
+        bannerId,
+        pokemonId: { in: pokemonIds }
+      },
+      include: {
+        pokemon: {
+          select: {
+            id: true,
+            nameJp: true,
+            nameTranslations: true,
+            imageUrl: true,
+            rarity: true
+          }
+        },
+        gachaItemRate: {
+          select: {
+            id: true,
+            starType: true,
+            rate: true
+          }
+        }
+      }
     })
   }
 }

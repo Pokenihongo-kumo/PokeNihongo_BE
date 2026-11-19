@@ -1,18 +1,14 @@
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 
 import { parseQs } from '@/common/utils/qs-parser'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entities'
-import {
-  ACHIEVEMENT_FIELDS,
-  AchievementType,
-  CreateAchievementBodyType,
-  UpdateAchievementBodyType
-} from './entities/achievement.entity'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
+import { CreateAchievementBody, UpdateAchievementBody } from './dto/achievement.zod-dto'
+import { ACHIEVEMENT_FIELDS, Achievement } from './entities/achievement.entity'
 
-type AchievementPrismaType = Omit<AchievementType, 'nameKey'> & {
+type AchievementPrismaType = Omit<Achievement, 'nameKey'> & {
   name: string
 }
 
@@ -31,10 +27,10 @@ export class AchievementRepo {
       data
     }: {
       createdById: number | null
-      data: CreateAchievementBodyType
+      data: CreateAchievementBody
     },
     prismaTx?: PrismaClient
-  ): Promise<AchievementType> {
+  ): Promise<Achievement> {
     const client = prismaTx || this.prismaService
     return client.achievement.create({
       data: {
@@ -52,17 +48,17 @@ export class AchievementRepo {
     }: {
       id: number
       updatedById?: number
-      data: UpdateAchievementBodyType & {
-        nameTranslations?: CreateTranslationBodyType[]
-        descriptionTranslations?: CreateTranslationBodyType[]
-        conditionTextTranslations?: CreateTranslationBodyType[]
+      data: UpdateAchievementBody & {
+        nameTranslations?: CreateTranslationBody[]
+        descriptionTranslations?: CreateTranslationBody[]
+        conditionTextTranslations?: CreateTranslationBody[]
         achievementNameKey?: string
         achievementDescriptionKey?: string
         achievementConditionTextKey?: string
       }
     },
     prismaTx?: PrismaClient
-  ): Promise<AchievementType> {
+  ): Promise<Achievement> {
     const client = prismaTx || this.prismaService
     const {
       nameTranslations,
@@ -170,7 +166,7 @@ export class AchievementRepo {
     },
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<AchievementType> {
+  ): Promise<Achievement> {
     const client = prismaTx || this.prismaService
     const result = isHard
       ? await this.prismaService.achievement.delete({
@@ -191,7 +187,7 @@ export class AchievementRepo {
     return result
   }
 
-  async list(pagination: PaginationQueryType, langId?: number, isAdmin: boolean = false) {
+  async list(pagination: PaginationQuery, langId?: number, isAdmin: boolean = false) {
     const { where: rawWhere = {}, orderBy } = parseQs(pagination.qs, ACHIEVEMENT_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -299,7 +295,7 @@ export class AchievementRepo {
       }
     }
   }
-  findById(id: number): Promise<AchievementType | null> {
+  findById(id: number): Promise<Achievement | null> {
     return this.prismaService.achievement.findUnique({
       where: {
         id,
@@ -312,7 +308,7 @@ export class AchievementRepo {
     id: number,
     isAllLang: boolean,
     langId: number
-  ): Promise<AchievementType | null> {
+  ): Promise<Achievement | null> {
     return this.prismaService.achievement.findUnique({
       where: {
         id,

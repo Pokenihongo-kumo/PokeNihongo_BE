@@ -1,13 +1,19 @@
+import {
+  MatchRoundParticipantStatus,
+  RoundStatus
+} from '@/common/constants/match.constant'
 import { parseQs } from '@/common/utils/qs-parser'
-import { PaginationQueryType } from '@/shared/models/request.model'
+import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import {
-  CreateMatchRoundParticipantBodyType,
+  CreateMatchRoundParticipantBody,
+  UpdateMatchRoundParticipantBody
+} from './dto/match-round-participant.zod-dto'
+import {
   MATCH_PARTICIPANT_FIELDS,
-  MatchRoundParticipantType,
-  UpdateMatchRoundParticipantBodyType
+  MatchRoundParticipant
 } from './entities/match-round-participant.entity'
 
 @Injectable()
@@ -22,10 +28,10 @@ export class MatchRoundParticipantRepo {
       data
     }: {
       createdById: number
-      data: CreateMatchRoundParticipantBodyType
+      data: CreateMatchRoundParticipantBody
     },
     prismaTx?: PrismaClient
-  ): Promise<MatchRoundParticipantType> {
+  ): Promise<MatchRoundParticipant> {
     const client = prismaTx || this.prismaService
     return client.matchRoundParticipant.create({
       data: {
@@ -57,11 +63,11 @@ export class MatchRoundParticipantRepo {
       updatedById
     }: {
       id: number
-      data: UpdateMatchRoundParticipantBodyType
+      data: UpdateMatchRoundParticipantBody
       updatedById?: number
     },
     prismaTx?: PrismaClient
-  ): Promise<MatchRoundParticipantType> {
+  ): Promise<MatchRoundParticipant> {
     const client = prismaTx || this.prismaService
     return client.matchRoundParticipant.update({
       where: {
@@ -78,7 +84,7 @@ export class MatchRoundParticipantRepo {
     id: number,
     isHard?: boolean,
     prismaTx?: PrismaClient
-  ): Promise<MatchRoundParticipantType> {
+  ): Promise<MatchRoundParticipant> {
     const client = prismaTx || this.prismaService
     return isHard
       ? client.matchRoundParticipant.delete({
@@ -95,7 +101,7 @@ export class MatchRoundParticipantRepo {
         })
   }
 
-  async list(pagination: PaginationQueryType) {
+  async list(pagination: PaginationQuery) {
     const { where, orderBy } = parseQs(pagination.qs, MATCH_PARTICIPANT_FIELDS)
 
     const skip = (pagination.currentPage - 1) * pagination.pageSize
@@ -130,7 +136,7 @@ export class MatchRoundParticipantRepo {
     }
   }
 
-  findById(id: number): Promise<MatchRoundParticipantType | null> {
+  findById(id: number): Promise<MatchRoundParticipant | null> {
     return this.prismaService.matchRoundParticipant.findUnique({
       where: {
         id,
@@ -142,7 +148,7 @@ export class MatchRoundParticipantRepo {
   async findByMatchRoundIdAndUserId(
     matchRoundId: number,
     userId: number
-  ): Promise<MatchRoundParticipantType | null> {
+  ): Promise<MatchRoundParticipant | null> {
     return this.prismaService.matchRoundParticipant.findFirst({
       where: {
         matchRoundId,
@@ -157,7 +163,170 @@ export class MatchRoundParticipantRepo {
   async findMany(options: {
     where: any
     orderBy?: any
-  }): Promise<MatchRoundParticipantType[]> {
+  }): Promise<MatchRoundParticipant[]> {
     return this.prismaService.matchRoundParticipant.findMany(options)
+  }
+
+  // ---- Picks and round set-up (MatchRoundParticipantService and its timeout processor) ----
+
+  findLiveInRoundOrdered(matchRoundId: number) {
+    return this.prismaService.matchRoundParticipant.findMany({
+      where: { matchRoundId, deletedAt: null },
+      orderBy: { orderSelected: 'asc' }
+    })
+  }
+
+  setRoundParticipantsPending(matchRoundId: number) {
+    return this.prismaService.matchRoundParticipant.updateMany({
+      where: { matchRoundId },
+      data: { status: RoundStatus.PENDING }
+    })
+  }
+
+  findInRoundWithUsers(matchRoundId: number) {
+    return this.prismaService.matchRoundParticipant.findMany({
+      where: { matchRoundId, deletedAt: null },
+      include: { matchParticipant: { include: { user: true } } },
+      orderBy: { orderSelected: 'asc' }
+    })
+  }
+
+  setQuestionsTotal(ids: number[], total: number) {
+    return this.prismaService.matchRoundParticipant.updateMany({
+      where: { id: { in: ids } },
+      data: { questionsTotal: total }
+    })
+  }
+
+  findPicksInRound(matchRoundId: number) {
+    return this.prismaService.matchRoundParticipant.findMany({
+      where: { matchRoundId, deletedAt: null },
+      select: { id: true, selectedUserPokemon: { select: { pokemonId: true } } }
+    })
+  }
+
+  assignDebuff(id: number, debuffId: number, questionsTotal: number) {
+    return this.prismaService.matchRoundParticipant.update({
+      where: { id },
+      data: { debuffId, questionsTotal }
+    })
+  }
+
+  addQuestionsTotal(id: number, by: number) {
+    return this.prismaService.matchRoundParticipant.update({
+      where: { id },
+      data: {
+        questionsTotal: {
+          increment: by
+        }
+      }
+    })
+  }
+
+  setLiveRoundParticipantsPending(matchRoundId: number) {
+    return this.prismaService.matchRoundParticipant.updateMany({
+      where: { matchRoundId, deletedAt: null },
+      data: { status: RoundStatus.PENDING }
+    })
+  }
+
+  // ---- Pick timeout and round start (MatchRoundParticipantTimeoutProcessor) ----
+
+  findWithRoundParticipants(id: number) {
+    return this.prismaService.matchRoundParticipant.findUnique({
+      where: { id },
+      include: {
+        matchRound: {
+          include: {
+            participants: {
+              orderBy: {
+                orderSelected: 'asc'
+              }
+            }
+          }
+        }
+      }
+    })
+  }
+
+  // Battle exception: match-participant imports this module, its service is out of reach
+  findMatchParticipant(id: number) {
+    return this.prismaService.matchParticipant.findUnique({
+      where: { id }
+    })
+  }
+
+  // Picked for the player (timeout): PENDING
+  setPickedPending(id: number, selectedUserPokemonId: number) {
+    return this.prismaService.matchRoundParticipant.update({
+      where: { id },
+      data: {
+        selectedUserPokemonId,
+        status: MatchRoundParticipantStatus.PENDING
+      }
+    })
+  }
+
+  setPickDeadline(id: number, endTimeSelected: Date) {
+    return this.prismaService.matchRoundParticipant.update({
+      where: { id },
+      data: {
+        endTimeSelected
+      }
+    })
+  }
+
+  findPickStateInRound(matchRoundId: number) {
+    return this.prismaService.matchRoundParticipant.findMany({
+      where: { matchRoundId },
+      select: { id: true, selectedUserPokemonId: true }
+    })
+  }
+
+  findLiveInRoundWithPicks(matchRoundId: number) {
+    return this.prismaService.matchRoundParticipant.findMany({
+      where: { matchRoundId, deletedAt: null },
+      include: {
+        selectedUserPokemon: { select: { pokemonId: true } },
+        matchRound: true
+      },
+      orderBy: { orderSelected: 'asc' }
+    })
+  }
+
+  // Battle exception, as findMatchParticipant
+  findMatchParticipants(matchId: number) {
+    return this.prismaService.matchParticipant.findMany({
+      where: { matchId, deletedAt: null },
+      select: { id: true, userId: true }
+    })
+  }
+
+  setRoundParticipantsInProgress(matchRoundId: number) {
+    return this.prismaService.matchRoundParticipant.updateMany({
+      where: { matchRoundId },
+      data: { status: 'IN_PROGRESS' }
+    })
+  }
+
+  findLiveInRoundForStart(matchRoundId: number) {
+    return this.prismaService.matchRoundParticipant.findMany({
+      where: { matchRoundId, deletedAt: null },
+      include: {
+        matchParticipant: {
+          include: {
+            user: true
+          }
+        },
+        matchRound: true,
+        selectedUserPokemon: {
+          include: {
+            pokemon: true
+          }
+        },
+        debuff: true
+      },
+      orderBy: { orderSelected: 'asc' }
+    })
   }
 }

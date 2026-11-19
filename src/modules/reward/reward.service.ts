@@ -1,6 +1,13 @@
 import { FeatureKey } from '@/common/constants/subscription.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { NotificationMessage, RewardMessage } from '@/i18n/message-keys'
+import { NotificationMessage } from '@/i18n/message-keys'
+import { LanguagesService } from '@/modules/languages/languages.service'
+import { NotificationService } from '@/modules/notification/notification.service'
+import { PokemonService } from '@/modules/pokemon/pokemon.service'
+import { TranslationService } from '@/modules/translation/translation.service'
+import { UserPokemonService } from '@/modules/user-pokemon/user-pokemon.service'
+import { CreateUserRewardHistoryBody } from '@/modules/user-reward-history/dto/user-reward-history.zod-dto'
+import { UserSubscriptionService } from '@/modules/user-subscription/user-subscription.service'
+import { WalletService } from '@/modules/wallet/wallet.service'
 import {
   InvalidForeignKeyConstraintException,
   LanguageNotExistToTranslateException,
@@ -9,52 +16,42 @@ import {
 import {
   isForeignKeyConstraintPrismaError,
   isNotFoundPrismaError,
+  isRestrictViolationPrismaError,
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
-import { PaginationQueryType } from '@/shared/models/request.model'
-import { SharedNotificationService } from '@/shared/services/shared-notification.service'
-import { SharedUserSubscriptionService } from '@/shared/services/user-subscription.service'
-import { HttpStatus, Injectable, Logger } from '@nestjs/common'
+import { PaginationQuery } from '@/shared/models/request.model'
+import { Injectable, Logger } from '@nestjs/common'
 import {
   RarityPokemon,
   RewardTarget,
   UserRewardSourceType,
   WalletType
 } from '@prisma/client'
-import { LanguagesRepository } from '../languages/languages.repo'
-import { PokemonRepo } from '../pokemon/pokemon.repo'
-import { CreateTranslationBodyType } from '../translation/entities/translation.entities'
-import { TranslationRepository } from '../translation/translation.repo'
-import { UserPokemonRepo } from '../user-pokemon/user-pokemon.repo'
-import { CreateUserRewardHistoryBodyType } from '../user-reward-history/entities/user-reward-history.entities'
+import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { UserRewardHistoryService } from '../user-reward-history/user-reward-history.service'
 import { UserService } from '../user/user.service'
-import { WalletTransactionRepo } from '../wallet-transaction/wallet-transaction.repo'
-import { WalletRepo } from '../wallet/wallet.repo'
 import { RewardAlreadyExistsException } from './dto/reward.error'
 import {
-  CreateRewardBodyInputType,
-  CreateRewardBodyType,
-  UpdateRewardBodyInputType,
-  UpdateRewardBodyType
-} from './entities/reward.entity'
+  CreateRewardBody,
+  CreateRewardBodyInput,
+  UpdateRewardBody,
+  UpdateRewardBodyInput
+} from './dto/reward.zod-dto'
 import { RewardRepo } from './reward.repo'
 
 @Injectable()
 export class RewardService {
   constructor(
     private rewardRepo: RewardRepo,
-    private readonly i18nService: I18nService,
-    private readonly languageRepo: LanguagesRepository,
-    private readonly translationRepo: TranslationRepository,
+    private readonly languagesService: LanguagesService,
+    private readonly translationService: TranslationService,
     private readonly userService: UserService,
-    private readonly walletRepo: WalletRepo,
-    private readonly pokemonRepo: PokemonRepo,
-    private readonly userPokemonRepo: UserPokemonRepo,
+    private readonly walletService: WalletService,
+    private readonly pokemonService: PokemonService,
+    private readonly userPokemonService: UserPokemonService,
     private readonly userRewardHistoryService: UserRewardHistoryService,
-    private readonly userSubService: SharedUserSubscriptionService,
-    private readonly walletTransactionRepo: WalletTransactionRepo,
-    private readonly sharedNotificationService: SharedNotificationService
+    private readonly userSubService: UserSubscriptionService,
+    private readonly sharedNotificationService: NotificationService
   ) {}
 
   private readonly logger = new Logger(RewardService.name)
@@ -116,7 +113,7 @@ export class RewardService {
   }
 
   private pushHistoryEntry(
-    entries: CreateUserRewardHistoryBodyType[],
+    entries: CreateUserRewardHistoryBody[],
     params: {
       userId: number
       rewardId?: number
@@ -138,17 +135,14 @@ export class RewardService {
     entries.push(payload)
   }
 
-  async list(pagination: PaginationQueryType, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+  async list(pagination: PaginationQuery, lang: string = 'vi') {
+    const langId = await this.languagesService.getIdByCode(lang)
     const data = await this.rewardRepo.list(pagination, langId ?? undefined)
-    return {
-      data,
-      message: this.i18nService.translate(RewardMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
-  async getListWithAllLang(pagination: PaginationQueryType, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+  async getListWithAllLang(pagination: PaginationQuery, lang: string = 'vi') {
+    const langId = await this.languagesService.getIdByCode(lang)
     const data = await this.rewardRepo.getListWithAllLang(pagination, langId ?? undefined)
 
     // Build language code map for all referenced languageIds
@@ -156,7 +150,7 @@ export class RewardService {
     for (const item of data.results as any[]) {
       for (const t of item.nameTranslations ?? []) allLangIds.add(t.languageId)
     }
-    const languages = await this.languageRepo.getWithListId(Array.from(allLangIds))
+    const languages = await this.languagesService.getWithListId(Array.from(allLangIds))
     const codeMap = Object.fromEntries(languages.map((l) => [l.id, l.code]))
 
     const results = (data.results as any[]).map((item) => ({
@@ -167,20 +161,14 @@ export class RewardService {
       }))
     }))
 
-    return {
-      data: { ...data, results },
-      message: this.i18nService.translate(RewardMessage.GET_LIST_SUCCESS, lang)
-    }
+    return { ...data, results }
   }
 
   async findById(id: number, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
 
     if (!langId) {
-      return {
-        data: null,
-        message: this.i18nService.translate(RewardMessage.GET_SUCCESS, lang)
-      }
+      return null
     }
 
     const reward = await this.rewardRepo.findByIdWithLangId(id, langId)
@@ -195,15 +183,11 @@ export class RewardService {
       descriptionTranslation: (reward as any).descriptionTranslations?.[0]?.value ?? null
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: result,
-      message: this.i18nService.translate(RewardMessage.GET_SUCCESS, lang)
-    }
+    return result
   }
 
   async findByIdWithAllLang(id: number, lang: string = 'vi') {
-    const langId = await this.languageRepo.getIdByCode(lang)
+    const langId = await this.languagesService.getIdByCode(lang)
 
     const reward: any = await this.rewardRepo.findByIdWithAllLang(id)
     if (!reward) {
@@ -217,7 +201,7 @@ export class RewardService {
       : null
 
     // map array to { key: code, value }
-    const languages = await this.languageRepo.getWithListId(
+    const languages = await this.languagesService.getWithListId(
       Array.from(new Set((reward.nameTranslations ?? []).map((t: any) => t.languageId)))
     )
     const codeMap = Object.fromEntries(languages.map((l) => [l.id, l.code]))
@@ -230,38 +214,30 @@ export class RewardService {
       }))
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: result,
-      message: this.i18nService.translate(RewardMessage.GET_SUCCESS, lang)
-    }
+    return result
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreateRewardBodyInputType
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
-    let createdReward: any = null
-
+  async create({
+    data,
+    createdById
+  }: {
+    data: CreateRewardBodyInput
+    createdById: number
+  }) {
+    // Every write runs in this transaction: a failure leaves no reward behind
     try {
       return await this.rewardRepo.withTransaction(async (prismaTx) => {
         const nameKey = `reward.name.${Date.now()}`
 
         // Convert data for create
-        const dataCreate: CreateRewardBodyType = {
+        const dataCreate: CreateRewardBody = {
           nameKey,
           rewardType: data.rewardType,
           rewardItem: data.rewardItem,
           rewardTarget: data.rewardTarget
         }
 
-        createdReward = await this.rewardRepo.create(
+        const createdReward = await this.rewardRepo.create(
           {
             createdById,
             data: dataCreate
@@ -278,7 +254,7 @@ export class RewardService {
         const allLangCodes = Array.from(new Set(nameList))
 
         // Get languages corresponding to the keys
-        const languages = await this.languageRepo.getWithListCode(allLangCodes)
+        const languages = await this.languagesService.getWithListCode(allLangCodes)
 
         // Create map { code: id } for quick access
         const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
@@ -290,7 +266,7 @@ export class RewardService {
         }
 
         // Create translation records
-        const translationRecords: CreateTranslationBodyType[] = []
+        const translationRecords: CreateTranslationBody[] = []
 
         // nameTranslations → key = nameKey
         for (const item of data.nameTranslations) {
@@ -302,11 +278,11 @@ export class RewardService {
         }
 
         // Validate translations (check for duplicate names)
-        await this.translationRepo.validateTranslationRecords(translationRecords)
+        await this.translationService.validateTranslationRecords(translationRecords)
 
         // Create or update translations with transaction
         // const translationPromises = translationRecords.map((record) =>
-        //   this.translationRepo.createOrUpdateWithTransaction(record, prismaTx)
+        //   this.translationService.createOrUpdateWithTransaction(record, prismaTx)
         // )
         // await Promise.all(translationPromises)
 
@@ -323,26 +299,9 @@ export class RewardService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.CREATED,
-          data: result,
-          message: this.i18nService.translate(RewardMessage.CREATE_SUCCESS, lang)
-        }
+        return result
       })
     } catch (error) {
-      // Rollback: Delete reward if created
-      if (createdReward?.id) {
-        try {
-          await this.rewardRepo.delete(
-            {
-              id: createdReward.id,
-              deletedById: createdById
-            },
-            true
-          )
-        } catch (rollbackError) {}
-      }
-
       if (isUniqueConstraintPrismaError(error)) {
         throw new RewardAlreadyExistsException()
       }
@@ -356,29 +315,26 @@ export class RewardService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateRewardBodyInputType
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateRewardBodyInput
+    updatedById: number
+  }) {
     let existingReward: any = null
 
     try {
       return await this.rewardRepo.withTransaction(async (prismaTx) => {
-        let translationRecords: CreateTranslationBodyType[] = []
+        const translationRecords: CreateTranslationBody[] = []
         // Get current record
         existingReward = await this.rewardRepo.findById(id)
         if (!existingReward) throw new NotFoundRecordException()
 
         // Prepare data for update
-        const dataUpdate: Partial<UpdateRewardBodyType> = {}
+        const dataUpdate: Partial<UpdateRewardBody> = {}
 
         if (data.rewardType !== undefined) dataUpdate.rewardType = data.rewardType
         if (data.rewardItem !== undefined) dataUpdate.rewardItem = data.rewardItem
@@ -391,7 +347,7 @@ export class RewardService {
 
           if (allLangCodes.length > 0) {
             // Get languages
-            const languages = await this.languageRepo.getWithListCode(allLangCodes)
+            const languages = await this.languagesService.getWithListCode(allLangCodes)
             const langMap = Object.fromEntries(languages.map((l) => [l.code, l.id]))
 
             // Check missing language
@@ -411,11 +367,11 @@ export class RewardService {
             }
 
             // Validate translation records
-            await this.translationRepo.validateTranslationRecords(translationRecords)
+            await this.translationService.validateTranslationRecords(translationRecords)
 
             // Update translations with transaction
             // const translationPromises = translationRecords.map((record) =>
-            //   this.translationRepo.createOrUpdateWithTransaction(record, prismaTx)
+            //   this.translationService.createOrUpdateWithTransaction(record, prismaTx)
             // )
             // await Promise.all(translationPromises)
           }
@@ -435,11 +391,7 @@ export class RewardService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.OK,
-          data: updatedReward,
-          message: this.i18nService.translate(RewardMessage.UPDATE_SUCCESS, lang)
-        }
+        return updatedReward
       })
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
@@ -455,34 +407,26 @@ export class RewardService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
       const existingReward = await this.rewardRepo.findDelId(id)
       if (!existingReward) {
         throw new NotFoundRecordException()
       }
 
-      await Promise.all([
-        this.rewardRepo.delete(
-          {
-            id,
-            deletedById
-          },
-          existingReward.deletedAt ? true : false
-        ),
-        ...(existingReward.deletedAt
-          ? [this.translationRepo.deleteByKey(existingReward.nameKey)]
-          : [])
-      ])
-
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(RewardMessage.DELETE_SUCCESS, lang)
+      if (existingReward.deletedAt) {
+        // Already soft-deleted: hard delete the name translations and the reward
+        // together, so a failure (e.g. a Restrict FK from UserRewardHistory)
+        // leaves both in place
+        await this.rewardRepo.withTransaction(async (prismaTx) => {
+          await this.translationService.deleteByKey(existingReward.nameKey, prismaTx)
+          await this.rewardRepo.delete({ id, deletedById }, true, prismaTx)
+        })
+      } else {
+        await this.rewardRepo.delete({ id, deletedById }, false)
       }
+
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -491,6 +435,10 @@ export class RewardService {
         throw new InvalidForeignKeyConstraintException(
           (error.meta?.constraint as string) ?? ''
         )
+      // Hard delete blocked by a Restrict relation (e.g. UserRewardHistory)
+      if (isRestrictViolationPrismaError(error)) {
+        throw new InvalidForeignKeyConstraintException()
+      }
 
       throw error
     }
@@ -545,7 +493,7 @@ export class RewardService {
       levelRewards: [] // Track rewards from level-ups
     }
 
-    const historyEntries: CreateUserRewardHistoryBodyType[] = []
+    const historyEntries: CreateUserRewardHistoryBody[] = []
     const notificationType = this.mapToNotificationType(sourceType)
     const notificationsToCreate: Array<{
       titleKey: string
@@ -629,43 +577,43 @@ export class RewardService {
         )
 
         // Accumulate level gains (don't store full user data)
-        if (expResult.data.levelsGained) {
-          results.levelsGained += expResult.data.levelsGained
+        if (expResult.levelsGained) {
+          results.levelsGained += expResult.levelsGained
         }
 
         // Add level-up rewards to queue if any
-        if (expResult.data.levelRewardIds && expResult.data.levelRewardIds.length > 0) {
+        if (expResult.levelRewardIds && expResult.levelRewardIds.length > 0) {
           this.logger.log(
-            `[convertRewardsWithUser] User ${userId} leveled up ${expResult.data.levelsGained} times, levelRewardIds from userAddExp: [${expResult.data.levelRewardIds.join(', ')}]`
+            `[convertRewardsWithUser] User ${userId} leveled up ${expResult.levelsGained} times, levelRewardIds from userAddExp: [${expResult.levelRewardIds.join(', ')}]`
           )
           this.logger.log(
-            `[convertRewardsWithUser] Level up details: ${JSON.stringify(expResult.data.levelUpDetails)}`
+            `[convertRewardsWithUser] Level up details: ${JSON.stringify(expResult.levelUpDetails)}`
           )
 
           // Fetch level reward details to include in response
           this.logger.log(
-            `[convertRewardsWithUser] Fetching level reward details for IDs: [${expResult.data.levelRewardIds.join(', ')}]`
+            `[convertRewardsWithUser] Fetching level reward details for IDs: [${expResult.levelRewardIds.join(', ')}]`
           )
           const levelRewardDetails = await this.rewardRepo.findManyByIds(
-            expResult.data.levelRewardIds
+            expResult.levelRewardIds
           )
 
           this.logger.log(
-            `[convertRewardsWithUser] Level rewards fetched: ${levelRewardDetails.length} out of ${expResult.data.levelRewardIds.length}`
+            `[convertRewardsWithUser] Level rewards fetched: ${levelRewardDetails.length} out of ${expResult.levelRewardIds.length}`
           )
 
-          if (levelRewardDetails.length !== expResult.data.levelRewardIds.length) {
+          if (levelRewardDetails.length !== expResult.levelRewardIds.length) {
             const foundIds = levelRewardDetails.map((r) => r.id)
-            const missingIds = expResult.data.levelRewardIds.filter(
+            const missingIds = expResult.levelRewardIds.filter(
               (id) => !foundIds.includes(id)
             )
             this.logger.error(
-              `[convertRewardsWithUser] LEVEL REWARD NOT FOUND - Requested: [${expResult.data.levelRewardIds.join(', ')}], Found: [${foundIds.join(', ')}], Missing: [${missingIds.join(', ')}]`
+              `[convertRewardsWithUser] LEVEL REWARD NOT FOUND - Requested: [${expResult.levelRewardIds.join(', ')}], Found: [${foundIds.join(', ')}], Missing: [${missingIds.join(', ')}]`
             )
           }
 
           // Map rewards with level progression info
-          const levelUpDetails = expResult.data.levelUpDetails || []
+          const levelUpDetails = expResult.levelUpDetails || []
           levelRewardDetails.forEach((reward, index) => {
             const levelDetail = levelUpDetails[index]
             results.levelRewards.push({
@@ -675,7 +623,7 @@ export class RewardService {
             })
           })
 
-          rewardQueue.push(...expResult.data.levelRewardIds)
+          rewardQueue.push(...expResult.levelRewardIds)
           this.logger.log(
             `[convertRewardsWithUser] Added level rewards to queue. New queue: [${rewardQueue.join(', ')}]`
           )
@@ -712,37 +660,25 @@ export class RewardService {
           0
         )
         const finalAmount = totalCoins * valueIncrease
-        const coinsResult = await this.walletRepo.addBalanceToWalletWithType({
-          userId,
-          type: WalletType.POKE_COINS,
-          amount: finalAmount
-        })
+        // Balance and its wallet transaction in one transaction
+        const coinsResult = await this.walletService.credit(
+          {
+            userId,
+            type: WalletType.POKE_COINS,
+            amount: finalAmount,
+            createdById: userId,
+            purpose: 'REWARD',
+            referenceId: sourceId ?? null,
+            source: this.mapToWalletSourceType(sourceType),
+            description: `Received ${finalAmount} POKE_COINS from ${sourceType}`
+          },
+          undefined,
+          // a user without this wallet gets it with the reward
+          { createIfMissing: true }
+        )
 
         // Accumulate or set result
-        results.pokeCoins = coinsResult
-
-        // ✅ Create wallet transaction
-        if (coinsResult) {
-          try {
-            await this.walletTransactionRepo.create({
-              createdById: userId,
-              data: {
-                walletId: coinsResult.id,
-                userId,
-                purpose: 'REWARD',
-                referenceId: sourceId ?? null,
-                amount: finalAmount,
-                type: 'INCREASE',
-                source: this.mapToWalletSourceType(sourceType) as any,
-                description: `Received ${finalAmount} POKE_COINS from ${sourceType}`
-              }
-            })
-          } catch (error) {
-            this.logger.warn(
-              `Failed to create wallet transaction for POKE_COINS: ${error?.message ?? error}`
-            )
-          }
-        }
+        results.pokeCoins = coinsResult?.wallet ?? null
 
         this.logger.log(
           `Appending history entries for POKE_COINS rewards for user: ${userId} with sourceId: ${sourceId}`
@@ -776,37 +712,25 @@ export class RewardService {
         )
         const finalAmount = totalSparkles * valueIncrease
 
-        const sparklesResult = await this.walletRepo.addBalanceToWalletWithType({
-          userId,
-          type: WalletType.SPARKLES,
-          amount: finalAmount
-        })
+        // Balance and its wallet transaction in one transaction
+        const sparklesResult = await this.walletService.credit(
+          {
+            userId,
+            type: WalletType.SPARKLES,
+            amount: finalAmount,
+            createdById: userId,
+            purpose: 'REWARD',
+            referenceId: sourceId ?? null,
+            source: this.mapToWalletSourceType(sourceType),
+            description: `Received ${finalAmount} SPARKLES from ${sourceType}`
+          },
+          undefined,
+          // a user without this wallet gets it with the reward
+          { createIfMissing: true }
+        )
 
         // Accumulate or set result
-        results.sparkles = sparklesResult
-
-        // ✅ Create wallet transaction
-        if (sparklesResult) {
-          try {
-            await this.walletTransactionRepo.create({
-              createdById: userId,
-              data: {
-                walletId: sparklesResult.id,
-                userId,
-                purpose: 'REWARD',
-                referenceId: sourceId ?? null,
-                amount: finalAmount,
-                type: 'INCREASE',
-                source: this.mapToWalletSourceType(sourceType) as any,
-                description: `Received ${finalAmount} SPARKLES from ${sourceType}`
-              }
-            })
-          } catch (error) {
-            this.logger.warn(
-              `Failed to create wallet transaction for SPARKLES: ${error?.message ?? error}`
-            )
-          }
-        }
+        results.sparkles = sparklesResult?.wallet ?? null
 
         this.logger.log(
           `Appending history entries for SPARKLES rewards for user: ${userId} with sourceId: ${sourceId}`
@@ -837,14 +761,14 @@ export class RewardService {
         const pokemonId = pokemonReward.rewardItem
 
         // Check if user already has this pokemon
-        const existingUserPokemon = await this.userPokemonRepo.findByUserAndPokemon(
+        const existingUserPokemon = await this.userPokemonService.findByUserAndPokemon(
           userId,
           pokemonId
         )
 
         if (!existingUserPokemon) {
           // User doesn't have this pokemon -> add it
-          const newUserPokemon = await this.userPokemonRepo.create({
+          const newUserPokemon = await this.userPokemonService.insert({
             userId,
             data: {
               pokemonId,
@@ -853,7 +777,7 @@ export class RewardService {
           })
 
           // Fetch pokemon details for notification
-          const pokemonDetails = await this.pokemonRepo.findById(pokemonId)
+          const pokemonDetails = await this.pokemonService.getById(pokemonId)
 
           results.pokemons.push({
             action: 'added',
@@ -886,7 +810,7 @@ export class RewardService {
           }
         } else {
           // User already has this pokemon -> convert to coins based on rarity
-          const pokemon = await this.pokemonRepo.findById(pokemonId)
+          const pokemon = await this.pokemonService.getById(pokemonId)
           if (!pokemon) {
             throw new NotFoundRecordException()
           }
@@ -906,34 +830,23 @@ export class RewardService {
 
           // Add coins to user wallet
           const finalCoinValue = coinValue * valueIncrease
-          const updatedWallet = await this.walletRepo.addBalanceToWalletWithType({
-            userId,
-            type: WalletType.SPARKLES,
-            amount: finalCoinValue
-          })
-
-          // ✅ Create wallet transaction for converted pokemon
-          if (updatedWallet) {
-            try {
-              await this.walletTransactionRepo.create({
-                createdById: userId,
-                data: {
-                  walletId: updatedWallet.id,
-                  userId,
-                  purpose: 'REWARD',
-                  referenceId: sourceId ?? null,
-                  amount: finalCoinValue,
-                  type: 'INCREASE',
-                  source: this.mapToWalletSourceType(sourceType) as any,
-                  description: `Converted duplicate Pokemon #${pokemonId} (${pokemon.nameJp}) to ${finalCoinValue} SPARKLES`
-                }
-              })
-            } catch (error) {
-              this.logger.warn(
-                `Failed to create wallet transaction for converted pokemon: ${error?.message ?? error}`
-              )
-            }
-          }
+          // Balance and its wallet transaction in one transaction
+          const credited = await this.walletService.credit(
+            {
+              userId,
+              type: WalletType.SPARKLES,
+              amount: finalCoinValue,
+              createdById: userId,
+              purpose: 'REWARD',
+              referenceId: sourceId ?? null,
+              source: this.mapToWalletSourceType(sourceType),
+              description: `Converted duplicate Pokemon #${pokemonId} (${pokemon.nameJp}) to ${finalCoinValue} SPARKLES`
+            },
+            undefined,
+            // a user without this wallet gets it with the reward
+            { createIfMissing: true }
+          )
+          const updatedWallet = credited?.wallet ?? null
 
           results.pokemons.push({
             action: 'converted_to_coins',
@@ -1037,26 +950,23 @@ export class RewardService {
       try {
         const notificationResults = await Promise.allSettled(
           notificationsToCreate.map((notiData) =>
-            this.sharedNotificationService.create(
-              {
+            this.sharedNotificationService.create({
+              userId,
+              data: {
                 userId,
-                data: {
-                  userId,
-                  titleKey: notiData.titleKey,
-                  bodyKey: notiData.bodyKey,
-                  type: notiData.type,
-                  data: notiData.metadata
-                }
-              },
-              'vi'
-            )
+                titleKey: notiData.titleKey,
+                bodyKey: notiData.bodyKey,
+                type: notiData.type,
+                data: notiData.metadata
+              }
+            })
           )
         )
 
         const createdNotifications: any[] = []
         notificationResults.forEach((result, index) => {
           if (result.status === 'fulfilled') {
-            createdNotifications.push(result.value.data)
+            createdNotifications.push(result.value)
           } else {
             this.logger.warn(
               `Failed to create ${notificationsToCreate[index].type} notification for user ${userId}: ${result.reason?.message ?? result.reason}`
@@ -1102,17 +1012,18 @@ export class RewardService {
     rewardIds: number[]
     userId: number
     sourceType: UserRewardSourceType
-    lang?: string
   }) {
     const data = await this.convertRewardsWithUser(
       params.rewardIds,
       params.userId,
       params.sourceType
     )
-    return {
-      statusCode: HttpStatus.OK,
-      data,
-      message: 'Convert rewards successfully'
-    }
+    return data
+  }
+
+  // ---- Season cronjob ----
+
+  findIdsByTargets(...args: Parameters<RewardRepo['findIdsByTargets']>) {
+    return this.rewardRepo.findIdsByTargets(...args)
   }
 }

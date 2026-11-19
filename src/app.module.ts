@@ -1,17 +1,16 @@
-import { I18nHttpExceptionFilter } from '@/common/filters/i18n-http-exception.filter'
-import { RequestContextMiddleware } from '@/common/middleware/request-context.middleware'
+import { ApiExceptionFilter } from '@/common/filters/api-exception.filter'
 import CustomZodValidationPipe from '@/common/pipes/custom-zod-validation.pipe'
 import { I18nModule } from '@/i18n/i18n.module'
 import { BullModule } from '@nestjs/bull'
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
+import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core'
 import { ScheduleModule } from '@nestjs/schedule'
 import { ZodSerializerInterceptor } from 'nestjs-zod'
-import { GeminiModule } from './3rdService/gemini/gemini.module'
-import { MailModule } from './3rdService/mail/mail.module'
-import { SpeechModule } from './3rdService/speech/speech.module'
-import { UploadModule } from './3rdService/upload/upload.module'
+import { GeminiModule } from '@/modules/gemini/gemini.module'
+import { MailModule } from '@/modules/mail/mail.module'
+import { SpeechModule } from '@/modules/speech/speech.module'
+import { UploadModule } from '@/modules/upload/upload.module'
 import { TransformInterceptor } from './common/interceptor/transform.interceptor'
 import { AuthModule } from './modules/auth/auth.module'
 import { PermissionModule } from './modules/permission/permission.module'
@@ -41,9 +40,7 @@ import { PokemonModule } from './modules/pokemon/pokemon.module'
 
 import { HandleGachaBannerCronjob } from './cronjobs/handle-gacha-banner.cronjob'
 import { HandleLeaderboardSeasonCronjob } from './cronjobs/handle-leaderboard-season.cronjob'
-import { HandleMatchmakingCronjob } from './cronjobs/handle-matchmaking.cronjob'
 import { HandleShopBannerCronjob } from './cronjobs/handle-shop-banner.cronjob'
-import { HandleUserSubscriptionCronjob } from './cronjobs/handle-user-subscription.cronjob'
 import { AIConversationRoomModule } from './modules/ai-conversation-room/ai-conversation-room.module'
 import { DashboardModule } from './modules/dashboard/dashboard.module'
 import { DebuffRoundModule } from './modules/debuff-round/debuff-round.module'
@@ -91,7 +88,8 @@ import { UserPokemonModule } from './modules/user-pokemon/user-pokemon.module'
 import { UserProgressModule } from './modules/user-progress/user-progress.module'
 import { UserRewardHistoryModule } from './modules/user-reward-history/user-reward-history.module'
 import { UserSeasonHistoryModule } from './modules/user-season-history/user-season-history.module'
-import { SrsReviewModule } from './modules/user-srs-review/srs-review.module'
+import { UserCoreModule } from './modules/user/user-core.module'
+import { SrsReviewModule } from './modules/user-srs-review/user-srs-review.module'
 import { UserSubscriptionModule } from './modules/user-subscription/user-subscription.module'
 import { UserTestAnswerLogModule } from './modules/user-test-answer-log/user-test-answer-log.module'
 import { UserTestAttemptModule } from './modules/user-test-attempt/user-test-attempt.module'
@@ -191,6 +189,7 @@ import { WebsocketsModule } from './websockets/websockets.module'
     DebuffRoundModule,
     SrsReviewModule,
     UserSeasonHistoryModule,
+    UserCoreModule, // season cronjob (elo reset)
     UserAIConversationModule,
     AIConversationRoomModule,
     RoundQuestionModule,
@@ -212,10 +211,8 @@ import { WebsocketsModule } from './websockets/websockets.module'
   controllers: [],
   providers: [
     HandleShopBannerCronjob,
-    HandleUserSubscriptionCronjob, // Cronjob chạy mỗi giờ để cancel subscription hết hạn
     HandleGachaBannerCronjob,
     HandleLeaderboardSeasonCronjob,
-    HandleMatchmakingCronjob, // Cronjob chạy mỗi 5s để xử lý matchmaking
     {
       provide: APP_PIPE,
       useClass: CustomZodValidationPipe
@@ -224,12 +221,8 @@ import { WebsocketsModule } from './websockets/websockets.module'
     { provide: APP_INTERCEPTOR, useClass: TransformInterceptor },
     {
       provide: APP_FILTER,
-      useClass: I18nHttpExceptionFilter
+      useClass: ApiExceptionFilter
     }
   ]
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(RequestContextMiddleware).forRoutes('*')
-  }
-}
+export class AppModule {}

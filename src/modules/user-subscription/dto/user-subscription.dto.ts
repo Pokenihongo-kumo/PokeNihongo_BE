@@ -7,7 +7,7 @@ import {
   GetUserSubscriptionParamsSchema,
   UpdateUserSubscriptionBodySchema,
   UpdateUserSubscriptionResSchema
-} from '../entities/user-subscription.entity'
+} from './user-subscription.zod-dto'
 
 // Request DTOs
 export class CreateUserSubscriptionBodyDTO extends createZodDto(

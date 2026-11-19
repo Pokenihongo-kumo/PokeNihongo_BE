@@ -1,177 +1,121 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { toPaginationMeta } from '@/shared/utils/pagination'
 import {
-    CreateGrammarUsageBodyType,
-    UpdateGrammarUsageBodyType,
-    GetGrammarUsageByIdParamsType,
-    GetGrammarUsageListQueryType,
-} from './entities/grammar-usage.entities'
+  isNotFoundPrismaError,
+  isUniqueConstraintPrismaError
+} from '@/shared/utils/prisma-errors'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
 import {
-    GrammarUsageNotFoundException,
-    GrammarUsageAlreadyExistsException,
-    InvalidGrammarUsageDataException,
-    GrammarNotFoundException,
+  GrammarNotFoundException,
+  GrammarUsageAlreadyExistsException,
+  GrammarUsageNotFoundException,
+  InvalidGrammarUsageDataException
 } from './dto/grammar-usage.error'
-import { GrammarUsageRepository } from './grammar-usage.repo'
-import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from '@/shared/helpers'
+import {
+  CreateGrammarUsageBody,
+  GetGrammarUsageByIdParams,
+  GetGrammarUsageListQuery,
+  UpdateGrammarUsageBody
+} from './dto/grammar-usage.zod-dto'
+import { GrammarUsageRepo } from './grammar-usage.repo'
 
 @Injectable()
 export class GrammarUsageService {
-    private readonly logger = new Logger(GrammarUsageService.name)
+  private readonly logger = new Logger(GrammarUsageService.name)
 
-    constructor(private readonly grammarUsageRepository: GrammarUsageRepository) { }
+  constructor(private readonly grammarUsageRepository: GrammarUsageRepo) {}
 
-    async getGrammarUsageList(params: GetGrammarUsageListQueryType) {
-        try {
-            this.logger.log('Getting grammar usage list with params:', params)
-
-            const result = await this.grammarUsageRepository.findMany(params)
-
-            this.logger.log(`Found ${result.data.length} grammar usage entries`)
-            return {
-                ...result,
-                message: 'Lấy danh sách cách sử dụng ngữ pháp thành công'
-            }
-        } catch (error) {
-            this.logger.error('Error getting grammar usage list:', error)
-            throw error
-        }
+  async getGrammarUsageList(params: GetGrammarUsageListQuery) {
+    const result = await this.grammarUsageRepository.findMany(params)
+    return {
+      results: result.data,
+      pagination: toPaginationMeta(params.page, params.limit, result.total)
     }
+  }
 
-    async getGrammarUsageById(params: GetGrammarUsageByIdParamsType) {
-        try {
-            this.logger.log(`Getting grammar usage by id: ${params.id}`)
-
-            const grammarUsage = await this.grammarUsageRepository.findById(params.id)
-
-            if (!grammarUsage) {
-                throw new GrammarUsageNotFoundException()
-            }
-
-            this.logger.log(`Found grammar usage: ${grammarUsage.id}`)
-            return {
-                data: grammarUsage,
-                message: 'Lấy thông tin cách sử dụng ngữ pháp thành công'
-            }
-        } catch (error) {
-            this.logger.error(`Error getting grammar usage by id ${params.id}:`, error)
-
-            if (error instanceof GrammarUsageNotFoundException) {
-                throw error
-            }
-
-            throw new InvalidGrammarUsageDataException('Lỗi khi lấy thông tin cách sử dụng ngữ pháp')
-        }
+  async getGrammarUsageById(params: GetGrammarUsageByIdParams) {
+    try {
+      const grammarUsage = await this.grammarUsageRepository.findById(params.id)
+      if (!grammarUsage) {
+        throw new GrammarUsageNotFoundException()
+      }
+      return grammarUsage
+    } catch (error) {
+      throw this.toGrammarUsageError(error)
     }
+  }
 
-    async createGrammarUsage(data: CreateGrammarUsageBodyType) {
-        try {
-            this.logger.log('Creating grammar usage with data:', data)
+  async createGrammarUsage(data: CreateGrammarUsageBody) {
+    try {
+      if (!(await this.grammarUsageRepository.checkGrammarExists(data.grammarId))) {
+        throw new GrammarNotFoundException()
+      }
+      if (
+        await this.grammarUsageRepository.checkUsageExistsInGrammar(
+          data.grammarId,
+          data.explanationKey
+        )
+      ) {
+        throw new GrammarUsageAlreadyExistsException()
+      }
 
-            // Validate grammar exists
-            const grammarExists = await this.grammarUsageRepository.checkGrammarExists(data.grammarId)
-            if (!grammarExists) {
-                throw new GrammarNotFoundException()
-            }
-
-            // Check if usage already exists for this grammar
-            const usageExists = await this.grammarUsageRepository.checkUsageExistsInGrammar(
-                data.grammarId,
-                data.explanationKey
-            )
-            if (usageExists) {
-                throw new GrammarUsageAlreadyExistsException()
-            }
-
-            const grammarUsage = await this.grammarUsageRepository.create(data)
-
-            this.logger.log(`Created grammar usage: ${grammarUsage.id}`)
-            return {
-                data: grammarUsage,
-                message: 'Tạo cách sử dụng ngữ pháp thành công'
-            }
-        } catch (error) {
-            this.logger.error('Error creating grammar usage:', error)
-
-            if (error instanceof GrammarNotFoundException || error instanceof GrammarUsageAlreadyExistsException) {
-                throw error
-            }
-
-            if (isUniqueConstraintPrismaError(error)) {
-                throw new GrammarUsageAlreadyExistsException()
-            }
-
-            throw new InvalidGrammarUsageDataException('Lỗi khi tạo cách sử dụng ngữ pháp')
-        }
+      const grammarUsage = await this.grammarUsageRepository.create(data)
+      return grammarUsage
+    } catch (error) {
+      throw this.toGrammarUsageError(error)
     }
+  }
 
-    async updateGrammarUsage(id: number, data: UpdateGrammarUsageBodyType) {
-        try {
-            this.logger.log(`Updating grammar usage ${id} with data:`, data)
+  async updateGrammarUsage(id: number, data: UpdateGrammarUsageBody) {
+    try {
+      const grammarUsage = await this.grammarUsageRepository.findById(id)
+      if (!grammarUsage) {
+        throw new GrammarUsageNotFoundException()
+      }
+      if (
+        data.explanationKey &&
+        data.explanationKey !== grammarUsage.explanationKey &&
+        (await this.grammarUsageRepository.checkUsageExistsInGrammar(
+          grammarUsage.grammarId,
+          data.explanationKey,
+          id
+        ))
+      ) {
+        throw new GrammarUsageAlreadyExistsException()
+      }
 
-            // Check if grammar usage exists
-            const grammarUsage = await this.grammarUsageRepository.findById(id)
-            if (!grammarUsage) {
-                throw new GrammarUsageNotFoundException()
-            }
-
-            // Check if new explanation key already exists for this grammar (if updating explanationKey)
-            if (data.explanationKey && data.explanationKey !== grammarUsage.explanationKey) {
-                const usageExists = await this.grammarUsageRepository.checkUsageExistsInGrammar(
-                    grammarUsage.grammarId,
-                    data.explanationKey,
-                    id
-                )
-                if (usageExists) {
-                    throw new GrammarUsageAlreadyExistsException()
-                }
-            }
-
-            const updatedGrammarUsage = await this.grammarUsageRepository.update(id, data)
-
-            this.logger.log(`Updated grammar usage: ${updatedGrammarUsage.id}`)
-            return {
-                data: updatedGrammarUsage,
-                message: 'Cập nhật cách sử dụng ngữ pháp thành công'
-            }
-        } catch (error) {
-            this.logger.error(`Error updating grammar usage ${id}:`, error)
-
-            if (error instanceof GrammarUsageNotFoundException || error instanceof GrammarUsageAlreadyExistsException) {
-                throw error
-            }
-
-            throw new InvalidGrammarUsageDataException('Lỗi khi cập nhật cách sử dụng ngữ pháp')
-        }
+      const updatedGrammarUsage = await this.grammarUsageRepository.update(id, data)
+      return updatedGrammarUsage
+    } catch (error) {
+      throw this.toGrammarUsageError(error)
     }
+  }
 
-    async deleteGrammarUsage(id: number) {
-        try {
-            this.logger.log(`Deleting grammar usage ${id}`)
-
-            // Check if grammar usage exists
-            const grammarUsage = await this.grammarUsageRepository.findById(id)
-            if (!grammarUsage) {
-                throw new GrammarUsageNotFoundException()
-            }
-
-            await this.grammarUsageRepository.delete(id)
-
-            this.logger.log(`Deleted grammar usage ${id}`)
-            return {
-                message: 'Xóa cách sử dụng ngữ pháp thành công'
-            }
-        } catch (error) {
-            this.logger.error(`Error deleting grammar usage ${id}:`, error)
-
-            if (error instanceof GrammarUsageNotFoundException) {
-                throw error
-            }
-
-            if (isNotFoundPrismaError(error)) {
-                throw new GrammarUsageNotFoundException()
-            }
-
-            throw new InvalidGrammarUsageDataException('Lỗi khi xóa cách sử dụng ngữ pháp')
-        }
+  async deleteGrammarUsage(id: number) {
+    try {
+      if (!(await this.grammarUsageRepository.findById(id))) {
+        throw new GrammarUsageNotFoundException()
+      }
+      await this.grammarUsageRepository.delete(id)
+      return
+    } catch (error) {
+      throw this.toGrammarUsageError(error)
     }
+  }
+
+  /**
+   * Error to answer, decided by type (not message text): our HTTP errors pass
+   * through, Prisma unique/not-found become 409/404, anything else is the
+   * generic "invalid data" 400 these methods answered before.
+   */
+  private toGrammarUsageError(error: unknown): HttpException {
+    if (error instanceof HttpException) return error
+    this.logger.error(
+      'Grammar usage request failed',
+      error instanceof Error ? error.stack : error
+    )
+    if (isUniqueConstraintPrismaError(error))
+      return new GrammarUsageAlreadyExistsException()
+    if (isNotFoundPrismaError(error)) return new GrammarUsageNotFoundException()
+    return new InvalidGrammarUsageDataException()
+  }
 }

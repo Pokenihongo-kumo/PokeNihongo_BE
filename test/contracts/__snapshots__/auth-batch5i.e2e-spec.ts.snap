@@ -1,0 +1,582 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Auth batch 5i contract (e2e) a new email: check, verify OTP, register 1`] = `
+{
+  "check": {
+    "body": {
+      "data": {
+        "requiresOtp": "boolean",
+        "type": "string",
+      },
+      "message": "Gửi mã OTP thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "register": {
+    "body": {
+      "data": {
+        "accessToken": "string",
+        "avatar": "null",
+        "eloscore": "number",
+        "email": "string",
+        "exp": "number",
+        "id": "number",
+        "level": "null",
+        "levelJLPT": "null",
+        "name": "string",
+        "phoneNumber": "null",
+        "refreshToken": "string",
+        "role": {
+          "createdAt": "string",
+          "createdById": "null",
+          "deletedAt": "null",
+          "deletedById": "null",
+          "description": "string",
+          "id": "number",
+          "isActive": "boolean",
+          "name": "string",
+          "updatedAt": "string",
+          "updatedById": "null",
+        },
+        "roleId": "number",
+        "status": "string",
+      },
+      "message": "Đăng ký thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "verify": {
+    "body": {
+      "data": {
+        "registrationToken": "string",
+      },
+      "message": "Xác thực OTP thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+}
+`;
+
+exports[`Auth batch 5i contract (e2e) errors 1`] = `
+{
+  "changePasswordWrongOld": {
+    "en": {
+      "body": {
+        "error": "UNAUTHORIZED",
+        "message": "Old password is incorrect",
+        "statusCode": 401,
+      },
+      "httpStatus": 401,
+    },
+    "vi": {
+      "body": {
+        "error": "UNAUTHORIZED",
+        "message": "Mật khẩu cũ không đúng",
+        "statusCode": 401,
+      },
+      "httpStatus": 401,
+    },
+  },
+  "checkEmailInvalid": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid email",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Email không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "forgotUnknown": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Email not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy email",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "loginInvalidBody": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Invalid data provided",
+          },
+        ],
+        "message": "Invalid data provided",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "errors": [
+          {
+            "field": "string",
+            "message": "Dữ liệu không hợp lệ",
+          },
+        ],
+        "message": "Dữ liệu không hợp lệ",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "loginUnknownEmail": {
+    "en": {
+      "body": {
+        "error": "UNAUTHORIZED",
+        "message": "Incorrect email or password",
+        "statusCode": 401,
+      },
+      "httpStatus": 401,
+    },
+    "vi": {
+      "body": {
+        "error": "UNAUTHORIZED",
+        "message": "Sai email hoặc mật khẩu",
+        "statusCode": 401,
+      },
+      "httpStatus": 401,
+    },
+  },
+  "loginWrongPassword": {
+    "en": {
+      "body": {
+        "error": "UNAUTHORIZED",
+        "message": "Incorrect email or password",
+        "statusCode": 401,
+      },
+      "httpStatus": 401,
+    },
+    "vi": {
+      "body": {
+        "error": "UNAUTHORIZED",
+        "message": "Sai email hoặc mật khẩu",
+        "statusCode": 401,
+      },
+      "httpStatus": 401,
+    },
+  },
+  "logoutGarbage": {
+    "en": {
+      "body": {
+        "error": "UNAUTHORIZED",
+        "message": "Unauthorized access",
+        "statusCode": 401,
+      },
+      "httpStatus": 401,
+    },
+    "vi": {
+      "body": {
+        "error": "UNAUTHORIZED",
+        "message": "Truy cập không được phép",
+        "statusCode": 401,
+      },
+      "httpStatus": 401,
+    },
+  },
+  "meNoToken": {
+    "en": {
+      "body": {
+        "error": "UNAUTHORIZED",
+        "message": "Please log in to continue",
+        "statusCode": 401,
+      },
+      "httpStatus": 401,
+    },
+    "vi": {
+      "body": {
+        "error": "UNAUTHORIZED",
+        "message": "Vui lòng đăng nhập để tiếp tục",
+        "statusCode": 401,
+      },
+      "httpStatus": 401,
+    },
+  },
+  "refreshGarbage": {
+    "en": {
+      "body": {
+        "error": "UNAUTHORIZED",
+        "message": "Unauthorized access",
+        "statusCode": 401,
+      },
+      "httpStatus": 401,
+    },
+    "vi": {
+      "body": {
+        "error": "UNAUTHORIZED",
+        "message": "Truy cập không được phép",
+        "statusCode": 401,
+      },
+      "httpStatus": 401,
+    },
+  },
+  "registerMismatch": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "message": "Password and confirm password do not match",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "message": "Mật khẩu và mật khẩu xác nhận không khớp",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "registerTaken": {
+    "en": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "message": "Email already exists",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+    "vi": {
+      "body": {
+        "error": "UNPROCESSABLE_ENTITY",
+        "message": "Email đã tồn tại",
+        "statusCode": 422,
+      },
+      "httpStatus": 422,
+    },
+  },
+  "resetPasswordOtherEmail": {
+    "en": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Email not found",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+    "vi": {
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "Không tìm thấy email",
+        "statusCode": 404,
+      },
+      "httpStatus": 404,
+    },
+  },
+  "verifyWrongOtp": {
+    "en": {
+      "body": {
+        "error": "UNAUTHORIZED",
+        "message": "Invalid or expired OTP",
+        "statusCode": 401,
+      },
+      "httpStatus": 401,
+    },
+    "vi": {
+      "body": {
+        "error": "UNAUTHORIZED",
+        "message": "Mã OTP không hợp lệ hoặc hết hạn",
+        "statusCode": 401,
+      },
+      "httpStatus": 401,
+    },
+  },
+}
+`;
+
+exports[`Auth batch 5i contract (e2e) me, update me, FCM token, forgot password, Google link 1`] = `
+{
+  "fcmToken": {
+    "body": {
+      "data": "null",
+      "message": "Cập nhật thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "forgotPassword": {
+    "body": {
+      "data": {
+        "type": "string",
+      },
+      "message": "Gửi mã OTP thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "googleLink": {
+    "body": {
+      "data": {
+        "url": "string",
+      },
+      "message": "Lấy URL đăng nhập Google thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "me": {
+    "body": {
+      "data": {
+        "avatar": "null",
+        "createdAt": "string",
+        "createdById": "null",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "eloscore": "number",
+        "email": "string",
+        "exp": "number",
+        "id": "number",
+        "level": {
+          "createdAt": "string",
+          "createdById": "null",
+          "deletedAt": "null",
+          "deletedById": "null",
+          "id": "number",
+          "levelNumber": "number",
+          "levelType": "string",
+          "nextLevel": "null",
+          "nextLevelId": "null",
+          "requiredExp": "number",
+          "rewardId": "null",
+          "updatedAt": "string",
+          "updatedById": "null",
+        },
+        "levelId": "number",
+        "levelJLPT": "null",
+        "name": "string",
+        "phoneNumber": "null",
+        "pokemonCount": "number",
+        "rankName": "string",
+        "role": {
+          "description": "string",
+          "id": "number",
+          "name": "string",
+        },
+        "roleId": "number",
+        "status": "string",
+        "subscription": {
+          "canListen": "boolean",
+          "canRead": "boolean",
+          "isUltra": "boolean",
+          "ultraExpiresAt": "null",
+        },
+        "updatedAt": "string",
+        "updatedById": "null",
+      },
+      "message": "Lấy thông tin cá nhân thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "updateMe": {
+    "body": {
+      "data": {
+        "avatar": "null",
+        "createdAt": "string",
+        "createdById": "null",
+        "deletedAt": "null",
+        "deletedById": "null",
+        "eloscore": "number",
+        "email": "string",
+        "exp": "number",
+        "id": "number",
+        "levelId": "number",
+        "levelJLPT": "null",
+        "name": "string",
+        "phoneNumber": "null",
+        "roleId": "number",
+        "status": "string",
+        "updatedAt": "string",
+        "updatedById": "number",
+      },
+      "message": "Cập nhật thông tin cá nhân thành công",
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Auth batch 5i contract (e2e) the admin: check, login, refresh, refresh again, logout 1`] = `
+{
+  "check": {
+    "body": {
+      "data": {
+        "requiresOtp": "boolean",
+        "type": "string",
+      },
+      "message": "Thiết bị đã được xác thực trước đó.",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "login": {
+    "body": {
+      "data": {
+        "accessToken": "string",
+        "avatar": "null",
+        "eloscore": "number",
+        "email": "string",
+        "exp": "number",
+        "id": "number",
+        "level": {
+          "createdAt": "string",
+          "createdById": "null",
+          "deletedAt": "null",
+          "deletedById": "null",
+          "id": "number",
+          "levelNumber": "number",
+          "levelType": "string",
+          "nextLevelId": "null",
+          "requiredExp": "number",
+          "rewardId": "null",
+          "updatedAt": "string",
+          "updatedById": "null",
+        },
+        "levelJLPT": "null",
+        "name": "string",
+        "phoneNumber": "null",
+        "refreshToken": "string",
+        "role": {
+          "createdAt": "string",
+          "createdById": "null",
+          "deletedAt": "null",
+          "deletedById": "null",
+          "description": "string",
+          "id": "number",
+          "isActive": "boolean",
+          "name": "string",
+          "updatedAt": "string",
+          "updatedById": "null",
+        },
+        "roleId": "number",
+        "status": "string",
+      },
+      "message": "Đăng nhập thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "logout": {
+    "body": {
+      "data": "null",
+      "message": "Đăng xuất thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "refresh": {
+    "body": {
+      "data": {
+        "accessToken": "string",
+        "avatar": "null",
+        "eloscore": "number",
+        "email": "string",
+        "exp": "number",
+        "id": "number",
+        "level": {
+          "createdAt": "string",
+          "createdById": "null",
+          "deletedAt": "null",
+          "deletedById": "null",
+          "id": "number",
+          "levelNumber": "number",
+          "levelType": "string",
+          "nextLevelId": "null",
+          "requiredExp": "number",
+          "rewardId": "null",
+          "updatedAt": "string",
+          "updatedById": "null",
+        },
+        "levelJLPT": "null",
+        "name": "string",
+        "phoneNumber": "null",
+        "refreshToken": "string",
+        "role": {
+          "createdAt": "string",
+          "createdById": "null",
+          "deletedAt": "null",
+          "deletedById": "null",
+          "description": "string",
+          "id": "number",
+          "isActive": "boolean",
+          "name": "string",
+          "updatedAt": "string",
+          "updatedById": "null",
+        },
+        "roleId": "number",
+        "status": "string",
+      },
+      "message": "Làm mới token thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "refreshAgain": {
+    "body": {
+      "error": "UNAUTHORIZED",
+      "message": "Token làm mới đã được sử dụng",
+      "statusCode": 401,
+    },
+    "httpStatus": 401,
+  },
+}
+`;
+
+exports[`Auth batch 5i contract (e2e) verify-otp: the sixth wrong code in five minutes is refused 1`] = `
+{
+  "firstFive": [
+    401,
+    401,
+    401,
+    401,
+    401,
+  ],
+  "sixth": {
+    "body": {
+      "error": "TOO_MANY_REQUESTS",
+      "message": "Quá nhiều yêu cầu. Vui lòng thử lại sau N giây.",
+      "statusCode": 429,
+    },
+    "httpStatus": 429,
+  },
+}
+`;
