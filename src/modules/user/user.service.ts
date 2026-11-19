@@ -1,6 +1,4 @@
 import { MailService } from '@/modules/mail/mail.service'
-import { I18nService } from '@/i18n/i18n.service'
-import { AuthMessage, ENTITY_MESSAGE, UserMessage } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
 import { LevelService } from '@/modules/level/level.service'
@@ -14,7 +12,7 @@ import {
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
-import { HttpStatus, Injectable, Logger } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { UserStatus } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
 import { NotStartedLeaderboardSeasonException } from '../leaderboard-season/dto/leaderboard-season.error'
@@ -35,7 +33,6 @@ export class UserService {
     private userRepo: UserRepo,
     private mailService: MailService,
     private userPokemonService: UserPokemonService,
-    private i18nService: I18nService,
     private levelService: LevelService,
     private walletSer: WalletService,
     private readonly userCoreService: UserCoreService,
@@ -60,31 +57,20 @@ export class UserService {
     return password
   }
 
-  async list(pagination: PaginationQuery, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.userRepo.list(pagination)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(UserMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const user = await this.userRepo.findById(id)
     if (!user) {
       throw new UserNotFoundException()
     }
-    return {
-      statusCode: 200,
-      data: user,
-      message: this.i18nService.translate(UserMessage.GET_DETAIL_SUCCESS, lang)
-    }
+    return user
   }
 
-  async create(
-    { data, createdById }: { data: CreateUserBody; createdById: number },
-    lang: string = 'vi'
-  ) {
+  async create({ data, createdById }: { data: CreateUserBody; createdById: number }) {
     try {
       // Check if email already exists
       const existingUser = await this.userRepo.findByEmail(data.email)
@@ -128,11 +114,7 @@ export class UserService {
       //tao wallet
       await this.walletSer.generateWalletByUserId(userWithoutPassword.id)
 
-      return {
-        statusCode: 201,
-        data: userWithoutPassword,
-        message: this.i18nService.translate(UserMessage.CREATE_SUCCESS, lang)
-      }
+      return userWithoutPassword
     } catch (error) {
       if (isUniqueConstraintPrismaError(error)) {
         throw new EmailAlreadyExistsException()
@@ -144,18 +126,15 @@ export class UserService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateUserBody
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateUserBody
+    updatedById: number
+  }) {
     try {
       const existUser = await this.userRepo.findById(id)
       if (!existUser) {
@@ -189,11 +168,7 @@ export class UserService {
       // Remove password from response
       const { password, ...userWithoutPassword } = result
 
-      return {
-        statusCode: 200,
-        data: userWithoutPassword,
-        message: this.i18nService.translate(UserMessage.UPDATE_SUCCESS, lang)
-      }
+      return userWithoutPassword
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UserNotFoundException()
@@ -208,10 +183,7 @@ export class UserService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
       const existUser = await this.userRepo.findById(id)
       if (!existUser) {
@@ -223,11 +195,7 @@ export class UserService {
         deletedById
       })
 
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(UserMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UserNotFoundException()
@@ -236,7 +204,7 @@ export class UserService {
     }
   }
 
-  async setMainPokemon(userId: number, data: SetMainPokemonBody, lang: string = 'vi') {
+  async setMainPokemon(userId: number, data: SetMainPokemonBody) {
     try {
       // Check if user exists
       const user = await this.userRepo.findById(userId)
@@ -262,11 +230,7 @@ export class UserService {
         data: { isMain: true }
       })
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(UserMessage.SET_MAIN_POKEMON_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UserNotFoundException()
@@ -284,7 +248,7 @@ export class UserService {
    * @param lang - Language for response messages
    * @returns User level up result with details
    */
-  async userAddExp(userId: number, expToAdd: number, lang: string = 'vi') {
+  async userAddExp(userId: number, expToAdd: number) {
     try {
       // Find user with current level
       const user = await this.userRepo.findById(userId)
@@ -314,13 +278,9 @@ export class UserService {
       const levelUpResult = await this.handleUserLevelUp(user, newTotalExp)
 
       return {
-        statusCode: HttpStatus.OK,
-        data: {
-          ...levelUpResult,
-          levelRewardIds: levelUpResult.levelRewardIds || [],
-          levelUpDetails: levelUpResult.levelUpDetails || []
-        },
-        message: this.i18nService.translate(UserMessage.UPDATE_SUCCESS, lang)
+        ...levelUpResult,
+        levelRewardIds: levelUpResult.levelRewardIds || [],
+        levelUpDetails: levelUpResult.levelUpDetails || []
       }
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
@@ -471,7 +431,7 @@ export class UserService {
    * @param amount - Amount of coins to add
    * @param lang - Language for response messages
    */
-  async addFreeCoins(userId: number, amount: number, lang: string = 'vi') {
+  async addFreeCoins(userId: number, amount: number) {
     try {
       const user = await this.userRepo.findById(userId)
       if (!user) {
@@ -480,11 +440,7 @@ export class UserService {
 
       const updatedUser = await this.userRepo.incrementFreeCoins(userId, amount)
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: updatedUser,
-        message: this.i18nService.translate(UserMessage.UPDATE_SUCCESS, lang)
-      }
+      return updatedUser
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UserNotFoundException()
@@ -527,11 +483,7 @@ export class UserService {
 
       if (!unclaimedHistory) {
         // No unclaimed rewards, return null data
-        return {
-          message: this.i18nService.translate(UserMessage.GET_DETAIL_SUCCESS, lang),
-          statusCode: HttpStatus.OK,
-          data: null
-        }
+        return null
       }
 
       // User has unclaimed rewards from previous season
@@ -558,21 +510,17 @@ export class UserService {
       })
 
       return {
-        message: this.i18nService.translate(UserMessage.GET_DETAIL_SUCCESS, lang),
-        statusCode: HttpStatus.OK,
-        data: {
-          id: unclaimedHistory.id,
-          hasUnclaimedReward: true,
-          season: {
-            id: unclaimedHistory.seasonId,
-            name: seasonTranslation?.value ?? null,
-            startDate: (unclaimedHistory.season as any).startDate,
-            endDate: (unclaimedHistory.season as any).endDate
-          },
-          finalRank: unclaimedHistory.finalRank,
-          finalElo: unclaimedHistory.finalElo,
-          rewards
-        }
+        id: unclaimedHistory.id,
+        hasUnclaimedReward: true,
+        season: {
+          id: unclaimedHistory.seasonId,
+          name: seasonTranslation?.value ?? null,
+          startDate: (unclaimedHistory.season as any).startDate,
+          endDate: (unclaimedHistory.season as any).endDate
+        },
+        finalRank: unclaimedHistory.finalRank,
+        finalElo: unclaimedHistory.finalElo,
+        rewards
       }
     }
 
@@ -590,19 +538,15 @@ export class UserService {
         }
       : null
     return {
-      message: this.i18nService.translate(UserMessage.GET_DETAIL_SUCCESS, lang),
-      statusCode: HttpStatus.OK,
-      data: {
-        leaderboardSeason: seasonInfo,
-        rank: {
-          rankName: convertEloToRank((userInfo as any).eloscore || 0),
-          eloscore: (userInfo as any).eloscore
-        },
-        totalMatches,
-        totalWins,
-        rateWin: totalMatches > 0 ? (totalWins / totalMatches) * 100 : 0,
-        currentWinStreak
-      }
+      leaderboardSeason: seasonInfo,
+      rank: {
+        rankName: convertEloToRank((userInfo as any).eloscore || 0),
+        eloscore: (userInfo as any).eloscore
+      },
+      totalMatches,
+      totalWins,
+      rateWin: totalMatches > 0 ? (totalWins / totalMatches) * 100 : 0,
+      currentWinStreak
     }
   }
 
@@ -687,29 +631,24 @@ export class UserService {
       // paginated response
       const results = matchHis.results.map(mapFn)
       return {
-        statusCode: HttpStatus.OK,
-        data: {
-          results,
-          pagination: matchHis.pagination
-        },
-        message: this.i18nService.translate(ENTITY_MESSAGE.GET_LIST_SUCCESS, lang)
+        results,
+        pagination: matchHis.pagination
       }
     }
 
     // legacy: full array
     const convertMatchHisInfo = (matchHis as any).map ? (matchHis as any).map(mapFn) : []
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: convertMatchHisInfo,
-      message: this.i18nService.translate(ENTITY_MESSAGE.GET_LIST_SUCCESS, lang)
-    }
+    return convertMatchHisInfo
   }
 
-  async updateLevelJLPT(
-    { userId, data }: { userId: number; data: { levelJLPT: number } },
-    lang: string = 'vi'
-  ) {
+  async updateLevelJLPT({
+    userId,
+    data
+  }: {
+    userId: number
+    data: { levelJLPT: number }
+  }) {
     const user = await this.userCoreService.findUnique({
       id: userId
     })
@@ -727,11 +666,7 @@ export class UserService {
     //Update user progress level JLPT
     await this.userProgressService.updateUserProgressLevelJlpt(userId, data.levelJLPT)
 
-    return {
-      statusCode: 200,
-      data: updatedUser,
-      message: this.i18nService.translate(AuthMessage.UPDATE_LEVEL_JLPT_SUCCESS, lang)
-    }
+    return updatedUser
   }
 
   // ---- For other modules (module-boundary plan B8) ----

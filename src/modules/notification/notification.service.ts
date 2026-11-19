@@ -1,5 +1,4 @@
 import { I18nService } from '@/i18n/i18n.service'
-import { NotificationMessage } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
@@ -26,13 +25,9 @@ export class NotificationService {
     private readonly userGateway: UserGateway
   ) {}
 
-  async list(pagination: PaginationQuery, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.notificationRepo.list(pagination)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(NotificationMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   // Helper method to calculate weaknesses for a Pokemon (copied from PokemonService)
@@ -44,19 +39,12 @@ export class NotificationService {
     const title = this.i18nService.translate(notification.titleKey, lang)
     const body = this.i18nService.translate(notification.bodyKey, lang)
     return {
-      statusCode: 200,
-      data: {
-        ...notification,
-        title: title,
-        body: body
-      },
-      message: this.i18nService.translate(NotificationMessage.GET_LIST_SUCCESS, lang)
+      ...notification,
+      title: title,
+      body: body
     }
   }
-  async create(
-    { userId, data }: { userId: number; data: CreateNotificationBody },
-    lang: string = 'vi'
-  ) {
+  async create({ userId, data }: { userId: number; data: CreateNotificationBody }) {
     try {
       const result = await this.notificationRepo.create({
         createdById: userId,
@@ -65,11 +53,7 @@ export class NotificationService {
           userId
         }
       })
-      return {
-        statusCode: 201,
-        data: result,
-        message: this.i18nService.translate(NotificationMessage.CREATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -81,29 +65,22 @@ export class NotificationService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      userId
-    }: {
-      id: number
-      data: UpdateNotificationBody
-      userId?: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    userId
+  }: {
+    id: number
+    data: UpdateNotificationBody
+    userId?: number
+  }) {
     try {
       const notification = await this.notificationRepo.update({
         id,
         data: data,
         updatedById: userId
       })
-      return {
-        statusCode: 200,
-        data: notification,
-        message: this.i18nService.translate(NotificationMessage.UPDATE_SUCCESS, lang)
-      }
+      return notification
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotificationNotFoundException()
@@ -115,16 +92,7 @@ export class NotificationService {
       throw error
     }
   }
-  async updateRead(
-    {
-      id,
-      userId
-    }: {
-      id: number
-      userId?: number
-    },
-    lang: string = 'vi'
-  ) {
+  async updateRead({ id, userId }: { id: number; userId?: number }) {
     try {
       const notification = await this.notificationRepo.update({
         id,
@@ -132,11 +100,7 @@ export class NotificationService {
           isRead: true
         }
       })
-      return {
-        statusCode: 200,
-        data: notification,
-        message: this.i18nService.translate(NotificationMessage.UPDATE_SUCCESS, lang)
-      }
+      return notification
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotificationNotFoundException()
@@ -149,16 +113,13 @@ export class NotificationService {
     }
   }
 
-  async updateReads(
-    {
-      body,
-      userId
-    }: {
-      body: UpdateNotificationReadListBody
-      userId?: number
-    },
-    lang: string = 'vi'
-  ) {
+  async updateReads({
+    body,
+    userId
+  }: {
+    body: UpdateNotificationReadListBody
+    userId?: number
+  }) {
     try {
       const result = await Promise.all(
         body.notificationIds.map(async (notificationId) => {
@@ -172,11 +133,7 @@ export class NotificationService {
         })
       )
 
-      return {
-        statusCode: 200,
-        data: result,
-        message: this.i18nService.translate(NotificationMessage.UPDATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotificationNotFoundException()
@@ -189,7 +146,7 @@ export class NotificationService {
     }
   }
 
-  async delete({ id, userId }: { id: number; userId?: number }, lang: string = 'vi') {
+  async delete({ id, userId }: { id: number; userId?: number }) {
     try {
       const existNotification = await this.notificationRepo.findById(id)
       if (!existNotification) {
@@ -197,11 +154,7 @@ export class NotificationService {
       }
 
       await this.notificationRepo.delete(id)
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(NotificationMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotificationNotFoundException()
@@ -233,12 +186,8 @@ export class NotificationService {
       }
     })
     return {
-      statusCode: 200,
-      data: {
-        ...data,
-        results
-      },
-      message: this.i18nService.translate(NotificationMessage.GET_LIST_SUCCESS, lang)
+      ...data,
+      results
     }
   }
 

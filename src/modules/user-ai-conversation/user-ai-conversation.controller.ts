@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { UserAIConversationMessage as M } from '@/i18n/message-keys'
 import {
   Body,
   Controller,
@@ -45,7 +47,10 @@ import {
 @ApiBearerAuth()
 @Controller('user-ai-conversation')
 export class UserAIConversationController {
-  constructor(private readonly userAIConversationService: UserAIConversationService) {}
+  constructor(
+    private readonly userAIConversationService: UserAIConversationService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Post()
   @ApiBearerAuth()
@@ -62,7 +67,10 @@ export class UserAIConversationController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userAIConversationService.create({ ...body, userId }, lang)
+    return {
+      message: this.i18nService.translate(M.CREATE_SUCCESS, lang),
+      data: await this.userAIConversationService.create({ ...body, userId })
+    }
   }
 
   @Get()
@@ -79,7 +87,10 @@ export class UserAIConversationController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userAIConversationService.findAll(query, userId, lang)
+    return {
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
+      data: await this.userAIConversationService.findAll(query, userId)
+    }
   }
 
   @Get('conversation/:conversationId')
@@ -95,11 +106,13 @@ export class UserAIConversationController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userAIConversationService.findByConversationId(
-      conversationId,
-      userId,
-      lang
-    )
+    return {
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
+      data: await this.userAIConversationService.findByConversationId(
+        conversationId,
+        userId
+      )
+    }
   }
 
   @Get(':id')
@@ -116,7 +129,10 @@ export class UserAIConversationController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userAIConversationService.findOne(id, userId, lang)
+    return {
+      message: this.i18nService.translate(M.GET_SUCCESS, lang),
+      data: await this.userAIConversationService.findOne(id, userId)
+    }
   }
 
   @Patch(':id')
@@ -135,7 +151,10 @@ export class UserAIConversationController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userAIConversationService.updateOwned(id, userId, body, lang)
+    return {
+      message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
+      data: await this.userAIConversationService.updateOwned(id, userId, body)
+    }
   }
 
   @Delete(':id')
@@ -153,7 +172,10 @@ export class UserAIConversationController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userAIConversationService.remove(id, userId, lang)
+    return {
+      message: this.i18nService.translate(M.DELETE_SUCCESS, lang),
+      data: await this.userAIConversationService.remove(id, userId)
+    }
   }
 
   @Delete('conversation/:conversationId')
@@ -170,10 +192,15 @@ export class UserAIConversationController {
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userAIConversationService.removeByConversationId(
+    const data = await this.userAIConversationService.removeByConversationId(
       conversationId,
-      userId,
-      lang
+      userId
     )
+    return {
+      data,
+      message: this.i18nService.translate(M.DELETE_BY_CONVERSATION_SUCCESS, lang, {
+        count: data.deletedCount
+      })
+    }
   }
 }

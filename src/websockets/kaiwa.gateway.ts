@@ -1048,12 +1048,12 @@ export class KaiwaGateway implements OnGatewayDisconnect {
       )
       const roomName = this.getRoomName(userId)
       this.server.to(roomName).emit(KAIWA_EVENTS.ROOM_UPDATED, {
-        room: result.data,
+        room: result,
         conversationId
       })
       if (requestId) {
         this.logger.log(
-          `[Kaiwa] [${requestId}] Room updated successfully, title: "${result.data?.title || 'null'}"`
+          `[Kaiwa] [${requestId}] Room updated successfully, title: "${result?.title || 'null'}"`
         )
       }
     } catch (err) {
@@ -1515,7 +1515,7 @@ export class KaiwaGateway implements OnGatewayDisconnect {
           audioUrl: null // Sẽ update sau khi upload xong
         })
         .then(async (result) => {
-          const userMessageId = result.data?.id || null
+          const userMessageId = result?.id || null
           this.logger.log(
             `[Kaiwa] [${requestId}] Saved USER message (ID: ${userMessageId}), starting background audio upload...`
           )
@@ -1779,7 +1779,7 @@ export class KaiwaGateway implements OnGatewayDisconnect {
         })
         .then((result) => {
           // Lưu message ID để update audioUrl sau
-          aiMessageId = result.data?.id || null
+          aiMessageId = result?.id || null
           this.logger.log(
             `[Kaiwa] [${requestId}] Saved AI message (ID: ${aiMessageId}), waiting for TTS audio...`
           )
@@ -1796,7 +1796,7 @@ export class KaiwaGateway implements OnGatewayDisconnect {
       this.aiConversationRoomService
         .findByConversationId(client.data.conversationId, userId)
         .then(async (roomResult) => {
-          let room = roomResult?.data
+          let room = roomResult
 
           // Nếu room chưa tồn tại, tạo mới trước
           if (!room) {
@@ -1810,7 +1810,7 @@ export class KaiwaGateway implements OnGatewayDisconnect {
                 title: null,
                 voiceName: client.data.voiceName || 'ja-JP-Wavenet-A'
               })
-              room = createResult.data
+              room = createResult
               this.logger.log(`[Kaiwa] [${requestId}] Room created successfully`)
             } catch (createErr) {
               this.logger.error(
@@ -1989,8 +1989,8 @@ export class KaiwaGateway implements OnGatewayDisconnect {
                   client.data.conversationId,
                   userId
                 )
-              if (roomResult?.data?.voiceName) {
-                voiceName = roomResult.data.voiceName
+              if (roomResult?.voiceName) {
+                voiceName = roomResult.voiceName
               } else if (client.data.voiceName) {
                 voiceName = client.data.voiceName
               }
@@ -2116,7 +2116,7 @@ export class KaiwaGateway implements OnGatewayDisconnect {
     this.userAIConversationService
       .findByConversationId(conversationId, userId)
       .then(async (res) => {
-        const messages = (res.data || []) as Array<any>
+        const messages = (res || []) as Array<any>
         if (messages.length > 0) {
           // Map lịch sử vào memory cho prompt tiếp theo
           const history = messages.map((m) => ({
@@ -2146,7 +2146,7 @@ export class KaiwaGateway implements OnGatewayDisconnect {
                   conversationId,
                   userId
                 )
-              const room = roomResult?.data
+              const room = roomResult
               // Nếu không có room hoặc title là empty thì generate title
               const needsTitle =
                 !room ||
@@ -2304,7 +2304,7 @@ export class KaiwaGateway implements OnGatewayDisconnect {
         )
         // Emit room-updated event để FE refresh danh sách
         this.server.to(roomName).emit(KAIWA_EVENTS.ROOM_UPDATED, {
-          room: result.data,
+          room: result,
           conversationId
         })
       })

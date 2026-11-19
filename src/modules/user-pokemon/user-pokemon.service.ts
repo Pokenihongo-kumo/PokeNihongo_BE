@@ -1,5 +1,3 @@
-import { I18nService } from '@/i18n/i18n.service'
-import { UserPokemonMessage } from '@/i18n/message-keys'
 import { LevelService } from '@/modules/level/level.service'
 import { MatchService } from '@/modules/match/match.service'
 import { PokemonService } from '@/modules/pokemon/pokemon.service'
@@ -33,17 +31,12 @@ export class UserPokemonService {
     private readonly matchService: MatchService,
     private levelService: LevelService,
     private readonly userCoreService: UserCoreService,
-    private readonly i18nService: I18nService,
     private readonly typeEffectivenessService: TypeEffectivenessService
   ) {}
 
-  async list(pagination: PaginationQuery, userId: number, lang: string = 'vi') {
+  async list(pagination: PaginationQuery, userId: number) {
     const data = await this.userPokemonRepo.list(pagination, userId)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(UserPokemonMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   // Add Pokemon for user via Shop purchase (nickname = null, isMain = false, level = conditionLevel if has prev, else first level)
@@ -128,20 +121,16 @@ export class UserPokemonService {
     }
   }
 
-  async getUserPokemonStats(userId: number, lang: string = 'vi') {
+  async getUserPokemonStats(userId: number) {
     const userPokemons = await this.userPokemonRepo.getByUserId(userId)
     const totalPokemons = await this.pokemonService.countAll()
     const userPokemonsCount = userPokemons.length
     const ownershipPercentage =
       totalPokemons > 0 ? Math.round((userPokemonsCount / totalPokemons) * 100) : 0
     return {
-      statusCode: 200,
-      data: {
-        ownershipPercentage,
-        userPokemonsCount,
-        totalPokemons
-      },
-      message: this.i18nService.translate(UserPokemonMessage.GET_STATS_SUCCESS, lang)
+      ownershipPercentage,
+      userPokemonsCount,
+      totalPokemons
     }
   }
 
@@ -195,14 +184,10 @@ export class UserPokemonService {
       }
     }
 
-    return {
-      statusCode: 200,
-      data: pokemonData,
-      message: this.i18nService.translate(UserPokemonMessage.GET_LIST_SUCCESS, lang)
-    }
+    return pokemonData
   }
 
-  async listWithUserId(userId: number, lang: string = 'vi') {
+  async listWithUserId(userId: number) {
     const data = await this.userPokemonRepo.getByUserId(userId)
 
     // Optimize: Calculate weaknesses for all Pokemon in batch
@@ -263,18 +248,10 @@ export class UserPokemonService {
         }
       })
 
-      return {
-        statusCode: 200,
-        data: userPokemonsWithWeaknesses,
-        message: this.i18nService.translate(UserPokemonMessage.GET_LIST_SUCCESS, lang)
-      }
+      return userPokemonsWithWeaknesses
     }
 
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(UserPokemonMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   // Helper method to calculate weaknesses for a Pokemon (copied from PokemonService)
@@ -329,7 +306,7 @@ export class UserPokemonService {
       }))
   }
 
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const userPokemon = await this.userPokemonRepo.findById(id)
     if (!userPokemon) {
       throw new UserPokemonNotFoundException()
@@ -395,17 +372,10 @@ export class UserPokemonService {
         : userPokemon.pokemon
     }
 
-    return {
-      statusCode: 200,
-      data: enrichedUserPokemon,
-      message: this.i18nService.translate(UserPokemonMessage.GET_DETAIL_SUCCESS, lang)
-    }
+    return enrichedUserPokemon
   }
 
-  async create(
-    { userId, data }: { userId: number; data: CreateUserPokemonBody },
-    lang: string = 'vi'
-  ) {
+  async create({ userId, data }: { userId: number; data: CreateUserPokemonBody }) {
     try {
       // Get Pokemon info to use nameJp as nickname if not provided
       const pokemon = await this.pokemonService.getById(data.pokemonId)
@@ -460,11 +430,7 @@ export class UserPokemonService {
           isMain: isFirstPokemon // Set isMain = true nếu là Pokemon đầu tiên
         }
       })
-      return {
-        statusCode: 201,
-        data: result,
-        message: this.i18nService.translate(UserPokemonMessage.CREATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isUniqueConstraintPrismaError(error)) {
         throw new NicknameAlreadyExistsException()
@@ -476,18 +442,15 @@ export class UserPokemonService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      userId
-    }: {
-      id: number
-      data: UpdateUserPokemonBody
-      userId?: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    userId
+  }: {
+    id: number
+    data: UpdateUserPokemonBody
+    userId?: number
+  }) {
     try {
       const existUserPokemon = await this.userPokemonRepo.findById(id)
       if (!existUserPokemon) {
@@ -521,11 +484,7 @@ export class UserPokemonService {
         id,
         data: updateData
       })
-      return {
-        statusCode: 200,
-        data: userPokemon,
-        message: this.i18nService.translate(UserPokemonMessage.UPDATE_SUCCESS, lang)
-      }
+      return userPokemon
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UserPokemonNotFoundException()
@@ -540,7 +499,7 @@ export class UserPokemonService {
     }
   }
 
-  async delete({ id, userId }: { id: number; userId?: number }, lang: string = 'vi') {
+  async delete({ id, userId }: { id: number; userId?: number }) {
     try {
       const existUserPokemon = await this.userPokemonRepo.findById(id)
       if (!existUserPokemon) {
@@ -553,11 +512,7 @@ export class UserPokemonService {
       }
 
       await this.userPokemonRepo.delete(id)
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(UserPokemonMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UserPokemonNotFoundException()
@@ -566,7 +521,7 @@ export class UserPokemonService {
     }
   }
 
-  async getWithEvolvesPokemon(pokemonId: number, userId: number, lang: string = 'vi') {
+  async getWithEvolvesPokemon(pokemonId: number, userId: number) {
     // 1. Lấy userPokemon với pokemon, level và evolution chain
     const userPokemon = await this.userPokemonRepo.findByPokemonId(pokemonId, userId)
 
@@ -635,18 +590,10 @@ export class UserPokemonService {
     }
     // chinh lai gan userPokemon  = true hoac false
 
-    return {
-      statusCode: 200,
-      data: result,
-      message: this.i18nService.translate(UserPokemonMessage.GET_DETAIL_SUCCESS, lang)
-    }
+    return result
   }
 
-  async getPokemonListWithUserByRounds(
-    query: PaginationQuery,
-    userId: number,
-    lang: string = 'vi'
-  ) {
+  async getPokemonListWithUserByRounds(query: PaginationQuery, userId: number) {
     // 1. Lấy danh sách tất cả pokemon
     const pokemonData = await this.pokemonService.getPokemonListWithPokemonUser(query)
     const pokemonIdToRarity = new Map<number, string>()
@@ -733,12 +680,8 @@ export class UserPokemonService {
     }
 
     return {
-      statusCode: 200,
-      data: {
-        results: pokemonListWithUser,
-        pagination: updatedPagination
-      },
-      message: this.i18nService.translate(UserPokemonMessage.GET_LIST_SUCCESS, lang)
+      results: pokemonListWithUser,
+      pagination: updatedPagination
     }
   }
 

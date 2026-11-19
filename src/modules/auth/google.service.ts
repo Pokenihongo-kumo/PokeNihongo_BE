@@ -96,7 +96,7 @@ export class GoogleService {
       include_granted_scopes: true,
       state
     })
-    return { data: { url }, message: 'Lấy URL đăng nhập Google thành công' }
+    return { url }
   }
 
   /**
@@ -141,8 +141,7 @@ export class GoogleService {
   async exchange(
     { code, codeVerifier }: GoogleExchangeBody,
     userAgent: string,
-    ip: string,
-    lang: string = 'vi'
+    ip: string
   ) {
     const issuedJson = (await this.redisClient.eval(TAKE, 1, exchangeKey(code))) as
       | string
@@ -167,10 +166,7 @@ export class GoogleService {
       roleId: user.roleId,
       roleName: user.role.name
     })
-    return {
-      data: tokens,
-      message: this.i18nService.translate(AuthMessage.GOOGLE_EXCHANGE_SUCCESS, lang)
-    }
+    return tokens
   }
 
   // Google's authorization code -> the user's Google profile

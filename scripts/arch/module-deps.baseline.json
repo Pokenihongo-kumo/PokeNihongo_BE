@@ -9,10 +9,10 @@
     "prismaOutsideRepoFiles": 0,
     "httpSchemasInEntities": 0,
     "handWrittenEnvelopes": 2,
-    "serviceEnvelopeFiles": 55,
+    "serviceEnvelopeFiles": 46,
     "prismaOutsideRepoCalls": 0,
-    "serviceStatusCodes": 316,
-    "serviceMessages": 399
+    "serviceStatusCodes": 228,
+    "serviceMessages": 294
   },
   "details": {
     "crossModuleRepoImports": [
@@ -65,9 +65,6 @@
     "serviceEnvelopeFiles": [
       "modules/achievement-group/achievement-group.service.ts",
       "modules/achievement/achievement.service.ts",
-      "modules/ai-conversation-room/ai-conversation-room.service.ts",
-      "modules/auth/auth.service.ts",
-      "modules/auth/google.service.ts",
       "modules/daily-request/daily-request.service.ts",
       "modules/debuff-round/debuff-round.service.ts",
       "modules/feature/feature.service.ts",
@@ -87,7 +84,6 @@
       "modules/match-round-participant/match-round-participant.service.ts",
       "modules/match-round/match-round.service.ts",
       "modules/match/match.service.ts",
-      "modules/notification/notification.service.ts",
       "modules/payment/payment.service.ts",
       "modules/permission/permission.service.ts",
       "modules/pokemon/pokemon.service.ts",
@@ -105,16 +101,11 @@
       "modules/subscription-plan/subscription-plan.service.ts",
       "modules/subscription/subscription.service.ts",
       "modules/upload/upload.service.ts",
-      "modules/user-achievement/user-achievement.service.ts",
-      "modules/user-ai-conversation/user-ai-conversation.service.ts",
-      "modules/user-daily-request/user-daily-request.service.ts",
       "modules/user-gacha-pity/user-gacha-pity.service.ts",
-      "modules/user-pokemon/user-pokemon.service.ts",
       "modules/user-reward-history/user-reward-history.service.ts",
       "modules/user-season-history/user-season-history.service.ts",
       "modules/user-srs-review/user-srs-review.service.ts",
       "modules/user-subscription/user-subscription.service.ts",
-      "modules/user/user.service.ts",
       "modules/vocabulary/vocabulary.service.ts",
       "modules/wallet-transaction/wallet-transaction.service.ts",
       "modules/wallet/wallet.service.ts"

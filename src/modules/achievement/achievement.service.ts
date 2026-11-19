@@ -121,10 +121,7 @@ export class AchievementService {
       }
     }
 
-    return {
-      data,
-      message: this.i18nService.translate(AchievementMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   async findById(id: number, roleName: string, lang: string = 'vi') {
@@ -132,10 +129,7 @@ export class AchievementService {
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     if (!langId) {
-      return {
-        data: null,
-        message: this.i18nService.translate(AchievementMessage.GET_SUCCESS, lang)
-      }
+      return null
     }
 
     const achievement = await this.achievementRepo.findByIdWithLangId(id, isAdmin, langId)
@@ -207,11 +201,7 @@ export class AchievementService {
         : {})
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: result,
-      message: this.i18nService.translate(AchievementMessage.GET_SUCCESS, lang)
-    }
+    return result
   }
 
   async create(
@@ -520,10 +510,7 @@ export class AchievementService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
       const existingAchievement = await this.achievementRepo.findById(id)
       if (!existingAchievement) {
@@ -540,11 +527,7 @@ export class AchievementService {
         this.translationService.deleteByKey(existingAchievement.conditionTextKey)
       ])
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(AchievementMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()

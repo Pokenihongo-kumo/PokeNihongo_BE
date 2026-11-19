@@ -617,43 +617,43 @@ export class RewardService {
         )
 
         // Accumulate level gains (don't store full user data)
-        if (expResult.data.levelsGained) {
-          results.levelsGained += expResult.data.levelsGained
+        if (expResult.levelsGained) {
+          results.levelsGained += expResult.levelsGained
         }
 
         // Add level-up rewards to queue if any
-        if (expResult.data.levelRewardIds && expResult.data.levelRewardIds.length > 0) {
+        if (expResult.levelRewardIds && expResult.levelRewardIds.length > 0) {
           this.logger.log(
-            `[convertRewardsWithUser] User ${userId} leveled up ${expResult.data.levelsGained} times, levelRewardIds from userAddExp: [${expResult.data.levelRewardIds.join(', ')}]`
+            `[convertRewardsWithUser] User ${userId} leveled up ${expResult.levelsGained} times, levelRewardIds from userAddExp: [${expResult.levelRewardIds.join(', ')}]`
           )
           this.logger.log(
-            `[convertRewardsWithUser] Level up details: ${JSON.stringify(expResult.data.levelUpDetails)}`
+            `[convertRewardsWithUser] Level up details: ${JSON.stringify(expResult.levelUpDetails)}`
           )
 
           // Fetch level reward details to include in response
           this.logger.log(
-            `[convertRewardsWithUser] Fetching level reward details for IDs: [${expResult.data.levelRewardIds.join(', ')}]`
+            `[convertRewardsWithUser] Fetching level reward details for IDs: [${expResult.levelRewardIds.join(', ')}]`
           )
           const levelRewardDetails = await this.rewardRepo.findManyByIds(
-            expResult.data.levelRewardIds
+            expResult.levelRewardIds
           )
 
           this.logger.log(
-            `[convertRewardsWithUser] Level rewards fetched: ${levelRewardDetails.length} out of ${expResult.data.levelRewardIds.length}`
+            `[convertRewardsWithUser] Level rewards fetched: ${levelRewardDetails.length} out of ${expResult.levelRewardIds.length}`
           )
 
-          if (levelRewardDetails.length !== expResult.data.levelRewardIds.length) {
+          if (levelRewardDetails.length !== expResult.levelRewardIds.length) {
             const foundIds = levelRewardDetails.map((r) => r.id)
-            const missingIds = expResult.data.levelRewardIds.filter(
+            const missingIds = expResult.levelRewardIds.filter(
               (id) => !foundIds.includes(id)
             )
             this.logger.error(
-              `[convertRewardsWithUser] LEVEL REWARD NOT FOUND - Requested: [${expResult.data.levelRewardIds.join(', ')}], Found: [${foundIds.join(', ')}], Missing: [${missingIds.join(', ')}]`
+              `[convertRewardsWithUser] LEVEL REWARD NOT FOUND - Requested: [${expResult.levelRewardIds.join(', ')}], Found: [${foundIds.join(', ')}], Missing: [${missingIds.join(', ')}]`
             )
           }
 
           // Map rewards with level progression info
-          const levelUpDetails = expResult.data.levelUpDetails || []
+          const levelUpDetails = expResult.levelUpDetails || []
           levelRewardDetails.forEach((reward, index) => {
             const levelDetail = levelUpDetails[index]
             results.levelRewards.push({
@@ -663,7 +663,7 @@ export class RewardService {
             })
           })
 
-          rewardQueue.push(...expResult.data.levelRewardIds)
+          rewardQueue.push(...expResult.levelRewardIds)
           this.logger.log(
             `[convertRewardsWithUser] Added level rewards to queue. New queue: [${rewardQueue.join(', ')}]`
           )
@@ -990,26 +990,23 @@ export class RewardService {
       try {
         const notificationResults = await Promise.allSettled(
           notificationsToCreate.map((notiData) =>
-            this.sharedNotificationService.create(
-              {
+            this.sharedNotificationService.create({
+              userId,
+              data: {
                 userId,
-                data: {
-                  userId,
-                  titleKey: notiData.titleKey,
-                  bodyKey: notiData.bodyKey,
-                  type: notiData.type,
-                  data: notiData.metadata
-                }
-              },
-              'vi'
-            )
+                titleKey: notiData.titleKey,
+                bodyKey: notiData.bodyKey,
+                type: notiData.type,
+                data: notiData.metadata
+              }
+            })
           )
         )
 
         const createdNotifications: any[] = []
         notificationResults.forEach((result, index) => {
           if (result.status === 'fulfilled') {
-            createdNotifications.push(result.value.data)
+            createdNotifications.push(result.value)
           } else {
             this.logger.warn(
               `Failed to create ${notificationsToCreate[index].type} notification for user ${userId}: ${result.reason?.message ?? result.reason}`

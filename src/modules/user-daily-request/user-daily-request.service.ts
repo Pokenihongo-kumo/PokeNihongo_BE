@@ -1,7 +1,5 @@
 // DailyConditionType enum replaced by DailyRequestCategory.nameKey and DailyRequestCategory.isStreat
 import { DailyRequestTypeType } from '@/common/constants/achievement.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { UserDailyRequestMessage } from '@/i18n/message-keys'
 import { DailyRequestService } from '@/modules/daily-request/daily-request.service'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { TranslationService } from '@/modules/translation/translation.service'
@@ -14,7 +12,7 @@ import {
   todayUTCWith0000
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
-import { HttpStatus, Injectable, Logger } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { UserDailyRequestAlreadyExistsException } from './dto/user-daily-request.error'
 import {
   CreateUserDailyRequestBody,
@@ -28,43 +26,32 @@ export class UserDailyRequestService {
 
   constructor(
     private userDailyRequestRepo: UserDailyRequestRepo,
-    private readonly i18nService: I18nService,
     private readonly dailyRequestService: DailyRequestService,
     private readonly languagesService: LanguagesService,
     private readonly translationService: TranslationService,
     private readonly userService: UserService
   ) {}
 
-  async list(pagination: PaginationQuery, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.userDailyRequestRepo.list(pagination)
-    return {
-      data,
-      message: this.i18nService.translate(UserDailyRequestMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const userDailyRequest = await this.userDailyRequestRepo.findById(id)
     if (!userDailyRequest) {
       throw new NotFoundRecordException()
     }
-    return {
-      statusCode: HttpStatus.OK,
-      data: userDailyRequest,
-      message: this.i18nService.translate(UserDailyRequestMessage.GET_SUCCESS, lang)
-    }
+    return userDailyRequest
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreateUserDailyRequestBody
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({
+    data,
+    createdById
+  }: {
+    data: CreateUserDailyRequestBody
+    createdById: number
+  }) {
     try {
       let progress = 0
       //check xem dailyRequestId nay type la streak ha ? Neu la trick thi cap nhap progress
@@ -85,11 +72,7 @@ export class UserDailyRequestService {
           progress
         }
       })
-      return {
-        statusCode: HttpStatus.CREATED,
-        data: result,
-        message: this.i18nService.translate(UserDailyRequestMessage.CREATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isUniqueConstraintPrismaError(error)) {
         throw new UserDailyRequestAlreadyExistsException()
@@ -104,18 +87,15 @@ export class UserDailyRequestService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateUserDailyRequestBody
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateUserDailyRequestBody
+    updatedById: number
+  }) {
     try {
       // check xem progress = daily.conditionValue ko
       const isUserdailyReq = await this.userDailyRequestRepo.findById(id)
@@ -134,10 +114,7 @@ export class UserDailyRequestService {
         updatedById,
         data
       })
-      return {
-        data: userDailyRequest,
-        message: this.i18nService.translate(UserDailyRequestMessage.UPDATE_SUCCESS, lang)
-      }
+      return userDailyRequest
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -149,19 +126,13 @@ export class UserDailyRequestService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
       await this.userDailyRequestRepo.delete({
         id,
         deletedById
       })
-      return {
-        data: null,
-        message: this.i18nService.translate(UserDailyRequestMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -260,14 +231,7 @@ export class UserDailyRequestService {
         )
 
       // Repo đã map nameTranslation và descriptionTranslation rồi, trả về trực tiếp
-      return {
-        statusCode: HttpStatus.OK,
-        data: allUserDailyRequests,
-        message: this.i18nService.translate(
-          UserDailyRequestMessage.GET_LIST_SUCCESS,
-          lang
-        )
-      }
+      return allUserDailyRequests
     } catch (error) {
       this.logger.error('Error in getUserDailyRequestsToday:', error)
       throw error
@@ -463,17 +427,13 @@ export class UserDailyRequestService {
     // Give rewards
     for (const reward of rewardsToGive) {
       if (reward.rewardTarget === 'EXP') {
-        await this.userService.userAddExp(userId, reward.rewardItem, 'vi')
+        await this.userService.userAddExp(userId, reward.rewardItem)
       } else if (reward.rewardTarget === 'POINT') {
-        await this.userService.addFreeCoins(userId, reward.rewardItem, 'vi')
+        await this.userService.addFreeCoins(userId, reward.rewardItem)
       }
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: { updatedCount, rewardsReceived: rewardsToGive },
-      message: this.i18nService.translate(UserDailyRequestMessage.UPDATE_SUCCESS, 'vi')
-    }
+    return { updatedCount, rewardsReceived: rewardsToGive }
   }
 
   async updateProgresses({
@@ -492,22 +452,16 @@ export class UserDailyRequestService {
     for (const t of dailyRequestType) {
       // call sequentially to avoid contention
       // cast result
-      // eslint-disable-next-line no-await-in-loop
       const res: any = await this.updateProgress({
         userId,
         dailyRequestType: t,
         progressAdd
       })
       results.push(res)
-      totalUpdated += res.data?.updatedCount ?? 0
-      if (Array.isArray(res.data?.rewardsReceived))
-        allRewards.push(...res.data.rewardsReceived)
+      totalUpdated += res?.updatedCount ?? 0
+      if (Array.isArray(res?.rewardsReceived)) allRewards.push(...res.rewardsReceived)
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: { totalUpdated, rewardsReceived: allRewards },
-      message: this.i18nService.translate(UserDailyRequestMessage.UPDATE_SUCCESS, 'vi')
-    }
+    return { totalUpdated, rewardsReceived: allRewards }
   }
 }

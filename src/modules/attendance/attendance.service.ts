@@ -161,25 +161,22 @@ export class AttendanceService {
       ])
 
       // Tạo notification cho attendance
-      await this.sharedNotificationService.create(
-        {
+      await this.sharedNotificationService.create({
+        userId: createdById,
+        data: {
           userId: createdById,
+          titleKey: NotificationMessage.NOTI_ATTENDANCE,
+          bodyKey: NotificationMessage.YOU_HAVE_COMPLETED_ATTENDANCE,
+          type: NotificationType.ATTENDANCE,
           data: {
-            userId: createdById,
-            titleKey: NotificationMessage.NOTI_ATTENDANCE,
-            bodyKey: NotificationMessage.YOU_HAVE_COMPLETED_ATTENDANCE,
-            type: NotificationType.ATTENDANCE,
-            data: {
-              attendanceId: attendance.id,
-              sparkle: data.coin,
-              sparkleTotal: data.bonusCoin,
-              totalCoin: totalCoin * valueIncrease,
-              streakCount: totalStreakWithToday
-            }
+            attendanceId: attendance.id,
+            sparkle: data.coin,
+            sparkleTotal: data.bonusCoin,
+            totalCoin: totalCoin * valueIncrease,
+            streakCount: totalStreakWithToday
           }
-        },
-        lang
-      )
+        }
+      })
 
       return attendance
     } catch (error) {

@@ -4,7 +4,6 @@ import { AuthService } from './auth.service'
 function createService() {
   const authRepository = { existEmail: jest.fn(), findDeviceByUserAndAgent: jest.fn() }
   const otpService = { generateAndSendOtp: jest.fn() }
-  const i18nService = { translate: jest.fn((key: string) => key) }
   const service = new AuthService(
     {} as any,
     {} as any,
@@ -14,7 +13,6 @@ function createService() {
     {} as any,
     {} as any,
     {} as any,
-    i18nService as any,
     {} as any,
     {} as any,
     {} as any,
@@ -33,7 +31,7 @@ describe('AuthService.checkMailToAction', () => {
 
     const res = await service.checkMailToAction('new@example.test', 'agent', '1.2.3.4')
 
-    expect(res.data).toEqual({ type: 'REGISTER', requiresOtp: true })
+    expect(res).toEqual({ type: 'REGISTER', requiresOtp: true })
     expect(otpService.generateAndSendOtp).toHaveBeenCalled()
   })
 
@@ -44,7 +42,7 @@ describe('AuthService.checkMailToAction', () => {
 
     const res = await service.checkMailToAction('user@example.test', 'agent', '1.2.3.4')
 
-    expect(res.data).toEqual({ type: 'LOGIN', requiresOtp: true })
+    expect(res).toEqual({ type: 'LOGIN', requiresOtp: true })
     expect(otpService.generateAndSendOtp).toHaveBeenCalled()
   })
 
@@ -55,7 +53,7 @@ describe('AuthService.checkMailToAction', () => {
 
     const res = await service.checkMailToAction('user@example.test', 'agent', '1.2.3.4')
 
-    expect(res.data).toEqual({ type: 'LOGIN', requiresOtp: false })
+    expect(res).toEqual({ type: 'LOGIN', requiresOtp: false })
     expect(otpService.generateAndSendOtp).not.toHaveBeenCalled()
   })
 })

@@ -1,5 +1,4 @@
 import { I18nService } from '@/i18n/i18n.service'
-import { FlashcardMessage } from '@/i18n/message-keys'
 import { TranslationHelperService } from '@/modules/translation/translation.helper.service'
 import { SrsReviewService } from '@/modules/user-srs-review/user-srs-review.service'
 import { Injectable, Logger } from '@nestjs/common'
@@ -204,25 +203,13 @@ export class FlashcardService {
     }
   }
 
-  async createDeck(
-    userId: number,
-    body: CreateFlashcardDeckBody,
-    lang: string = DEFAULT_LANG
-  ) {
+  async createDeck(userId: number, body: CreateFlashcardDeckBody) {
     const deck = await this.flashcardRepository.createDeck(userId, body)
 
-    return {
-      statusCode: 201,
-      message: this.translate(FlashcardMessage.CREATE_DECK_SUCCESS, lang),
-      data: this.mapDeck(deck, 0)
-    }
+    return this.mapDeck(deck, 0)
   }
 
-  async getDecks(
-    userId: number,
-    query: GetFlashcardDeckListQuery,
-    lang: string = DEFAULT_LANG
-  ) {
+  async getDecks(userId: number, query: GetFlashcardDeckListQuery) {
     const { currentPage, pageSize } = query
     const { total, decks, cardCountMap } = await this.flashcardRepository.findDecks(
       userId,
@@ -234,16 +221,12 @@ export class FlashcardService {
     )
 
     return {
-      statusCode: 200,
-      message: this.translate(FlashcardMessage.GET_DECK_LIST_SUCCESS, lang),
-      data: {
-        results,
-        pagination: {
-          current: currentPage,
-          pageSize,
-          totalItem: total,
-          totalPage: Math.ceil(total / pageSize)
-        }
+      results,
+      pagination: {
+        current: currentPage,
+        pageSize,
+        totalItem: total,
+        totalPage: Math.ceil(total / pageSize)
       }
     }
   }
@@ -265,19 +248,10 @@ export class FlashcardService {
       )
     }
 
-    return {
-      statusCode: 200,
-      message: this.translate(FlashcardMessage.GET_DECK_SUCCESS, lang),
-      data: payload
-    }
+    return payload
   }
 
-  async updateDeck(
-    deckId: number,
-    userId: number,
-    body: UpdateFlashcardDeckBody,
-    lang: string = DEFAULT_LANG
-  ) {
+  async updateDeck(deckId: number, userId: number, body: UpdateFlashcardDeckBody) {
     const existingDeck = await this.flashcardRepository.findDeckById(deckId, userId)
     if (!existingDeck) {
       throw new FlashcardDeckNotFoundException()
@@ -286,14 +260,10 @@ export class FlashcardService {
     const updatedDeck = await this.flashcardRepository.updateDeck(deckId, body)
     const totalCards = await this.flashcardRepository.countDeckCards(deckId)
 
-    return {
-      statusCode: 200,
-      message: this.translate(FlashcardMessage.UPDATE_DECK_SUCCESS, lang),
-      data: this.mapDeck(updatedDeck, totalCards)
-    }
+    return this.mapDeck(updatedDeck, totalCards)
   }
 
-  async deleteDeck(deckId: number, userId: number, lang: string = DEFAULT_LANG) {
+  async deleteDeck(deckId: number, userId: number) {
     const existingDeck = await this.flashcardRepository.findDeckById(deckId, userId)
     if (!existingDeck) {
       throw new FlashcardDeckNotFoundException()
@@ -301,11 +271,7 @@ export class FlashcardService {
 
     await this.flashcardRepository.softDeleteDeck(deckId)
 
-    return {
-      statusCode: 200,
-      message: this.translate(FlashcardMessage.DELETE_DECK_SUCCESS, lang),
-      data: null
-    }
+    return
   }
 
   async getDeckCards(
@@ -323,16 +289,12 @@ export class FlashcardService {
     const { total, cards } = await this.flashcardRepository.findDeckCards(deckId, query)
 
     return {
-      statusCode: 200,
-      message: this.translate(FlashcardMessage.GET_DECK_SUCCESS, lang),
-      data: {
-        results: await Promise.all(cards.map((card) => this.mapCard(card, lang))),
-        pagination: {
-          current: currentPage,
-          pageSize,
-          totalItem: total,
-          totalPage: Math.ceil(total / pageSize)
-        }
+      results: await Promise.all(cards.map((card) => this.mapCard(card, lang))),
+      pagination: {
+        current: currentPage,
+        pageSize,
+        totalItem: total,
+        totalPage: Math.ceil(total / pageSize)
       }
     }
   }
@@ -489,11 +451,7 @@ export class FlashcardService {
 
       const card = await this.flashcardRepository.createCard(deckId, payload)
 
-      return {
-        statusCode: 201,
-        message: this.translate(FlashcardMessage.CREATE_CARD_SUCCESS, lang),
-        data: await this.mapCard(card, lang)
-      }
+      return await this.mapCard(card, lang)
     } catch (error) {
       // Re-throw các exception đã được định nghĩa
       if (
@@ -564,19 +522,10 @@ export class FlashcardService {
 
     const updated = await this.flashcardRepository.updateCard(cardId, body)
 
-    return {
-      statusCode: 200,
-      message: this.translate(FlashcardMessage.UPDATE_CARD_SUCCESS, lang),
-      data: await this.mapCard(updated, lang)
-    }
+    return await this.mapCard(updated, lang)
   }
 
-  async deleteCard(
-    deckId: number,
-    cardId: number,
-    userId: number,
-    lang: string = DEFAULT_LANG
-  ) {
+  async deleteCard(deckId: number, cardId: number, userId: number) {
     const card = await this.flashcardRepository.findCardById(cardId, deckId, userId)
     if (!card) {
       throw new FlashcardCardNotFoundException()
@@ -584,11 +533,7 @@ export class FlashcardService {
 
     await this.flashcardRepository.softDeleteCard(cardId)
 
-    return {
-      statusCode: 200,
-      message: this.translate(FlashcardMessage.DELETE_CARD_SUCCESS, lang),
-      data: null
-    }
+    return
   }
 
   async markRead(
@@ -617,19 +562,10 @@ export class FlashcardService {
     // Cập nhật read
     const updated = await this.flashcardRepository.updateCardRead(cardId, read)
 
-    return {
-      statusCode: 200,
-      message: this.translate(FlashcardMessage.UPDATE_CARD_SUCCESS, lang),
-      data: await this.mapCard(updated, lang)
-    }
+    return await this.mapCard(updated, lang)
   }
 
-  async deleteCards(
-    deckId: number,
-    cardIds: number[],
-    userId: number,
-    lang: string = DEFAULT_LANG
-  ) {
+  async deleteCards(deckId: number, cardIds: number[], userId: number) {
     // Kiểm tra deck tồn tại và thuộc về user
     const deck = await this.flashcardRepository.findDeckById(deckId, userId)
     if (!deck) {
@@ -650,11 +586,7 @@ export class FlashcardService {
     const validCardIds = cards.map((card) => card.id)
     await this.flashcardRepository.deleteCards(deckId, validCardIds)
 
-    return {
-      statusCode: 200,
-      message: this.translate(FlashcardMessage.DELETE_CARD_SUCCESS, lang),
-      data: null
-    }
+    return
   }
 
   async importCards(
@@ -759,12 +691,8 @@ export class FlashcardService {
     summary.imported = createdCards.length
 
     return {
-      statusCode: 200,
-      message: this.translate(FlashcardMessage.IMPORT_CARD_SUCCESS, lang),
-      data: {
-        summary,
-        results: await Promise.all(createdCards.map((card) => this.mapCard(card, lang)))
-      }
+      summary,
+      results: await Promise.all(createdCards.map((card) => this.mapCard(card, lang)))
     }
   }
 
@@ -847,16 +775,12 @@ export class FlashcardService {
     }
 
     return {
-      statusCode: 200,
-      message: this.translate(FlashcardMessage.GET_REVIEW_LIST_SUCCESS, lang),
-      data: {
-        results: dueCards,
-        pagination: {
-          current: 1,
-          pageSize: dueCards.length,
-          totalPage: 1,
-          totalItem: dueCards.length
-        }
+      results: dueCards,
+      pagination: {
+        current: 1,
+        pageSize: dueCards.length,
+        totalPage: 1,
+        totalItem: dueCards.length
       }
     }
   }
@@ -894,12 +818,8 @@ export class FlashcardService {
         : null
 
     return {
-      statusCode: 200,
-      message: this.translate(FlashcardMessage.REVIEW_CARD_SUCCESS, lang),
-      data: {
-        card: await this.mapCard(card, lang),
-        srs: this.mapSrsEntry(updatedEntry)
-      }
+      card: await this.mapCard(card, lang),
+      srs: this.mapSrsEntry(updatedEntry)
     }
   }
 
@@ -924,17 +844,13 @@ export class FlashcardService {
     }
 
     return {
-      statusCode: 200,
-      message: this.translate(FlashcardMessage.EXPORT_DECK_SUCCESS, lang),
-      data: {
-        deck: this.mapDeck(deckWithCards, cards.length),
-        cards,
-        assets: {
-          audio: Array.from(audioAssets).filter(Boolean),
-          images: Array.from(imageAssets).filter(Boolean)
-        },
-        generatedAt: new Date()
-      }
+      deck: this.mapDeck(deckWithCards, cards.length),
+      cards,
+      assets: {
+        audio: Array.from(audioAssets).filter(Boolean),
+        images: Array.from(imageAssets).filter(Boolean)
+      },
+      generatedAt: new Date()
     }
   }
 }

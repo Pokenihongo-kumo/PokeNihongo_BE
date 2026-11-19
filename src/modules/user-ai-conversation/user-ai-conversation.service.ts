@@ -1,5 +1,3 @@
-import { I18nService } from '@/i18n/i18n.service'
-import { UserAIConversationMessage as M } from '@/i18n/message-keys'
 import { toPaginationMeta } from '@/shared/utils/pagination'
 import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
 import { HttpException, Injectable, Logger } from '@nestjs/common'
@@ -18,25 +16,18 @@ import { UserAIConversationRepo } from './user-ai-conversation.repo'
 export class UserAIConversationService {
   private readonly logger = new Logger(UserAIConversationService.name)
 
-  constructor(
-    private readonly userAIConversationRepository: UserAIConversationRepo,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly userAIConversationRepository: UserAIConversationRepo) {}
 
-  async create(body: CreateUserAIConversationInput, lang = 'vi') {
+  async create(body: CreateUserAIConversationInput) {
     try {
       const row = await this.userAIConversationRepository.create(body)
-      return {
-        statusCode: 201,
-        data: row,
-        message: this.i18nService.translate(M.CREATE_SUCCESS, lang)
-      }
+      return row
     } catch (error) {
       throw this.toMessageError(error)
     }
   }
 
-  async findAll(query: GetUserAIConversationListQuery, userId: number, lang = 'vi') {
+  async findAll(query: GetUserAIConversationListQuery, userId: number) {
     const { currentPage, pageSize, conversationId, role } = query
     const { items, total } = await this.userAIConversationRepository.findMany({
       currentPage,
@@ -45,85 +36,54 @@ export class UserAIConversationService {
       conversationId,
       role
     })
-    return {
-      statusCode: 200,
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: { results: items, pagination: toPaginationMeta(currentPage, pageSize, total) }
-    }
+    return { results: items, pagination: toPaginationMeta(currentPage, pageSize, total) }
   }
 
-  async findByConversationId(conversationId: string, userId: number, lang = 'vi') {
+  async findByConversationId(conversationId: string, userId: number) {
     const rows = await this.userAIConversationRepository.findByConversationId(
       conversationId,
       userId
     )
-    return {
-      statusCode: 200,
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: rows
-    }
+    return rows
   }
 
-  async findOne(id: number, userId: number, lang = 'vi') {
+  async findOne(id: number, userId: number) {
     const row = await this.ownMessage(id, userId)
-    return {
-      statusCode: 200,
-      data: row,
-      message: this.i18nService.translate(M.GET_SUCCESS, lang)
-    }
+    return row
   }
 
   // The user's own message (REST)
-  async updateOwned(
-    id: number,
-    userId: number,
-    body: UpdateUserAIConversationBody,
-    lang = 'vi'
-  ) {
+  async updateOwned(id: number, userId: number, body: UpdateUserAIConversationBody) {
     await this.ownMessage(id, userId)
-    return this.update(id, body, lang)
+    return this.update(id, body)
   }
 
   // The kaiwa gateway sets the audio of a message it wrote
-  async update(id: number, body: UpdateUserAIConversationBody, lang = 'vi') {
+  async update(id: number, body: UpdateUserAIConversationBody) {
     try {
       const row = await this.userAIConversationRepository.update(id, body)
-      return {
-        statusCode: 200,
-        data: row,
-        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
-      }
+      return row
     } catch (error) {
       throw this.toMessageError(error)
     }
   }
 
-  async remove(id: number, userId: number, lang = 'vi') {
+  async remove(id: number, userId: number) {
     try {
       await this.ownMessage(id, userId)
       const row = await this.userAIConversationRepository.delete(id)
-      return {
-        statusCode: 200,
-        data: row,
-        message: this.i18nService.translate(M.DELETE_SUCCESS, lang)
-      }
+      return row
     } catch (error) {
       throw this.toMessageError(error)
     }
   }
 
-  async removeByConversationId(conversationId: string, userId: number, lang = 'vi') {
+  async removeByConversationId(conversationId: string, userId: number) {
     const count = await this.userAIConversationRepository.deleteByConversationId(
       conversationId,
       userId
     )
-    return {
-      statusCode: 200,
-      data: { deletedCount: count },
-      message: this.i18nService.translate(M.DELETE_BY_CONVERSATION_SUCCESS, lang, {
-        count
-      })
-    }
+    return { deletedCount: count }
   }
 
   //#region helpers

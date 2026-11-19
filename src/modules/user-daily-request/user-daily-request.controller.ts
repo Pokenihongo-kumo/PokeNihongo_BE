@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { UserDailyRequestMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { IsPublic } from '@/common/decorators/auth.decorator'
 import { AuthenticationGuard } from '@/common/guards/authentication.guard'
@@ -33,78 +35,94 @@ import { UserDailyRequestService } from './user-daily-request.service'
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class UserDailyRequestController {
-  constructor(private readonly userDailyReqService: UserDailyRequestService) {}
+  constructor(
+    private readonly userDailyReqService: UserDailyRequestService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @IsPublic()
   @ZodSerializerDto(PaginationResponseSchema)
-  list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return this.userDailyReqService.list(query, lang)
+  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(UserDailyRequestMessage.GET_LIST_SUCCESS, lang),
+      data: await this.userDailyReqService.list(query)
+    }
   }
 
   @Get('user-today')
   @ZodSerializerDto(GetListUserDailyRequestTodayDetailResDTO)
-  getUserDailyRequestsToday(
+  async getUserDailyRequestsToday(
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userDailyReqService.getUserDailyRequestsToday(userId, lang)
+    return {
+      message: this.i18nService.translate(UserDailyRequestMessage.GET_LIST_SUCCESS, lang),
+      data: await this.userDailyReqService.getUserDailyRequestsToday(userId, lang)
+    }
   }
 
   @Get(':userDailyRequestId')
   @IsPublic()
   @ZodSerializerDto(GetUserDailyRequestDetailResDTO)
-  findById(@Param() params: GetUserDailyRequestParamsDTO, @I18nLang() lang: string) {
-    return this.userDailyReqService.findById(params.userDailyRequestId, lang)
+  async findById(
+    @Param() params: GetUserDailyRequestParamsDTO,
+    @I18nLang() lang: string
+  ) {
+    return {
+      message: this.i18nService.translate(UserDailyRequestMessage.GET_SUCCESS, lang),
+      data: await this.userDailyReqService.findById(params.userDailyRequestId)
+    }
   }
 
   @Post()
   @ZodSerializerDto(CreateUserDailyRequestResDTO)
-  create(
+  async create(
     @Body() body: CreatedUserDailyRequestBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userDailyReqService.create(
-      {
+    return {
+      message: this.i18nService.translate(UserDailyRequestMessage.CREATE_SUCCESS, lang),
+      data: await this.userDailyReqService.create({
         data: body,
         createdById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Put(':userDailyRequestId')
   @ZodSerializerDto(UpdateUserDailyRequestResDTO)
-  update(
+  async update(
     @Body() body: UpdateUserDailyRequestBodyDTO,
     @Param() params: GetUserDailyRequestParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userDailyReqService.update(
-      {
+    return {
+      message: this.i18nService.translate(UserDailyRequestMessage.UPDATE_SUCCESS, lang),
+      data: await this.userDailyReqService.update({
         data: body,
         id: params.userDailyRequestId,
         updatedById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':userDailyRequestId')
   @ZodSerializerDto(MessageResDTO)
-  delete(
+  async delete(
     @Param() params: GetUserDailyRequestParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userDailyReqService.delete(
-      {
-        id: params.userDailyRequestId,
-        deletedById: userId
-      },
-      lang
-    )
+    await this.userDailyReqService.delete({
+      id: params.userDailyRequestId,
+      deletedById: userId
+    })
+    return {
+      message: this.i18nService.translate(UserDailyRequestMessage.DELETE_SUCCESS, lang),
+      data: null
+    }
   }
 }
