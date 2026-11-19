@@ -10,11 +10,7 @@ describe('SrsReviewService', () => {
     upsert: jest.fn(),
     update: jest.fn()
   }
-  const service = new SrsReviewService(
-    repo as never,
-    {} as never,
-    { translate: (k: string) => k } as never
-  )
+  const service = new SrsReviewService(repo as never, {} as never)
   const review = { id: 3, userId: 7, srsLevel: 2, incorrectStreak: 0 }
 
   beforeEach(() => {
@@ -40,13 +36,13 @@ describe('SrsReviewService', () => {
     repo.upsert.mockResolvedValue({ ...review, srsLevel: 0 })
     const res = await service.applyReview(7, 'vocabulary', 11, { result: 'correct' })
     expect(repo.upsert).toHaveBeenCalledWith(7, 'VOCABULARY', 11)
-    expect(res.data).toMatchObject({ srsLevel: 1, incorrectStreak: 0, isLeech: false })
+    expect(res).toMatchObject({ srsLevel: 1, incorrectStreak: 0, isLeech: false })
   })
 
   it('wrong answers reset the level; five in a row make a leech', async () => {
     repo.findUnique.mockResolvedValue({ ...review, incorrectStreak: 4 })
     const res = await service.applyReview(7, 'KANJI', 2, { result: 'incorrect' })
-    expect(res.data).toMatchObject({ srsLevel: 0, incorrectStreak: 5, isLeech: true })
+    expect(res).toMatchObject({ srsLevel: 0, incorrectStreak: 5, isLeech: true })
   })
 })
 

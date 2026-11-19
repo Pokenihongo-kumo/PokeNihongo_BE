@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { AttendanceMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
 import { PaginationResponseSchema } from '@/shared/models/response.model'
@@ -21,72 +23,88 @@ import { AttendanceService } from './attendance.service'
 @Controller('attendance')
 @ApiBearerAuth()
 export class AttendanceController {
-  constructor(private readonly attendanceService: AttendanceService) {}
+  constructor(
+    private readonly attendanceService: AttendanceService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseSchema)
-  list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return this.attendanceService.list(query, lang)
+  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(AttendanceMessage.GET_LIST_SUCCESS, lang),
+      data: await this.attendanceService.list(query)
+    }
   }
 
   @Get('user')
   @ZodSerializerDto(GetAttendanceWithUserStreakResDTO)
-  findByUser(
+  async findByUser(
     @Param() params: GetParamsDateAttendanceDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.attendanceService.findByUserWeek(userId, params.date, lang)
+    return {
+      message: this.i18nService.translate(AttendanceMessage.GET_SUCCESS, lang),
+      data: await this.attendanceService.findByUserWeek(userId, params.date)
+    }
   }
 
   @Get(':attendanceId')
   @ZodSerializerDto(GetAttendanceResDTO)
-  findById(@Param() params: GetParamsAttendanceDTO, @I18nLang() lang: string) {
-    return this.attendanceService.findById(params.attendanceId, lang)
+  async findById(@Param() params: GetParamsAttendanceDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(AttendanceMessage.GET_SUCCESS, lang),
+      data: await this.attendanceService.findById(params.attendanceId)
+    }
   }
 
   @Post()
   @ZodSerializerDto(CreateAttendanceResDTO)
-  create(@ActiveUser('userId') userId: number, @I18nLang() lang: string) {
-    return this.attendanceService.create(
-      {
-        createdById: userId
-      },
-      lang
-    )
+  async create(@ActiveUser('userId') userId: number, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(AttendanceMessage.CREATE_SUCCESS, lang),
+      data: await this.attendanceService.create(
+        {
+          createdById: userId
+        },
+        lang
+      )
+    }
   }
 
   @Put(':attendanceId')
   @ZodSerializerDto(UpdateAttendanceResDTO)
-  update(
+  async update(
     @Body() body: UpdateAttendanceBodyDTO,
     @Param() params: GetParamsAttendanceDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.attendanceService.update(
-      {
+    return {
+      message: this.i18nService.translate(AttendanceMessage.UPDATE_SUCCESS, lang),
+      data: await this.attendanceService.update({
         data: body,
         id: params.attendanceId,
         updatedById: userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':attendanceId')
   @ZodSerializerDto(MessageResDTO)
-  delete(
+  async delete(
     @Param() params: GetParamsAttendanceDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.attendanceService.delete(
-      {
-        id: params.attendanceId,
-        deletedById: userId
-      },
-      lang
-    )
+    await this.attendanceService.delete({
+      id: params.attendanceId,
+      deletedById: userId
+    })
+    return {
+      message: this.i18nService.translate(AttendanceMessage.DELETE_SUCCESS, lang),
+      data: null
+    }
   }
 }

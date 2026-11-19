@@ -1,7 +1,5 @@
 import { calculateScore } from '@/common/utils/algorithm'
 import { pickLabelFromComposite } from '@/common/utils/prase.utils'
-import { I18nService } from '@/i18n/i18n.service'
-import { UserTestAttemptMessage as M } from '@/i18n/message-keys'
 import { LessonService } from '@/modules/lesson/lesson.service'
 import { LevelService } from '@/modules/level/level.service'
 import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
@@ -14,7 +12,6 @@ import { UserProgressService } from '@/modules/user-progress/user-progress.servi
 import { UserTestAnswerLogService } from '@/modules/user-test-answer-log/user-test-answer-log.service'
 import { UserTestService } from '@/modules/user-test/user-test.service'
 import { UserService } from '@/modules/user/user.service'
-import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { toPaginationMeta } from '@/shared/utils/pagination'
 import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
 import { HttpException, Injectable, Logger } from '@nestjs/common'
@@ -39,6 +36,15 @@ import {
 import { REQUIRED_ANSWERS_FOR_LESSON_REVIEW } from './dto/variable'
 import { UserTestAttemptRepo } from './user-test-attempt.repo'
 
+export type TestCompletionOutcome =
+  | 'not-enough-answers'
+  | 'no-answer'
+  | 'incomplete'
+  | 'all-correct'
+  | 'some-wrong'
+  | 'review-passed'
+  | 'review-failed'
+
 @Injectable()
 export class UserTestAttemptService {
   private readonly logger = new Logger(UserTestAttemptService.name)
@@ -53,7 +59,6 @@ export class UserTestAttemptService {
     private readonly testSetService: TestSetService,
     private readonly testSetQuestionBankService: TestSetQuestionBankService,
     private readonly translationHelper: TranslationHelperService,
-    private readonly i18nService: I18nService,
     private readonly userService: UserService,
     private readonly levelService: LevelService,
     private readonly userProgressService: UserProgressService,
@@ -61,7 +66,7 @@ export class UserTestAttemptService {
     private readonly lessonService: LessonService
   ) {}
 
-  async create(userId: number, testId: number, lang: string = 'vi') {
+  async create(userId: number, testId: number) {
     try {
       // 1. Lấy thông tin Test
       const testRes = await this.testService.findOne(testId, 'vi')
@@ -74,16 +79,13 @@ export class UserTestAttemptService {
         testId: testId
       })
 
-      return {
-        data: userTestAttempt,
-        message: this.i18nService.translate(M.CREATE_SUCCESS, lang)
-      }
+      return userTestAttempt
     } catch (error) {
       throw this.toAttemptError(error)
     }
   }
 
-  async findAll(query: GetUserTestAttemptListQuery, lang: string = 'vi') {
+  async findAll(query: GetUserTestAttemptListQuery) {
     const { currentPage, pageSize, userId, testId, status } = query
 
     const result = await this.userTestAttemptRepository.findMany({
@@ -95,16 +97,12 @@ export class UserTestAttemptService {
     })
 
     return {
-      statusCode: 200,
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: {
-        results: result.items,
-        pagination: toPaginationMeta(currentPage, pageSize, result.total)
-      }
+      results: result.items,
+      pagination: toPaginationMeta(currentPage, pageSize, result.total)
     }
   }
 
-  async findOne(id: number, lang: string) {
+  async findOne(id: number) {
     const userTestAttempt = await this.userTestAttemptRepository.findUnique({
       id: id
     })
@@ -113,44 +111,30 @@ export class UserTestAttemptService {
       throw new UserTestAttemptNotFoundException()
     }
 
-    return {
-      statusCode: 200,
-      data: userTestAttempt,
-      message: this.i18nService.translate(M.GET_SUCCESS, lang)
-    }
+    return userTestAttempt
   }
 
-  async update(id: number, body: UpdateUserTestAttemptBody, lang: string = 'vi') {
+  async update(id: number, body: UpdateUserTestAttemptBody) {
     try {
       const userTestAttempt = await this.userTestAttemptRepository.update({ id }, body)
-      return {
-        data: userTestAttempt,
-        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
-      }
+      return userTestAttempt
     } catch (error) {
       throw this.toAttemptError(error)
     }
   }
 
   // The app deletes its own attempt
-  async remove(id: number, userId: number, lang: string = 'vi') {
+  async remove(id: number, userId: number) {
     try {
       await this.ownAttempt(id, userId)
       const userTestAttempt = await this.userTestAttemptRepository.delete({ id })
-      return {
-        data: userTestAttempt,
-        message: this.i18nService.translate(M.DELETE_SUCCESS, lang)
-      }
+      return userTestAttempt
     } catch (error) {
       throw this.toAttemptError(error)
     }
   }
 
-  async checkTestCompletion(
-    userTestAttemptId: number,
-    userId: number,
-    languageCode: string = 'vi'
-  ) {
+  async checkTestCompletion(userTestAttemptId: number, userId: number) {
     try {
       const attempt = await this.ownAttempt(userTestAttemptId, userId)
 
@@ -193,7 +177,7 @@ export class UserTestAttemptService {
       // 5. Lấy tất cả UserTestAnswerLog của attempt này
       const answerLogsResult =
         await this.userTestAnswerLogService.findByUserTestAttemptId(userTestAttemptId)
-      const userAnswers = answerLogsResult.data.results
+      const userAnswers = answerLogsResult.results
       this.logger.log(
         `Found ${userAnswers.length} user answers for attempt ${userTestAttemptId}`
       )
@@ -216,11 +200,9 @@ export class UserTestAttemptService {
           this.logger.log(
             `LESSON_REVIEW: Still need ${REQUIRED_ANSWERS_FOR_LESSON_REVIEW - answeredCount} more answers (answered: ${answeredCount}/${REQUIRED_ANSWERS_FOR_LESSON_REVIEW})`
           )
-          const normalizedLang = (languageCode || '').toLowerCase().split('-')[0] || 'vi'
-          const message = this.i18nService.translate(M.NOT_ENOUGH_ANSWERS, normalizedLang)
+          const outcome = 'not-enough-answers' as const
           return {
-            statusCode: 200,
-            message: message,
+            outcome,
             data: {
               isCompleted: false,
               totalQuestions: REQUIRED_ANSWERS_FOR_LESSON_REVIEW,
@@ -237,11 +219,9 @@ export class UserTestAttemptService {
         // Với các test type khác: phải trả lời hết tất cả câu hỏi
         if (unansweredQuestions.length > 0) {
           this.logger.log(`Still ${unansweredQuestions.length} unanswered questions`)
-          const normalizedLang = (languageCode || '').toLowerCase().split('-')[0] || 'vi'
-          const message = this.i18nService.translate(M.NOT_ENOUGH_ANSWERS, normalizedLang)
+          const outcome = 'not-enough-answers' as const
           return {
-            statusCode: 200,
-            message: message,
+            outcome,
             data: {
               isCompleted: false,
               totalQuestions: allQuestionBanks.length,
@@ -260,10 +240,7 @@ export class UserTestAttemptService {
 
       // 8. Chỉ trả kết quả, KHÔNG cập nhật DB trong hàm check
       const finalStatus = allCorrect ? 'COMPLETED' : 'FAILED'
-      const normalizedLang = (languageCode || '').toLowerCase().split('-')[0] || 'vi'
-      const message = allCorrect
-        ? this.i18nService.translate(M.TEST_COMPLETED_ALL_CORRECT, normalizedLang)
-        : this.i18nService.translate(M.TEST_COMPLETED_SOME_WRONG, normalizedLang)
+      const outcome = allCorrect ? ('all-correct' as const) : ('some-wrong' as const)
 
       // Với LESSON_REVIEW, totalQuestions luôn là 10
       const totalQuestions = isLessonReview
@@ -271,8 +248,7 @@ export class UserTestAttemptService {
         : allQuestionBanks.length
 
       return {
-        statusCode: 200,
-        message: message,
+        outcome,
         data: {
           isCompleted: true,
           totalQuestions: totalQuestions,
@@ -292,8 +268,7 @@ export class UserTestAttemptService {
   async submitTestCompletion(
     userTestAttemptId: number,
     userId: number,
-    timeSeconds?: number,
-    lang: string = 'vi'
+    timeSeconds?: number
   ) {
     try {
       this.logger.log(`Submitting completion for user test attempt: ${userTestAttemptId}`)
@@ -320,7 +295,7 @@ export class UserTestAttemptService {
       // 5. Lấy tất cả UserTestAnswerLog của attempt này
       const answerLogsResult =
         await this.userTestAnswerLogService.findByUserTestAttemptId(userTestAttemptId)
-      const userAnswers = answerLogsResult.data.results
+      const userAnswers = answerLogsResult.results
 
       // Xử lý riêng cho LESSON_REVIEW test
       if (testType === 'LESSON_REVIEW') {
@@ -330,7 +305,7 @@ export class UserTestAttemptService {
         // Nếu không có câu trả lời nào mà vẫn nộp bài, coi như FAILED
         if (userAnswers.length === 0) {
           const newStatus = 'FAILED'
-          const message = this.i18nService.translate(M.SUBMITTED_NO_ANSWER, lang)
+          const outcome = 'no-answer' as const
 
           await this.userTestAttemptRepository.update(
             { id: userTestAttemptId },
@@ -347,8 +322,7 @@ export class UserTestAttemptService {
           await this.updateUserProgressOnLessonReviewFailure(userId, attempt.testId)
 
           return {
-            statusCode: 200,
-            message: message,
+            outcome,
             data: {
               isCompleted: true,
               totalQuestions: expectedQuestionCount,
@@ -369,14 +343,14 @@ export class UserTestAttemptService {
 
         // Update status dựa trên kết quả: >= 80% là COMPLETED
         let newStatus: string
-        let message: string
+        let outcome: TestCompletionOutcome
 
         if (score >= 80) {
           newStatus = 'COMPLETED'
-          message = this.i18nService.translate(M.LESSON_REVIEW_PASSED, lang)
+          outcome = 'review-passed' as const
         } else {
           newStatus = 'FAILED'
-          message = this.i18nService.translate(M.LESSON_REVIEW_FAILED, lang)
+          outcome = 'review-failed' as const
         }
 
         // Update status và score trong database
@@ -413,8 +387,7 @@ export class UserTestAttemptService {
         }
 
         return {
-          statusCode: 200,
-          message: message,
+          outcome,
           data: {
             isCompleted: true,
             totalQuestions: userAnswers.length, // Số câu đã trả lời
@@ -463,7 +436,7 @@ export class UserTestAttemptService {
       // Nếu không có câu trả lời nào mà vẫn nộp bài, coi như FAILED
       if (userAnswers.length === 0) {
         const newStatus = 'FAILED'
-        const message = this.i18nService.translate(M.SUBMITTED_NO_ANSWER, lang)
+        const outcome = 'no-answer' as const
 
         await this.userTestAttemptRepository.update(
           { id: userTestAttemptId },
@@ -477,8 +450,7 @@ export class UserTestAttemptService {
         )
 
         return {
-          statusCode: 200,
-          message: message,
+          outcome,
           data: {
             isCompleted: true,
             totalQuestions: allQuestionBanks.length,
@@ -494,7 +466,7 @@ export class UserTestAttemptService {
       // Nếu chưa trả lời hết, coi như FAILED
       if (unansweredQuestions.length > 0) {
         const newStatus = 'FAILED'
-        const message = this.i18nService.translate(M.SUBMITTED_INCOMPLETE, lang)
+        const outcome = 'incomplete' as const
 
         await this.userTestAttemptRepository.update(
           { id: userTestAttemptId },
@@ -508,8 +480,7 @@ export class UserTestAttemptService {
         )
 
         return {
-          statusCode: 200,
-          message: message,
+          outcome,
           data: {
             isCompleted: true,
             totalQuestions: allQuestionBanks.length,
@@ -533,14 +504,14 @@ export class UserTestAttemptService {
 
       // 9. Update status dựa trên kết quả
       let newStatus: string
-      let message: string
+      let outcome: TestCompletionOutcome
 
       if (allCorrect) {
         newStatus = 'COMPLETED'
-        message = this.i18nService.translate(M.TEST_COMPLETED_ALL_CORRECT, lang)
+        outcome = 'all-correct' as const
       } else {
         newStatus = 'FAILED'
-        message = this.i18nService.translate(M.TEST_COMPLETED_SOME_WRONG, lang)
+        outcome = 'some-wrong' as const
       }
 
       // Update status và score trong database
@@ -557,8 +528,7 @@ export class UserTestAttemptService {
       )
 
       return {
-        statusCode: 200,
-        message: message,
+        outcome,
         data: {
           isCompleted: true,
           totalQuestions: allQuestionBanks.length,
@@ -575,12 +545,7 @@ export class UserTestAttemptService {
     }
   }
 
-  async abandon(
-    userTestAttemptId: number,
-    userId: number,
-    timeSeconds?: number,
-    lang: string = 'vi'
-  ) {
+  async abandon(userTestAttemptId: number, userId: number, timeSeconds?: number) {
     try {
       this.logger.log(
         `Abandoning user test attempt: ${userTestAttemptId} for user: ${userId}`
@@ -613,18 +578,14 @@ export class UserTestAttemptService {
 
       this.logger.log(`Updated attempt ${userTestAttemptId} to ABANDONED`)
 
-      return {
-        statusCode: 200,
-        message: this.i18nService.translate(M.ABANDON_SUCCESS, lang),
-        data: updatedAttempt
-      }
+      return updatedAttempt
     } catch (error) {
       this.logger.error('Error abandoning test attempt:', error)
       throw error
     }
   }
 
-  async getStatus(userTestAttemptId: number, userId: number, lang: string) {
+  async getStatus(userTestAttemptId: number, userId: number) {
     try {
       this.logger.log(
         `Getting status for user test attempt: ${userTestAttemptId} for user: ${userId}`
@@ -641,22 +602,14 @@ export class UserTestAttemptService {
         throw new AttemptNotOwnedException()
       }
 
-      return {
-        statusCode: 200,
-        message: this.i18nService.translate(M.GET_STATUS_SUCCESS, lang),
-        data: attempt
-      }
+      return attempt
     } catch (error) {
       this.logger.error('Error getting test attempt status:', error)
       throw error
     }
   }
 
-  async getTestAttemptByTestId(
-    testId: number,
-    userId: number,
-    languageCode: string
-  ): Promise<MessageResDTO | null> {
+  async getTestAttemptByTestId(testId: number, userId: number, languageCode: string) {
     try {
       const normalizedLang = (languageCode || '').toLowerCase().split('-')[0] || 'vi'
 
@@ -698,8 +651,8 @@ export class UserTestAttemptService {
 
           // Giảm limit và tạo attempt mới
           await this.userTestService.decrementLimit(userId, testId)
-          const createAttempt = await this.create(userId, testId, languageCode)
-          attempt = createAttempt.data as any
+          const createAttempt = await this.create(userId, testId)
+          attempt = createAttempt as any
           userTestAttemptId = attempt.id
         } else {
           // Dưới 1 tiếng → reuse và update updatedAt
@@ -725,8 +678,8 @@ export class UserTestAttemptService {
         // Giảm limit trước khi cho phép làm bài (chỉ khi tạo mới)
         await this.userTestService.decrementLimit(userId, testId)
 
-        const createAttempt = await this.create(userId, testId, languageCode)
-        attempt = createAttempt.data as any
+        const createAttempt = await this.create(userId, testId)
+        attempt = createAttempt as any
         userTestAttemptId = attempt.id
       }
 
@@ -743,8 +696,8 @@ export class UserTestAttemptService {
       let userAnswerLogs: any[] = []
       const answerLogsResult =
         await this.userTestAnswerLogService.findByUserTestAttemptId(userTestAttemptId)
-      if (answerLogsResult?.data?.results) {
-        userAnswerLogs = answerLogsResult.data.results
+      if (answerLogsResult?.results) {
+        userAnswerLogs = answerLogsResult.results
         answeredCount = userAnswerLogs.length
         this.logger.log(
           `Found ${answeredCount} existing answer logs for attempt ${userTestAttemptId}`
@@ -849,22 +802,16 @@ export class UserTestAttemptService {
         `Getting test attempt for user ${userId} in test ${testId}, using attempt ${userTestAttemptId} with status ${attempt?.status}`
       )
 
-      const message = this.i18nService.translate(M.QUESTIONS_SUCCESS, normalizedLang)
-
       return {
-        statusCode: 200,
-        data: {
-          id: test.id,
-          name: testRes.name,
-          description: testRes.description,
-          testType: test.testType,
-          testSets: allTestSets,
-          userTestAttemptId,
-          totalQuestions,
-          answeredQuestions: answeredCount,
-          time: Number(attempt?.time ?? 0)
-        },
-        message
+        id: test.id,
+        name: testRes.name,
+        description: testRes.description,
+        testType: test.testType,
+        testSets: allTestSets,
+        userTestAttemptId,
+        totalQuestions,
+        answeredQuestions: answeredCount,
+        time: Number(attempt?.time ?? 0)
       }
     } catch (error) {
       this.logger.error('Error getting test attempt by test id:', error)
@@ -875,14 +822,10 @@ export class UserTestAttemptService {
     }
   }
 
-  async getTestAttemptReview(
-    id: number,
-    userId: number,
-    languageCode: string
-  ): Promise<MessageResDTO> {
+  async getTestAttemptReview(id: number, userId: number, languageCode: string) {
     try {
-      const attemptRes = await this.findOne(id, languageCode)
-      const attempt = attemptRes.data as any
+      const attemptRes = await this.findOne(id)
+      const attempt = attemptRes as any
 
       // Kiểm tra attempt có thuộc về user này không
       if ((attempt as any)?.userId !== userId) {
@@ -894,8 +837,7 @@ export class UserTestAttemptService {
       // Only build review when attempt is COMPLETED or FAILED
       if (attempt.status !== 'COMPLETED' && attempt.status !== 'FAILED') {
         return {
-          statusCode: 200,
-          message: this.i18nService.translate(M.REVIEW_NOT_COMPLETED, normalizedLang),
+          completed: false,
           data: { status: attempt.status }
         }
       }
@@ -915,7 +857,7 @@ export class UserTestAttemptService {
       // Load user answer logs for this attempt
       const logsRes = await this.userTestAnswerLogService.findByUserTestAttemptId(id)
       let logs: Array<{ questionBankId: number; answerId: number; isCorrect: boolean }> =
-        (logsRes?.data?.results || []) as any
+        (logsRes?.results || []) as any
 
       // Nếu test type là PLACEMENT_TEST_DONE, chỉ lấy 10 câu đầu tiên từ logs (những câu đã làm)
       const isPlacementTestDone = testType === 'PLACEMENT_TEST_DONE'
@@ -1168,8 +1110,7 @@ export class UserTestAttemptService {
       }
 
       return {
-        statusCode: 200,
-        message: this.i18nService.translate(M.REVIEW_SUCCESS, normalizedLang),
+        completed: true,
         data
       }
     } catch (error) {
@@ -1181,14 +1122,10 @@ export class UserTestAttemptService {
     }
   }
 
-  async getLessonTestAttemptReview(
-    id: number,
-    userId: number,
-    languageCode: string
-  ): Promise<MessageResDTO> {
+  async getLessonTestAttemptReview(id: number, userId: number, languageCode: string) {
     try {
-      const attemptRes = await this.findOne(id, languageCode)
-      const attempt = attemptRes.data as any
+      const attemptRes = await this.findOne(id)
+      const attempt = attemptRes as any
 
       // Kiểm tra attempt có thuộc về user này không
       if ((attempt as any)?.userId !== userId) {
@@ -1200,8 +1137,7 @@ export class UserTestAttemptService {
       // Only build review when attempt is COMPLETED or FAILED
       if (attempt.status !== 'COMPLETED' && attempt.status !== 'FAILED') {
         return {
-          statusCode: 200,
-          message: this.i18nService.translate(M.REVIEW_NOT_COMPLETED, normalizedLang),
+          completed: false,
           data: { status: attempt.status }
         }
       }
@@ -1213,7 +1149,7 @@ export class UserTestAttemptService {
         answerId: number
         isCorrect: boolean
         turnNumber?: number
-      }> = (logsRes?.data?.results || []) as any
+      }> = (logsRes?.results || []) as any
 
       if (!logs || logs.length === 0) {
         throw new TestAttemptHasNoAnswersException()
@@ -1421,8 +1357,7 @@ export class UserTestAttemptService {
       }
 
       return {
-        statusCode: 200,
-        message: this.i18nService.translate(M.REVIEW_SUCCESS, normalizedLang),
+        completed: true,
         data
       }
     } catch (error) {
@@ -1437,8 +1372,7 @@ export class UserTestAttemptService {
   async submitPlacementTestCompletion(
     userTestAttemptId: number,
     userId: number,
-    timeSeconds?: number,
-    lang: string = 'vi'
+    timeSeconds?: number
   ) {
     try {
       this.logger.log(
@@ -1491,7 +1425,7 @@ export class UserTestAttemptService {
       // 6. Lấy tất cả UserTestAnswerLog của attempt này
       const answerLogsResult =
         await this.userTestAnswerLogService.findByUserTestAttemptId(userTestAttemptId)
-      let userAnswers = answerLogsResult.data.results
+      let userAnswers = answerLogsResult.results
       this.logger.log(
         `Found ${userAnswers.length} user answers for attempt ${userTestAttemptId}`
       )
@@ -1500,7 +1434,7 @@ export class UserTestAttemptService {
       if (userAnswers.length > 10) {
         userAnswers = userAnswers.slice(0, 10)
         this.logger.log(
-          `PLACEMENT_TEST_DONE: Limiting to first 10 questions from ${answerLogsResult.data.results.length} total logs`
+          `PLACEMENT_TEST_DONE: Limiting to first 10 questions from ${answerLogsResult.results.length} total logs`
         )
       }
 
@@ -1672,15 +1606,11 @@ export class UserTestAttemptService {
 
       // 15. Trả về kết quả với levelN được đánh giá
       return {
-        statusCode: 200,
-        message: this.i18nService.translate(M.PLACEMENT_DONE, lang),
-        data: {
-          levelN: evaluatedLevelN,
-          levelId: level,
-          totalCorrect,
-          totalQuestions,
-          percentage
-        }
+        levelN: evaluatedLevelN,
+        levelId: level,
+        totalCorrect,
+        totalQuestions,
+        percentage
       }
     } catch (error) {
       this.logger.error('Error submitting placement test completion:', error)

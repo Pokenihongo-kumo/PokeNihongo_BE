@@ -1,5 +1,3 @@
-import { I18nService } from '@/i18n/i18n.service'
-import { SrsReviewMessage as M } from '@/i18n/message-keys'
 import { TranslationHelperService } from '@/modules/translation/translation.helper.service'
 import { toPaginationMeta } from '@/shared/utils/pagination'
 import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
@@ -31,24 +29,19 @@ export class SrsReviewService {
 
   constructor(
     private readonly repo: SrsReviewRepo,
-    private readonly translationHelper: TranslationHelperService,
-    private readonly i18nService: I18nService
+    private readonly translationHelper: TranslationHelperService
   ) {}
 
   // Every review of the user (200 at most), optionally of one type or due now
-  async list(userId: number, query: ListSrsQueryDto, lang: string = 'vi') {
+  async list(userId: number, query: ListSrsQueryDto) {
     const rows = await this.repo.list({
       userId,
       ...(query.type && { contentType: query.type }),
       ...(query.dueOnly && { nextReviewDate: { lte: new Date() } })
     })
     return {
-      statusCode: 200,
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: {
-        results: rows,
-        pagination: toPaginationMeta(1, rows.length || 1, rows.length)
-      }
+      results: rows,
+      pagination: toPaginationMeta(1, rows.length || 1, rows.length)
     }
   }
 
@@ -75,24 +68,16 @@ export class SrsReviewService {
       }))
     )
     return {
-      statusCode: 200,
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: {
-        results,
-        pagination: toPaginationMeta(currentPage, pageSize, total)
-      }
+      results,
+      pagination: toPaginationMeta(currentPage, pageSize, total)
     }
   }
 
-  async markRead(userId: number, srsId: number, lang: string = 'vi') {
+  async markRead(userId: number, srsId: number) {
     try {
       await this.ownedReview(userId, srsId)
       const updated = await this.repo.updateById(srsId, { isRead: true })
-      return {
-        statusCode: 200,
-        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
-        data: updated
-      }
+      return updated
     } catch (error) {
       throw this.toSrsError(error)
     }
@@ -103,20 +88,16 @@ export class SrsReviewService {
       const srs = await this.ownedReview(userId, srsId)
       const content = await this.getContentDetail(srs.contentType, srs.contentId, lang)
       return {
-        statusCode: 200,
-        message: this.i18nService.translate(M.GET_SUCCESS, lang),
-        data: {
-          srs: {
-            id: srs.id,
-            userId: srs.userId,
-            message: srs.message,
-            srsLevel: srs.srsLevel,
-            incorrectStreak: srs.incorrectStreak,
-            isLeech: srs.isLeech,
-            isRead: srs.isRead
-          },
-          content
-        }
+        srs: {
+          id: srs.id,
+          userId: srs.userId,
+          message: srs.message,
+          srsLevel: srs.srsLevel,
+          incorrectStreak: srs.incorrectStreak,
+          isLeech: srs.isLeech,
+          isRead: srs.isRead
+        },
+        content
       }
     } catch (error) {
       throw this.toSrsError(error)
@@ -125,7 +106,7 @@ export class SrsReviewService {
 
   // A new review is due now (nextReviewDate has no default: creating one used
   // to fail, so every upsert of new content answered 400)
-  async upsert(userId: number, body: UpsertSrsReviewDto, lang: string = 'vi') {
+  async upsert(userId: number, body: UpsertSrsReviewDto) {
     try {
       const data = await this.repo.upsert(
         userId,
@@ -133,11 +114,7 @@ export class SrsReviewService {
         body.contentId,
         body.message
       )
-      return {
-        statusCode: 200,
-        message: this.i18nService.translate(M.UPSERT_SUCCESS, lang),
-        data
-      }
+      return data
     } catch (error) {
       throw this.toSrsError(error)
     }
@@ -167,11 +144,7 @@ export class SrsReviewService {
         isLeech: incorrectStreak >= LEECH_STREAK,
         message: body.message ?? undefined
       })
-      return {
-        statusCode: 200,
-        message: this.i18nService.translate(M.UPDATE_SUCCESS, 'vi'),
-        data: updated
-      }
+      return updated
     } catch (error) {
       throw this.toSrsError(error)
     }

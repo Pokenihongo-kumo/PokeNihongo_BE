@@ -1,14 +1,11 @@
 import { calculateScore } from '@/common/utils/algorithm'
 import { pickLabelFromComposite } from '@/common/utils/prase.utils'
-import { I18nService } from '@/i18n/i18n.service'
-import { UserExerciseAttemptMessage as M } from '@/i18n/message-keys'
 import { ExercisesService } from '@/modules/exercises/exercises.service'
 import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
 import { TranslationHelperService } from '@/modules/translation/translation.helper.service'
 import { UserAnswerLogService } from '@/modules/user-answer-log/user-answer-log.service'
 import { UserProgressService } from '@/modules/user-progress/user-progress.service'
 import { UserCoreService } from '@/modules/user/user-core.service'
-import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { toPaginationMeta } from '@/shared/utils/pagination'
 import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
 import { HttpException, Injectable, Logger } from '@nestjs/common'
@@ -26,7 +23,6 @@ import {
 } from './dto/user-exercise-attempt.error'
 import {
   GetUserExerciseAttemptListQuery,
-  LatestExerciseAttemptsByLessonRes,
   UpdateUserExerciseAttemptBody
 } from './dto/user-exercise-attempt.zod-dto'
 import { UserExerciseAttemptRepo } from './user-exercise-attempt.repo'
@@ -43,7 +39,6 @@ export class UserExerciseAttemptService {
     private readonly exercisesService: ExercisesService,
     private readonly userCoreService: UserCoreService,
     private readonly translationHelper: TranslationHelperService,
-    private readonly i18nService: I18nService,
     private readonly rewardService: RewardService
   ) {}
 
@@ -72,7 +67,7 @@ export class UserExerciseAttemptService {
     )
   }
 
-  async create(userId: number, exerciseId: number, lang: string = 'vi') {
+  async create(userId: number, exerciseId: number) {
     try {
       // The exercise (404 from ExercisesService when missing) and its lesson
       const exercise = await this.exercisesService.findById(exerciseId)
@@ -112,16 +107,13 @@ export class UserExerciseAttemptService {
       // Starting an exercise puts the lesson IN_PROGRESS
       await this.updateUserProgressOnStart(userId, exerciseId)
 
-      return {
-        data: userExerciseAttempt,
-        message: this.i18nService.translate(M.CREATE_SUCCESS, lang)
-      }
+      return userExerciseAttempt
     } catch (error) {
       throw this.toAttemptError(error)
     }
   }
 
-  async findAll(query: GetUserExerciseAttemptListQuery, lang: string = 'vi') {
+  async findAll(query: GetUserExerciseAttemptListQuery) {
     const { currentPage, pageSize, userId, exerciseId, status } = query
     const result = await this.userExerciseAttemptRepository.findMany({
       currentPage,
@@ -131,68 +123,46 @@ export class UserExerciseAttemptService {
       status
     })
     return {
-      statusCode: 200,
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: {
-        results: result.items,
-        pagination: toPaginationMeta(currentPage, pageSize, result.total)
-      }
+      results: result.items,
+      pagination: toPaginationMeta(currentPage, pageSize, result.total)
     }
   }
 
-  async findOne(id: number, lang: string = 'vi') {
+  async findOne(id: number) {
     const userExerciseAttempt = await this.userExerciseAttemptRepository.findUnique({
       id
     })
     if (!userExerciseAttempt) {
       throw new UserExerciseAttemptNotFoundException()
     }
-    return {
-      data: userExerciseAttempt,
-      message: this.i18nService.translate(M.GET_SUCCESS, lang)
-    }
+    return userExerciseAttempt
   }
 
   // The app continues or skips its own attempt
-  async update(
-    id: number,
-    body: UpdateUserExerciseAttemptBody,
-    userId: number,
-    lang: string = 'vi'
-  ) {
+  async update(id: number, body: UpdateUserExerciseAttemptBody, userId: number) {
     try {
       await this.ownAttempt(id, userId)
       const userExerciseAttempt = await this.userExerciseAttemptRepository.update(
         { id },
         body
       )
-      return {
-        data: userExerciseAttempt,
-        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
-      }
+      return userExerciseAttempt
     } catch (error) {
       throw this.toAttemptError(error)
     }
   }
 
-  async remove(id: number, lang: string = 'vi') {
+  async remove(id: number) {
     try {
       const userExerciseAttempt = await this.userExerciseAttemptRepository.delete({ id })
-      return {
-        data: userExerciseAttempt,
-        message: this.i18nService.translate(M.DELETE_SUCCESS, lang)
-      }
+      return userExerciseAttempt
     } catch (error) {
       throw this.toAttemptError(error)
     }
   }
 
   // Only reads the result, writes nothing
-  async checkExerciseCompletion(
-    userExerciseAttemptId: number,
-    userId: number,
-    lang: string = 'vi'
-  ) {
+  async checkExerciseCompletion(userExerciseAttemptId: number, userId: number) {
     const { allQuestions, userAnswers, unansweredQuestions } = await this.gradeAttempt(
       userExerciseAttemptId,
       userId
@@ -200,8 +170,7 @@ export class UserExerciseAttemptService {
 
     if (unansweredQuestions.length > 0) {
       return {
-        statusCode: 200,
-        message: this.i18nService.translate(M.NOT_ALL_ANSWERED, lang),
+        outcome: 'not-all-answered' as const,
         data: {
           isCompleted: false,
           totalQuestions: allQuestions.length,
@@ -216,11 +185,7 @@ export class UserExerciseAttemptService {
 
     const allCorrect = userAnswers.every((log) => log.isCorrect)
     return {
-      statusCode: 200,
-      message: this.i18nService.translate(
-        allCorrect ? M.ALL_CORRECT : M.SOME_INCORRECT,
-        lang
-      ),
+      outcome: allCorrect ? ('all-correct' as const) : ('some-incorrect' as const),
       data: {
         isCompleted: true,
         totalQuestions: allQuestions.length,
@@ -237,8 +202,7 @@ export class UserExerciseAttemptService {
   async submitExerciseCompletion(
     userExerciseAttemptId: number,
     userId: number,
-    timeSeconds?: number,
-    lang: string = 'vi'
+    timeSeconds?: number
   ) {
     const { attempt, exercise, allQuestions, userAnswers, unansweredQuestions, score } =
       await this.gradeAttempt(userExerciseAttemptId, userId)
@@ -257,11 +221,8 @@ export class UserExerciseAttemptService {
       )
       const unanswered = userAnswers.length === 0 ? allQuestions : unansweredQuestions
       return {
-        statusCode: 200,
-        message: this.i18nService.translate(
-          userAnswers.length === 0 ? M.SUBMITTED_NO_ANSWER : M.SUBMITTED_INCOMPLETE,
-          lang
-        ),
+        outcome:
+          userAnswers.length === 0 ? ('no-answer' as const) : ('incomplete' as const),
         data: {
           isCompleted: true,
           totalQuestions: allQuestions.length,
@@ -315,11 +276,7 @@ export class UserExerciseAttemptService {
     }
 
     return {
-      statusCode: 200,
-      message: this.i18nService.translate(
-        allCorrect ? M.ALL_CORRECT : M.SOME_INCORRECT,
-        lang
-      ),
+      outcome: allCorrect ? ('all-correct' as const) : ('some-incorrect' as const),
       data: {
         isCompleted: true,
         totalQuestions: allQuestions.length,
@@ -333,12 +290,7 @@ export class UserExerciseAttemptService {
     }
   }
 
-  async abandon(
-    userExerciseAttemptId: number,
-    userId: number,
-    timeSeconds?: number,
-    lang: string = 'vi'
-  ) {
+  async abandon(userExerciseAttemptId: number, userId: number, timeSeconds?: number) {
     const attempt = await this.ownAttempt(userExerciseAttemptId, userId)
     if (attempt.status !== 'IN_PROGRESS') {
       throw new ExerciseAttemptNotInProgressException()
@@ -350,53 +302,33 @@ export class UserExerciseAttemptService {
         ...(timeSeconds !== undefined ? { time: timeSeconds } : {})
       }
     )
-    return {
-      statusCode: 200,
-      message: this.i18nService.translate(M.ABANDON_SUCCESS, lang),
-      data: updatedAttempt
-    }
+    return updatedAttempt
   }
 
-  async getStatus(userExerciseAttemptId: number, userId: number, lang: string = 'vi') {
+  async getStatus(userExerciseAttemptId: number, userId: number) {
     const attempt = await this.ownAttempt(userExerciseAttemptId, userId)
-    return {
-      statusCode: 200,
-      message: this.i18nService.translate(M.GET_STATUS_SUCCESS, lang),
-      data: attempt
-    }
+    return attempt
   }
 
   // The user's newest attempt of the same exercise as this one
-  async getLatestStatus(
-    userExerciseAttemptId: number,
-    userId: number,
-    lang: string = 'vi'
-  ) {
+  async getLatestStatus(userExerciseAttemptId: number, userId: number) {
     const baseAttempt = await this.ownAttempt(userExerciseAttemptId, userId)
     const latestAttempt =
       await this.userExerciseAttemptRepository.findLatestByUserAndExercise(
         userId,
         baseAttempt.exerciseId
       )
-    return {
-      statusCode: 200,
-      message: this.i18nService.translate(M.GET_STATUS_SUCCESS, lang),
-      data: latestAttempt ?? baseAttempt
-    }
+    return latestAttempt ?? baseAttempt
   }
 
-  async getLatestExerciseAttemptsByLesson(
-    userId: number,
-    lessonId: number,
-    lang: string = 'vi'
-  ): Promise<LatestExerciseAttemptsByLessonRes> {
+  async getLatestExerciseAttemptsByLesson(userId: number, lessonId: number) {
     // No skipping ahead: a lesson not started opens only when the one before
     // it was started
     const checkUserProgress = await this.userProgressService.findByUserAndLesson(
       userId,
       lessonId
     )
-    if (checkUserProgress.data.status === 'NOT_STARTED') {
+    if (checkUserProgress.status === 'NOT_STARTED') {
       const previousLessonId =
         await this.userProgressService.getPreviousLessonId(lessonId)
       if (previousLessonId) {
@@ -415,22 +347,14 @@ export class UserExerciseAttemptService {
       userId,
       lessonId
     )
-    return {
-      statusCode: 200,
-      data: result,
-      message: this.i18nService.translate(M.LATEST_BY_LESSON_SUCCESS, lang)
-    }
+    return result
   }
 
-  async getExerciseAttemptByExerciseId(
-    id: number,
-    userId: number,
-    languageCode: string
-  ): Promise<MessageResDTO | null> {
+  async getExerciseAttemptByExerciseId(id: number, userId: number, languageCode: string) {
     try {
       // Lấy attempt base để biết exerciseId
-      const baseAttemptRes = await this.findOne(id, languageCode)
-      const baseAttempt = baseAttemptRes.data as any
+      const baseAttemptRes = await this.findOne(id)
+      const baseAttempt = baseAttemptRes as any
 
       // Kiểm tra attempt có thuộc về user này không
       if (baseAttempt?.userId !== userId) {
@@ -474,8 +398,8 @@ export class UserExerciseAttemptService {
         this.logger.log(
           `Latest attempt is ${latestAttempt.status}, creating new attempt for user ${userId}, exercise ${exerciseId}`
         )
-        const createAttempt = await this.create(userId, exerciseId, languageCode)
-        attempt = createAttempt.data as any
+        const createAttempt = await this.create(userId, exerciseId)
+        attempt = createAttempt as any
         userExerciseAttemptId = attempt.id
         // Khi tạo mới từ SKIPPED/COMPLETED/FAILED, không load answers cũ
         shouldLoadOldAnswers = false
@@ -499,7 +423,7 @@ export class UserExerciseAttemptService {
             await this.userAnswerLogService.findByUserExerciseAttemptId(
               userExerciseAttemptId
             )
-          const logs = (logsRes?.data?.results || []) as any[]
+          const logs = (logsRes?.results || []) as any[]
           answeredCount = logs.length
           // Chỉ mark choices nếu là ABANDONED (để khôi phục)
           if (attempt?.status === 'ABANDONED') {
@@ -519,7 +443,7 @@ export class UserExerciseAttemptService {
             await this.userAnswerLogService.findByUserExerciseAttemptId(
               userExerciseAttemptId
             )
-          const logs = (logsRes?.data?.results || []) as any[]
+          const logs = (logsRes?.results || []) as any[]
           answeredCount = logs.length
         } catch (e) {
           this.logger.warn('Cannot load user answer logs', e as any)
@@ -602,15 +526,11 @@ export class UserExerciseAttemptService {
       )
 
       return {
-        statusCode: 200,
-        data: {
-          ...result,
-          userExerciseAttemptId,
-          totalQuestions: (result as any)?.testSet?.testSetQuestionBanks?.length || 0,
-          answeredQuestions: answeredCount,
-          time: Number(attempt?.time ?? 0)
-        },
-        message: this.i18nService.translate(M.QUESTIONS_SUCCESS, languageCode)
+        ...result,
+        userExerciseAttemptId,
+        totalQuestions: (result as any)?.testSet?.testSetQuestionBanks?.length || 0,
+        answeredQuestions: answeredCount,
+        time: Number(attempt?.time ?? 0)
       }
     } catch (error) {
       this.logger.error('Error getting the exercise questions:', error)
@@ -618,14 +538,10 @@ export class UserExerciseAttemptService {
     }
   }
 
-  async getExerciseAttemptReview(
-    id: number,
-    userId: number,
-    languageCode: string
-  ): Promise<MessageResDTO> {
+  async getExerciseAttemptReview(id: number, userId: number, languageCode: string) {
     try {
-      const attemptRes = await this.findOne(id, languageCode)
-      const attempt = attemptRes.data as any
+      const attemptRes = await this.findOne(id)
+      const attempt = attemptRes as any
 
       // Kiểm tra attempt có thuộc về user này không
       if ((attempt as any)?.userId !== userId) {
@@ -638,8 +554,7 @@ export class UserExerciseAttemptService {
       // NOT_STARTED không được xem review
       if (attempt.status !== 'COMPLETED' && attempt.status !== 'FAILED') {
         return {
-          statusCode: 200,
-          message: this.i18nService.translate(M.REVIEW_NOT_COMPLETED, normalizedLang),
+          completed: false,
           data: { status: attempt.status }
         }
       }
@@ -655,7 +570,7 @@ export class UserExerciseAttemptService {
         questionBankId: number
         answerId: number
         isCorrect: boolean
-      }> = (logsRes?.data?.results || []) as any
+      }> = (logsRes?.results || []) as any
       const selectedByQuestion = new Map<number, number>(
         logs.map((l) => [Number(l.questionBankId), Number(l.answerId)])
       )
@@ -803,15 +718,13 @@ export class UserExerciseAttemptService {
         }
 
         return {
-          statusCode: 200,
-          message: this.i18nService.translate(M.REVIEW_SUCCESS, normalizedLang),
+          completed: true,
           data
         }
       }
 
       return {
-        statusCode: 200,
-        message: this.i18nService.translate(M.REVIEW_SUCCESS, normalizedLang),
+        completed: true,
         data: exerciseRes
       }
     } catch (error) {
@@ -840,7 +753,7 @@ export class UserExerciseAttemptService {
     const allQuestions = questionsResult.results
     const answerLogsResult =
       await this.userAnswerLogService.findByUserExerciseAttemptId(userExerciseAttemptId)
-    const userAnswers = answerLogsResult.data.results
+    const userAnswers = answerLogsResult.results
     const answeredQuestionIds = new Set(userAnswers.map((log) => log.questionBankId))
     const unansweredQuestions = allQuestions.filter((q) => !answeredQuestionIds.has(q.id))
     const correctAnswers = userAnswers.filter((log) => log.isCorrect).length

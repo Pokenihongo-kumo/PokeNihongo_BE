@@ -1,4 +1,3 @@
-import { I18nService } from '@/i18n/i18n.service'
 import { UserAnswerLogMessage as M } from '@/i18n/message-keys'
 import { toPaginationMeta } from '@/shared/utils/pagination'
 import { isNotFoundPrismaError } from '@/shared/utils/prisma-errors'
@@ -20,20 +19,13 @@ import { UserAnswerLogRepo } from './user-answer-log.repo'
 export class UserAnswerLogService {
   private readonly logger = new Logger(UserAnswerLogService.name)
 
-  constructor(
-    private readonly userAnswerLogRepository: UserAnswerLogRepo,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly userAnswerLogRepository: UserAnswerLogRepo) {}
 
-  async create(body: CreateUserAnswerLogBody, lang: string = 'vi') {
+  async create(body: CreateUserAnswerLogBody) {
     try {
       const isCorrect = await this.checkedAnswer(body.answerId, body.questionBankId)
       const log = await this.userAnswerLogRepository.create(body, isCorrect)
-      return {
-        statusCode: 201,
-        data: log,
-        message: this.i18nService.translate(M.CREATE_SUCCESS, lang)
-      }
+      return log
     } catch (error) {
       throw this.toAnswerLogError(error)
     }
@@ -41,7 +33,7 @@ export class UserAnswerLogService {
 
   // The app's answer: the attempt is the user's, the question is in its
   // exercise and the answer is one of the question's. One log per question
-  async upsert(body: CreateUserAnswerLogBody, userId: number, lang: string = 'vi') {
+  async upsert(body: CreateUserAnswerLogBody, userId: number) {
     try {
       const attempt = await this.userAnswerLogRepository.findAttempt(
         body.userExerciseAttemptId
@@ -62,77 +54,53 @@ export class UserAnswerLogService {
       }
       const isCorrect = await this.checkedAnswer(body.answerId, body.questionBankId)
       const log = await this.userAnswerLogRepository.upsert(body, isCorrect)
-      return {
-        statusCode: 201,
-        data: log,
-        message: this.i18nService.translate(M.CREATE_SUCCESS, lang)
-      }
+      return log
     } catch (error) {
       throw this.toAnswerLogError(error)
     }
   }
 
-  async findAll(query: GetUserAnswerLogListQuery, lang: string = 'vi') {
+  async findAll(query: GetUserAnswerLogListQuery) {
     const { items, total } = await this.userAnswerLogRepository.findMany(query)
     return {
-      statusCode: 200,
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: {
-        results: items,
-        pagination: toPaginationMeta(query.currentPage, query.pageSize, total)
-      }
+      results: items,
+      pagination: toPaginationMeta(query.currentPage, query.pageSize, total)
     }
   }
 
-  async findOne(id: number, lang: string = 'vi') {
+  async findOne(id: number) {
     const log = await this.userAnswerLogRepository.findUnique(id)
     if (!log) throw new UserAnswerLogNotFoundException()
-    return {
-      statusCode: 200,
-      data: log,
-      message: this.i18nService.translate(M.GET_SUCCESS, lang)
-    }
+    return log
   }
 
-  async update(id: number, body: UpdateUserAnswerLogBody, lang: string = 'vi') {
+  async update(id: number, body: UpdateUserAnswerLogBody) {
     try {
       const log = await this.userAnswerLogRepository.update(id, body)
-      return {
-        statusCode: 200,
-        data: log,
-        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
-      }
+      return log
     } catch (error) {
       throw this.toAnswerLogError(error)
     }
   }
 
-  async remove(id: number, lang: string = 'vi') {
+  async remove(id: number) {
     try {
       const log = await this.userAnswerLogRepository.delete(id)
-      return {
-        statusCode: 200,
-        data: log,
-        message: this.i18nService.translate(M.DELETE_SUCCESS, lang)
-      }
+      return log
     } catch (error) {
       throw this.toAnswerLogError(error)
     }
   }
 
   // Used by user-exercise-attempt (reads data.results)
-  async findByUserExerciseAttemptId(userExerciseAttemptId: number, lang: string = 'vi') {
+  async findByUserExerciseAttemptId(userExerciseAttemptId: number) {
     const logs =
       await this.userAnswerLogRepository.findByUserExerciseAttemptId(
         userExerciseAttemptId
       )
     return {
-      statusCode: 200,
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: {
-        results: logs,
-        pagination: toPaginationMeta(1, logs.length || 1, logs.length)
-      }
+      results: logs,
+      pagination: toPaginationMeta(1, logs.length || 1, logs.length)
     }
   }
 

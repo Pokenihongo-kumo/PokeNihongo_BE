@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { UserExerciseAttemptMessage as M } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import {
   CreateUserExerciseAttemptBodyDTO,
@@ -45,10 +47,21 @@ import { ZodSerializerDto } from 'nestjs-zod'
 import { UserExerciseAttemptService } from './user-exercise-attempt.service'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 
+const COMPLETION_MESSAGE = {
+  'not-all-answered': M.NOT_ALL_ANSWERED,
+  'no-answer': M.SUBMITTED_NO_ANSWER,
+  incomplete: M.SUBMITTED_INCOMPLETE,
+  'all-correct': M.ALL_CORRECT,
+  'some-incorrect': M.SOME_INCORRECT
+} as const
+
 @ApiTags('User Exercise Attempt')
 @Controller('user-exercise-attempt')
 export class UserExerciseAttemptController {
-  constructor(private readonly userExerciseAttemptService: UserExerciseAttemptService) {}
+  constructor(
+    private readonly userExerciseAttemptService: UserExerciseAttemptService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Post(':exerciseId')
   @ApiBearerAuth()
@@ -59,12 +72,15 @@ export class UserExerciseAttemptController {
     type: UserExerciseAttemptResponseSwaggerDTO
   })
   @ZodSerializerDto(UserExerciseAttemptResDTO)
-  create(
+  async create(
     @Param() { exerciseId }: CreateUserExerciseAttemptParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userExerciseAttemptService.create(userId, exerciseId, lang)
+    return {
+      message: this.i18nService.translate(M.CREATE_SUCCESS, lang),
+      data: await this.userExerciseAttemptService.create(userId, exerciseId)
+    }
   }
 
   @Get()
@@ -77,8 +93,14 @@ export class UserExerciseAttemptController {
   })
   @ApiQuery({ type: GetUserExerciseAttemptListQuerySwaggerDTO })
   @ZodSerializerDto(UserExerciseAttemptListResDTO)
-  findAll(@Query() query: GetUserExerciseAttemptListQueryDTO, @I18nLang() lang: string) {
-    return this.userExerciseAttemptService.findAll(query, lang)
+  async findAll(
+    @Query() query: GetUserExerciseAttemptListQueryDTO,
+    @I18nLang() lang: string
+  ) {
+    return {
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
+      data: await this.userExerciseAttemptService.findAll(query)
+    }
   }
 
   @Get(':id')
@@ -90,11 +112,14 @@ export class UserExerciseAttemptController {
     type: UserExerciseAttemptResponseSwaggerDTO
   })
   @ZodSerializerDto(UserExerciseAttemptResDTO)
-  findOne(
+  async findOne(
     @Param() { id }: GetUserExerciseAttemptByIdParamsDTO,
     @I18nLang() lang: string
   ) {
-    return this.userExerciseAttemptService.findOne(id, lang)
+    return {
+      message: this.i18nService.translate(M.GET_SUCCESS, lang),
+      data: await this.userExerciseAttemptService.findOne(id)
+    }
   }
 
   @Put(':id')
@@ -107,13 +132,16 @@ export class UserExerciseAttemptController {
     type: UserExerciseAttemptResponseSwaggerDTO
   })
   @ZodSerializerDto(UserExerciseAttemptResDTO)
-  update(
+  async update(
     @Param() { id }: GetUserExerciseAttemptByIdParamsDTO,
     @Body() body: UpdateUserExerciseAttemptBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userExerciseAttemptService.update(id, body, userId, lang)
+    return {
+      message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
+      data: await this.userExerciseAttemptService.update(id, body, userId)
+    }
   }
 
   @Delete(':id')
@@ -126,8 +154,14 @@ export class UserExerciseAttemptController {
     type: UserExerciseAttemptResponseSwaggerDTO
   })
   @ZodSerializerDto(UserExerciseAttemptResDTO)
-  remove(@Param() { id }: GetUserExerciseAttemptByIdParamsDTO, @I18nLang() lang: string) {
-    return this.userExerciseAttemptService.remove(id, lang)
+  async remove(
+    @Param() { id }: GetUserExerciseAttemptByIdParamsDTO,
+    @I18nLang() lang: string
+  ) {
+    return {
+      message: this.i18nService.translate(M.DELETE_SUCCESS, lang),
+      data: await this.userExerciseAttemptService.remove(id)
+    }
   }
 
   @Put(':id/submit-completion')
@@ -139,18 +173,22 @@ export class UserExerciseAttemptController {
     description: 'Kiểm tra trạng thái hoàn thành thành công',
     type: ExerciseCompletionResponseSwaggerDTO
   })
-  submitCompletion(
+  async submitCompletion(
     @Param() { id }: GetUserExerciseAttemptByIdParamsDTO,
     @ActiveUser('userId') userId: number,
     @Body() body: CheckExerciseCompletionBodyDTO,
     @I18nLang() lang: string
   ) {
-    return this.userExerciseAttemptService.submitExerciseCompletion(
-      id,
-      userId,
-      body.time,
-      lang
-    )
+    const { outcome, data } =
+      await this.userExerciseAttemptService.submitExerciseCompletion(
+        id,
+        userId,
+        body.time
+      )
+    return {
+      message: this.i18nService.translate(COMPLETION_MESSAGE[outcome], lang),
+      data
+    }
   }
 
   @Get(':id/check-completion')
@@ -161,12 +199,17 @@ export class UserExerciseAttemptController {
     description: 'Kiểm tra trạng thái hoàn thành thành công',
     type: ExerciseCompletionResponseSwaggerDTO
   })
-  checkCompletion(
+  async checkCompletion(
     @Param() { id }: GetUserExerciseAttemptByIdParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userExerciseAttemptService.checkExerciseCompletion(id, userId, lang)
+    const { outcome, data } =
+      await this.userExerciseAttemptService.checkExerciseCompletion(id, userId)
+    return {
+      message: this.i18nService.translate(COMPLETION_MESSAGE[outcome], lang),
+      data
+    }
   }
 
   @Get(':id/latest')
@@ -178,12 +221,15 @@ export class UserExerciseAttemptController {
     type: UserExerciseAttemptResponseSwaggerDTO
   })
   @ZodSerializerDto(UserExerciseAttemptResDTO)
-  getLatestStatus(
+  async getLatestStatus(
     @Param() { id }: GetUserExerciseAttemptByIdParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userExerciseAttemptService.getLatestStatus(id, userId, lang)
+    return {
+      message: this.i18nService.translate(M.GET_STATUS_SUCCESS, lang),
+      data: await this.userExerciseAttemptService.getLatestStatus(id, userId)
+    }
   }
 
   @Put(':id/abandon')
@@ -196,13 +242,16 @@ export class UserExerciseAttemptController {
     type: UserExerciseAttemptResponseSwaggerDTO
   })
   @ZodSerializerDto(UserExerciseAttemptResDTO)
-  abandon(
+  async abandon(
     @Param() { id }: GetUserExerciseAttemptByIdParamsDTO,
     @ActiveUser('userId') userId: number,
     @Body() body: CheckExerciseCompletionBodyDTO,
     @I18nLang() lang: string
   ) {
-    return this.userExerciseAttemptService.abandon(id, userId, body.time, lang)
+    return {
+      message: this.i18nService.translate(M.ABANDON_SUCCESS, lang),
+      data: await this.userExerciseAttemptService.abandon(id, userId, body.time)
+    }
   }
 
   @Get(':id/status')
@@ -214,12 +263,15 @@ export class UserExerciseAttemptController {
     type: UserExerciseAttemptResponseSwaggerDTO
   })
   @ZodSerializerDto(UserExerciseAttemptResDTO)
-  getStatus(
+  async getStatus(
     @Param() { id }: GetUserExerciseAttemptByIdParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userExerciseAttemptService.getStatus(id, userId, lang)
+    return {
+      message: this.i18nService.translate(M.GET_STATUS_SUCCESS, lang),
+      data: await this.userExerciseAttemptService.getStatus(id, userId)
+    }
   }
 
   @Get('latest/lesson/:lessonId')
@@ -235,16 +287,18 @@ export class UserExerciseAttemptController {
     type: LatestExerciseAttemptsByLessonResSwaggerDTO
   })
   @ZodSerializerDto(LatestExerciseAttemptsByLessonResDTO)
-  getLatestExerciseAttemptsByLesson(
+  async getLatestExerciseAttemptsByLesson(
     @Param() { lessonId }: UserExerciseAttemptLessonParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userExerciseAttemptService.getLatestExerciseAttemptsByLesson(
-      userId,
-      lessonId,
-      lang
-    )
+    return {
+      message: this.i18nService.translate(M.LATEST_BY_LESSON_SUCCESS, lang),
+      data: await this.userExerciseAttemptService.getLatestExerciseAttemptsByLesson(
+        userId,
+        lessonId
+      )
+    }
   }
 
   @Get('/exercise/:id')
@@ -257,16 +311,19 @@ export class UserExerciseAttemptController {
     description: 'Lấy bài tập của user cho exercise thành công',
     type: UserExerciseAttemptResponseSwaggerDTO
   })
-  getExerciseAttemptByExerciseId(
+  async getExerciseAttemptByExerciseId(
     @Param() { id }: GetUserExerciseAttemptByIdParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() languageCode: string
   ) {
-    return this.userExerciseAttemptService.getExerciseAttemptByExerciseId(
-      id,
-      userId,
-      languageCode
-    )
+    return {
+      message: this.i18nService.translate(M.QUESTIONS_SUCCESS, languageCode),
+      data: await this.userExerciseAttemptService.getExerciseAttemptByExerciseId(
+        id,
+        userId,
+        languageCode
+      )
+    }
   }
 
   @Get('/exercise/:id/review')
@@ -279,15 +336,23 @@ export class UserExerciseAttemptController {
     description: 'Lấy bài tập của user cho exercise thành công',
     type: UserExerciseAttemptResponseSwaggerDTO
   })
-  getExerciseAttemptReview(
+  async getExerciseAttemptReview(
     @Param() { id }: GetUserExerciseAttemptByIdParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() languageCode: string
   ) {
-    return this.userExerciseAttemptService.getExerciseAttemptReview(
-      id,
-      userId,
-      languageCode
-    )
+    const { completed, data } =
+      await this.userExerciseAttemptService.getExerciseAttemptReview(
+        id,
+        userId,
+        languageCode
+      )
+    return {
+      message: this.i18nService.translate(
+        completed ? M.REVIEW_SUCCESS : M.REVIEW_NOT_COMPLETED,
+        languageCode
+      ),
+      data
+    }
   }
 }

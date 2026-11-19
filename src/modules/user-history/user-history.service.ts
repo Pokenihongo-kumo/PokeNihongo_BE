@@ -1,8 +1,5 @@
-import { I18nService } from '@/i18n/i18n.service'
-import { UserHistoryMessage } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { TranslationService } from '@/modules/translation/translation.service'
-import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { Injectable, Logger } from '@nestjs/common'
 import { ExerciseAttemptStatus, TestAttemptStatus } from '@prisma/client'
 import {
@@ -18,22 +15,16 @@ export class UserHistoryService {
 
   constructor(
     private readonly userHistoryRepository: UserHistoryRepo,
-    private readonly i18nService: I18nService,
     private readonly translationService: TranslationService,
     private readonly languagesService: LanguagesService
   ) {}
 
-  async findHistory(
-    userId: number,
-    query: GetHistoryListQuery,
-    language?: string
-  ): Promise<MessageResDTO> {
+  async findHistory(userId: number, query: GetHistoryListQuery, language?: string) {
     try {
       this.logger.log(`Finding history for user ${userId}, type: ${query.type || 'ALL'}`)
 
       const { currentPage = 1, pageSize = 10, type, status } = query
       const skip = (currentPage - 1) * pageSize
-      const normalizedLang = (language || '').toLowerCase().split('-')[0] || 'vi'
 
       // Lấy userTestAttempts nếu type là TEST hoặc không filter
       const testAttempts =
@@ -184,23 +175,13 @@ export class UserHistoryService {
       const total = allHistoryItems.length
       const results = allHistoryItems.slice(skip, skip + pageSize)
 
-      // Translate message
-      const message = this.i18nService.translate(
-        UserHistoryMessage.GET_LIST_SUCCESS,
-        normalizedLang
-      )
-
       return {
-        statusCode: 200,
-        message,
-        data: {
-          results,
-          pagination: {
-            current: currentPage,
-            pageSize,
-            totalPage: Math.ceil(total / pageSize),
-            totalItem: total
-          }
+        results,
+        pagination: {
+          current: currentPage,
+          pageSize,
+          totalPage: Math.ceil(total / pageSize),
+          totalItem: total
         }
       }
     } catch (error) {
@@ -209,10 +190,7 @@ export class UserHistoryService {
     }
   }
 
-  async findAllHistory(
-    query: GetAdminHistoryListQuery,
-    language?: string
-  ): Promise<MessageResDTO> {
+  async findAllHistory(query: GetAdminHistoryListQuery, language?: string) {
     try {
       this.logger.log(
         `Admin finding all history, type: ${query.type || 'ALL'}, userId: ${query.userId || 'ALL'}`
@@ -220,7 +198,6 @@ export class UserHistoryService {
 
       const { currentPage = 1, pageSize = 10, type, status, userId } = query
       const skip = (currentPage - 1) * pageSize
-      const normalizedLang = (language || '').toLowerCase().split('-')[0] || 'vi'
 
       // Build where clause cho test attempts
       const testAttemptWhere: any = {}
@@ -399,23 +376,13 @@ export class UserHistoryService {
       const total = allHistoryItems.length
       const results = allHistoryItems.slice(skip, skip + pageSize)
 
-      // Translate message
-      const message = this.i18nService.translate(
-        UserHistoryMessage.GET_LIST_SUCCESS,
-        normalizedLang
-      )
-
       return {
-        statusCode: 200,
-        message,
-        data: {
-          results,
-          pagination: {
-            current: currentPage,
-            pageSize,
-            totalPage: Math.ceil(total / pageSize),
-            totalItem: total
-          }
+        results,
+        pagination: {
+          current: currentPage,
+          pageSize,
+          totalPage: Math.ceil(total / pageSize),
+          totalItem: total
         }
       }
     } catch (error) {
@@ -428,7 +395,7 @@ export class UserHistoryService {
     userId: number,
     query: GetRecentExercisesQuery,
     language?: string
-  ): Promise<MessageResDTO> {
+  ) {
     try {
       this.logger.log(`Finding recent exercises for user ${userId}, status: ${'ALL'}`)
 
@@ -600,22 +567,13 @@ export class UserHistoryService {
         })
       )
 
-      const message = this.i18nService.translate(
-        UserHistoryMessage.GET_LIST_SUCCESS,
-        normalizedLang
-      )
-
       return {
-        statusCode: 200,
-        message,
-        data: {
-          results,
-          pagination: {
-            current: currentPage,
-            pageSize,
-            totalPage: Math.ceil(total / pageSize),
-            totalItem: total
-          }
+        results,
+        pagination: {
+          current: currentPage,
+          pageSize,
+          totalPage: Math.ceil(total / pageSize),
+          totalItem: total
         }
       }
     } catch (error) {
@@ -628,7 +586,7 @@ export class UserHistoryService {
     userId: number,
     query: GetRecentExercisesQuery,
     language?: string
-  ): Promise<MessageResDTO> {
+  ) {
     try {
       this.logger.log(`Finding recent exercises for user ${userId}, status: ${'ALL'}`)
 
@@ -734,11 +692,6 @@ export class UserHistoryService {
         })
       )
 
-      const message = this.i18nService.translate(
-        UserHistoryMessage.GET_LIST_SUCCESS,
-        normalizedLang
-      )
-
       const completedAttempts = finishedAttempts.filter(
         (attempt) => attempt.status === ExerciseAttemptStatus.COMPLETED
       ).length
@@ -753,22 +706,18 @@ export class UserHistoryService {
       ).length
 
       return {
-        statusCode: 200,
-        message,
-        data: {
-          results,
-          allTime,
-          allAttempts: finishedAttempts.length,
-          completedAttempts,
-          failedAttempts,
-          skippedAttempts,
-          abandonedAttempts,
-          pagination: {
-            current: currentPage,
-            pageSize,
-            totalPage: Math.ceil(total / pageSize),
-            totalItem: total
-          }
+        results,
+        allTime,
+        allAttempts: finishedAttempts.length,
+        completedAttempts,
+        failedAttempts,
+        skippedAttempts,
+        abandonedAttempts,
+        pagination: {
+          current: currentPage,
+          pageSize,
+          totalPage: Math.ceil(total / pageSize),
+          totalItem: total
         }
       }
     } catch (error) {
@@ -781,7 +730,7 @@ export class UserHistoryService {
     userId: number,
     query: GetRecentExercisesQuery,
     language?: string
-  ): Promise<MessageResDTO> {
+  ) {
     try {
       this.logger.log(`Finding history tests for user ${userId}, status: ${'ALL'}`)
 
@@ -870,36 +819,27 @@ export class UserHistoryService {
         })
       )
 
-      const message = this.i18nService.translate(
-        UserHistoryMessage.GET_LIST_SUCCESS,
-        normalizedLang
-      )
-
       return {
-        statusCode: 200,
-        message,
-        data: {
-          results,
-          allTime,
-          allAttempts: validAttempts.length,
-          completedAttempts: validAttempts.filter(
-            (attempt) => attempt.status === TestAttemptStatus.COMPLETED
-          ).length,
-          failedAttempts: validAttempts.filter(
-            (attempt) => attempt.status === TestAttemptStatus.FAILED
-          ).length,
-          skippedAttempts: validAttempts.filter(
-            (attempt) => attempt.status === TestAttemptStatus.SKIPPED
-          ).length,
-          abandonedAttempts: validAttempts.filter(
-            (attempt) => attempt.status === TestAttemptStatus.ABANDONED
-          ).length,
-          pagination: {
-            current: currentPage,
-            pageSize,
-            totalPage: Math.ceil(total / pageSize),
-            totalItem: total
-          }
+        results,
+        allTime,
+        allAttempts: validAttempts.length,
+        completedAttempts: validAttempts.filter(
+          (attempt) => attempt.status === TestAttemptStatus.COMPLETED
+        ).length,
+        failedAttempts: validAttempts.filter(
+          (attempt) => attempt.status === TestAttemptStatus.FAILED
+        ).length,
+        skippedAttempts: validAttempts.filter(
+          (attempt) => attempt.status === TestAttemptStatus.SKIPPED
+        ).length,
+        abandonedAttempts: validAttempts.filter(
+          (attempt) => attempt.status === TestAttemptStatus.ABANDONED
+        ).length,
+        pagination: {
+          current: currentPage,
+          pageSize,
+          totalPage: Math.ceil(total / pageSize),
+          totalItem: total
         }
       }
     } catch (error) {

@@ -1,5 +1,3 @@
-import { I18nService } from '@/i18n/i18n.service'
-import { UserProgressMessage as M } from '@/i18n/message-keys'
 import { HttpException, Injectable, Logger } from '@nestjs/common'
 import { ProgressStatus } from '@prisma/client'
 import {
@@ -18,12 +16,9 @@ import { UserProgressRepo } from './user-progress.repo'
 export class UserProgressService {
   private readonly logger = new Logger(UserProgressService.name)
 
-  constructor(
-    private readonly userProgressRepository: UserProgressRepo,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly userProgressRepository: UserProgressRepo) {}
 
-  async create(body: CreateUserProgressBody, lang: string = 'vi') {
+  async create(body: CreateUserProgressBody) {
     try {
       // Kiểm tra xem đã tồn tại progress cho user và lesson này chưa
       const existingProgress = await this.userProgressRepository.findByUserAndLesson(
@@ -36,10 +31,7 @@ export class UserProgressService {
 
       const userProgress = await this.userProgressRepository.create(body)
 
-      return {
-        data: userProgress,
-        message: this.i18nService.translate(M.CREATE_SUCCESS, lang)
-      }
+      return userProgress
     } catch (error) {
       this.logger.error('Error creating user progress:', error)
       if (error instanceof HttpException) {
@@ -49,7 +41,7 @@ export class UserProgressService {
     }
   }
 
-  async findAll(query: GetUserProgressListQuery, lang: string = 'vi') {
+  async findAll(query: GetUserProgressListQuery) {
     const {
       currentPage,
       pageSize,
@@ -71,22 +63,18 @@ export class UserProgressService {
     })
 
     return {
-      statusCode: 200,
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: {
-        results: result.items,
-        pagination: {
-          current: result.page,
-          pageSize: result.limit,
-          totalPage: Math.ceil(result.total / result.limit),
-          totalItem: result.total
-        }
+      results: result.items,
+      pagination: {
+        current: result.page,
+        pageSize: result.limit,
+        totalPage: Math.ceil(result.total / result.limit),
+        totalItem: result.total
       }
     }
   }
 
   //KUMO
-  async getMy(userId: number, query: GetUserProgressListQuery, lang: string = 'vi') {
+  async getMy(userId: number, query: GetUserProgressListQuery) {
     const {
       currentPage,
       pageSize,
@@ -107,21 +95,17 @@ export class UserProgressService {
     })
 
     return {
-      statusCode: 200,
-      message: this.i18nService.translate(M.GET_MY_SUCCESS, lang),
-      data: {
-        results: result.items,
-        pagination: {
-          current: result.page,
-          pageSize: result.limit,
-          totalPage: Math.ceil(result.total / result.limit),
-          totalItem: result.total
-        }
+      results: result.items,
+      pagination: {
+        current: result.page,
+        pageSize: result.limit,
+        totalPage: Math.ceil(result.total / result.limit),
+        totalItem: result.total
       }
     }
   }
 
-  async findOne(params: GetUserProgressByIdParams, lang: string = 'vi') {
+  async findOne(params: GetUserProgressByIdParams) {
     const userProgress = await this.userProgressRepository.findUnique({
       id: params.id
     })
@@ -130,13 +114,10 @@ export class UserProgressService {
       throw new UserProgressNotFoundException()
     }
 
-    return {
-      data: userProgress,
-      message: this.i18nService.translate(M.GET_SUCCESS, lang)
-    }
+    return userProgress
   }
 
-  async findByUserAndLesson(userId: number, lessonId: number, lang: string = 'vi') {
+  async findByUserAndLesson(userId: number, lessonId: number) {
     const userProgress = await this.userProgressRepository.findByUserAndLesson(
       userId,
       lessonId
@@ -146,13 +127,10 @@ export class UserProgressService {
       throw new UserProgressNotFoundException()
     }
 
-    return {
-      data: userProgress,
-      message: this.i18nService.translate(M.GET_SUCCESS, lang)
-    }
+    return userProgress
   }
 
-  async update(id: number, body: UpdateUserProgressBody, lang: string = 'vi') {
+  async update(id: number, body: UpdateUserProgressBody) {
     try {
       // Validate progress percentage
       if (body.progressPercentage !== undefined) {
@@ -163,10 +141,7 @@ export class UserProgressService {
 
       const userProgress = await this.userProgressRepository.update({ id }, body)
 
-      return {
-        data: userProgress,
-        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
-      }
+      return userProgress
     } catch (error) {
       this.logger.error('Error updating user progress:', error)
       if (error instanceof HttpException) {
@@ -179,8 +154,7 @@ export class UserProgressService {
   async updateByUserAndLesson(
     userId: number,
     lessonId: number,
-    body: UpdateUserProgressBody,
-    lang: string = 'vi'
+    body: UpdateUserProgressBody
   ) {
     try {
       // Validate progress percentage
@@ -196,10 +170,7 @@ export class UserProgressService {
         body
       )
 
-      return {
-        data: userProgress,
-        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
-      }
+      return userProgress
     } catch (error) {
       this.logger.error('Error updating user progress by user and lesson:', error)
       if (error instanceof HttpException) {
@@ -209,14 +180,11 @@ export class UserProgressService {
     }
   }
 
-  async remove(id: number, lang: string = 'vi') {
+  async remove(id: number) {
     try {
       const userProgress = await this.userProgressRepository.delete({ id })
 
-      return {
-        data: userProgress,
-        message: this.i18nService.translate(M.DELETE_SUCCESS, lang)
-      }
+      return userProgress
     } catch (error) {
       this.logger.error('Error deleting user progress:', error)
       if (error instanceof HttpException) {
@@ -226,7 +194,7 @@ export class UserProgressService {
     }
   }
 
-  async startLesson(userId: number, lessonId: number, lang: string = 'vi') {
+  async startLesson(userId: number, lessonId: number) {
     try {
       const data = {
         userId,
@@ -241,22 +209,14 @@ export class UserProgressService {
         data
       )
 
-      return {
-        data: userProgress,
-        message: this.i18nService.translate(M.START_LESSON_SUCCESS, lang)
-      }
+      return userProgress
     } catch (error) {
       this.logger.error('Error starting lesson:', error)
       throw new InvalidUserProgressDataException()
     }
   }
 
-  async completeLesson(
-    userId: number,
-    lessonId: number,
-    score?: number,
-    lang: string = 'vi'
-  ) {
+  async completeLesson(userId: number, lessonId: number) {
     try {
       const data = {
         status: 'COMPLETED',
@@ -269,10 +229,7 @@ export class UserProgressService {
         data
       )
 
-      return {
-        data: userProgress,
-        message: this.i18nService.translate(M.COMPLETE_LESSON_SUCCESS, lang)
-      }
+      return userProgress
     } catch (error) {
       this.logger.error('Error completing lesson:', error)
       throw new InvalidUserProgressDataException()
@@ -331,8 +288,7 @@ export class UserProgressService {
 
       if (lessons.length === 0) {
         return {
-          statusCode: 200,
-          message: 'Không có lesson nào trong hệ thống',
+          outcome: 'no-lessons' as const,
           data: {
             userId,
             totalLessons: 0,
@@ -358,8 +314,7 @@ export class UserProgressService {
       )
 
       return {
-        statusCode: 200,
-        message: 'Khởi tạo UserProgress thành công',
+        outcome: 'done' as const,
         data: {
           userId,
           totalLessons: lessons.length,
@@ -387,8 +342,7 @@ export class UserProgressService {
 
       if (users.length === 0) {
         return {
-          statusCode: 200,
-          message: 'Không có user nào trong hệ thống',
+          outcome: 'no-users' as const,
           data: {
             totalUsers: 0,
             totalLessons: 0,
@@ -403,8 +357,7 @@ export class UserProgressService {
 
       if (lessons.length === 0) {
         return {
-          statusCode: 200,
-          message: 'Không có lesson nào trong hệ thống',
+          outcome: 'no-lessons' as const,
           data: {
             totalUsers: users.length,
             totalLessons: 0,
@@ -445,8 +398,7 @@ export class UserProgressService {
       )
 
       return {
-        statusCode: 200,
-        message: 'Khởi tạo UserProgress cho tất cả user thành công',
+        outcome: 'done' as const,
         data: {
           totalUsers: users.length,
           totalLessons: lessons.length,

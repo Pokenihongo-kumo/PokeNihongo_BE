@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { UserAnswerLogMessage as M } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import {
   CreateUserAnswerLogBodyDTO,
@@ -41,7 +43,10 @@ import { UserAnswerLogService } from './user-answer-log.service'
 @ApiTags('User Answer Log')
 @Controller('user-answer-log')
 export class UserAnswerLogController {
-  constructor(private readonly userAnswerLogService: UserAnswerLogService) {}
+  constructor(
+    private readonly userAnswerLogService: UserAnswerLogService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Post()
   @ApiBearerAuth()
@@ -53,8 +58,11 @@ export class UserAnswerLogController {
     type: UserAnswerLogResponseSwaggerDTO
   })
   @ZodSerializerDto(UserAnswerLogResDTO)
-  create(@Body() body: CreateUserAnswerLogBodyDTO, @I18nLang() lang: string) {
-    return this.userAnswerLogService.create(body, lang)
+  async create(@Body() body: CreateUserAnswerLogBodyDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(M.CREATE_SUCCESS, lang),
+      data: await this.userAnswerLogService.create(body)
+    }
   }
 
   @Post('upsert')
@@ -69,12 +77,15 @@ export class UserAnswerLogController {
     type: UserAnswerLogResponseSwaggerDTO
   })
   @ZodSerializerDto(UserAnswerLogResDTO)
-  upsert(
+  async upsert(
     @Body() body: CreateUserAnswerLogBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userAnswerLogService.upsert(body, userId, lang)
+    return {
+      message: this.i18nService.translate(M.CREATE_SUCCESS, lang),
+      data: await this.userAnswerLogService.upsert(body, userId)
+    }
   }
 
   @Get()
@@ -87,8 +98,11 @@ export class UserAnswerLogController {
   })
   @ApiQuery({ type: GetUserAnswerLogListQuerySwaggerDTO })
   @ZodSerializerDto(UserAnswerLogListResDTO)
-  findAll(@Query() query: GetUserAnswerLogListQueryDTO, @I18nLang() lang: string) {
-    return this.userAnswerLogService.findAll(query, lang)
+  async findAll(@Query() query: GetUserAnswerLogListQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
+      data: await this.userAnswerLogService.findAll(query)
+    }
   }
 
   @Get(':id')
@@ -100,8 +114,14 @@ export class UserAnswerLogController {
     type: UserAnswerLogResponseSwaggerDTO
   })
   @ZodSerializerDto(UserAnswerLogResDTO)
-  findOne(@Param() params: GetUserAnswerLogByIdParamsDTO, @I18nLang() lang: string) {
-    return this.userAnswerLogService.findOne(params.id, lang)
+  async findOne(
+    @Param() params: GetUserAnswerLogByIdParamsDTO,
+    @I18nLang() lang: string
+  ) {
+    return {
+      message: this.i18nService.translate(M.GET_SUCCESS, lang),
+      data: await this.userAnswerLogService.findOne(params.id)
+    }
   }
 
   @Put(':id')
@@ -114,12 +134,15 @@ export class UserAnswerLogController {
     type: UserAnswerLogResponseSwaggerDTO
   })
   @ZodSerializerDto(UserAnswerLogResDTO)
-  update(
+  async update(
     @Param() params: GetUserAnswerLogByIdParamsDTO,
     @Body() body: UpdateUserAnswerLogBodyDTO,
     @I18nLang() lang: string
   ) {
-    return this.userAnswerLogService.update(params.id, body, lang)
+    return {
+      message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
+      data: await this.userAnswerLogService.update(params.id, body)
+    }
   }
 
   @Delete(':id')
@@ -132,7 +155,10 @@ export class UserAnswerLogController {
     type: UserAnswerLogResponseSwaggerDTO
   })
   @ZodSerializerDto(UserAnswerLogResDTO)
-  remove(@Param() params: GetUserAnswerLogByIdParamsDTO, @I18nLang() lang: string) {
-    return this.userAnswerLogService.remove(params.id, lang)
+  async remove(@Param() params: GetUserAnswerLogByIdParamsDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(M.DELETE_SUCCESS, lang),
+      data: await this.userAnswerLogService.remove(params.id)
+    }
   }
 }

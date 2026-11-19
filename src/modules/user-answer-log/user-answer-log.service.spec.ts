@@ -8,12 +8,7 @@ describe('UserAnswerLogService.upsert', () => {
     findAnswer: jest.fn(),
     upsert: jest.fn()
   }
-  const service = new UserAnswerLogService(
-    repo as never,
-    {
-      translate: (k: string) => k
-    } as never
-  )
+  const service = new UserAnswerLogService(repo as never)
   const body = { userExerciseAttemptId: 4, questionBankId: 9, answerId: 21 }
 
   beforeEach(() => {
@@ -31,7 +26,7 @@ describe('UserAnswerLogService.upsert', () => {
   it('saves the answer with its correctness', async () => {
     const res = await service.upsert(body, 7)
     expect(repo.upsert).toHaveBeenCalledWith(body, true)
-    expect(res.data.isCorrect).toBe(true)
+    expect(res.isCorrect).toBe(true)
   })
 
   it('a missing attempt is a 404 (was a 400 "invalid data"); another user\'s a 403', async () => {
