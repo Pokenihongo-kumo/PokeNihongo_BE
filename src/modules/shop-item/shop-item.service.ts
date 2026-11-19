@@ -1,7 +1,5 @@
 import { RarityPokemon } from '@/common/constants/pokemon.constant'
 import { ShopBannerStatus } from '@/common/constants/shop-banner.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { ShopItemMessage } from '@/i18n/message-keys'
 import { PokemonService } from '@/modules/pokemon/pokemon.service'
 import { NotFoundRecordException } from '@/shared/error'
 import {
@@ -37,37 +35,25 @@ export class ShopItemService {
     @Inject(forwardRef(() => ShopBannerRepo))
     private shopBannerRepo: ShopBannerRepo,
     private pokemonService: PokemonService,
-    private readonly i18nService: I18nService,
     private shopRarityPriceRepo: ShopRarityPriceRepo
   ) {}
 
-  async list(pagination: PaginationQuery, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.shopItemRepo.list(pagination)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(ShopItemMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   // Helper method to calculate weaknesses for a Pokemon (copied from PokemonService)
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const shopItem = await this.shopItemRepo.findById(id)
     if (!shopItem) {
       throw new ShopItemNotFoundException()
     }
 
-    return {
-      statusCode: 200,
-      data: shopItem,
-      message: this.i18nService.translate(ShopItemMessage.GET_LIST_SUCCESS, lang)
-    }
+    return shopItem
   }
 
-  async create(
-    { userId, data }: { userId: number; data: CreateShopItemBody },
-    lang: string = 'vi'
-  ) {
+  async create({ userId, data }: { userId: number; data: CreateShopItemBody }) {
     try {
       // Validate shop banner
       const banner = await this.validateShopBannerForCreate(data.shopBannerId)
@@ -93,11 +79,7 @@ export class ShopItemService {
           ...data
         }
       })
-      return {
-        statusCode: 201,
-        data: result,
-        message: this.i18nService.translate(ShopItemMessage.CREATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -109,10 +91,7 @@ export class ShopItemService {
     }
   }
 
-  async createByList(
-    { userId, data }: { userId: number; data: CreateWithListItemBody },
-    lang: string = 'vi'
-  ) {
+  async createByList({ userId, data }: { userId: number; data: CreateWithListItemBody }) {
     try {
       // Validate shop banner (tất cả items cùng 1 shopBannerId)
       const shopBannerId = data.items[0].shopBannerId
@@ -146,11 +125,7 @@ export class ShopItemService {
         createdById: userId,
         items: data.items
       })
-      return {
-        statusCode: 201,
-        data: results,
-        message: this.i18nService.translate(ShopItemMessage.CREATE_SUCCESS, lang)
-      }
+      return results
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -162,18 +137,15 @@ export class ShopItemService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      userId
-    }: {
-      id: number
-      data: UpdateShopItemBody
-      userId?: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    userId
+  }: {
+    id: number
+    data: UpdateShopItemBody
+    userId?: number
+  }) {
     try {
       // Lấy thông tin item hiện tại
       const currentItem = await this.shopItemRepo.findById(id)
@@ -198,11 +170,7 @@ export class ShopItemService {
         data: data,
         updatedById: userId
       })
-      return {
-        statusCode: 200,
-        data: shopItem,
-        message: this.i18nService.translate(ShopItemMessage.UPDATE_SUCCESS, lang)
-      }
+      return shopItem
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new ShopItemNotFoundException()
@@ -215,10 +183,7 @@ export class ShopItemService {
     }
   }
 
-  async updateByList(
-    { userId, data }: { userId: number; data: UpdateWithListItemBody },
-    lang: string = 'vi'
-  ) {
+  async updateByList({ userId, data }: { userId: number; data: UpdateWithListItemBody }) {
     try {
       // Validate tất cả items tồn tại và lấy thông tin
       const itemsToUpdate: Array<{ id: number } & UpdateShopItemBody> = []
@@ -262,11 +227,7 @@ export class ShopItemService {
         updatedById: userId,
         items: itemsToUpdate
       })
-      return {
-        statusCode: 200,
-        data: results,
-        message: this.i18nService.translate(ShopItemMessage.UPDATE_SUCCESS, lang)
-      }
+      return results
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new ShopItemNotFoundException()
@@ -279,7 +240,7 @@ export class ShopItemService {
     }
   }
 
-  async delete({ id, userId }: { id: number; userId?: number }, lang: string = 'vi') {
+  async delete({ id, userId }: { id: number; userId?: number }) {
     try {
       const existShopItem = await this.shopItemRepo.findById(id)
       if (!existShopItem) {
@@ -303,11 +264,7 @@ export class ShopItemService {
       }
 
       await this.shopItemRepo.delete(id)
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(ShopItemMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new ShopItemNotFoundException()
@@ -344,7 +301,7 @@ export class ShopItemService {
     }
   }
 
-  async getRandomListItem(body: GetRamdomAmountShopItemBody, lang: string = 'vi') {
+  async getRandomListItem(body: GetRamdomAmountShopItemBody) {
     try {
       // 1. Validate shop banner
       // 3. Lấy tất cả pokemon có thể random (exclude LEGENDARY)
@@ -411,11 +368,7 @@ export class ShopItemService {
         }
       })
 
-      return {
-        statusCode: 200,
-        data: items,
-        message: this.i18nService.translate(ShopItemMessage.GET_SUCCESS, lang)
-      }
+      return items
     } catch (error) {
       throw error
     }

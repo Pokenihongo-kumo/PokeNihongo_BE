@@ -9,10 +9,10 @@
     "prismaOutsideRepoFiles": 0,
     "httpSchemasInEntities": 0,
     "handWrittenEnvelopes": 2,
-    "serviceEnvelopeFiles": 46,
+    "serviceEnvelopeFiles": 31,
     "prismaOutsideRepoCalls": 0,
-    "serviceStatusCodes": 228,
-    "serviceMessages": 294
+    "serviceStatusCodes": 124,
+    "serviceMessages": 169
   },
   "details": {
     "crossModuleRepoImports": [
@@ -70,13 +70,8 @@
       "modules/feature/feature.service.ts",
       "modules/flashcard/flashcard.service.ts",
       "modules/gacha-banner/gacha-banner.service.ts",
-      "modules/gacha-item-rate/gacha-item-rate.service.ts",
-      "modules/gacha-item/gacha-item.service.ts",
-      "modules/gacha-purchase/gacha-purchase.service.ts",
-      "modules/gacha-roll-history/gacha-roll-history.service.ts",
       "modules/gemini-config/gemini-config.service.ts",
       "modules/gemini/gemini.service.ts",
-      "modules/invoice/invoice.service.ts",
       "modules/leaderboard-season/leaderboard-season.service.ts",
       "modules/lesson-content/lesson-content.service.ts",
       "modules/match-participant/match-participant.service.ts",
@@ -93,22 +88,12 @@
       "modules/round-question/round-question.service.ts",
       "modules/season-rank-reward/season-rank-reward.service.ts",
       "modules/shop-banner/shop-banner.service.ts",
-      "modules/shop-item/shop-item.service.ts",
-      "modules/shop-purchase/shop-purchase.service.ts",
-      "modules/shop-rarity-price/shop-rarity-price.service.ts",
       "modules/speaking/speaking.service.ts",
-      "modules/subscription-feature/subscription-feature.service.ts",
-      "modules/subscription-plan/subscription-plan.service.ts",
       "modules/subscription/subscription.service.ts",
       "modules/upload/upload.service.ts",
-      "modules/user-gacha-pity/user-gacha-pity.service.ts",
-      "modules/user-reward-history/user-reward-history.service.ts",
       "modules/user-season-history/user-season-history.service.ts",
       "modules/user-srs-review/user-srs-review.service.ts",
-      "modules/user-subscription/user-subscription.service.ts",
-      "modules/vocabulary/vocabulary.service.ts",
-      "modules/wallet-transaction/wallet-transaction.service.ts",
-      "modules/wallet/wallet.service.ts"
+      "modules/vocabulary/vocabulary.service.ts"
     ]
   }
 }

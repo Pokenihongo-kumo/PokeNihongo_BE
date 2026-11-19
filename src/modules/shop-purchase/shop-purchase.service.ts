@@ -3,8 +3,6 @@ import {
   WalletTransactionSourceType
 } from '@/common/constants/wallet-transaction.constant'
 import { walletType } from '@/common/constants/wallet.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { ShopPurchaseMessage } from '@/i18n/message-keys'
 import { PokemonService } from '@/modules/pokemon/pokemon.service'
 import { WalletService } from '@/modules/wallet/wallet.service'
 import { NotFoundRecordException } from '@/shared/error'
@@ -34,7 +32,6 @@ import { ShopPurchaseRepo } from './shop-purchase.repo'
 export class ShopPurchaseService {
   constructor(
     private shopPurchaseRepo: ShopPurchaseRepo,
-    private readonly i18nService: I18nService,
     private readonly shopItemRepo: ShopItemRepo,
     @Inject(forwardRef(() => ShopBannerRepo))
     private readonly shopBannerRepo: ShopBannerRepo,
@@ -43,33 +40,22 @@ export class ShopPurchaseService {
     private readonly pokemonService: PokemonService
   ) {}
 
-  async list(pagination: PaginationQuery, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.shopPurchaseRepo.list(pagination)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(ShopPurchaseMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   // Helper method to calculate weaknesses for a Pokemon (copied from PokemonService)
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const shopPurchase = await this.shopPurchaseRepo.findById(id)
     if (!shopPurchase) {
       throw new ShopPurchaseNotFoundException()
     }
 
-    return {
-      statusCode: 200,
-      data: shopPurchase,
-      message: this.i18nService.translate(ShopPurchaseMessage.GET_LIST_SUCCESS, lang)
-    }
+    return shopPurchase
   }
 
-  async create(
-    { userId, data }: { userId: number; data: CreateShopPurchaseBody },
-    lang: string = 'vi'
-  ) {
+  async create({ userId, data }: { userId: number; data: CreateShopPurchaseBody }) {
     try {
       const shopItem = await this.shopItemRepo.findById(data.shopItemId)
       if (!shopItem) throw new NotFoundRecordException()
@@ -174,11 +160,7 @@ export class ShopPurchaseService {
         return finalPurchase
       })
 
-      return {
-        statusCode: 201,
-        data: result,
-        message: this.i18nService.translate(ShopPurchaseMessage.CREATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isNotFoundPrismaError(error)) throw new NotFoundRecordException()
       if (isForeignKeyConstraintPrismaError(error)) throw new NotFoundRecordException()
@@ -186,18 +168,15 @@ export class ShopPurchaseService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      userId
-    }: {
-      id: number
-      data: UpdateShopPurchaseBody
-      userId?: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    userId
+  }: {
+    id: number
+    data: UpdateShopPurchaseBody
+    userId?: number
+  }) {
     try {
       // 0) lay cai purchase ra
       const existing = await this.shopPurchaseRepo.findById(id)
@@ -267,11 +246,7 @@ export class ShopPurchaseService {
         return updated
       })
 
-      return {
-        statusCode: 200,
-        data: result,
-        message: this.i18nService.translate(ShopPurchaseMessage.UPDATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new ShopPurchaseNotFoundException()
@@ -284,7 +259,7 @@ export class ShopPurchaseService {
     }
   }
 
-  async delete({ id, userId }: { id: number; userId?: number }, lang: string = 'vi') {
+  async delete({ id, userId }: { id: number; userId?: number }) {
     try {
       const existShopPurchase = await this.shopPurchaseRepo.findById(id)
       if (!existShopPurchase) throw new ShopPurchaseNotFoundException()
@@ -310,11 +285,7 @@ export class ShopPurchaseService {
         await this.shopPurchaseRepo.delete(id, false, prismaTx)
       })
 
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(ShopPurchaseMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new ShopPurchaseNotFoundException()
@@ -323,12 +294,8 @@ export class ShopPurchaseService {
     }
   }
 
-  async getByUser(userId: number, lang: string = 'vi') {
+  async getByUser(userId: number) {
     const data = await this.shopPurchaseRepo.findByUserId(userId)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(ShopPurchaseMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 }

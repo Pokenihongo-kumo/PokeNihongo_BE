@@ -1,7 +1,5 @@
 import { WalletTransactionType } from '@/common/constants/wallet-transaction.constant'
 import { walletType, WalletTypeType } from '@/common/constants/wallet.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { WalletMessage } from '@/i18n/message-keys'
 import { UserCoreService } from '@/modules/user/user-core.service'
 import { CreateWalletTransactionBody } from '@/modules/wallet-transaction/dto/wallet-transaction.zod-dto'
 import { WalletTransactionService } from '@/modules/wallet-transaction/wallet-transaction.service'
@@ -32,8 +30,6 @@ export class WalletService {
   private readonly logger = new Logger(WalletService.name)
   constructor(
     private walletRepo: WalletRepo,
-    private readonly i18nService: I18nService,
-    // user ids only, from the tier-0 user core (no cycle with UserModule)
     private readonly userCoreService: UserCoreService,
     private readonly walletTransactionService: WalletTransactionService
   ) {}
@@ -118,10 +114,7 @@ export class WalletService {
   }
 
   // Generate wallets for all users (create missing wallet types per user)
-  async generateWalletForAllUsers(
-    { createdById }: { createdById: number },
-    lang: string = 'vi'
-  ) {
+  async generateWalletForAllUsers({ createdById }: { createdById: number }) {
     // We'll paginate through users to avoid loading all users into memory
     const pageSize = 1000
     let currentPage = 1
@@ -144,52 +137,29 @@ export class WalletService {
       currentPage++
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: null,
-      message: this.i18nService.translate(WalletMessage.CREATE_SUCCESS, lang)
-    }
+    return
   }
 
-  async list(pagination: PaginationQuery, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.walletRepo.list(pagination)
-    return {
-      data,
-      message: this.i18nService.translate(WalletMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const wallet = await this.walletRepo.findById(id)
     if (!wallet) {
       throw new NotFoundRecordException()
     }
-    return {
-      data: wallet,
-      message: this.i18nService.translate(WalletMessage.GET_SUCCESS, lang)
-    }
+    return wallet
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreateWalletBody
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({ data, createdById }: { data: CreateWalletBody; createdById: number }) {
     try {
       const result = await this.walletRepo.create({
         createdById,
         data
       })
-      return {
-        statusCode: HttpStatus.CREATED,
-        data: result,
-        message: this.i18nService.translate(WalletMessage.CREATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isUniqueConstraintPrismaError(error)) {
         throw new WalletAlreadyExistsException()
@@ -204,29 +174,22 @@ export class WalletService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateWalletBody
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateWalletBody
+    updatedById: number
+  }) {
     try {
       const wallet = await this.walletRepo.update({
         id,
         updatedById,
         data
       })
-      return {
-        statusCode: HttpStatus.OK,
-        data: wallet,
-        message: this.i18nService.translate(WalletMessage.UPDATE_SUCCESS, lang)
-      }
+      return wallet
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -241,20 +204,13 @@ export class WalletService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
       await this.walletRepo.delete({
         id,
         deletedById
       })
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(WalletMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -295,14 +251,10 @@ export class WalletService {
     }
   }
 
-  async getWalletsByUser(userId: number, lang: string = 'vi') {
+  async getWalletsByUser(userId: number) {
     const wallets = await this.walletRepo.findByUserId(userId)
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: wallets,
-      message: this.i18nService.translate(WalletMessage.GET_LIST_SUCCESS, lang)
-    }
+    return wallets
   }
 
   // ---- For other modules (module-boundary plan B4) ----

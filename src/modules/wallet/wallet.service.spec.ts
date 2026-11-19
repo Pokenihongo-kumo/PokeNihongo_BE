@@ -28,7 +28,7 @@ describe('WalletService debit/credit', () => {
       withTransaction: jest.fn((work) => work(ownTx))
     }
     transactions = { record: jest.fn().mockResolvedValue({ id: 99 }) }
-    service = new WalletService(repo as any, {} as any, {} as any, transactions as any)
+    service = new WalletService(repo as any, {} as any, transactions as any)
   })
 
   const recorded = (type: string, client: unknown) => [

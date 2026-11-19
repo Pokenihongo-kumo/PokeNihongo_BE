@@ -93,10 +93,7 @@ export class SubscriptionService {
       }
     }
 
-    return {
-      data,
-      message: this.i18nService.translate(SubscriptionMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   async findById(id: number, roleName: string, lang: string = 'vi') {
@@ -104,10 +101,7 @@ export class SubscriptionService {
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     if (!langId) {
-      return {
-        data: null,
-        message: this.i18nService.translate(SubscriptionMessage.GET_SUCCESS, lang)
-      }
+      return null
     }
 
     const subscription = await this.subscriptionRepo.findByIdWithLangId(
@@ -145,14 +139,10 @@ export class SubscriptionService {
       : null
 
     return {
-      statusCode: HttpStatus.OK,
-      data: {
-        ...transformed,
-        nameTranslation: currentNameTranslation?.value ?? null,
-        descriptionTranslation: currentDescriptionTranslation?.value ?? null,
-        ...(isAdmin ? { nameTranslations, descriptionTranslations } : {})
-      },
-      message: this.i18nService.translate(SubscriptionMessage.GET_SUCCESS, lang)
+      ...transformed,
+      nameTranslation: currentNameTranslation?.value ?? null,
+      descriptionTranslation: currentDescriptionTranslation?.value ?? null,
+      ...(isAdmin ? { nameTranslations, descriptionTranslations } : {})
     }
   }
 
@@ -186,11 +176,7 @@ export class SubscriptionService {
       }))
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: result,
-      message: this.i18nService.translate(SubscriptionMessage.GET_SUCCESS, lang)
-    }
+    return result
   }
 
   async create(
@@ -443,10 +429,7 @@ export class SubscriptionService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
       const existingSubscription = await this.subscriptionRepo.findById(id)
       if (!existingSubscription) {
@@ -461,11 +444,7 @@ export class SubscriptionService {
         this.translationService.deleteByKey(existingSubscription.nameKey)
       ])
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(SubscriptionMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -642,11 +621,7 @@ export class SubscriptionService {
       })
     )
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: results,
-      message: this.i18nService.translate(SubscriptionMessage.GET_LIST_SUCCESS, lang)
-    }
+    return results
   }
 
   async getMarketplaceOptions(
@@ -754,11 +729,7 @@ export class SubscriptionService {
       result.descriptionTranslations = convertedDescTrans
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: result,
-      message: this.i18nService.translate(SubscriptionMessage.GET_SUCCESS, lang)
-    }
+    return result
   }
 
   // ---- For other modules (module-boundary plan B8) ----

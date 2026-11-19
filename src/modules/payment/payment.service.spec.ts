@@ -17,18 +17,16 @@ describe('PaymentService: paid webhook when the mail provider is down', () => {
     }
     const userSubscriptionSer = {
       getInforSubAndInvoiceWithUserSubId: jest.fn().mockResolvedValue({
-        data: {
-          user: { email: 'u@example.test', name: 'U' },
-          userSubscriptionId: 1,
-          planName: 'Plan',
-          startDate: null,
-          expiresAt: null,
-          status: 'ACTIVE',
-          subtotalAmount: 99000,
-          paymentMethod: 'BANK_TRANSFER',
-          discountAmount: 0,
-          totalAmount: 99000
-        }
+        user: { email: 'u@example.test', name: 'U' },
+        userSubscriptionId: 1,
+        planName: 'Plan',
+        startDate: null,
+        expiresAt: null,
+        status: 'ACTIVE',
+        subtotalAmount: 99000,
+        paymentMethod: 'BANK_TRANSFER',
+        discountAmount: 0,
+        totalAmount: 99000
       })
     }
     const mailService = {

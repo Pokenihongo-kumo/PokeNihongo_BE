@@ -83,10 +83,7 @@ export class ShopBannerService {
     )
 
     if (allTranslations.length === 0) {
-      return {
-        data,
-        message: this.i18nService.translate(ShopBannerMessage.GET_LIST_SUCCESS, lang)
-      }
+      return data
     }
 
     const converted = await this.convertTranslationsToLangCodes(allTranslations)
@@ -112,19 +109,12 @@ export class ShopBannerService {
     })
 
     return {
-      data: {
-        ...data,
-        results
-      },
-      message: this.i18nService.translate(ShopBannerMessage.GET_LIST_SUCCESS, lang)
+      ...data,
+      results
     }
   }
 
-  async getListAllPokemonWithShopId(
-    shopBannerId: number,
-    pagination: PaginationQuery,
-    lang: string = 'vi'
-  ) {
+  async getListAllPokemonWithShopId(shopBannerId: number, pagination: PaginationQuery) {
     // 1. Lấy tất cả pokemon với pagination
     const allPokemon = await this.pokemonService.listWithNameNumImg(pagination)
 
@@ -147,12 +137,8 @@ export class ShopBannerService {
     }))
 
     return {
-      statusCode: 200,
-      data: {
-        ...allPokemon,
-        results
-      },
-      message: this.i18nService.translate(ShopBannerMessage.GET_LIST_SUCCESS, lang)
+      ...allPokemon,
+      results
     }
   }
 
@@ -175,10 +161,7 @@ export class ShopBannerService {
     )
 
     if (allTranslations.length === 0) {
-      return {
-        data,
-        message: this.i18nService.translate(ShopBannerMessage.GET_LIST_SUCCESS, lang)
-      }
+      return data
     }
 
     const converted = await this.convertTranslationsToLangCodes(allTranslations)
@@ -204,11 +187,8 @@ export class ShopBannerService {
     })
 
     return {
-      data: {
-        ...data,
-        results
-      },
-      message: this.i18nService.translate(ShopBannerMessage.GET_LIST_SUCCESS, lang)
+      ...data,
+      results
     }
   }
 
@@ -216,10 +196,7 @@ export class ShopBannerService {
     const langId = await this.languagesService.getIdByCode(lang)
 
     if (!langId) {
-      return {
-        data: null,
-        message: this.i18nService.translate(ShopBannerMessage.GET_SUCCESS, lang)
-      }
+      return null
     }
 
     const isAllLang = roleName === RoleName.Admin ? true : false
@@ -249,11 +226,7 @@ export class ShopBannerService {
       ...(isAllLang ? { nameTranslations } : {})
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: result,
-      message: this.i18nService.translate(ShopBannerMessage.GET_SUCCESS, lang)
-    }
+    return result
   }
 
   async create(
@@ -571,10 +544,7 @@ export class ShopBannerService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
       const existingShopBanner = await this.shopBannerRepo.findById(id)
       if (!existingShopBanner) {
@@ -589,11 +559,7 @@ export class ShopBannerService {
         this.translationService.deleteByKey(existingShopBanner.nameKey)
       ])
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(ShopBannerMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -608,22 +574,14 @@ export class ShopBannerService {
       const langId = await this.languagesService.getIdByCode(lang)
 
       if (!langId) {
-        return {
-          statusCode: HttpStatus.OK,
-          data: null,
-          message: this.i18nService.translate(ShopBannerMessage.GET_LIST_SUCCESS, lang)
-        }
+        return null
       }
 
       const banner = await this.shopBannerRepo.findValidByDateWithLangId(date, langId)
 
       // If no active banner found
       if (!banner) {
-        return {
-          statusCode: HttpStatus.OK,
-          data: null,
-          message: this.i18nService.translate(ShopBannerMessage.GET_LIST_SUCCESS, lang)
-        }
+        return null
       }
 
       // If we have a userId, compute canBuy per item based on their total purchased quantities
@@ -699,11 +657,7 @@ export class ShopBannerService {
           })
         }
 
-        return {
-          statusCode: HttpStatus.OK,
-          data,
-          message: this.i18nService.translate(ShopBannerMessage.GET_LIST_SUCCESS, lang)
-        }
+        return data
       }
 
       // No user: default canBuy to true for all items
@@ -723,11 +677,7 @@ export class ShopBannerService {
         }))
       }
 
-      return {
-        statusCode: HttpStatus.OK,
-        data,
-        message: this.i18nService.translate(ShopBannerMessage.GET_LIST_SUCCESS, lang)
-      }
+      return data
     } catch (error) {
       throw error
     }

@@ -1,5 +1,3 @@
-import { I18nService } from '@/i18n/i18n.service'
-import { GachaRollHistoryMessage } from '@/i18n/message-keys'
 import { NotFoundRecordException } from '@/shared/error'
 import {
   isForeignKeyConstraintPrismaError,
@@ -16,36 +14,24 @@ import { GachaRollHistoryRepo } from './gacha-roll-history.repo'
 
 @Injectable()
 export class GachaRollHistoryService {
-  constructor(
-    private gachaRollHistoryRepo: GachaRollHistoryRepo,
+  constructor(private gachaRollHistoryRepo: GachaRollHistoryRepo) {}
 
-    private readonly i18nService: I18nService
-  ) {}
-
-  async list(pagination: PaginationQuery, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.gachaRollHistoryRepo.list(pagination)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(GachaRollHistoryMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   // Helper method to calculate weaknesses for a Pokemon (copied from PokemonService)
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const gachaRollHistory = await this.gachaRollHistoryRepo.findById(id)
     if (!gachaRollHistory) {
       throw new GachaRollHistoryNotFoundException()
     }
 
-    return {
-      statusCode: 200,
-      data: gachaRollHistory,
-      message: this.i18nService.translate(GachaRollHistoryMessage.GET_LIST_SUCCESS, lang)
-    }
+    return gachaRollHistory
   }
 
-  async getGachasHisByUser(userId: number, query: PaginationQuery, lang: string = 'vi') {
+  async getGachasHisByUser(userId: number, query: PaginationQuery) {
     const gachaRollHistory = await this.gachaRollHistoryRepo.findListGachaHisByUserId(
       userId,
       query
@@ -53,18 +39,10 @@ export class GachaRollHistoryService {
     if (!gachaRollHistory) {
       throw new GachaRollHistoryNotFoundException()
     }
-    return {
-      statusCode: 200,
-      data: gachaRollHistory,
-
-      message: this.i18nService.translate(GachaRollHistoryMessage.GET_LIST_SUCCESS, lang)
-    }
+    return gachaRollHistory
   }
 
-  async create(
-    { userId, data }: { userId: number; data: CreateGachaRollHistoryBody },
-    lang: string = 'vi'
-  ) {
+  async create({ userId, data }: { userId: number; data: CreateGachaRollHistoryBody }) {
     try {
       // check coi co truyen userId ko, neu ko thi lay cua created_by
       data.userId = data.userId || userId
@@ -75,11 +53,7 @@ export class GachaRollHistoryService {
           ...data
         }
       })
-      return {
-        statusCode: 201,
-        data: result,
-        message: this.i18nService.translate(GachaRollHistoryMessage.CREATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -91,18 +65,15 @@ export class GachaRollHistoryService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      userId
-    }: {
-      id: number
-      data: UpdateGachaRollHistoryBody
-      userId?: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    userId
+  }: {
+    id: number
+    data: UpdateGachaRollHistoryBody
+    userId?: number
+  }) {
     try {
       //check coi thang user nay co pity nao dang pending ko, co thi ko dc tao them
       const existingPity = await this.gachaRollHistoryRepo.findById(id)
@@ -115,11 +86,7 @@ export class GachaRollHistoryService {
         data: data,
         updatedById: userId
       })
-      return {
-        statusCode: 200,
-        data: gachaRollHistory,
-        message: this.i18nService.translate(GachaRollHistoryMessage.UPDATE_SUCCESS, lang)
-      }
+      return gachaRollHistory
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new GachaRollHistoryNotFoundException()
@@ -132,7 +99,7 @@ export class GachaRollHistoryService {
     }
   }
 
-  async delete({ id, userId }: { id: number; userId?: number }, lang: string = 'vi') {
+  async delete({ id, userId }: { id: number; userId?: number }) {
     try {
       const existGachaRollHistory = await this.gachaRollHistoryRepo.findById(id)
       if (!existGachaRollHistory) {
@@ -140,11 +107,7 @@ export class GachaRollHistoryService {
       }
 
       await this.gachaRollHistoryRepo.delete(id)
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(GachaRollHistoryMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new GachaRollHistoryNotFoundException()

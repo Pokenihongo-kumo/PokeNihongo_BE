@@ -1,8 +1,6 @@
 import { RoleName } from '@/common/constants/role.constant'
 import { maxPokeCoinDiscount } from '@/common/constants/subscription.constant'
 import { walletType } from '@/common/constants/wallet.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { SubscriptionPlanMessage } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { WalletService } from '@/modules/wallet/wallet.service'
 import { NotFoundRecordException } from '@/shared/error'
@@ -23,7 +21,6 @@ import { SubscriptionPlanRepo } from './subscription-plan.repo'
 export class SubscriptionPlanService {
   constructor(
     private subscriptionPlanRepo: SubscriptionPlanRepo,
-    private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
     private readonly walletService: WalletService
   ) {}
@@ -85,11 +82,7 @@ export class SubscriptionPlanService {
       }
     }
 
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(SubscriptionPlanMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   async findById(id: number, lang: string = 'vi', roleName: string) {
@@ -162,17 +155,10 @@ export class SubscriptionPlanService {
       }
     }
 
-    return {
-      statusCode: 200,
-      data: subscriptionPlan,
-      message: this.i18nService.translate(SubscriptionPlanMessage.GET_LIST_SUCCESS, lang)
-    }
+    return subscriptionPlan
   }
 
-  async create(
-    { userId, data }: { userId: number; data: CreateSubscriptionPlanBody },
-    lang: string = 'vi'
-  ) {
+  async create({ userId, data }: { userId: number; data: CreateSubscriptionPlanBody }) {
     try {
       const result = await this.subscriptionPlanRepo.create({
         createdById: userId,
@@ -180,11 +166,7 @@ export class SubscriptionPlanService {
           ...data
         }
       })
-      return {
-        statusCode: 201,
-        data: result,
-        message: this.i18nService.translate(SubscriptionPlanMessage.CREATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -198,29 +180,22 @@ export class SubscriptionPlanService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      userId
-    }: {
-      id: number
-      data: UpdateSubscriptionPlanBody
-      userId?: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    userId
+  }: {
+    id: number
+    data: UpdateSubscriptionPlanBody
+    userId?: number
+  }) {
     try {
       const subscriptionPlan = await this.subscriptionPlanRepo.update({
         id,
         data: data,
         updatedById: userId
       })
-      return {
-        statusCode: 200,
-        data: subscriptionPlan,
-        message: this.i18nService.translate(SubscriptionPlanMessage.UPDATE_SUCCESS, lang)
-      }
+      return subscriptionPlan
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new SubscriptionPlanNotFoundException()
@@ -233,7 +208,7 @@ export class SubscriptionPlanService {
     }
   }
 
-  async delete({ id, userId }: { id: number; userId?: number }, lang: string = 'vi') {
+  async delete({ id, userId }: { id: number; userId?: number }) {
     try {
       const existSubscriptionPlan = await this.subscriptionPlanRepo.findById(id)
       if (!existSubscriptionPlan) {
@@ -241,11 +216,7 @@ export class SubscriptionPlanService {
       }
 
       await this.subscriptionPlanRepo.delete(id)
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(SubscriptionPlanMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new SubscriptionPlanNotFoundException()
@@ -258,11 +229,7 @@ export class SubscriptionPlanService {
     const langId = await this.languagesService.getIdByCode(lang)
   }
 
-  async getDiscountToSubPlan(
-    subscriptionPlanId: number,
-    userId: number,
-    lang: string = 'vi'
-  ) {
+  async getDiscountToSubPlan(subscriptionPlanId: number, userId: number) {
     const walletPokeCoin = await this.walletService.findByUserIdAndType(
       userId,
       walletType.POKE_COINS
@@ -281,13 +248,9 @@ export class SubscriptionPlanService {
     const maxPokeCoinsCanUse = Math.min(walletPokeCoin.balance, maxDiscountAllowed)
 
     return {
-      statusCode: 200,
-      data: {
-        availablePokeCoins: walletPokeCoin.balance,
-        maxPokeCoinsCanUse,
-        maxDiscountAllowed
-      },
-      message: this.i18nService.translate(SubscriptionPlanMessage.GET_LIST_SUCCESS, lang)
+      availablePokeCoins: walletPokeCoin.balance,
+      maxPokeCoinsCanUse,
+      maxDiscountAllowed
     }
   }
 

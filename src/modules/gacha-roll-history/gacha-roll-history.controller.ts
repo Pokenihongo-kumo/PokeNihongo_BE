@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { GachaRollHistoryMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
@@ -16,81 +18,94 @@ import { GachaRollHistoryService } from './gacha-roll-history.service'
 
 @Controller('gacha-roll-history')
 export class GachaRollHistoryController {
-  constructor(private readonly gachaRollHistoryService: GachaRollHistoryService) {}
+  constructor(
+    private readonly gachaRollHistoryService: GachaRollHistoryService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseDTO)
-  list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return this.gachaRollHistoryService.list(query, lang)
+  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(GachaRollHistoryMessage.GET_LIST_SUCCESS, lang),
+      data: await this.gachaRollHistoryService.list(query)
+    }
   }
 
   @Get('user')
   @ZodSerializerDto(PaginationResponseDTO)
-  getGachasHisByUser(
+  async getGachasHisByUser(
     @Query() query: PaginationQueryDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.gachaRollHistoryService.getGachasHisByUser(userId, query, lang)
+    return {
+      message: this.i18nService.translate(GachaRollHistoryMessage.GET_LIST_SUCCESS, lang),
+      data: await this.gachaRollHistoryService.getGachasHisByUser(userId, query)
+    }
   }
 
   @Get(':gachaRollHistoryId')
   @ZodSerializerDto(GetGachaRollHistoryDetailResDTO)
-  findById(
+  async findById(
     @Param() params: GetGachaRollHistoryParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.gachaRollHistoryService.findById(params.gachaRollHistoryId, lang)
+    return {
+      message: this.i18nService.translate(GachaRollHistoryMessage.GET_LIST_SUCCESS, lang),
+      data: await this.gachaRollHistoryService.findById(params.gachaRollHistoryId)
+    }
   }
 
   @Post()
   @ZodSerializerDto(CreateGachaRollHistoryResDTO)
-  create(
+  async create(
     @Body() body: CreateGachaRollHistoryBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.gachaRollHistoryService.create(
-      {
+    return {
+      message: this.i18nService.translate(GachaRollHistoryMessage.CREATE_SUCCESS, lang),
+      data: await this.gachaRollHistoryService.create({
         userId,
         data: body
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Put(':gachaRollHistoryId')
   @ZodSerializerDto(UpdateGachaRollHistoryResDTO)
-  update(
+  async update(
     @Body() body: UpdateGachaRollHistoryBodyDTO,
     @Param() params: GetGachaRollHistoryParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.gachaRollHistoryService.update(
-      {
+    return {
+      message: this.i18nService.translate(GachaRollHistoryMessage.UPDATE_SUCCESS, lang),
+      data: await this.gachaRollHistoryService.update({
         data: body,
         id: params.gachaRollHistoryId,
         userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':gachaRollHistoryId')
   @ZodSerializerDto(MessageResDTO)
-  delete(
+  async delete(
     @Param() params: GetGachaRollHistoryParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.gachaRollHistoryService.delete(
-      {
-        id: params.gachaRollHistoryId,
-        userId
-      },
-      lang
-    )
+    await this.gachaRollHistoryService.delete({
+      id: params.gachaRollHistoryId,
+      userId
+    })
+    return {
+      message: this.i18nService.translate(GachaRollHistoryMessage.DELETE_SUCCESS, lang),
+      data: null
+    }
   }
 }

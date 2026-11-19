@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { SubscriptionMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { AuthenticationGuard } from '@/common/guards/authentication.guard'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
@@ -33,16 +35,22 @@ import { SubscriptionService } from './subscription.service'
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class SubscriptionController {
-  constructor(private readonly subscriptionService: SubscriptionService) {}
+  constructor(
+    private readonly subscriptionService: SubscriptionService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseSchema)
-  list(
+  async list(
     @Query() query: PaginationQueryDTO,
     @I18nLang() lang: string,
     @ActiveUser('roleName') roleName: string
   ) {
-    return this.subscriptionService.list(query, lang, roleName)
+    return {
+      message: this.i18nService.translate(SubscriptionMessage.GET_LIST_SUCCESS, lang),
+      data: await this.subscriptionService.list(query, lang, roleName)
+    }
   }
 
   @Post()
@@ -63,12 +71,15 @@ export class SubscriptionController {
 
   @Get(':subscriptionId')
   @ZodSerializerDto(GetSubscriptionDetailResDTO)
-  findById(
+  async findById(
     @Param() params: GetSubscriptionParamsDTO,
     @I18nLang() lang: string,
     @ActiveUser('roleName') roleName: string
   ) {
-    return this.subscriptionService.findById(params.subscriptionId, roleName, lang)
+    return {
+      message: this.i18nService.translate(SubscriptionMessage.GET_SUCCESS, lang),
+      data: await this.subscriptionService.findById(params.subscriptionId, roleName, lang)
+    }
   }
 
   @Put(':subscriptionId')
@@ -91,40 +102,47 @@ export class SubscriptionController {
 
   @Delete(':subscriptionId')
   @ZodSerializerDto(MessageResDTO)
-  delete(
+  async delete(
     @Param() params: GetSubscriptionParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.subscriptionService.delete(
-      {
-        id: params.subscriptionId,
-        deletedById: userId
-      },
-      lang
-    )
+    await this.subscriptionService.delete({
+      id: params.subscriptionId,
+      deletedById: userId
+    })
+    return {
+      message: this.i18nService.translate(SubscriptionMessage.DELETE_SUCCESS, lang),
+      data: null
+    }
   }
 
   @Get('marketplace/list')
   @ZodSerializerDto(GetMarketplaceListResDTO)
-  listMarketplace(
+  async listMarketplace(
     @I18nLang() lang: string,
     @ActiveUser('roleName') roleName: string,
     @ActiveUser('userId') userId?: number
   ) {
-    return this.subscriptionService.listForMarketplace(lang, roleName, userId)
+    return {
+      message: this.i18nService.translate(SubscriptionMessage.GET_LIST_SUCCESS, lang),
+      data: await this.subscriptionService.listForMarketplace(lang, roleName, userId)
+    }
   }
   @Get('marketplace/options/:subscriptionId')
   @ZodSerializerDto(GetMarketplaceOptionsResDTO)
-  getListOption(
+  async getListOption(
     @I18nLang() lang: string,
     @ActiveUser('roleName') roleName: string,
     @Param() params: GetSubscriptionParamsDTO
   ) {
-    return this.subscriptionService.getMarketplaceOptions(
-      params.subscriptionId,
-      lang,
-      roleName
-    )
+    return {
+      message: this.i18nService.translate(SubscriptionMessage.GET_SUCCESS, lang),
+      data: await this.subscriptionService.getMarketplaceOptions(
+        params.subscriptionId,
+        lang,
+        roleName
+      )
+    }
   }
 }

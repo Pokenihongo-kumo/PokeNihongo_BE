@@ -445,18 +445,18 @@ export class PaymentService {
       await this.userSubscriptionSer.getInforSubAndInvoiceWithUserSubId(invoiceId, 'vi')
 
     await this.mailService.sendSubscriptionSuccessVendorEmail(
-      userSubscription.data.user.email,
-      userSubscription.data.user.name,
+      userSubscription.user.email,
+      userSubscription.user.name,
       {
-        subscriptionPlanId: userSubscription.data.userSubscriptionId.toString(),
-        planName: userSubscription.data.planName || 'Unknown',
-        startDate: userSubscription.data.startDate,
-        endDate: userSubscription.data.expiresAt,
-        status: userSubscription.data.status,
-        price: userSubscription.data.subtotalAmount,
-        paymentMethod: userSubscription.data.paymentMethod,
-        discountAmount: userSubscription.data.discountAmount,
-        totalAmount: userSubscription.data.totalAmount
+        subscriptionPlanId: userSubscription.userSubscriptionId.toString(),
+        planName: userSubscription.planName || 'Unknown',
+        startDate: userSubscription.startDate,
+        endDate: userSubscription.expiresAt,
+        status: userSubscription.status,
+        price: userSubscription.subtotalAmount,
+        paymentMethod: userSubscription.paymentMethod,
+        discountAmount: userSubscription.discountAmount,
+        totalAmount: userSubscription.totalAmount
       },
       SendMailMessage.REGISTER_SUBSCRIPTION_SUCCESS
     )

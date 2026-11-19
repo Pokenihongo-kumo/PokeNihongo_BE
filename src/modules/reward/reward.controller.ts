@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { RewardMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { IsPublic } from '@/common/decorators/auth.decorator'
 import { AuthenticationGuard } from '@/common/guards/authentication.guard'
@@ -42,13 +44,19 @@ import { UserRewardSourceType } from '@prisma/client'
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class RewardController {
-  constructor(private readonly rewardService: RewardService) {}
+  constructor(
+    private readonly rewardService: RewardService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @IsPublic()
   @ZodSerializerDto(PaginationResponseSchema)
-  list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return this.rewardService.list(query, lang)
+  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(RewardMessage.GET_LIST_SUCCESS, lang),
+      data: await this.rewardService.list(query, lang)
+    }
   }
 
   @Post('convert')
@@ -65,25 +73,30 @@ export class RewardController {
     type: ConvertRewardsResponseSwaggerDTO
   })
   @ZodSerializerDto(ConvertRewardsResDTO)
-  convertRewards(
+  async convertRewards(
     @Body() body: ConvertRewardsBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
     const targetUserId = body.userId ?? userId
-    return this.rewardService.convertRewards({
-      rewardIds: body.rewardIds,
-      userId,
-      sourceType: body.sourceType ?? UserRewardSourceType.REWARD_SERVICE,
-      lang
-    })
+    return {
+      message: 'Convert rewards successfully',
+      data: await this.rewardService.convertRewards({
+        rewardIds: body.rewardIds,
+        userId,
+        sourceType: body.sourceType ?? UserRewardSourceType.REWARD_SERVICE
+      })
+    }
   }
 
   @Get('admin')
   @IsPublic()
   @ZodSerializerDto(PaginationResponseSchema)
-  getListWithAllLang(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return this.rewardService.getListWithAllLang(query, lang)
+  async getListWithAllLang(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(RewardMessage.GET_LIST_SUCCESS, lang),
+      data: await this.rewardService.getListWithAllLang(query, lang)
+    }
   }
 
   @Post()
@@ -105,15 +118,24 @@ export class RewardController {
   @Get('admin/:rewardId')
   @IsPublic()
   @ZodSerializerDto(GetRewardDetailWithAllLangResDTO)
-  findByIdWithAllLang(@Param() params: GetRewardParamsDTO, @I18nLang() lang: string) {
-    return this.rewardService.findByIdWithAllLang(params.rewardId, lang)
+  async findByIdWithAllLang(
+    @Param() params: GetRewardParamsDTO,
+    @I18nLang() lang: string
+  ) {
+    return {
+      message: this.i18nService.translate(RewardMessage.GET_SUCCESS, lang),
+      data: await this.rewardService.findByIdWithAllLang(params.rewardId, lang)
+    }
   }
 
   @Get(':rewardId')
   @IsPublic()
   @ZodSerializerDto(GetRewardDetailResDTO)
-  findById(@Param() params: GetRewardParamsDTO, @I18nLang() lang: string) {
-    return this.rewardService.findById(params.rewardId, lang)
+  async findById(@Param() params: GetRewardParamsDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(RewardMessage.GET_SUCCESS, lang),
+      data: await this.rewardService.findById(params.rewardId, lang)
+    }
   }
 
   @Put(':rewardId')
@@ -136,17 +158,18 @@ export class RewardController {
 
   @Delete(':rewardId')
   @ZodSerializerDto(MessageResDTO)
-  delete(
+  async delete(
     @Param() params: GetRewardParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.rewardService.delete(
-      {
-        id: params.rewardId,
-        deletedById: userId
-      },
-      lang
-    )
+    await this.rewardService.delete({
+      id: params.rewardId,
+      deletedById: userId
+    })
+    return {
+      message: this.i18nService.translate(RewardMessage.DELETE_SUCCESS, lang),
+      data: null
+    }
   }
 }

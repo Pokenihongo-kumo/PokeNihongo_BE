@@ -2,8 +2,6 @@ import {
   FeatureKeyType,
   UserSubscriptionStatus
 } from '@/common/constants/subscription.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { UserSubscriptionMessage } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { SubscriptionPlanService } from '@/modules/subscription-plan/subscription-plan.service'
 import { NotFoundRecordException } from '@/shared/error'
@@ -31,7 +29,6 @@ export class UserSubscriptionService {
   constructor(
     private userSubscriptionRepo: UserSubscriptionRepo,
     private readonly subscriptionPlanService: SubscriptionPlanService,
-    private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
     private readonly prismaService: PrismaService
   ) {}
@@ -51,32 +48,21 @@ export class UserSubscriptionService {
     }))
   }
 
-  async list(pagination: PaginationQuery, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.userSubscriptionRepo.list(pagination)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(UserSubscriptionMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   // Helper method to calculate weaknesses for a Pokemon (copied from PokemonService)
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const userSubscription = await this.userSubscriptionRepo.findById(id)
     if (!userSubscription) {
       throw new UserSubscriptionNotFoundException()
     }
 
-    return {
-      statusCode: 200,
-      data: userSubscription,
-      message: this.i18nService.translate(UserSubscriptionMessage.GET_LIST_SUCCESS, lang)
-    }
+    return userSubscription
   }
-  async create(
-    { userId, data }: { userId: number; data: CreateUserSubscriptionBody },
-    lang: string = 'vi'
-  ) {
+  async create({ userId, data }: { userId: number; data: CreateUserSubscriptionBody }) {
     try {
       // check xem goi plan co active ko
       const isPlanExist = await this.subscriptionPlanService.getById(
@@ -117,11 +103,7 @@ export class UserSubscriptionService {
           userId
         }
       })
-      return {
-        statusCode: 201,
-        data: result,
-        message: this.i18nService.translate(UserSubscriptionMessage.CREATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -133,29 +115,22 @@ export class UserSubscriptionService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      userId
-    }: {
-      id: number
-      data: UpdateUserSubscriptionBody
-      userId?: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    userId
+  }: {
+    id: number
+    data: UpdateUserSubscriptionBody
+    userId?: number
+  }) {
     try {
       const userSubscription = await this.userSubscriptionRepo.update({
         id,
         data: data,
         updatedById: userId
       })
-      return {
-        statusCode: 200,
-        data: userSubscription,
-        message: this.i18nService.translate(UserSubscriptionMessage.UPDATE_SUCCESS, lang)
-      }
+      return userSubscription
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UserSubscriptionNotFoundException()
@@ -168,7 +143,7 @@ export class UserSubscriptionService {
     }
   }
 
-  async delete({ id, userId }: { id: number; userId?: number }, lang: string = 'vi') {
+  async delete({ id, userId }: { id: number; userId?: number }) {
     try {
       const existUserSubscription = await this.userSubscriptionRepo.findById(id)
       if (!existUserSubscription) {
@@ -176,11 +151,7 @@ export class UserSubscriptionService {
       }
 
       await this.userSubscriptionRepo.delete(id)
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(UserSubscriptionMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UserSubscriptionNotFoundException()
@@ -218,12 +189,8 @@ export class UserSubscriptionService {
       }
     })
     return {
-      statusCode: 200,
-      data: {
-        ...data,
-        results
-      },
-      message: this.i18nService.translate(UserSubscriptionMessage.GET_LIST_SUCCESS, lang)
+      ...data,
+      results
     }
   }
 
@@ -317,34 +284,26 @@ export class UserSubscriptionService {
     }
 
     return {
-      statusCode: 200,
-      data: {
-        userSubscriptionId: us.id,
-        startDate: us.startDate,
-        expiresAt: us.expiresAt,
-        status: us.status,
-        subtotalAmount: invoice?.subtotalAmount ?? null,
-        discountAmount: invoice?.discountAmount ?? null,
-        totalAmount: invoice?.totalAmount ?? null,
-        paymentMethod,
-        planName,
-        planDescription,
-        user: us.user
-      },
-      message: this.i18nService.translate(UserSubscriptionMessage.GET_SUCCESS, lang)
+      userSubscriptionId: us.id,
+      startDate: us.startDate,
+      expiresAt: us.expiresAt,
+      status: us.status,
+      subtotalAmount: invoice?.subtotalAmount ?? null,
+      discountAmount: invoice?.discountAmount ?? null,
+      totalAmount: invoice?.totalAmount ?? null,
+      paymentMethod,
+      planName,
+      planDescription,
+      user: us.user
     }
   }
 
-  async getListFeatureOfUser(userId: number, lang: string = 'vi') {
+  async getListFeatureOfUser(userId: number) {
     // Lấy tất cả subscription đang active của user
     const result = await this.userSubscriptionRepo.getListFeatureOfUser(userId)
 
     return {
-      statusCode: 200,
-      data: {
-        result
-      },
-      message: this.i18nService.translate(UserSubscriptionMessage.GET_LIST_SUCCESS, lang)
+      result
     }
   }
 
