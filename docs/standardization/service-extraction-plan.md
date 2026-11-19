@@ -73,3 +73,25 @@ Gate chung mỗi batch: typecheck 0, unit, e2e toàn bộ, 132 contract snapshot
 ## 6. Ước lượng
 
 8 batch. X1, X2, X7 lớn nhất (mỗi cái có thể chia 2 commit). Bản sao 1 và 2 gộp xong bỏ khoảng 700–900 dòng trùng.
+
+## 7. Bảng lệch hai cặp bản sao (X0, chờ duyệt theo D-X1)
+
+So từng hàm sau khi bỏ log, comment, khoảng trắng (`dev` @ `f0df082a`). "Đề xuất" là bản sẽ giữ khi gộp ở X1/X2; điểm lệch là lỗi sẽ có snapshot before/after.
+
+**Cặp 1 — chốt round/trận** (`RoundQuestionService` khi trả lời ↔ `RoundQuestionTimeoutProcessor` khi hết giờ câu hỏi). `calculatePointsEarned` giống hệt; phần tính thắng/thua, elo, xếp round kế giống nhau về logic.
+
+| #   | Điểm lệch                                              | Service (trả lời)                                                   | Processor (hết giờ)                                                                                                                        | Đề xuất                                                                                                   |
+| --- | ------------------------------------------------------ | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| 1.1 | Lỗi trong `checkAndCompleteRound`, `scheduleNextRound` | ném lên trên                                                        | `try/catch` chỉ log (job không lỗi)                                                                                                        | chính sách của nơi gọi: class mới ném lỗi, processor giữ `try/catch` của mình (D-X1)                      |
+| 1.2 | Dòng người thắng khi chốt trận                         | `completeWithWinner`: 5 field (`id, name, email, avatar, eloscore`) | `completeWithWinnerFull`: `winner: true` — **cả dòng user, gồm hash mật khẩu**, đi vào payload `match-completed` gửi cho cả hai người chơi | **lỗi bảo mật**: theo service (5 field); contract 7c chưa đi qua nhánh hết giờ ở round cuối nên thêm case |
+
+**Cặp 2 — sinh câu hỏi + debuff sau khi chọn xong Pokemon** (`MatchRoundParticipantService.handleQuestionsAndDebuffForCompletedSelection` khi người chơi chọn ↔ processor `generateQuestionsDebuffAndMaybeStartRound` khi hết giờ chọn). `moveToNextRound` giống nhau trừ 2.6.
+
+| #   | Điểm lệch                                   | Service (người chọn)                         | Processor (hết giờ)             | Đề xuất                                                                                                  |
+| --- | ------------------------------------------- | -------------------------------------------- | ------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| 2.1 | Đã có câu hỏi cho round                     | sinh tiếp (không kiểm)                       | bỏ qua                          | **lỗi**: giữ kiểm tra của processor — người chọn và hết giờ chạy gần nhau thì không sinh câu hỏi hai lần |
+| 2.2 | Elo trung bình                              | trên người tham gia trận (thiếu user tính 0) | trên user tìm thấy              | theo service; hai cách bằng nhau khi đủ user                                                             |
+| 2.3 | Tính debuff lỗi                             | debuff người có `pokemonId` nhỏ hơn          | debuff người đứng đầu danh sách | theo service (theo dữ liệu, không theo thứ tự)                                                           |
+| 2.4 | Một bên chưa có Pokemon                     | không debuff                                 | vẫn debuff người đầu danh sách  | theo service                                                                                             |
+| 2.5 | Câu thêm do debuff `INCREASE_QUESTION`      | `basePoints: 0`                              | `basePoints: 100`               | **quy tắc game, cần chốt**: đề xuất 0 (debuff là gánh nặng, không cho thêm điểm)                         |
+| 2.6 | Người tham gia round kế (`moveToNextRound`) | lọc `deletedAt: null`                        | không lọc                       | theo service                                                                                             |

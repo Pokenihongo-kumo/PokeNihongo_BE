@@ -1,0 +1,167 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Kaiwa socket (e2e) join, one spoken turn, empty audio, leave: empty audio 1`] = `
+{
+  "client error": {
+    "count": 1,
+    "payload": {
+      "message": "string",
+      "suggestion": "string",
+    },
+    "to": "client",
+  },
+}
+`;
+
+exports[`Kaiwa socket (e2e) join, one spoken turn, empty audio, leave: join 1`] = `
+{
+  "client joined": {
+    "count": 1,
+    "payload": {
+      "conversationId": "string",
+      "roomName": "string",
+      "userId": "number",
+    },
+    "to": "client",
+  },
+  "kaiwa_N room-updated": {
+    "count": 1,
+    "payload": {
+      "conversationId": "string",
+      "room": {
+        "conversationId": "string",
+        "createdAt": "date",
+        "deletedAt": null,
+        "id": "string",
+        "isArchived": "boolean",
+        "lastMessage": null,
+        "lastMessageAt": null,
+        "title": null,
+        "updatedAt": "date",
+        "userId": "number",
+        "voiceName": "string",
+      },
+    },
+    "to": "kaiwa_N",
+  },
+}
+`;
+
+exports[`Kaiwa socket (e2e) join, one spoken turn, empty audio, leave: leave 1`] = `
+{
+  "client left": {
+    "count": 1,
+    "payload": {
+      "roomName": "string",
+      "timestamp": "number",
+      "userId": "number",
+    },
+    "to": "client",
+  },
+}
+`;
+
+exports[`Kaiwa socket (e2e) join, one spoken turn, empty audio, leave: room 1`] = `
+{
+  "lastMessage": "これはテスト用の回答です。",
+  "title": null,
+  "voiceName": "ja-JP-Wavenet-A",
+}
+`;
+
+exports[`Kaiwa socket (e2e) join, one spoken turn, empty audio, leave: stored messages 1`] = `
+[
+  {
+    "hasAudio": true,
+    "message": "こんにちは",
+    "role": "USER",
+  },
+  {
+    "hasAudio": "raced",
+    "message": "これはテスト用の回答です。",
+    "role": "AI",
+  },
+]
+`;
+
+exports[`Kaiwa socket (e2e) join, one spoken turn, empty audio, leave: turn 1`] = `
+{
+  "client audio-response": {
+    "count": 1,
+    "payload": {
+      "audio": "string",
+      "audioFormat": "string",
+      "conversationId": "string",
+      "text": "string",
+      "timestamp": "number",
+    },
+    "to": "client",
+  },
+  "client message-audio-updated": {
+    "count": "1 (user) + AI if not raced",
+    "payload": {
+      "audioUrl": "string",
+      "conversationId": "string",
+      "messageId": "number",
+      "role": "string",
+    },
+    "to": "client",
+  },
+  "client processing": {
+    "count": 2,
+    "payload": {
+      "conversationId": "string",
+      "message": "string",
+      "status": "string",
+    },
+    "to": "client",
+  },
+  "client text-response": {
+    "count": 1,
+    "payload": {
+      "conversationId": "string",
+      "text": "string",
+      "timestamp": "number",
+      "translation": "string",
+    },
+    "to": "client",
+  },
+  "client text-response-update": {
+    "count": 1,
+    "payload": {
+      "conversationId": "string",
+      "translation": "string",
+    },
+    "to": "client",
+  },
+  "client transcription": {
+    "count": 1,
+    "payload": {
+      "conversationId": "string",
+      "text": "string",
+      "timestamp": "number",
+    },
+    "to": "client",
+  },
+  "kaiwa_N room-updated": {
+    "count": 2,
+    "payload": {
+      "conversationId": "string",
+      "room": {
+        "conversationId": "string",
+        "createdAt": "date",
+        "deletedAt": null,
+        "id": "string",
+        "isArchived": "boolean",
+        "lastMessage": "string",
+        "lastMessageAt": "date",
+        "title": null,
+        "updatedAt": "date",
+        "userId": "number",
+        "voiceName": "string",
+      },
+    },
+    "to": "kaiwa_N",
+  },
+}
+`;
