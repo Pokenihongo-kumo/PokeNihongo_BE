@@ -1,6 +1,4 @@
 import { BullAction, BullQueue } from '@/common/constants/bull-action.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { RoundQuestionMessage } from '@/i18n/message-keys'
 import { MatchService } from '@/modules/match/match.service'
 import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
 import { UserCoreService } from '@/modules/user/user-core.service'
@@ -34,7 +32,6 @@ import { RoundQuestionRepo } from './round-question.repo'
 export class RoundQuestionService {
   constructor(
     private roundQuestionRepo: RoundQuestionRepo,
-    private readonly i18nService: I18nService,
     private readonly matchService: MatchService,
     private readonly userCoreService: UserCoreService,
     private readonly matchingGateway: MatchingGateway,
@@ -47,33 +44,22 @@ export class RoundQuestionService {
     private readonly roundQuestionProcessor: RoundQuestionTimeoutProcessor
   ) {}
 
-  async list(pagination: PaginationQuery, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.roundQuestionRepo.list(pagination)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(RoundQuestionMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   // Helper method to calculate weaknesses for a Pokemon (copied from PokemonService)
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const roundQuestion = await this.roundQuestionRepo.findById(id)
     if (!roundQuestion) {
       throw new RoundQuestionNotFoundException()
     }
 
-    return {
-      statusCode: 200,
-      data: roundQuestion,
-      message: this.i18nService.translate(RoundQuestionMessage.GET_LIST_SUCCESS, lang)
-    }
+    return roundQuestion
   }
 
-  async create(
-    { userId, data }: { userId: number; data: CreateRoundQuestionBody },
-    lang: string = 'vi'
-  ) {
+  async create({ userId, data }: { userId: number; data: CreateRoundQuestionBody }) {
     try {
       const result = await this.roundQuestionRepo.create({
         createdById: userId,
@@ -81,11 +67,7 @@ export class RoundQuestionService {
           ...data
         }
       })
-      return {
-        statusCode: 201,
-        data: result,
-        message: this.i18nService.translate(RoundQuestionMessage.CREATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -97,29 +79,22 @@ export class RoundQuestionService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      userId
-    }: {
-      id: number
-      data: UpdateRoundQuestionBody
-      userId?: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    userId
+  }: {
+    id: number
+    data: UpdateRoundQuestionBody
+    userId?: number
+  }) {
     try {
       const roundQuestion = await this.roundQuestionRepo.update({
         id,
         data: data,
         updatedById: userId
       })
-      return {
-        statusCode: 200,
-        data: roundQuestion,
-        message: this.i18nService.translate(RoundQuestionMessage.UPDATE_SUCCESS, lang)
-      }
+      return roundQuestion
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new RoundQuestionNotFoundException()
@@ -132,7 +107,7 @@ export class RoundQuestionService {
     }
   }
 
-  async delete({ id, userId }: { id: number; userId?: number }, lang: string = 'vi') {
+  async delete({ id, userId }: { id: number; userId?: number }) {
     try {
       const existRoundQuestion = await this.roundQuestionRepo.findById(id)
       if (!existRoundQuestion) {
@@ -140,11 +115,7 @@ export class RoundQuestionService {
       }
 
       await this.roundQuestionRepo.delete(id)
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(RoundQuestionMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new RoundQuestionNotFoundException()
@@ -503,11 +474,7 @@ export class RoundQuestionService {
       }
     }
 
-    return {
-      statusCode: 200,
-      data: roundQuestion,
-      message: this.i18nService.translate(RoundQuestionMessage.ANSWER_SUCCESS, lang)
-    }
+    return roundQuestion
   }
 
   // The following methods are adapted from processor logic to keep behaviour consistent

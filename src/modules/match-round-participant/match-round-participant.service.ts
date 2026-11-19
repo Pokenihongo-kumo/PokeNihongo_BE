@@ -4,8 +4,7 @@ import {
   MatchRoundParticipantStatus,
   RoundStatus
 } from '@/common/constants/match.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { MatchingSocketMessage, MatchRoundParticipantMessage } from '@/i18n/message-keys'
+import { MatchingSocketMessage } from '@/i18n/message-keys'
 import { DebuffRoundService } from '@/modules/debuff-round/debuff-round.service'
 import { MatchRoundService } from '@/modules/match-round/match-round.service'
 import { MatchService } from '@/modules/match/match.service'
@@ -52,7 +51,6 @@ export class MatchRoundParticipantService {
     private readonly userPokemonService: UserPokemonService,
     private readonly questionBankService: QuestionBankService,
     private readonly pokemonService: PokemonService,
-    private readonly i18nService: I18nService,
     private readonly matchService: MatchService,
     private readonly userCoreService: UserCoreService,
     private readonly roundQuestionService: RoundQuestionService,
@@ -62,39 +60,28 @@ export class MatchRoundParticipantService {
     private readonly matchRoundParticipantTimeoutQueue: Queue
   ) {}
 
-  async list(pagination: PaginationQuery, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.matchRoundParticipantRepo.list(pagination)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(
-        MatchRoundParticipantMessage.GET_LIST_SUCCESS,
-        lang
-      )
-    }
+    return data
   }
 
   // Helper method to calculate weaknesses for a Pokemon (copied from PokemonService)
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const matchRoundParticipant = await this.matchRoundParticipantRepo.findById(id)
     if (!matchRoundParticipant) {
       throw new MatchRoundParticipantNotFoundException()
     }
 
-    return {
-      statusCode: 200,
-      data: matchRoundParticipant,
-      message: this.i18nService.translate(
-        MatchRoundParticipantMessage.GET_LIST_SUCCESS,
-        lang
-      )
-    }
+    return matchRoundParticipant
   }
 
-  async create(
-    { userId, data }: { userId: number; data: CreateMatchRoundParticipantBody },
-    lang: string = 'vi'
-  ) {
+  async create({
+    userId,
+    data
+  }: {
+    userId: number
+    data: CreateMatchRoundParticipantBody
+  }) {
     try {
       const result = await this.matchRoundParticipantRepo.create({
         createdById: userId,
@@ -102,14 +89,7 @@ export class MatchRoundParticipantService {
           ...data
         }
       })
-      return {
-        statusCode: 201,
-        data: result,
-        message: this.i18nService.translate(
-          MatchRoundParticipantMessage.CREATE_SUCCESS,
-          lang
-        )
-      }
+      return result
     } catch (error) {
       if (isUniqueConstraintPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -124,18 +104,15 @@ export class MatchRoundParticipantService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      userId
-    }: {
-      id: number
-      data: UpdateMatchRoundParticipantBody
-      userId?: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    userId
+  }: {
+    id: number
+    data: UpdateMatchRoundParticipantBody
+    userId?: number
+  }) {
     try {
       //check coi thang user nay co pity nao dang pending ko, co thi ko dc tao them
       const existingPity = await this.matchRoundParticipantRepo.findById(id)
@@ -148,14 +125,7 @@ export class MatchRoundParticipantService {
         data: data,
         updatedById: userId
       })
-      return {
-        statusCode: 200,
-        data: matchRoundParticipant,
-        message: this.i18nService.translate(
-          MatchRoundParticipantMessage.UPDATE_SUCCESS,
-          lang
-        )
-      }
+      return matchRoundParticipant
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new MatchRoundParticipantNotFoundException()
@@ -168,18 +138,15 @@ export class MatchRoundParticipantService {
     }
   }
 
-  async choosePokemonWithRound(
-    {
-      matchRoundId,
-      userId,
-      data
-    }: {
-      matchRoundId: number
-      userId: number
-      data: ChoosePokemonMatchRoundParticipantBody
-    },
-    lang: string = 'vi'
-  ) {
+  async choosePokemonWithRound({
+    matchRoundId,
+    userId,
+    data
+  }: {
+    matchRoundId: number
+    userId: number
+    data: ChoosePokemonMatchRoundParticipantBody
+  }) {
     try {
       // Dựa vào matchRoundId lấy ra match-round kèm match và participants
       const existMatchRound =
@@ -456,14 +423,7 @@ export class MatchRoundParticipantService {
           }
         }
       }
-      return {
-        statusCode: 200,
-        data: matchRoundParticipant,
-        message: this.i18nService.translate(
-          MatchRoundParticipantMessage.UPDATE_SUCCESS,
-          lang
-        )
-      }
+      return matchRoundParticipant
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new MatchRoundParticipantNotFoundException()
@@ -476,7 +436,7 @@ export class MatchRoundParticipantService {
     }
   }
 
-  async delete({ id, userId }: { id: number; userId?: number }, lang: string = 'vi') {
+  async delete({ id, userId }: { id: number; userId?: number }) {
     try {
       const existMatchRoundParticipant = await this.matchRoundParticipantRepo.findById(id)
       if (!existMatchRoundParticipant) {
@@ -484,14 +444,7 @@ export class MatchRoundParticipantService {
       }
 
       await this.matchRoundParticipantRepo.delete(id)
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(
-          MatchRoundParticipantMessage.DELETE_SUCCESS,
-          lang
-        )
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new MatchRoundParticipantNotFoundException()

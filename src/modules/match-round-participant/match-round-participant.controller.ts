@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { MatchRoundParticipantMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
@@ -19,93 +21,118 @@ import { MatchRoundParticipantService } from './match-round-participant.service'
 @Controller('match-round-participant')
 export class MatchRoundParticipantController {
   constructor(
-    private readonly matchRoundParticipantService: MatchRoundParticipantService
+    private readonly matchRoundParticipantService: MatchRoundParticipantService,
+    private readonly i18nService: I18nService
   ) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseDTO)
-  list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return this.matchRoundParticipantService.list(query, lang)
+  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(
+        MatchRoundParticipantMessage.GET_LIST_SUCCESS,
+        lang
+      ),
+      data: await this.matchRoundParticipantService.list(query)
+    }
   }
 
   @Get(':matchRoundParticipantId')
   @ZodSerializerDto(GetMatchRoundParticipantDetailResDTO)
-  findById(
+  async findById(
     @Param() params: GetMatchRoundParticipantParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.matchRoundParticipantService.findById(
-      params.matchRoundParticipantId,
-      lang
-    )
+    return {
+      message: this.i18nService.translate(
+        MatchRoundParticipantMessage.GET_LIST_SUCCESS,
+        lang
+      ),
+      data: await this.matchRoundParticipantService.findById(
+        params.matchRoundParticipantId
+      )
+    }
   }
 
   @Post()
   @ZodSerializerDto(CreateMatchRoundParticipantResDTO)
-  create(
+  async create(
     @Body() body: CreateMatchRoundParticipantBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.matchRoundParticipantService.create(
-      {
+    return {
+      message: this.i18nService.translate(
+        MatchRoundParticipantMessage.CREATE_SUCCESS,
+        lang
+      ),
+      data: await this.matchRoundParticipantService.create({
         userId,
         data: body
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Put('choose-pokemon/round/:matchRoundId')
   @ZodSerializerDto(UpdateMatchRoundParticipantResDTO)
-  choosePokeWithRound(
+  async choosePokeWithRound(
     @Body() body: ChoosePokemonMatchRoundParticipantBodyDTO,
     @Param() params: GetMatchRoundByRoundParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.matchRoundParticipantService.choosePokemonWithRound(
-      {
+    return {
+      message: this.i18nService.translate(
+        MatchRoundParticipantMessage.UPDATE_SUCCESS,
+        lang
+      ),
+      data: await this.matchRoundParticipantService.choosePokemonWithRound({
         data: body,
         matchRoundId: params.matchRoundId,
         userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Put(':matchRoundParticipantId')
   @ZodSerializerDto(UpdateMatchRoundParticipantResDTO)
-  update(
+  async update(
     @Body() body: UpdateMatchRoundParticipantBodyDTO,
     @Param() params: GetMatchRoundParticipantParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.matchRoundParticipantService.update(
-      {
+    return {
+      message: this.i18nService.translate(
+        MatchRoundParticipantMessage.UPDATE_SUCCESS,
+        lang
+      ),
+      data: await this.matchRoundParticipantService.update({
         data: body,
         id: params.matchRoundParticipantId,
         userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':matchRoundParticipantId')
   @ZodSerializerDto(MessageResDTO)
-  delete(
+  async delete(
     @Param() params: GetMatchRoundParticipantParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.matchRoundParticipantService.delete(
-      {
-        id: params.matchRoundParticipantId,
-        userId
-      },
-      lang
-    )
+    await this.matchRoundParticipantService.delete({
+      id: params.matchRoundParticipantId,
+      userId
+    })
+    return {
+      message: this.i18nService.translate(
+        MatchRoundParticipantMessage.DELETE_SUCCESS,
+        lang
+      ),
+      data: null
+    }
   }
 }

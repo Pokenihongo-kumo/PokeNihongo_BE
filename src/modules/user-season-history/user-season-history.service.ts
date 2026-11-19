@@ -1,7 +1,5 @@
 import { SeasonRankRewardService } from '@/modules/season-rank-reward/season-rank-reward.service'
 import { RewardClaimStatus } from '@/common/constants/reward.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { UserSeasonHistoryMessage } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
 import { UserCoreService } from '@/modules/user/user-core.service'
@@ -12,7 +10,7 @@ import {
   isNotFoundPrismaError
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
-import { HttpStatus, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { UserRewardSourceType } from '@prisma/client'
 import { NotStartedLeaderboardSeasonException } from '../leaderboard-season/dto/leaderboard-season.error'
 import { RewardService } from '../reward/reward.service'
@@ -34,33 +32,24 @@ export class UserSeasonHistoryService {
     private userSeasonHistoryRepo: UserSeasonHistoryRepo,
     private readonly leaderboardSeasonService: LeaderboardSeasonService,
     private readonly rewardService: RewardService,
-    private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
     private readonly userCoreService: UserCoreService,
     private readonly seasonRankRewardService: SeasonRankRewardService
   ) {}
 
-  async list(pagination: PaginationQuery, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.userSeasonHistoryRepo.list(pagination)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(UserSeasonHistoryMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   // Helper method to calculate weaknesses for a Pokemon (copied from PokemonService)
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const userSeasonHistory = await this.userSeasonHistoryRepo.findById(id)
     if (!userSeasonHistory) {
       throw new UserSeasonHistoryNotFoundException()
     }
 
-    return {
-      statusCode: 200,
-      data: userSeasonHistory,
-      message: this.i18nService.translate(UserSeasonHistoryMessage.GET_LIST_SUCCESS, lang)
-    }
+    return userSeasonHistory
   }
   async joinSeason({ userId }: { userId: number }, lang: string = 'vi') {
     try {
@@ -117,11 +106,7 @@ export class UserSeasonHistoryService {
         newElo: userInfo.eloscore || 0,
         newRank: convertEloToRank(userInfo.eloscore || 0)
       }
-      return {
-        statusCode: 201,
-        data: { preSeasonInfo: dataPreSeason, seasonNowInfo: dataSeasonNow },
-        message: this.i18nService.translate(UserSeasonHistoryMessage.CREATE_SUCCESS, lang)
-      }
+      return { preSeasonInfo: dataPreSeason, seasonNowInfo: dataSeasonNow }
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -133,10 +118,7 @@ export class UserSeasonHistoryService {
     }
   }
 
-  async create(
-    { userId, data }: { userId: number; data: CreateUserSeasonHistoryBody },
-    lang: string = 'vi'
-  ) {
+  async create({ userId, data }: { userId: number; data: CreateUserSeasonHistoryBody }) {
     try {
       // check coi co truyen userId ko, neu ko thi lay cua created_by
       data.userId = data.userId || userId
@@ -150,11 +132,7 @@ export class UserSeasonHistoryService {
           ...data
         }
       })
-      return {
-        statusCode: 201,
-        data: result,
-        message: this.i18nService.translate(UserSeasonHistoryMessage.CREATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -166,18 +144,15 @@ export class UserSeasonHistoryService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      userId
-    }: {
-      id: number
-      data: UpdateUserSeasonHistoryBody
-      userId?: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    userId
+  }: {
+    id: number
+    data: UpdateUserSeasonHistoryBody
+    userId?: number
+  }) {
     try {
       if (data.finalElo !== undefined) {
         const rankName = convertEloToRank(data.finalElo || 0)
@@ -188,11 +163,7 @@ export class UserSeasonHistoryService {
         data: data,
         updatedById: userId
       })
-      return {
-        statusCode: 200,
-        data: userSeasonHistory,
-        message: this.i18nService.translate(UserSeasonHistoryMessage.UPDATE_SUCCESS, lang)
-      }
+      return userSeasonHistory
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UserSeasonHistoryNotFoundException()
@@ -205,7 +176,7 @@ export class UserSeasonHistoryService {
     }
   }
 
-  async delete({ id, userId }: { id: number; userId?: number }, lang: string = 'vi') {
+  async delete({ id, userId }: { id: number; userId?: number }) {
     try {
       const existUserSeasonHistory = await this.userSeasonHistoryRepo.findById(id)
       if (!existUserSeasonHistory) {
@@ -213,11 +184,7 @@ export class UserSeasonHistoryService {
       }
 
       await this.userSeasonHistoryRepo.delete(id)
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(UserSeasonHistoryMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UserSeasonHistoryNotFoundException()
@@ -226,21 +193,17 @@ export class UserSeasonHistoryService {
     }
   }
 
-  async getUserHisByUserId(userId: number, lang: string = 'vi') {
+  async getUserHisByUserId(userId: number) {
     const userSeasonHistory =
       await this.userSeasonHistoryRepo.findSeasonNowByUserId(userId)
     // not joined yet: a 404 (the serializer used to turn null into a 500)
     if (!userSeasonHistory) {
       throw new UserSeasonHistoryNotFoundException()
     }
-    return {
-      statusCode: 200,
-      data: userSeasonHistory,
-      message: this.i18nService.translate(UserSeasonHistoryMessage.GET_LIST_SUCCESS, lang)
-    }
+    return userSeasonHistory
   }
 
-  async getReward({ id, userId }: { id: number; userId: number }, lang: string = 'vi') {
+  async getReward({ id, userId }: { id: number; userId: number }) {
     try {
       // 1. Fetch user season history with reward details
       const userSeasonHistory = await this.userSeasonHistoryRepo.findById(id)
@@ -298,14 +261,7 @@ export class UserSeasonHistoryService {
         updatedById: userId
       })
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: rewardResults,
-        message: this.i18nService.translate(
-          UserSeasonHistoryMessage.GET_REWARD_SUCCESS,
-          lang
-        )
-      }
+      return rewardResults
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UserSeasonHistoryNotFoundException()

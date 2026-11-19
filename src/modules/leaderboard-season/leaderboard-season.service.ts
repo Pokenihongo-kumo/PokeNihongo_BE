@@ -1,6 +1,4 @@
 import { RoleName } from '@/common/constants/role.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { LeaderboardSeasonMessage } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { TranslationService } from '@/modules/translation/translation.service'
 import {
@@ -16,7 +14,7 @@ import {
   todayUTCWith0000
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
-import { HttpStatus, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import {
   LeaderboardSeasonAlreadyExistsException,
@@ -37,7 +35,6 @@ import { LeaderboardSeasonRepo } from './leaderboard-season.repo'
 export class LeaderboardSeasonService {
   constructor(
     private leaderboardSeasonRepo: LeaderboardSeasonRepo,
-    private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
     private readonly translationService: TranslationService
   ) {}
@@ -88,10 +85,7 @@ export class LeaderboardSeasonService {
       }
     }
 
-    return {
-      data,
-      message: this.i18nService.translate(LeaderboardSeasonMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   async findById(id: number, roleName: string, lang: string = 'vi') {
@@ -99,10 +93,7 @@ export class LeaderboardSeasonService {
     const isAdmin = roleName === RoleName.Admin ? true : false
 
     if (!langId) {
-      return {
-        data: null,
-        message: this.i18nService.translate(LeaderboardSeasonMessage.GET_SUCCESS, lang)
-      }
+      return null
     }
 
     const leaderboardSeason = await this.leaderboardSeasonRepo.findByIdWithLangId(
@@ -145,13 +136,9 @@ export class LeaderboardSeasonService {
       : null
 
     return {
-      statusCode: HttpStatus.OK,
-      data: {
-        ...transformed,
-        nameTranslation: currentTranslation?.value ?? null,
-        ...(isAdmin ? { nameTranslations } : {})
-      },
-      message: this.i18nService.translate(LeaderboardSeasonMessage.GET_SUCCESS, lang)
+      ...transformed,
+      nameTranslation: currentTranslation?.value ?? null,
+      ...(isAdmin ? { nameTranslations } : {})
     }
   }
 
@@ -186,23 +173,16 @@ export class LeaderboardSeasonService {
       }))
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: result,
-      message: this.i18nService.translate(LeaderboardSeasonMessage.GET_SUCCESS, lang)
-    }
+    return result
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreateLeaderboardSeasonBodyInput
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({
+    data,
+    createdById
+  }: {
+    data: CreateLeaderboardSeasonBodyInput
+    createdById: number
+  }) {
     let createdLeaderboardSeason: any = null
 
     try {
@@ -302,14 +282,7 @@ export class LeaderboardSeasonService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.CREATED,
-          data: result,
-          message: this.i18nService.translate(
-            LeaderboardSeasonMessage.CREATE_SUCCESS,
-            lang
-          )
-        }
+        return result
       })
     } catch (error) {
       // Rollback: Delete leaderboardSeason if created
@@ -338,18 +311,15 @@ export class LeaderboardSeasonService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateLeaderboardSeasonBodyInput
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateLeaderboardSeasonBodyInput
+    updatedById: number
+  }) {
     let existingLeaderboardSeason: any = null
 
     try {
@@ -452,14 +422,7 @@ export class LeaderboardSeasonService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.OK,
-          data: updatedLeaderboardSeason,
-          message: this.i18nService.translate(
-            LeaderboardSeasonMessage.UPDATE_SUCCESS,
-            lang
-          )
-        }
+        return updatedLeaderboardSeason
       })
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
@@ -475,10 +438,7 @@ export class LeaderboardSeasonService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
       const existingLeaderboardSeason = await this.leaderboardSeasonRepo.findById(id)
       if (!existingLeaderboardSeason) {
@@ -493,11 +453,7 @@ export class LeaderboardSeasonService {
         this.translationService.deleteByKey(existingLeaderboardSeason.nameKey)
       ])
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(LeaderboardSeasonMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -557,14 +513,7 @@ export class LeaderboardSeasonService {
         eloFilter = { gte: found.minElo, lte: found.maxElo }
       } else {
         // unknown rankName -> return empty
-        return {
-          statusCode: HttpStatus.OK,
-          data: { top: [], me: null },
-          message: this.i18nService.translate(
-            LeaderboardSeasonMessage.GET_LIST_SUCCESS,
-            lang
-          )
-        }
+        return { top: [], me: null }
       }
     }
 
@@ -674,18 +623,14 @@ export class LeaderboardSeasonService {
     }
 
     return {
-      statusCode: HttpStatus.OK,
-      data: {
-        results: topMapped,
-        pagination: {
-          current: currentPage,
-          pageSize,
-          totalPage: Math.ceil(totalItems / pageSize),
-          totalItem: totalItems
-        },
-        me
+      results: topMapped,
+      pagination: {
+        current: currentPage,
+        pageSize,
+        totalPage: Math.ceil(totalItems / pageSize),
+        totalItem: totalItems
       },
-      message: this.i18nService.translate(LeaderboardSeasonMessage.GET_LIST_SUCCESS, lang)
+      me
     }
   }
 
@@ -733,13 +678,9 @@ export class LeaderboardSeasonService {
       : null
 
     return {
-      statusCode: HttpStatus.OK,
-      data: {
-        ...transformed,
-        nameTranslation: currentTranslation?.value ?? null,
-        ...(isAdmin ? { nameTranslations } : {})
-      },
-      message: this.i18nService.translate(LeaderboardSeasonMessage.GET_LIST_SUCCESS, lang)
+      ...transformed,
+      nameTranslation: currentTranslation?.value ?? null,
+      ...(isAdmin ? { nameTranslations } : {})
     }
   }
 

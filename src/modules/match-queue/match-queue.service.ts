@@ -337,10 +337,7 @@ export class MatchQueueService implements OnModuleInit {
 
       this.logger.log(`[MatchQueue] User ${createdById} joined queue with ELO ${userElo}`)
 
-      return {
-        data: result,
-        message: this.i18nService.translate(MatchQueueMessage.CREATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isUniqueConstraintPrismaError(error)) {
         throw new MatchQueueAlreadyExistsException()
@@ -352,7 +349,7 @@ export class MatchQueueService implements OnModuleInit {
     }
   }
 
-  async delete({ deletedById }: { deletedById: number }, lang: string = 'vi') {
+  async delete({ deletedById }: { deletedById: number }) {
     try {
       await this.matchQueueRepo.delete({
         deletedById
@@ -363,10 +360,7 @@ export class MatchQueueService implements OnModuleInit {
 
       this.logger.log(`[MatchQueue] User ${deletedById} left queue`)
 
-      return {
-        data: null,
-        message: this.i18nService.translate(MatchQueueMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()

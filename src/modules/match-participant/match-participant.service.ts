@@ -1,7 +1,6 @@
 import { BullAction, BullQueue } from '@/common/constants/bull-action.constant'
 import { MatchRoundNumber, MatchStatus } from '@/common/constants/match.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { MatchingSocketMessage, MatchParticipantMessage } from '@/i18n/message-keys'
+import { MatchingSocketMessage } from '@/i18n/message-keys'
 import { MatchRoundParticipantService } from '@/modules/match-round-participant/match-round-participant.service'
 import { MatchRoundService } from '@/modules/match-round/match-round.service'
 import { MatchService } from '@/modules/match/match.service'
@@ -37,7 +36,6 @@ export class MatchParticipantService {
     private readonly matchService: MatchService,
     private readonly matchRoundService: MatchRoundService,
     private readonly matchRoundParticipantService: MatchRoundParticipantService,
-    private readonly i18nService: I18nService,
     @InjectQueue(BullQueue.MATCH_PARTICIPANT_TIMEOUT)
     private readonly matchParticipantTimeoutQueue: Queue,
     @InjectQueue(BullQueue.MATCH_ROUND_PARTICIPANT_TIMEOUT)
@@ -45,33 +43,22 @@ export class MatchParticipantService {
     private readonly matchingGateway: MatchingGateway
   ) {}
 
-  async list(pagination: PaginationQuery, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.matchParticipantRepo.list(pagination)
-    return {
-      statusCode: 200,
-      data,
-      message: this.i18nService.translate(MatchParticipantMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   // Helper method to calculate weaknesses for a Pokemon (copied from PokemonService)
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const matchParticipant = await this.matchParticipantRepo.findById(id)
     if (!matchParticipant) {
       throw new MatchParticipantNotFoundException()
     }
 
-    return {
-      statusCode: 200,
-      data: matchParticipant,
-      message: this.i18nService.translate(MatchParticipantMessage.GET_LIST_SUCCESS, lang)
-    }
+    return matchParticipant
   }
 
-  async create(
-    { userId, data }: { userId: number; data: CreateMatchParticipantBody },
-    lang: string = 'vi'
-  ) {
+  async create({ userId, data }: { userId: number; data: CreateMatchParticipantBody }) {
     try {
       // check coi co truyen userId ko, neu ko thi lay cua created_by
       data.userId = data.userId || userId
@@ -82,11 +69,7 @@ export class MatchParticipantService {
           ...data
         }
       })
-      return {
-        statusCode: 201,
-        data: result,
-        message: this.i18nService.translate(MatchParticipantMessage.CREATE_SUCCESS, lang)
-      }
+      return result
     } catch (error) {
       if (isUniqueConstraintPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -101,18 +84,15 @@ export class MatchParticipantService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      userId
-    }: {
-      id: number
-      data: UpdateMatchParticipantBody
-      userId?: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    userId
+  }: {
+    id: number
+    data: UpdateMatchParticipantBody
+    userId?: number
+  }) {
     try {
       //check coi thang user nay co
       const existingParticipant = await this.matchParticipantRepo.findById(id)
@@ -150,11 +130,7 @@ export class MatchParticipantService {
         await this.checkBothParticipantsAccepted(existingParticipant.matchId)
       }
 
-      return {
-        statusCode: 200,
-        data: matchParticipant,
-        message: this.i18nService.translate(MatchParticipantMessage.UPDATE_SUCCESS, lang)
-      }
+      return matchParticipant
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new MatchParticipantNotFoundException()
@@ -493,7 +469,7 @@ export class MatchParticipantService {
     }
   }
 
-  async delete({ id, userId }: { id: number; userId?: number }, lang: string = 'vi') {
+  async delete({ id, userId }: { id: number; userId?: number }) {
     try {
       const existMatchParticipant = await this.matchParticipantRepo.findById(id)
       if (!existMatchParticipant) {
@@ -501,11 +477,7 @@ export class MatchParticipantService {
       }
 
       await this.matchParticipantRepo.delete(id)
-      return {
-        statusCode: 200,
-        data: null,
-        message: this.i18nService.translate(MatchParticipantMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new MatchParticipantNotFoundException()
