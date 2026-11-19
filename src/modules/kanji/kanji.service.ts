@@ -1,6 +1,5 @@
 import { UploadService } from '@/modules/upload/upload.service'
 import { isKanjiCharacter } from '@/common/utils/japanese-text'
-import { I18nService } from '@/i18n/i18n.service'
 import { KanjiMessage as M } from '@/i18n/message-keys'
 import { KanjiReadingService } from '@/modules/kanji-reading/kanji-reading.service'
 import { isUniqueConstraintPrismaError } from '@/shared/utils/prisma-errors'
@@ -29,12 +28,11 @@ export class KanjiService {
   constructor(
     private readonly kanjiRepository: KanjiRepo,
     private readonly kanjiReadingService: KanjiReadingService,
-    private readonly uploadService: UploadService,
-    private readonly i18nService: I18nService
+    private readonly uploadService: UploadService
   ) {}
 
   // Admin table: the meaning in Vietnamese (else the first one), readings joined
-  async getKanjiManagementList(params: GetKanjiListQuery, lang: string = 'vi') {
+  async getKanjiManagementList(params: GetKanjiListQuery) {
     const result = await this.kanjiRepository.findMany(this.listParams(params))
     const meaningsOf = await this.meaningsOf(result.data.map((k) => k.meaningKey))
     const readingsOf = (kanji: (typeof result.data)[number], type: string) =>
@@ -43,74 +41,65 @@ export class KanjiService {
         .map((r) => r.reading)
         .join(', ')
     return {
-      statusCode: 200,
-      message: this.i18nService.translate(M.GET_MANAGEMENT_LIST_SUCCESS, lang),
-      data: {
-        results: result.data.map((kanji) => {
-          const meanings = meaningsOf(kanji.meaningKey)
-          return {
-            id: kanji.id,
-            kanji: kanji.character,
-            // Was the translation of languageId 1, assumed to be Vietnamese
-            meaning: meanings.vi ?? Object.values(meanings)[0] ?? '',
-            strokeCount: kanji.strokeCount,
-            jlptLevel: kanji.jlptLevel,
-            onyomi: readingsOf(kanji, 'onyomi'),
-            kunyomi: readingsOf(kanji, 'kunyomi'),
-            createdAt: kanji.createdAt,
-            updatedAt: kanji.updatedAt
-          }
-        }),
-        pagination: this.pagination(result)
-      }
+      results: result.data.map((kanji) => {
+        const meanings = meaningsOf(kanji.meaningKey)
+        return {
+          id: kanji.id,
+          kanji: kanji.character,
+          // Was the translation of languageId 1, assumed to be Vietnamese
+          meaning: meanings.vi ?? Object.values(meanings)[0] ?? '',
+          strokeCount: kanji.strokeCount,
+          jlptLevel: kanji.jlptLevel,
+          onyomi: readingsOf(kanji, 'onyomi'),
+          kunyomi: readingsOf(kanji, 'kunyomi'),
+          createdAt: kanji.createdAt,
+          updatedAt: kanji.updatedAt
+        }
+      }),
+      pagination: this.pagination(result)
     }
   }
 
   // Each kanji with its meaning as { meaningKey, translations: { code: value } }
-  async findMany(params: GetKanjiListQuery, lang: string = 'vi') {
+  async findMany(params: GetKanjiListQuery) {
     const result = await this.kanjiRepository.findMany({
       ...this.listParams(params),
       lessonId: params.lessonId
     })
     const meaningsOf = await this.meaningsOf(result.data.map((k) => k.meaningKey))
     return {
-      statusCode: 200,
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: {
-        results: result.data.map((kanji) => {
-          const translations = meaningsOf(kanji.meaningKey)
-          return {
-            ...kanji,
-            meanings: Object.keys(translations).length
-              ? [{ meaningKey: kanji.meaningKey, translations }]
-              : []
-          }
-        }),
-        pagination: this.pagination(result)
-      }
+      results: result.data.map((kanji) => {
+        const translations = meaningsOf(kanji.meaningKey)
+        return {
+          ...kanji,
+          meanings: Object.keys(translations).length
+            ? [{ meaningKey: kanji.meaningKey, translations }]
+            : []
+        }
+      }),
+      pagination: this.pagination(result)
     }
   }
 
   // Also used by lesson-content
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const kanji = await this.kanjiRepository.findById(id)
     if (!kanji) throw new KanjiNotFoundException()
-    return { data: kanji, message: this.i18nService.translate(M.GET_SUCCESS, lang) }
+    return kanji
   }
 
   // Also used by vocabulary (a missing kanji is a 404)
-  async findByCharacter(character: string, lang: string = 'vi') {
+  async findByCharacter(character: string) {
     const kanji = await this.kanjiRepository.findByCharacter(character)
     if (!kanji) throw new KanjiNotFoundException()
-    return { data: kanji, message: this.i18nService.translate(M.GET_SUCCESS, lang) }
+    return kanji
   }
 
   // The schema checks the character (one kanji) and parses readings/meanings
   // sent as JSON strings by multipart forms. Only the first meaning is kept
   async createWithMeanings(
     data: CreateKanjiWithMeaningsBody,
-    image?: Express.Multer.File,
-    lang: string = 'vi'
+    image?: Express.Multer.File
   ) {
     try {
       if (await this.kanjiRepository.findByCharacter(data.character)) {
@@ -139,15 +128,11 @@ export class KanjiService {
       const readings = await this.saveReadings(created.id, data.readings ?? [])
 
       return {
-        statusCode: 201,
-        data: {
-          kanji,
-          readings: readings.length > 0 ? readings : undefined,
-          meanings: meanings[0]?.translations
-            ? [{ meaningKey, translations: meanings[0].translations }]
-            : []
-        },
-        message: this.i18nService.translate(M.CREATE_SUCCESS, lang)
+        kanji,
+        readings: readings.length > 0 ? readings : undefined,
+        meanings: meanings[0]?.translations
+          ? [{ meaningKey, translations: meanings[0].translations }]
+          : []
       }
     } catch (error) {
       throw this.toKanjiError(error)
@@ -158,8 +143,7 @@ export class KanjiService {
   async updateWithMeanings(
     identifier: string,
     data: UpdateKanjiWithMeaningsBody,
-    image?: Express.Multer.File,
-    lang: string = 'vi'
+    image?: Express.Multer.File
   ) {
     try {
       const isId = String(Number(identifier)) === identifier
@@ -204,21 +188,17 @@ export class KanjiService {
         }
       }
 
-      return {
-        statusCode: 200,
-        data: { kanji, readings: readings.length > 0 ? readings : undefined, meanings },
-        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
-      }
+      return { kanji, readings: readings.length > 0 ? readings : undefined, meanings }
     } catch (error) {
       throw this.toKanjiError(error)
     }
   }
 
-  async delete(id: number, lang: string = 'vi') {
+  async delete(id: number) {
     try {
       if (!(await this.kanjiRepository.exists(id))) throw new KanjiNotFoundException()
       await this.kanjiRepository.delete(id)
-      return { message: this.i18nService.translate(M.DELETE_SUCCESS, lang) }
+      return
     } catch (error) {
       throw this.toKanjiError(error)
     }
@@ -504,12 +484,6 @@ export class KanjiService {
       }
 
       return {
-        statusCode: 201,
-        message: this.i18nService.translate(M.IMPORT_XLSX_SUCCESS, 'vi', {
-          created: created.length,
-          updated: updated.length,
-          skipped: skipped.length
-        }),
         data: {
           created,
           updated,
@@ -529,10 +503,7 @@ export class KanjiService {
    * Import Kanji từ file TXT (tab-separated)
    * Cấu trúc: kanji	mean	detail	kun	on	jlpt	strokes
    */
-  async importFromTxt(
-    file: Express.Multer.File,
-    language: string = 'en'
-  ): Promise<{ statusCode: number; message: string; data: any }> {
+  async importFromTxt(file: Express.Multer.File, language: string = 'en') {
     try {
       if (!file || !file.buffer) {
         throw new InvalidKanjiDataException(M.INVALID_FILE)
@@ -691,13 +662,6 @@ export class KanjiService {
       }
 
       return {
-        statusCode: 201,
-        message: this.i18nService.translate(M.IMPORT_TXT_SUCCESS, 'vi', {
-          language,
-          created: created.length,
-          updated: updated.length,
-          skipped: skipped.length
-        }),
         data: {
           created,
           updated,
@@ -718,11 +682,7 @@ export class KanjiService {
    * Xóa toàn bộ dữ liệu Kanji và những thứ liên quan
    * Bao gồm: Kanji, Kanji_Reading, Vocabulary_Kanji, và các Translation liên quan
    */
-  async deleteAllKanjiData(): Promise<{
-    statusCode: number
-    message: string
-    data: any
-  }> {
+  async deleteAllKanjiData() {
     try {
       this.logger.log('Starting to delete all Kanji data and related records')
 
@@ -731,15 +691,7 @@ export class KanjiService {
 
       this.logger.log(`Successfully deleted all Kanji data: ${JSON.stringify(result)}`)
 
-      return {
-        statusCode: 200,
-        message: this.i18nService.translate(M.DELETE_ALL_SUCCESS, 'vi', {
-          kanji: result.kanjiDeleted,
-          readings: result.readingDeleted,
-          translations: result.translationDeleted
-        }),
-        data: result
-      }
+      return result
     } catch (error) {
       this.logger.error('Error deleting all Kanji data:', error)
       throw this.toKanjiError(error)

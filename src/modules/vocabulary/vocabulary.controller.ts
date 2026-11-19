@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { VocabularyMessage as M } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { IsPublic } from '@/common/decorators/auth.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
@@ -79,7 +81,10 @@ import { VocabularyService } from './vocabulary.service'
 @ApiTags('Vocabulary')
 @Controller('vocabulary')
 export class VocabularyController {
-  constructor(private readonly vocabularyService: VocabularyService) {}
+  constructor(
+    private readonly vocabularyService: VocabularyService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Put('by-word/:wordJp')
   @UseInterceptors(
@@ -134,14 +139,16 @@ export class VocabularyController {
     if (body.wordJp) updateData.wordJp = body.wordJp
     if (body.reading) updateData.reading = body.reading
 
-    return this.vocabularyService.update(
-      vocabulary.data.id,
-      updateData,
-      imageFile,
-      audioFile,
-      regenerateAudio,
-      lang
-    )
+    return {
+      message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
+      data: await this.vocabularyService.update(
+        vocabulary.id,
+        updateData,
+        imageFile,
+        audioFile,
+        regenerateAudio
+      )
+    }
   }
 
   @Post('import')
@@ -184,13 +191,17 @@ export class VocabularyController {
         : undefined
     const allowUpdateLevelN =
       parsedLevelN !== undefined || updateLevelN === 'true' || updateLevelN === '1'
-    return this.vocabularyService.importFromXlsxFiles(
+    const data = await this.vocabularyService.importFromXlsxFiles(
       files,
       userId,
       language,
       allowUpdateLevelN,
       parsedLevelN
     )
+    return {
+      message: `Import từ vựng thành công: ${data.created.length} mục, bỏ qua ${data.skipped.length} mục`,
+      data
+    }
   }
 
   @Post('import-txt')
@@ -211,7 +222,11 @@ export class VocabularyController {
     @ActiveUser('userId') userId?: number,
     @Query('language') language?: string
   ) {
-    return this.vocabularyService.importFromTxt(file, userId, language)
+    const data = await this.vocabularyService.importFromTxt(file, userId, language)
+    return {
+      message: `Import TXT thành công: ${data.created.length} mục, bỏ qua ${data.skipped.length} mục`,
+      data
+    }
   }
 
   @Get()
@@ -224,8 +239,11 @@ export class VocabularyController {
   })
   @ApiQuery({ type: GetVocabularyListQuerySwaggerDTO })
   @ZodSerializerDto(VocabularyListResDTO)
-  findAll(@Query() query: GetVocabularyListQueryDTO, @I18nLang() lang: string) {
-    return this.vocabularyService.findAll(query, lang)
+  async findAll(@Query() query: GetVocabularyListQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
+      data: await this.vocabularyService.findAll(query, lang)
+    }
   }
 
   @Get('search')
@@ -242,13 +260,16 @@ export class VocabularyController {
     @I18nLang() lang: string,
     @ActiveUser('userId') userId?: number
   ) {
-    return this.vocabularyService.search(
-      query.keyword,
-      lang,
-      query.currentPage,
-      query.pageSize,
-      userId
-    )
+    return {
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
+      data: await this.vocabularyService.search(
+        query.keyword,
+        lang,
+        query.currentPage,
+        query.pageSize,
+        userId
+      )
+    }
   }
 
   @Get('search/:id')
@@ -264,12 +285,15 @@ export class VocabularyController {
     type: VocabularyDetailResponseSwaggerDTO
   })
   @ZodSerializerDto(VocabularyDetailResDTO)
-  findOneBySearch(
+  async findOneBySearch(
     @Param() params: GetVocabularyByIdParamsDTO,
     @I18nLang() lang: string,
     @ActiveUser('userId') userId?: number
   ) {
-    return this.vocabularyService.findOneDetail(params.id, lang, userId)
+    return {
+      message: this.i18nService.translate(M.GET_SUCCESS, lang),
+      data: await this.vocabularyService.findOneDetail(params.id, lang, userId)
+    }
   }
 
   @Get('search-history')
@@ -286,17 +310,20 @@ export class VocabularyController {
     type: VocabularySearchHistoryResponseSwaggerDTO
   })
   @ZodSerializerDto(VocabularySearchHistoryResDTO)
-  getSearchHistory(
+  async getSearchHistory(
     @Query() query: VocabularySearchHistoryQueryDTO,
     @I18nLang() lang: string,
     @ActiveUser('userId') userId: number
   ) {
-    return this.vocabularyService.getSearchHistory(
-      userId,
-      query.currentPage,
-      query.pageSize,
-      lang
-    )
+    return {
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
+      data: await this.vocabularyService.getSearchHistory(
+        userId,
+        query.currentPage,
+        query.pageSize,
+        lang
+      )
+    }
   }
 
   @Get('statistics')
@@ -308,8 +335,11 @@ export class VocabularyController {
     type: VocabularyStatisticsResponseSwaggerDTO
   })
   @ZodSerializerDto(VocabularyStatisticsResDTO)
-  getStatistics(@I18nLang() lang: string) {
-    return this.vocabularyService.getStatistics(lang)
+  async getStatistics(@I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(M.GET_STATS_SUCCESS, lang),
+      data: await this.vocabularyService.getStatistics()
+    }
   }
 
   @Get(':id')
@@ -321,8 +351,11 @@ export class VocabularyController {
     type: VocabularyResponseSwaggerDTO
   })
   @ZodSerializerDto(VocabularyResDTO)
-  findOne(@Param() params: GetVocabularyByIdParamsDTO, @I18nLang() lang: string) {
-    return this.vocabularyService.findOne(params.id, lang)
+  async findOne(@Param() params: GetVocabularyByIdParamsDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(M.GET_SUCCESS, lang),
+      data: await this.vocabularyService.findOne(params.id, lang)
+    }
   }
 
   @Delete(':id')
@@ -335,8 +368,11 @@ export class VocabularyController {
     type: VocabularyResponseSwaggerDTO
   })
   @ZodSerializerDto(VocabularyResDTO)
-  remove(@Param() params: GetVocabularyByIdParamsDTO, @I18nLang() lang: string) {
-    return this.vocabularyService.remove(params.id, lang)
+  async remove(@Param() params: GetVocabularyByIdParamsDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(M.DELETE_SUCCESS, lang),
+      data: await this.vocabularyService.remove(params.id)
+    }
   }
 
   @Post('add-meaning')
@@ -357,13 +393,15 @@ export class VocabularyController {
     status: 404,
     description: 'Không tìm thấy từ vựng'
   })
-  addMeaning(@Body() body: AddMeaningToVocabularyDTO, @I18nLang() lang: string) {
+  async addMeaning(@Body() body: AddMeaningToVocabularyDTO) {
     const { vocabularyId, ...meaningData } = body
-    return this.vocabularyService.addMeaningToExistingVocabulary(
-      vocabularyId,
-      meaningData,
-      lang
-    )
+    return {
+      data: await this.vocabularyService.addMeaningToExistingVocabulary(
+        vocabularyId,
+        meaningData
+      ),
+      message: 'Thêm nghĩa mới thành công'
+    }
   }
 
   @Post('full')
@@ -384,7 +422,7 @@ export class VocabularyController {
     type: CreateVocabularyFullMultipartSwaggerDTO,
     description: 'Form data với audio/image files'
   })
-  createFull(
+  async createFull(
     @Body() body: CreateVocabularyFullMultipartDTO,
     @UploadedFiles()
     files: { audioFile?: Express.Multer.File[]; imageFile?: Express.Multer.File[] },
@@ -403,14 +441,20 @@ export class VocabularyController {
       translations: body.translations as any // Already parsed by Zod transform
     }
 
-    return this.vocabularyService.createFullVocabularyWithFiles(
+    const result = await this.vocabularyService.createFullVocabularyWithFiles(
       data,
       audioFile,
       imageFile,
-      userId,
-      undefined,
-      lang
+      userId
     )
+    // an existing word only gets the new meaning
+    return {
+      data: result.data,
+      message: this.i18nService.translate(
+        result.meaningAdded ? M.ADD_MEANING_SUCCESS : M.CREATE_FULL_SUCCESS,
+        lang
+      )
+    }
   }
 
   //#endregion
@@ -436,7 +480,13 @@ export class VocabularyController {
     @ActiveUser('userId') userId: number | undefined,
     @I18nLang() lang: string
   ) {
-    return this.vocabularyService.createSampleVocabularies(userId, lang)
+    const { data } = await this.vocabularyService.createSampleVocabularies(userId)
+    return {
+      message: this.i18nService.translate(M.CREATE_SAMPLE_SUCCESS, lang, {
+        count: data.results.length
+      }),
+      data
+    }
   }
   //#endregion
 }
