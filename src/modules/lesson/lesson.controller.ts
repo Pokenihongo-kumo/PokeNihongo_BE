@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { LessonMessage as M } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { AuthenticationGuard } from '@/common/guards/authentication.guard'
 import { MessageResDTO } from '@/shared/dtos/response.dto'
@@ -46,7 +48,10 @@ import { LessonService } from './lesson.service'
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class LessonController {
-  constructor(private readonly lessonService: LessonService) {}
+  constructor(
+    private readonly lessonService: LessonService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Lấy danh sách bài học với phân trang và tìm kiếm' })
@@ -63,8 +68,11 @@ export class LessonController {
     required: false
   })
   @ZodSerializerDto(LessonListResDTO)
-  getLessonList(@Query() query: GetLessonListQueryDTO, @I18nLang() lang: string) {
-    return this.lessonService.getLessonList(query, lang)
+  async getLessonList(@Query() query: GetLessonListQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
+      data: await this.lessonService.getLessonList(query, lang)
+    }
   }
 
   @Get(':id')
@@ -82,12 +90,15 @@ export class LessonController {
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy bài học' })
   @ZodSerializerDto(LessonResDTO)
-  getLessonById(
+  async getLessonById(
     @Param() params: GetLessonByIdParamsDTO,
     @Query('lang') titleLang: string | undefined,
     @I18nLang() lang: string
   ) {
-    return this.lessonService.getLessonById(params.id, titleLang, lang)
+    return {
+      message: this.i18nService.translate(M.GET_SUCCESS, lang),
+      data: await this.lessonService.getLessonById(params.id, titleLang)
+    }
   }
 
   @Get('slug/:slug')
@@ -105,12 +116,15 @@ export class LessonController {
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy bài học' })
   @ZodSerializerDto(LessonResDTO)
-  getLessonBySlug(
+  async getLessonBySlug(
     @Param('slug') slug: string,
     @Query('lang') titleLang: string | undefined,
     @I18nLang() lang: string
   ) {
-    return this.lessonService.getLessonBySlug(slug, titleLang, lang)
+    return {
+      message: this.i18nService.translate(M.GET_SUCCESS, lang),
+      data: await this.lessonService.getLessonBySlug(slug, titleLang)
+    }
   }
 
   // Lesson CRUD
@@ -124,12 +138,15 @@ export class LessonController {
   })
   @ZodSerializerDto(LessonResDTO)
   @ApiBody({ type: CreateLessonSwaggerDTO })
-  createLesson(
+  async createLesson(
     @Body() body: CreateLessonBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.lessonService.createLesson(body, userId, lang)
+    return {
+      message: this.i18nService.translate(M.CREATE_SUCCESS, lang),
+      data: await this.lessonService.createLesson(body, userId)
+    }
   }
 
   @Put(':id')
@@ -140,12 +157,15 @@ export class LessonController {
     type: LessonResponseSwaggerDTO
   })
   @ZodSerializerDto(LessonResDTO)
-  updateLesson(
+  async updateLesson(
     @Param() params: GetLessonByIdParamsDTO,
     @Body() body: UpdateLessonBodyDTO,
     @I18nLang() lang: string
   ) {
-    return this.lessonService.updateLesson(params.id, body, lang)
+    return {
+      message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
+      data: await this.lessonService.updateLesson(params.id, body)
+    }
   }
 
   @Patch(':id/toggle-publish')
@@ -157,8 +177,18 @@ export class LessonController {
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy bài học' })
   @ZodSerializerDto(LessonResDTO)
-  togglePublishLesson(@Param() params: GetLessonByIdParamsDTO, @I18nLang() lang: string) {
-    return this.lessonService.togglePublishLesson(params.id, lang)
+  async togglePublishLesson(
+    @Param() params: GetLessonByIdParamsDTO,
+    @I18nLang() lang: string
+  ) {
+    const data = await this.lessonService.togglePublishLesson(params.id)
+    return {
+      message: this.i18nService.translate(
+        data.isPublished ? M.PUBLISH_SUCCESS : M.UNPUBLISH_SUCCESS,
+        lang
+      ),
+      data
+    }
   }
 
   @Delete(':id')
@@ -167,7 +197,8 @@ export class LessonController {
   @ApiResponse({ status: 204, description: 'Xóa bài học thành công' })
   @ApiResponse({ status: 404, description: 'Không tìm thấy bài học' })
   @ZodSerializerDto(MessageResDTO)
-  deleteLesson(@Param() params: GetLessonByIdParamsDTO, @I18nLang() lang: string) {
-    return this.lessonService.deleteLesson(params.id, lang)
+  async deleteLesson(@Param() params: GetLessonByIdParamsDTO, @I18nLang() lang: string) {
+    await this.lessonService.deleteLesson(params.id)
+    return { message: this.i18nService.translate(M.DELETE_SUCCESS, lang) }
   }
 }

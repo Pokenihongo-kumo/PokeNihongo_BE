@@ -484,10 +484,11 @@ export class UserExerciseAttemptService {
         shouldLoadOldAnswers = true
       }
 
-      const result =
+      // replaced below by the mapped questions (as any: another shape)
+      let result: any =
         await this.exercisesService.getExercisesByIdHaveQuestionBanks(exerciseId)
       // Map translations: question strictly from translation; answers from translation or parsed composite string
-      const testSet = (result.data as any)?.testSet
+      const testSet = (result as any)?.testSet
       const normalizedLang = (languageCode || '').toLowerCase().split('-')[0] || 'vi'
       // Load user answer logs chỉ nếu cần khôi phục (ABANDONED)
       let selectedAnswerIds = new Set<number>()
@@ -584,11 +585,11 @@ export class UserExerciseAttemptService {
           })
         )
 
-        result.data = {
-          id: (result.data as any).id,
-          exerciseType: (result.data as any).exerciseType,
-          isBlocked: (result.data as any).isBlocked,
-          testSetId: (result.data as any).testSetId,
+        result = {
+          id: (result as any).id,
+          exerciseType: (result as any).exerciseType,
+          isBlocked: (result as any).isBlocked,
+          testSetId: (result as any).testSetId,
           testSet: {
             id: testSet.id,
             testSetQuestionBanks: mappedBanks
@@ -603,10 +604,9 @@ export class UserExerciseAttemptService {
       return {
         statusCode: 200,
         data: {
-          ...result.data,
+          ...result,
           userExerciseAttemptId,
-          totalQuestions:
-            (result.data as any)?.testSet?.testSetQuestionBanks?.length || 0,
+          totalQuestions: (result as any)?.testSet?.testSetQuestionBanks?.length || 0,
           answeredQuestions: answeredCount,
           time: Number(attempt?.time ?? 0)
         },
@@ -647,7 +647,7 @@ export class UserExerciseAttemptService {
       const exerciseRes = await this.exercisesService.getExercisesByIdHaveQuestionBanks(
         attempt.exerciseId
       )
-      const testSet = (exerciseRes.data as any)?.testSet
+      const testSet = (exerciseRes as any)?.testSet
 
       // Load user answer logs for this attempt
       const logsRes = await this.userAnswerLogService.findByUserExerciseAttemptId(id)
@@ -786,10 +786,10 @@ export class UserExerciseAttemptService {
         const score = calculateScore(answeredCorrect, totalQuestions)
 
         const data = {
-          id: (exerciseRes.data as any).id,
-          exerciseType: (exerciseRes.data as any).exerciseType,
-          isBlocked: (exerciseRes.data as any).isBlocked,
-          testSetId: (exerciseRes.data as any).testSetId,
+          id: (exerciseRes as any).id,
+          exerciseType: (exerciseRes as any).exerciseType,
+          isBlocked: (exerciseRes as any).isBlocked,
+          testSetId: (exerciseRes as any).testSetId,
           testSet: {
             id: testSet.id,
             testSetQuestionBanks: mappedBanks
@@ -812,7 +812,7 @@ export class UserExerciseAttemptService {
       return {
         statusCode: 200,
         message: this.i18nService.translate(M.REVIEW_SUCCESS, normalizedLang),
-        data: exerciseRes.data
+        data: exerciseRes
       }
     } catch (error) {
       this.logger.error('Error building exercise attempt review:', error)

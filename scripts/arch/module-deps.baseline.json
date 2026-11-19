@@ -9,10 +9,10 @@
     "prismaOutsideRepoFiles": 0,
     "httpSchemasInEntities": 0,
     "handWrittenEnvelopes": 2,
-    "serviceEnvelopeFiles": 67,
+    "serviceEnvelopeFiles": 64,
     "prismaOutsideRepoCalls": 0,
-    "serviceStatusCodes": 435,
-    "serviceMessages": 539
+    "serviceStatusCodes": 412,
+    "serviceMessages": 513
   },
   "details": {
     "crossModuleRepoImports": [
@@ -71,7 +71,6 @@
       "modules/auth/google.service.ts",
       "modules/daily-request/daily-request.service.ts",
       "modules/debuff-round/debuff-round.service.ts",
-      "modules/exercises/exercises.service.ts",
       "modules/feature/feature.service.ts",
       "modules/flashcard/flashcard.service.ts",
       "modules/gacha-banner/gacha-banner.service.ts",
@@ -85,7 +84,6 @@
       "modules/kanji/kanji.service.ts",
       "modules/leaderboard-season/leaderboard-season.service.ts",
       "modules/lesson-content/lesson-content.service.ts",
-      "modules/lesson/lesson.service.ts",
       "modules/match-participant/match-participant.service.ts",
       "modules/match-queue/match-queue.service.ts",
       "modules/match-round-participant/match-round-participant.service.ts",
@@ -108,7 +106,6 @@
       "modules/subscription-feature/subscription-feature.service.ts",
       "modules/subscription-plan/subscription-plan.service.ts",
       "modules/subscription/subscription.service.ts",
-      "modules/test/test.service.ts",
       "modules/upload/upload.service.ts",
       "modules/user-achievement/user-achievement.service.ts",
       "modules/user-ai-conversation/user-ai-conversation.service.ts",

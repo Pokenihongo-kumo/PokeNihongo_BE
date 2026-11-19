@@ -1,5 +1,4 @@
 import { pickLabelFromComposite } from '@/common/utils/prase.utils'
-import { I18nService } from '@/i18n/i18n.service'
 import { TestMessage as M } from '@/i18n/message-keys'
 import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { toPaginationMeta } from '@/shared/utils/pagination'
@@ -42,20 +41,15 @@ export class TestService {
     private readonly testSetQuestionBankService: TestSetQuestionBankService,
     private readonly userTestAttemptRepo: UserTestAttemptRepo,
     private readonly userTestRepo: UserTestRepo,
-    private readonly userTestService: UserTestService,
-    private readonly i18nService: I18nService
+    private readonly userTestService: UserTestService
   ) {}
 
   // Admins get every translation of name/description (lang undefined)
-  async findAll(query: GetTestListQuery, lang?: string, messageLang: string = 'vi') {
+  async findAll(query: GetTestListQuery, lang?: string) {
     const { data, total } = await this.testRepo.findMany({ ...query, language: lang })
     return {
-      statusCode: 200,
-      data: {
-        results: data,
-        pagination: toPaginationMeta(query.currentPage, query.pageSize, total)
-      },
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, messageLang)
+      results: data,
+      pagination: toPaginationMeta(query.currentPage, query.pageSize, total)
     }
   }
 
@@ -63,19 +57,11 @@ export class TestService {
   async findOne(id: number, lang: string = 'vi') {
     const test = await this.testRepo.findById(id, lang)
     if (!test) throw new TestNotFoundException()
-    return {
-      statusCode: 200,
-      data: test,
-      message: this.i18nService.translate(M.GET_SUCCESS, lang)
-    }
+    return test
   }
 
   // There is only one PLACEMENT_TEST_DONE test; every user then gets a UserTest
-  async createTestWithMeanings(
-    data: CreateTestWithMeaningsBody,
-    userId: number,
-    lang: string = 'vi'
-  ) {
+  async createTestWithMeanings(data: CreateTestWithMeaningsBody, userId: number) {
     try {
       if (data.testType === TestStatus.PLACEMENT_TEST_DONE) {
         const existing = await this.testRepo.findPlacementDoneTestId()
@@ -83,11 +69,7 @@ export class TestService {
       }
       const test = await this.testRepo.createWithMeanings(data, userId)
       await this.initUserTests()
-      return {
-        statusCode: 201,
-        data: test,
-        message: this.i18nService.translate(M.CREATE_SUCCESS, lang)
-      }
+      return test
     } catch (error) {
       throw this.toTestError(error, M.CANNOT_CREATE)
     }
@@ -98,8 +80,7 @@ export class TestService {
   async updateTestWithMeanings(
     id: number,
     data: UpdateTestWithMeaningsBody,
-    userId: number,
-    lang: string = 'vi'
+    userId: number
   ) {
     try {
       const test = await this.ownedTest(id, userId)
@@ -114,33 +95,25 @@ export class TestService {
         })
       }
       await this.initUserTests()
-      return {
-        statusCode: 200,
-        data: updated,
-        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
-      }
+      return updated
     } catch (error) {
       throw this.toTestError(error)
     }
   }
 
   // Only the creator; returns the deleted test
-  async deleteTest(id: number, userId: number, lang: string = 'vi') {
+  async deleteTest(id: number, userId: number) {
     try {
       const test = await this.ownedTest(id, userId)
       await this.testRepo.delete(id)
-      return {
-        statusCode: 200,
-        data: test,
-        message: this.i18nService.translate(M.DELETE_SUCCESS, lang)
-      }
+      return test
     } catch (error) {
       throw this.toTestError(error)
     }
   }
 
   // Every id must exist and belong to the user (up to 100)
-  async deleteManyTests(data: DeleteManyTestsBody, userId: number, lang: string = 'vi') {
+  async deleteManyTests(data: DeleteManyTestsBody, userId: number) {
     try {
       const { ids } = data
       const tests = await this.testRepo.findCreatorsOf(ids)
@@ -158,17 +131,10 @@ export class TestService {
       if (result.deletedCount === 0)
         throw new TestRuleViolationException(M.CANNOT_DELETE_MANY)
       return {
-        statusCode: 200,
-        data: {
-          deletedCount: result.deletedCount,
-          deletedIds: result.deletedIds,
-          requestedCount: ids.length,
-          notFoundCount: ids.length - result.deletedCount
-        },
-        message: this.i18nService.translate(M.DELETE_MANY_SUCCESS, lang, {
-          deleted: result.deletedCount,
-          requested: ids.length
-        })
+        deletedCount: result.deletedCount,
+        deletedIds: result.deletedIds,
+        requestedCount: ids.length,
+        notFoundCount: ids.length - result.deletedCount
       }
     } catch (error) {
       throw this.toTestError(error, M.CANNOT_DELETE_MANY)
@@ -178,11 +144,7 @@ export class TestService {
   // Test sets that belonged to another test move to this one.
   // LESSON_REVIEW: one each of VOCABULARY/GRAMMAR/KANJI (3 at most).
   // READING/LISTENING/SPEAKING_TEST: only that type; SPEAKING_TEST: one at most
-  async addTestSetsToTest(
-    testId: number,
-    data: AddTestSetsToTestBody,
-    lang: string = 'vi'
-  ) {
+  async addTestSetsToTest(testId: number, data: AddTestSetsToTestBody) {
     try {
       const test = await this.testRepo.findById(testId)
       if (!test) throw new TestNotFoundException()
@@ -205,22 +167,14 @@ export class TestService {
       // Move the test sets out of the tests they belonged to
       await this.testRepo.unlinkTestSetsFromOtherTests(data.testSetIds, testId)
       await this.testRepo.linkTestSets(testId, data.testSetIds)
-      return {
-        statusCode: 200,
-        data: { testId, addedTestSetIds: data.testSetIds, count: data.testSetIds.length },
-        message: this.i18nService.translate(M.ADD_TESTSETS_SUCCESS, lang)
-      }
+      return { testId, addedTestSetIds: data.testSetIds, count: data.testSetIds.length }
     } catch (error) {
       throw this.toTestError(error, M.CANNOT_ADD_TESTSETS)
     }
   }
 
   // The lesson's review test ends up with exactly these test sets
-  async addTestSetsToLessonReviewTest(
-    lessonId: number,
-    data: AddTestSetsToTestBody,
-    lang: string = 'vi'
-  ) {
+  async addTestSetsToLessonReviewTest(lessonId: number, data: AddTestSetsToTestBody) {
     try {
       const lesson = await this.testRepo.findLessonTestId(lessonId)
       if (!lesson) throw new TestNotFoundException(M.LESSON_NOT_FOUND, { id: lessonId })
@@ -233,29 +187,21 @@ export class TestService {
         .map((tts) => tts.testSetId)
         .filter((id) => !data.testSetIds.includes(id))
       if (toRemove.length > 0) {
-        await this.removeTestSetsFromTest(lesson.testId, { testSetIds: toRemove }, lang)
+        await this.removeTestSetsFromTest(lesson.testId, { testSetIds: toRemove })
       }
-      return await this.addTestSetsToTest(lesson.testId, data, lang)
+      return await this.addTestSetsToTest(lesson.testId, data)
     } catch (error) {
       throw this.toTestError(error, M.CANNOT_ADD_TESTSETS)
     }
   }
 
-  async removeTestSetsFromTest(
-    testId: number,
-    data: RemoveTestSetsFromTestBody,
-    lang: string = 'vi'
-  ) {
+  async removeTestSetsFromTest(testId: number, data: RemoveTestSetsFromTestBody) {
     try {
       if (!(await this.testRepo.findById(testId))) throw new TestNotFoundException()
       const where = { testId, testSetId: { in: data.testSetIds } }
       const { count } = await this.testRepo.deleteTestSetLinks(where)
       if (count === 0) throw new TestRuleViolationException(M.NO_TESTSET_TO_REMOVE)
-      return {
-        statusCode: 200,
-        data: { testId, removedTestSetIds: data.testSetIds, count },
-        message: this.i18nService.translate(M.REMOVE_TESTSETS_SUCCESS, lang)
-      }
+      return { testId, removedTestSetIds: data.testSetIds, count }
     } catch (error) {
       throw this.toTestError(error, M.CANNOT_REMOVE_TESTSETS)
     }
@@ -394,7 +340,7 @@ export class TestService {
   }
   //#endregion
 
-  async findFullById(testId: number, language: string = 'vi'): Promise<MessageResDTO> {
+  async findFullById(testId: number, language: string = 'vi') {
     try {
       this.logger.log(`Finding full test by ID: ${testId}, language: ${language}`)
 
@@ -511,20 +457,13 @@ export class TestService {
         testSets: testSetsWithDetails
       }
 
-      return {
-        statusCode: 200,
-        data: result,
-        message: this.i18nService.translate(M.GET_SUCCESS, language)
-      }
+      return result
     } catch (error) {
       throw this.toTestError(error, M.CANNOT_GET)
     }
   }
 
-  async findFullByIdForUser(
-    testId: number,
-    language: string = 'vi'
-  ): Promise<MessageResDTO> {
+  async findFullByIdForUser(testId: number, language: string = 'vi') {
     try {
       this.logger.log(
         `Finding full test by ID for user: ${testId}, language: ${language}`
@@ -645,17 +584,17 @@ export class TestService {
         testSets: testSetsWithDetails
       }
 
-      return {
-        statusCode: 200,
-        data: result,
-        message: this.i18nService.translate(M.GET_SUCCESS, language)
-      }
+      return result
     } catch (error) {
       throw this.toTestError(error, M.CANNOT_GET)
     }
   }
 
-  async autoAddFreeTestSets(lang: string = 'vi'): Promise<MessageResDTO> {
+  // outcome tells the controller which message fits (0 added can mean either case)
+  async autoAddFreeTestSets(): Promise<{
+    outcome: 'no-placement' | 'no-free-testsets' | 'added'
+    data: { totalTests: number; totalTestSetsAdded: number }
+  }> {
     try {
       this.logger.log('Starting auto-add free testSets to PLACEMENT_TEST_DONE tests')
 
@@ -664,14 +603,7 @@ export class TestService {
 
       if (placementTests.length === 0) {
         this.logger.warn('No PLACEMENT_TEST_DONE tests found')
-        return {
-          statusCode: 200,
-          data: {
-            totalTests: 0,
-            totalTestSetsAdded: 0
-          },
-          message: this.i18nService.translate(M.AUTO_ADD_NO_PLACEMENT, lang)
-        }
+        return { outcome: 'no-placement', data: { totalTests: 0, totalTestSetsAdded: 0 } }
       }
 
       // Tìm tất cả TestSet có price = 0, status = ACTIVE, và testType là VOCABULARY, GRAMMAR, hoặc KANJI
@@ -680,12 +612,8 @@ export class TestService {
       if (freeTestSets.length === 0) {
         this.logger.warn('No free testSets found')
         return {
-          statusCode: 200,
-          data: {
-            totalTests: placementTests.length,
-            totalTestSetsAdded: 0
-          },
-          message: this.i18nService.translate(M.AUTO_ADD_NO_FREE_TESTSETS, lang)
+          outcome: 'no-free-testsets',
+          data: { totalTests: placementTests.length, totalTestSetsAdded: 0 }
         }
       }
 
@@ -714,15 +642,8 @@ export class TestService {
       )
 
       return {
-        statusCode: 200,
-        data: {
-          totalTests: placementTests.length,
-          totalTestSetsAdded: totalAdded
-        },
-        message: this.i18nService.translate(M.AUTO_ADD_SUCCESS, lang, {
-          added: totalAdded,
-          tests: placementTests.length
-        })
+        outcome: 'added',
+        data: { totalTests: placementTests.length, totalTestSetsAdded: totalAdded }
       }
     } catch (error) {
       throw this.toTestError(error, M.CANNOT_AUTO_ADD)
@@ -733,7 +654,7 @@ export class TestService {
     testId: number,
     userId: number,
     language: string = 'vi'
-  ): Promise<MessageResDTO> {
+  ) {
     try {
       this.logger.log(
         `Getting random questions for placement test: ${testId}, user: ${userId}, language: ${language}`
@@ -922,18 +843,14 @@ export class TestService {
       )
 
       return {
-        statusCode: 200,
-        data: {
-          userTestAttemptId: userTestAttempt.id,
-          questions: mappedQuestions,
-          distribution: {
-            level5: selectedN5.length,
-            level4: selectedN4.length,
-            level3: selectedN3.length,
-            total: finalQuestions.length
-          }
-        },
-        message: this.i18nService.translate(M.PLACEMENT_QUESTIONS_SUCCESS, language)
+        userTestAttemptId: userTestAttempt.id,
+        questions: mappedQuestions,
+        distribution: {
+          level5: selectedN5.length,
+          level4: selectedN4.length,
+          level3: selectedN3.length,
+          total: finalQuestions.length
+        }
       }
     } catch (error) {
       throw this.toTestError(error, M.CANNOT_GET_PLACEMENT_QUESTIONS)
@@ -945,7 +862,7 @@ export class TestService {
     levelN: number,
     count: number,
     language: string = 'vi'
-  ): Promise<MessageResDTO> {
+  ) {
     try {
       this.logger.log(
         `Getting ${count} random questions for level ${levelN} from test: ${testId}, language: ${language}`
@@ -1060,18 +977,7 @@ export class TestService {
 
       this.logger.log(`Selected ${mappedQuestions.length} questions for level ${levelN}`)
 
-      return {
-        statusCode: 200,
-        data: {
-          questions: mappedQuestions,
-          levelN,
-          count: mappedQuestions.length
-        },
-        message: this.i18nService.translate(M.LEVEL_QUESTIONS_SUCCESS, language, {
-          count: mappedQuestions.length,
-          level: levelN
-        })
-      }
+      return { questions: mappedQuestions, levelN, count: mappedQuestions.length }
     } catch (error) {
       throw this.toTestError(error, M.CANNOT_GET_QUESTIONS)
     }
@@ -1081,7 +987,7 @@ export class TestService {
     testId: number,
     userId: number,
     language: string = 'vi'
-  ): Promise<MessageResDTO> {
+  ) {
     try {
       this.logger.log(
         `Generating lesson review test for testId: ${testId}, user: ${userId}, language: ${language}`
@@ -1309,11 +1215,7 @@ export class TestService {
         `Generated lesson review test with ${finalQuestionsWithInfo.length} questions for testId ${testId}`
       )
 
-      return {
-        statusCode: 200,
-        data: result,
-        message: this.i18nService.translate(M.GET_SUCCESS, language)
-      }
+      return result
     } catch (error) {
       throw this.toTestError(error, M.CANNOT_GET_REVIEW_QUESTIONS)
     }

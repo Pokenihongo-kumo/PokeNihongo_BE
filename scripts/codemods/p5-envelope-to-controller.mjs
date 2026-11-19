@@ -215,6 +215,14 @@ for (const mod of modules) {
           text: env.dataText !== null ? `return ${env.dataText}` : 'return'
         })
       }
+      // a declared envelope return type (`Promise<MessageResDTO>`) no longer holds
+      if (m.type) {
+        const close = m.parameters.hasTrailingComma
+          ? m.parameters.end + 1
+          : m.parameters.end
+        const paren = sf.text.indexOf(')', close)
+        edits.push({ start: paren + 1, end: m.type.getEnd(), text: '' })
+      }
       // lang still used once the messages are gone?
       const langParamIdx = m.parameters.findIndex(
         (p) => ts.isIdentifier(p.name) && p.name.text === langName
@@ -405,6 +413,16 @@ for (const mod of modules) {
                       end: m.name.getStart(csf),
                       text: 'async '
                     })
+                  // a declared return type (`Promise<MessageResDTO>`) would now be wrong
+                  if (m.type) {
+                    const paren = csf.text.lastIndexOf(')', m.type.getStart(csf))
+                    cedits.push({
+                      start: paren + 1,
+                      end: m.type.getEnd(),
+                      text: '',
+                      dropType: true
+                    })
+                  }
                   enums.set(info.enumName, { from: info.enumFrom, spec: info.enumSpec })
                   changed++
                 }
@@ -419,7 +437,9 @@ for (const mod of modules) {
       // async modifier edits may repeat for one method
       const seen = new Set()
       const uniq = cedits.filter((e) =>
-        e.text === 'async ' ? !seen.has(e.start) && seen.add(e.start) : true
+        e.text === 'async ' || e.dropType
+          ? !seen.has(`${e.text}${e.start}`) && seen.add(`${e.text}${e.start}`)
+          : true
       )
       if (needI18n) {
         const last = cctor.parameters[cctor.parameters.length - 1]

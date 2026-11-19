@@ -165,7 +165,7 @@ describe('UserExerciseAttemptService', () => {
         data: { id: 1, userId: 7, status: 'COMPLETED', exerciseId: 3 }
       } as any)
       exercisesService.getExercisesByIdHaveQuestionBanks.mockResolvedValue({
-        data: { testSet: { testSetQuestionBanks: [{}, {}, {}, {}, {}] } }
+        testSet: { testSetQuestionBanks: [{}, {}, {}, {}, {}] }
       })
       userAnswerLogService.findByUserExerciseAttemptId.mockResolvedValue({
         data: { results: [{ questionBankId: 1, answerId: 2, isCorrect: true }] }

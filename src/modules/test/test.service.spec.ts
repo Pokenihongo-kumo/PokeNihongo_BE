@@ -20,11 +20,7 @@ describe('TestService', () => {
     {} as never,
     {} as never,
     userTestRepo as never,
-    userTests as never,
-    {
-      translate: (k: string, _l: string, args?: object) =>
-        args ? `${k} ${JSON.stringify(args)}` : k
-    } as never
+    userTests as never
   )
 
   beforeEach(() => {

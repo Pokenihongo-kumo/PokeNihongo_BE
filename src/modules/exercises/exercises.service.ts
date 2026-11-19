@@ -1,4 +1,3 @@
-import { I18nService } from '@/i18n/i18n.service'
 import { ExercisesMessage as M } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { TranslationService } from '@/modules/translation/translation.service'
@@ -36,27 +35,23 @@ export class ExercisesService {
   constructor(
     private readonly exercisesRepo: ExercisesRepo,
     private readonly languagesService: LanguagesService,
-    private readonly translationService: TranslationService,
-    private readonly i18nService: I18nService
+    private readonly translationService: TranslationService
   ) {}
 
-  async create(data: CreateExercisesBody, lang: string = 'vi') {
+  async create(data: CreateExercisesBody) {
     try {
       await this.assertRules(data)
       const exercise = await this.exercisesRepo.create({
         ...data,
         rewardId: await this.checkedRewardIds(data.rewardId)
       })
-      return {
-        data: exercise,
-        message: this.i18nService.translate(M.CREATE_SUCCESS, lang)
-      }
+      return exercise
     } catch (error) {
       throw this.toExercisesError(error)
     }
   }
 
-  async update(id: number, data: UpdateExercisesBody, lang: string = 'vi') {
+  async update(id: number, data: UpdateExercisesBody) {
     try {
       const current = await this.exercisesRepo.findById(id)
       if (!current) throw new ExercisesNotFoundException()
@@ -76,19 +71,16 @@ export class ExercisesService {
         ...data,
         ...(data.rewardId && { rewardId: await this.checkedRewardIds(data.rewardId) })
       })
-      return {
-        data: exercise,
-        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
-      }
+      return exercise
     } catch (error) {
       throw this.toExercisesError(error)
     }
   }
 
-  async delete(id: number, lang: string = 'vi') {
+  async delete(id: number) {
     try {
       await this.exercisesRepo.delete(id)
-      return { message: this.i18nService.translate(M.DELETE_SUCCESS, lang) }
+      return
     } catch (error) {
       throw this.toExercisesError(error)
     }
@@ -121,34 +113,26 @@ export class ExercisesService {
     }))
   }
 
-  async getExercisesList(query: GetExercisesListQuery, lang: string = 'vi') {
+  async getExercisesList(query: GetExercisesListQuery) {
     const { items, total } = await this.exercisesRepo.findMany(query)
     return {
-      statusCode: 200,
-      data: {
-        results: items,
-        pagination: toPaginationMeta(query.currentPage, query.pageSize, total)
-      },
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang)
+      results: items,
+      pagination: toPaginationMeta(query.currentPage, query.pageSize, total)
     }
   }
 
   // With the test set's questions and their answers
-  async getExercisesById(id: number, lang: string = 'vi') {
+  async getExercisesById(id: number) {
     const exercise = await this.exercisesRepo.findById(id)
     if (!exercise) throw new ExercisesNotFoundException()
-    return { data: exercise, message: this.i18nService.translate(M.GET_SUCCESS, lang) }
+    return exercise
   }
 
   // Also used by user-exercise-attempt (reads data.testSet)
-  async getExercisesByIdHaveQuestionBanks(id: number, lang: string = 'vi') {
+  async getExercisesByIdHaveQuestionBanks(id: number) {
     const exercise = await this.exercisesRepo.findByIdHaveQuestionBank(id)
     if (!exercise) throw new ExercisesNotFoundException()
-    return {
-      statusCode: 200,
-      data: exercise,
-      message: this.i18nService.translate(M.GET_SUCCESS, lang)
-    }
+    return exercise
   }
 
   // Each exercise with its rewards, plus the lesson's rewards (names in `lang`)
@@ -162,14 +146,11 @@ export class ExercisesService {
     )
     const rewardsOf = (ids: number[]) => ids.flatMap((id) => rewards.get(id) ?? [])
     const rewardLesson = rewardsOf(lessonRewardIds)
-    return {
-      data: exercises.map((e) => ({
-        ...e,
-        rewards: rewardsOf(e.rewardId),
-        rewardLesson
-      })),
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang)
-    }
+    return exercises.map((e) => ({
+      ...e,
+      rewards: rewardsOf(e.rewardId),
+      rewardLesson
+    }))
   }
 
   //#region helpers

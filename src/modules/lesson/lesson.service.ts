@@ -1,4 +1,3 @@
-import { I18nService } from '@/i18n/i18n.service'
 import { LessonMessage as M } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { toPaginationMeta } from '@/shared/utils/pagination'
@@ -30,8 +29,7 @@ export class LessonService {
 
   constructor(
     private readonly lessonRepo: LessonRepo,
-    private readonly languagesService: LanguagesService,
-    private readonly i18nService: I18nService
+    private readonly languagesService: LanguagesService
   ) {}
 
   // titleLang (?lang): the title in that language; without it, every translation
@@ -42,24 +40,20 @@ export class LessonService {
       params.lang
     )
     return {
-      statusCode: 200,
-      data: {
-        results: data.map((lesson) => ({ ...lesson, title: titleOf(lesson.titleKey) })),
-        pagination: toPaginationMeta(params.currentPage, params.pageSize, total)
-      },
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang)
+      results: data.map((lesson) => ({ ...lesson, title: titleOf(lesson.titleKey) })),
+      pagination: toPaginationMeta(params.currentPage, params.pageSize, total)
     }
   }
 
-  async getLessonById(id: number, titleLang?: string, lang: string = 'vi') {
-    return this.withTitle(await this.lessonRepo.findById(id), titleLang, lang)
+  async getLessonById(id: number, titleLang?: string) {
+    return this.withTitle(await this.lessonRepo.findById(id), titleLang)
   }
 
-  async getLessonBySlug(slug: string, titleLang?: string, lang: string = 'vi') {
-    return this.withTitle(await this.lessonRepo.findBySlug(slug), titleLang, lang)
+  async getLessonBySlug(slug: string, titleLang?: string) {
+    return this.withTitle(await this.lessonRepo.findBySlug(slug), titleLang)
   }
 
-  async createLesson(data: CreateLessonBody, userId: number, lang: string = 'vi') {
+  async createLesson(data: CreateLessonBody, userId: number) {
     try {
       await this.assertReferences(data)
       // The slug is always lesson-{id}
@@ -75,17 +69,13 @@ export class LessonService {
         },
         await this.titleTranslations(data.titleJp, translations?.meaning)
       )
-      return {
-        statusCode: 201,
-        data: lesson,
-        message: this.i18nService.translate(M.CREATE_SUCCESS, lang)
-      }
+      return lesson
     } catch (error) {
       throw this.toLessonError(error)
     }
   }
 
-  async updateLesson(id: number, data: UpdateLessonBody, lang: string = 'vi') {
+  async updateLesson(id: number, data: UpdateLessonBody) {
     try {
       if (!(await this.lessonRepo.findById(id))) throw new LessonNotFoundException()
       await this.assertReferences(data)
@@ -102,40 +92,29 @@ export class LessonService {
           ? await this.titleTranslations(data.titleJp ?? '', translations.meaning)
           : []
       )
-      return {
-        statusCode: 200,
-        data: lesson,
-        message: this.i18nService.translate(M.UPDATE_SUCCESS, lang)
-      }
+      return lesson
     } catch (error) {
       throw this.toLessonError(error)
     }
   }
 
-  async togglePublishLesson(id: number, lang: string = 'vi') {
+  async togglePublishLesson(id: number) {
     try {
       const lesson = await this.lessonRepo.findById(id)
       if (!lesson) throw new LessonNotFoundException()
       const updated = await this.lessonRepo.update(id, {
         isPublished: !lesson.isPublished
       })
-      return {
-        statusCode: 200,
-        data: updated,
-        message: this.i18nService.translate(
-          updated.isPublished ? M.PUBLISH_SUCCESS : M.UNPUBLISH_SUCCESS,
-          lang
-        )
-      }
+      return updated
     } catch (error) {
       throw this.toLessonError(error)
     }
   }
 
-  async deleteLesson(id: number, lang: string = 'vi') {
+  async deleteLesson(id: number) {
     try {
       await this.lessonRepo.delete(id)
-      return { message: this.i18nService.translate(M.DELETE_SUCCESS, lang) }
+      return
     } catch (error) {
       throw this.toLessonError(error)
     }
@@ -144,16 +123,11 @@ export class LessonService {
   //#region helpers
   private async withTitle(
     lesson: Awaited<ReturnType<LessonRepo['findById']>>,
-    titleLang: string | undefined,
-    lang: string
+    titleLang: string | undefined
   ) {
     if (!lesson) throw new LessonNotFoundException()
     const titleOf = await this.titlesOf([lesson.titleKey], titleLang)
-    return {
-      statusCode: 200,
-      data: { ...lesson, title: titleOf(lesson.titleKey) },
-      message: this.i18nService.translate(M.GET_SUCCESS, lang)
-    }
+    return { ...lesson, title: titleOf(lesson.titleKey) }
   }
 
   // One query for every title. With a known language: that translation (or '');
