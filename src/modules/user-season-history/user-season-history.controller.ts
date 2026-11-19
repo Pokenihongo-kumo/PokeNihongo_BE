@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { UserSeasonHistoryMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
@@ -14,87 +16,115 @@ import { UserSeasonHistoryService } from './user-season-history.service'
 
 @Controller('user-season-history')
 export class UserSeasonHistoryController {
-  constructor(private readonly userSeasonHistoryService: UserSeasonHistoryService) {}
+  constructor(
+    private readonly userSeasonHistoryService: UserSeasonHistoryService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseDTO)
-  list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return this.userSeasonHistoryService.list(query, lang)
+  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(
+        UserSeasonHistoryMessage.GET_LIST_SUCCESS,
+        lang
+      ),
+      data: await this.userSeasonHistoryService.list(query)
+    }
   }
 
   @Get('user')
   @ZodSerializerDto(GetUserSeasonHistoryDetailResDTO)
-  getUserHisNow(@ActiveUser('userId') userId: number, @I18nLang() lang: string) {
-    return this.userSeasonHistoryService.getUserHisByUserId(userId, lang)
+  async getUserHisNow(@ActiveUser('userId') userId: number, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(
+        UserSeasonHistoryMessage.GET_LIST_SUCCESS,
+        lang
+      ),
+      data: await this.userSeasonHistoryService.getUserHisByUserId(userId)
+    }
   }
 
   @Get(':userSeasonHistoryId')
   @ZodSerializerDto(GetUserSeasonHistoryDetailResDTO)
-  findById(
+  async findById(
     @Param() params: GetUserSeasonHistoryParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userSeasonHistoryService.findById(params.userSeasonHistoryId, lang)
+    return {
+      message: this.i18nService.translate(
+        UserSeasonHistoryMessage.GET_LIST_SUCCESS,
+        lang
+      ),
+      data: await this.userSeasonHistoryService.findById(params.userSeasonHistoryId)
+    }
   }
   @Post('join')
   // @ZodSerializerDto(CreateUserSeasonHistoryResDTO)
-  joinSeason(@ActiveUser('userId') userId: number, @I18nLang() lang: string) {
-    return this.userSeasonHistoryService.joinSeason(
-      {
-        userId
-      },
-      lang
-    )
+  async joinSeason(@ActiveUser('userId') userId: number, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(UserSeasonHistoryMessage.CREATE_SUCCESS, lang),
+      data: await this.userSeasonHistoryService.joinSeason(
+        {
+          userId
+        },
+        lang
+      )
+    }
   }
 
   @Put('get-reward/:userSeasonHistoryId')
   // @ZodSerializerDto(UpdateUserSeasonHistoryResDTO)
-  getReward(
+  async getReward(
     @Param() params: GetUserSeasonHistoryParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userSeasonHistoryService.getReward(
-      {
+    return {
+      message: this.i18nService.translate(
+        UserSeasonHistoryMessage.GET_REWARD_SUCCESS,
+        lang
+      ),
+      data: await this.userSeasonHistoryService.getReward({
         id: params.userSeasonHistoryId,
         userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Put(':userSeasonHistoryId')
   @ZodSerializerDto(UpdateUserSeasonHistoryResDTO)
-  update(
+  async update(
     @Body() body: UpdateUserSeasonHistoryBodyDTO,
     @Param() params: GetUserSeasonHistoryParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userSeasonHistoryService.update(
-      {
+    return {
+      message: this.i18nService.translate(UserSeasonHistoryMessage.UPDATE_SUCCESS, lang),
+      data: await this.userSeasonHistoryService.update({
         data: body,
         id: params.userSeasonHistoryId,
         userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':userSeasonHistoryId')
   @ZodSerializerDto(MessageResDTO)
-  delete(
+  async delete(
     @Param() params: GetUserSeasonHistoryParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.userSeasonHistoryService.delete(
-      {
-        id: params.userSeasonHistoryId,
-        userId
-      },
-      lang
-    )
+    await this.userSeasonHistoryService.delete({
+      id: params.userSeasonHistoryId,
+      userId
+    })
+    return {
+      message: this.i18nService.translate(UserSeasonHistoryMessage.DELETE_SUCCESS, lang),
+      data: null
+    }
   }
 }

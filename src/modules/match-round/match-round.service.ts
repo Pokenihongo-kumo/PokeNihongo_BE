@@ -1,7 +1,5 @@
 import { BullAction, BullQueue } from '@/common/constants/bull-action.constant'
 import { MatchRoundNumber } from '@/common/constants/match.constant'
-import { I18nService } from '@/i18n/i18n.service'
-import { MatchRoundMessage } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
 import { MatchService } from '@/modules/match/match.service'
@@ -16,7 +14,7 @@ import {
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
 import { InjectQueue } from '@nestjs/bull'
-import { HttpStatus, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { Queue } from 'bull'
 import { MatchRoundAlreadyExistsException } from './dto/match-round.error'
 import { CreateMatchRoundBody, UpdateMatchRoundBody } from './dto/match-round.zod-dto'
@@ -27,7 +25,6 @@ export class MatchRoundService {
   constructor(
     private matchRoundRepo: MatchRoundRepo,
     private matchService: MatchService,
-    private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
     private readonly leaderboardSeasonService: LeaderboardSeasonService,
     @InjectQueue(BullQueue.MATCH_ROUND_PARTICIPANT_TIMEOUT)
@@ -39,10 +36,7 @@ export class MatchRoundService {
   async list(pagination: PaginationQuery, lang: string = 'vi') {
     const langId = await this.languagesService.getIdByCode(lang)
     const data = await this.matchRoundRepo.list(pagination, langId ?? undefined)
-    return {
-      data,
-      message: this.i18nService.translate(MatchRoundMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
   async listNowByUser(
@@ -55,11 +49,8 @@ export class MatchRoundService {
 
     if (!match) {
       return {
-        data: {
-          match: null,
-          rounds: []
-        },
-        message: this.i18nService.translate(MatchRoundMessage.GET_LIST_SUCCESS, lang)
+        match: null,
+        rounds: []
       }
     }
 
@@ -162,37 +153,27 @@ export class MatchRoundService {
     }
 
     return {
-      data: {
-        match: matchSerialized,
-        rounds: roundsSerialized
-      },
-      message: this.i18nService.translate(MatchRoundMessage.GET_LIST_SUCCESS, lang)
+      match: matchSerialized,
+      rounds: roundsSerialized
     }
   }
 
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const matchRound = await this.matchRoundRepo.findById(id)
     if (!matchRound) {
       throw new NotFoundRecordException()
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: matchRound,
-      message: this.i18nService.translate(MatchRoundMessage.GET_SUCCESS, lang)
-    }
+    return matchRound
   }
 
-  async create(
-    {
-      createdById,
-      data
-    }: {
-      createdById: number
-      data: CreateMatchRoundBody
-    },
-    lang: string = 'vi'
-  ) {
+  async create({
+    createdById,
+    data
+  }: {
+    createdById: number
+    data: CreateMatchRoundBody
+  }) {
     let createdMatchRound: any = null
 
     try {
@@ -315,11 +296,7 @@ export class MatchRoundService {
           )
         }
 
-        return {
-          statusCode: HttpStatus.CREATED,
-          data: createdMatchRound,
-          message: this.i18nService.translate(MatchRoundMessage.CREATE_SUCCESS, lang)
-        }
+        return createdMatchRound
       })
     } catch (error) {
       // Rollback: Delete matchRound if created
@@ -348,18 +325,15 @@ export class MatchRoundService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateMatchRoundBody
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateMatchRoundBody
+    updatedById: number
+  }) {
     let existingMatchRound: any = null
 
     try {
@@ -377,11 +351,7 @@ export class MatchRoundService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.OK,
-          data: updatedMatchRound,
-          message: this.i18nService.translate(MatchRoundMessage.UPDATE_SUCCESS, lang)
-        }
+        return updatedMatchRound
       })
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
@@ -397,16 +367,9 @@ export class MatchRoundService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(MatchRoundMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()

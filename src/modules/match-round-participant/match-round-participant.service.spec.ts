@@ -7,14 +7,12 @@ function createService() {
   const matchRoundParticipantRepo = { findByMatchRoundIdAndUserId: jest.fn() }
   const matchRoundRepo = { findByIdWithMatchAndParticipants: jest.fn() }
   const matchingGateway = { notifyPokemonSelectionExpired: jest.fn() }
-  const i18nService = { translate: jest.fn((key: string) => key) }
   const service = new MatchRoundParticipantService(
     matchRoundParticipantRepo as any,
     matchRoundRepo as any,
     {} as any,
     {} as any,
     {} as any,
-    i18nService as any,
     {} as any,
     {} as any,
     {} as any,

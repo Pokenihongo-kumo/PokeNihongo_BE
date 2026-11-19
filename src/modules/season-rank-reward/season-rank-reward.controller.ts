@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { SeasonRankRewardMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
@@ -18,84 +20,97 @@ import { SeasonRankRewardService } from './season-rank-reward.service'
 
 @Controller('season-rank-reward')
 export class SeasonRankRewardController {
-  constructor(private readonly seasonRankRewardService: SeasonRankRewardService) {}
+  constructor(
+    private readonly seasonRankRewardService: SeasonRankRewardService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseDTO)
-  list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return this.seasonRankRewardService.list(query, lang)
+  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(SeasonRankRewardMessage.GET_LIST_SUCCESS, lang),
+      data: await this.seasonRankRewardService.list(query)
+    }
   }
 
   @Get(':seasonRankRewardId')
   @ZodSerializerDto(GetSeasonRankRewardDetailResDTO)
-  findById(
+  async findById(
     @Param() params: GetSeasonRankRewardParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.seasonRankRewardService.findById(params.seasonRankRewardId, lang)
+    return {
+      message: this.i18nService.translate(SeasonRankRewardMessage.GET_LIST_SUCCESS, lang),
+      data: await this.seasonRankRewardService.findById(params.seasonRankRewardId)
+    }
   }
 
   @Post()
   @ZodSerializerDto(CreateSeasonRankRewardResDTO)
-  create(
+  async create(
     @Body() body: CreateSeasonRankRewardBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.seasonRankRewardService.create(
-      {
+    return {
+      message: this.i18nService.translate(SeasonRankRewardMessage.CREATE_SUCCESS, lang),
+      data: await this.seasonRankRewardService.create({
         userId,
         data: body
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Put('list')
   @ZodSerializerDto(UpdateWithListItemResDTO)
-  updateByList(
+  async updateByList(
     @Body() body: UpdateWithListItemBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.seasonRankRewardService.updateByList(
-      { updatedById: userId, data: body },
-      lang
-    )
+    return {
+      message: this.i18nService.translate(SeasonRankRewardMessage.UPDATE_SUCCESS, lang),
+      data: await this.seasonRankRewardService.updateByList({
+        updatedById: userId,
+        data: body
+      })
+    }
   }
 
   @Put(':seasonRankRewardId')
   @ZodSerializerDto(UpdateSeasonRankRewardResDTO)
-  update(
+  async update(
     @Body() body: UpdateSeasonRankRewardBodyDTO,
     @Param() params: GetSeasonRankRewardParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.seasonRankRewardService.update(
-      {
+    return {
+      message: this.i18nService.translate(SeasonRankRewardMessage.UPDATE_SUCCESS, lang),
+      data: await this.seasonRankRewardService.update({
         data: body,
         id: params.seasonRankRewardId,
         userId
-      },
-      lang
-    )
+      })
+    }
   }
 
   @Delete(':seasonRankRewardId')
   @ZodSerializerDto(MessageResDTO)
-  delete(
+  async delete(
     @Param() params: GetSeasonRankRewardParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return this.seasonRankRewardService.delete(
-      {
-        id: params.seasonRankRewardId,
-        userId
-      },
-      lang
-    )
+    await this.seasonRankRewardService.delete({
+      id: params.seasonRankRewardId,
+      userId
+    })
+    return {
+      message: this.i18nService.translate(SeasonRankRewardMessage.DELETE_SUCCESS, lang),
+      data: null
+    }
   }
 }

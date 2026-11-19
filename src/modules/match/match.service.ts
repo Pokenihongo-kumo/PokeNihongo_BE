@@ -1,5 +1,3 @@
-import { I18nService } from '@/i18n/i18n.service'
-import { MatchMessage } from '@/i18n/message-keys'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
 import { QuestionBankService } from '@/modules/question-bank/question-bank.service'
@@ -11,7 +9,7 @@ import {
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
-import { HttpStatus, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import {
   MatchAlreadyExistsException,
   NotHaveActiveLeaderboardSeasonException
@@ -23,7 +21,6 @@ import { MatchRepo } from './match.repo'
 export class MatchService {
   constructor(
     private matchRepo: MatchRepo,
-    private readonly i18nService: I18nService,
     private readonly languagesService: LanguagesService,
     private readonly leaderboardSeasonService: LeaderboardSeasonService,
     private readonly questionBankService: QuestionBankService
@@ -32,33 +29,19 @@ export class MatchService {
   async list(pagination: PaginationQuery, lang: string = 'vi') {
     const langId = await this.languagesService.getIdByCode(lang)
     const data = await this.matchRepo.list(pagination, langId ?? undefined)
-    return {
-      data,
-      message: this.i18nService.translate(MatchMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const match = await this.matchRepo.findById(id)
     if (!match) {
       throw new NotFoundRecordException()
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: match,
-      message: this.i18nService.translate(MatchMessage.GET_SUCCESS, lang)
-    }
+    return match
   }
 
-  async create(
-    {
-      createdById
-    }: {
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({ createdById }: { createdById: number }) {
     let createdMatch: any = null
 
     try {
@@ -77,11 +60,7 @@ export class MatchService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.CREATED,
-          data: result,
-          message: this.i18nService.translate(MatchMessage.CREATE_SUCCESS, lang)
-        }
+        return result
       })
     } catch (error) {
       // Rollback: Delete match if created
@@ -110,18 +89,15 @@ export class MatchService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateMatchBody
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateMatchBody
+    updatedById: number
+  }) {
     let existingMatch: any = null
 
     try {
@@ -139,11 +115,7 @@ export class MatchService {
           prismaTx
         )
 
-        return {
-          statusCode: HttpStatus.OK,
-          data: updatedMatch,
-          message: this.i18nService.translate(MatchMessage.UPDATE_SUCCESS, lang)
-        }
+        return updatedMatch
       })
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
@@ -159,16 +131,9 @@ export class MatchService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(MatchMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
