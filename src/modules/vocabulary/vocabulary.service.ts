@@ -584,46 +584,46 @@ export class VocabularyService {
       if (type.includes('ichidan')) {
         try {
           const r = await this.wordTypeService.findByNameKey('wordtype.ichidan_verb.name')
-          return r.data.id
+          return r.id
         } catch {
           /* fallback */
         }
         const rAlias = await this.wordTypeService.findByNameKey(
           'wordtype.verb_ichidan.name'
         )
-        return rAlias.data.id
+        return rAlias.id
       }
       if (type.includes('godan')) {
         try {
           const r = await this.wordTypeService.findByNameKey('wordtype.godan_verb.name')
-          return r.data.id
+          return r.id
         } catch {
           /* fallback */
         }
         const rAlias = await this.wordTypeService.findByNameKey(
           'wordtype.verb_godan.name'
         )
-        return rAlias.data.id
+        return rAlias.id
       }
       if (type.includes('i_adjective') || type.includes('i-adjective')) {
         const r = await this.wordTypeService.findByNameKey('wordtype.i_adjective.name')
-        return r.data.id
+        return r.id
       }
       if (type.includes('na_adjective') || type.includes('na-adjective')) {
         const r = await this.wordTypeService.findByNameKey('wordtype.na_adjective.name')
-        return r.data.id
+        return r.id
       }
       if (type.includes('adverb')) {
         const r = await this.wordTypeService.findByNameKey('wordtype.adverb.name')
-        return r.data.id
+        return r.id
       }
       if (type.includes('particle')) {
         const r = await this.wordTypeService.findByNameKey('wordtype.particle.name')
-        return r.data.id
+        return r.id
       }
       if (type.includes('noun')) {
         const r = await this.wordTypeService.findByNameKey('wordtype.noun.name')
-        return r.data.id
+        return r.id
       }
     } catch {
       /* ignore */

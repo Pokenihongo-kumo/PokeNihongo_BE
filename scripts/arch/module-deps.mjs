@@ -15,6 +15,11 @@
 //   httpSchemasInEntities    request/response schemas exported from entities/
 //                            (schema-dto-layout plan S-R2: they belong in dto/)
 //   handWrittenEnvelopes     `statusCode: z.` outside resSchema/paginatedResSchema (S-R4)
+//   serviceEnvelopeFiles     *.service.ts files with `statusCode:` or `message:`: a service
+//                            building the HTTP envelope (phase 5: the controller adds the
+//                            translated message, TransformInterceptor the statusCode)
+//   serviceStatusCodes       those `statusCode:` (regex matches; relative measure only)
+//   serviceMessages          those `message:` properties (same)
 //
 // Owner of a file: src/modules/<name>/... -> modules/<name>; any other file ->
 // its top folder under src (shared, cronjobs, websockets, infrastructure, ...).
@@ -158,9 +163,12 @@ export function measure() {
     sharedModuleBusinessProviders: [],
     prismaOutsideRepoFiles: [],
     httpSchemasInEntities: [],
-    handWrittenEnvelopes: []
+    handWrittenEnvelopes: [],
+    serviceEnvelopeFiles: []
   }
   let prismaOutsideRepoCalls = 0
+  let serviceStatusCodes = 0
+  let serviceMessages = 0
 
   for (const file of files) {
     const rel = srcRel(file)
@@ -210,6 +218,14 @@ export function measure() {
       for (let i = 0; i < n; i++) details.handWrittenEnvelopes.push(rel)
     }
 
+    if (rel.endsWith('.service.ts')) {
+      const codes = text.match(/\bstatusCode\s*:/g)?.length ?? 0
+      const messages = text.match(/^\s+message\s*:/gm)?.length ?? 0
+      if (codes + messages > 0) details.serviceEnvelopeFiles.push(rel)
+      serviceStatusCodes += codes
+      serviceMessages += messages
+    }
+
     const isRepoFile = isRepoPath(rel)
     const isPrismaService = rel === 'shared/services/prisma.service.ts'
     if (!isRepoFile && !isPrismaService) {
@@ -226,6 +242,8 @@ export function measure() {
     Object.entries(details).map(([key, list]) => [key, list.length])
   )
   metrics.prismaOutsideRepoCalls = prismaOutsideRepoCalls
+  metrics.serviceStatusCodes = serviceStatusCodes
+  metrics.serviceMessages = serviceMessages
   return { metrics, details }
 }
 

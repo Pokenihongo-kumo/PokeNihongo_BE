@@ -22,10 +22,7 @@ describe('LevelService', () => {
     findPrevLevelByNumber: jest.fn(),
     updateNextLevel: jest.fn()
   }
-  const service = new LevelService(
-    repo as never,
-    { translate: (k: string) => k } as never
-  )
+  const service = new LevelService(repo as never)
   const statusOf = (promise: Promise<unknown>) =>
     promise.then(
       () => undefined,
@@ -58,7 +55,7 @@ describe('LevelService', () => {
       createdById: 1
     })
 
-    expect(result.data).toEqual(level(20, 5))
+    expect(result).toEqual(level(20, 5))
     expect(service['logger'].error).toHaveBeenCalled()
   })
 
