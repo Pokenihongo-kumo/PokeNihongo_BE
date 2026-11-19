@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { KanjiReadingMessage } from '@/i18n/message-keys'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import {
   CreateKanjiReadingBodyDTO,
@@ -44,7 +46,10 @@ import { KanjiReadingService } from './kanji-reading.service'
 @Controller('kanji-reading')
 @ApiBearerAuth()
 export class KanjiReadingController {
-  constructor(private readonly kanjiReadingService: KanjiReadingService) {}
+  constructor(
+    private readonly kanjiReadingService: KanjiReadingService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @ApiOperation({
@@ -58,8 +63,11 @@ export class KanjiReadingController {
     type: KanjiReadingListSwaggerResponseDTO
   })
   @ZodSerializerDto(KanjiReadingListResDTO)
-  findMany(@Query() query: GetKanjiReadingListQueryDTO, @I18nLang() lang: string) {
-    return this.kanjiReadingService.findMany(query, lang)
+  async findMany(@Query() query: GetKanjiReadingListQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(KanjiReadingMessage.GET_LIST_SUCCESS, lang),
+      data: await this.kanjiReadingService.findMany(query)
+    }
   }
 
   @Get('stats')
@@ -71,8 +79,11 @@ export class KanjiReadingController {
     status: 200,
     description: 'Lấy thống kê thành công'
   })
-  getStats(@I18nLang() lang: string) {
-    return this.kanjiReadingService.getStats(lang)
+  async getStats(@I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(KanjiReadingMessage.GET_STATS_SUCCESS, lang),
+      data: await this.kanjiReadingService.getStats()
+    }
   }
 
   @Get('kanji/:kanjiId')
@@ -90,11 +101,14 @@ export class KanjiReadingController {
     description: 'Lấy cách đọc thành công',
     type: [KanjiReadingSwaggerResponseDTO]
   })
-  findByKanjiId(
+  async findByKanjiId(
     @Param() params: GetKanjiReadingsByKanjiIdParamsDTO,
     @I18nLang() lang: string
   ) {
-    return this.kanjiReadingService.findByKanjiId(params.kanjiId, lang)
+    return {
+      message: this.i18nService.translate(KanjiReadingMessage.GET_LIST_SUCCESS, lang),
+      data: await this.kanjiReadingService.findByKanjiId(params.kanjiId)
+    }
   }
 
   @Get('type/:readingType')
@@ -114,11 +128,14 @@ export class KanjiReadingController {
     description: 'Lấy cách đọc thành công',
     type: [KanjiReadingSwaggerResponseDTO]
   })
-  findByReadingType(
+  async findByReadingType(
     @Param() params: GetKanjiReadingsByTypeParamsDTO,
     @I18nLang() lang: string
   ) {
-    return this.kanjiReadingService.findByReadingType(params.readingType, lang)
+    return {
+      message: this.i18nService.translate(KanjiReadingMessage.GET_LIST_SUCCESS, lang),
+      data: await this.kanjiReadingService.findByReadingType(params.readingType)
+    }
   }
 
   @Get(':id')
@@ -137,8 +154,14 @@ export class KanjiReadingController {
     type: KanjiReadingSwaggerResponseDTO
   })
   @ZodSerializerDto(KanjiReadingResDTO)
-  findById(@Param() params: GetKanjiReadingByIdParamsDTO, @I18nLang() lang: string) {
-    return this.kanjiReadingService.findById(params.id, lang)
+  async findById(
+    @Param() params: GetKanjiReadingByIdParamsDTO,
+    @I18nLang() lang: string
+  ) {
+    return {
+      message: this.i18nService.translate(KanjiReadingMessage.GET_SUCCESS, lang),
+      data: await this.kanjiReadingService.findById(params.id)
+    }
   }
 
   @Post()
@@ -156,8 +179,11 @@ export class KanjiReadingController {
     type: KanjiReadingSwaggerResponseDTO
   })
   @ZodSerializerDto(KanjiReadingResDTO)
-  create(@Body() body: CreateKanjiReadingBodyDTO, @I18nLang() lang: string) {
-    return this.kanjiReadingService.createReading(body, lang)
+  async create(@Body() body: CreateKanjiReadingBodyDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(KanjiReadingMessage.CREATE_SUCCESS, lang),
+      data: await this.kanjiReadingService.createReading(body)
+    }
   }
 
   @Put(':id')
@@ -180,12 +206,15 @@ export class KanjiReadingController {
     type: KanjiReadingSwaggerResponseDTO
   })
   @ZodSerializerDto(KanjiReadingResDTO)
-  update(
+  async update(
     @Param() params: GetKanjiReadingByIdParamsDTO,
     @Body() body: UpdateKanjiReadingBodyDTO,
     @I18nLang() lang: string
   ) {
-    return this.kanjiReadingService.updateReading(params.id, body, lang)
+    return {
+      message: this.i18nService.translate(KanjiReadingMessage.UPDATE_SUCCESS, lang),
+      data: await this.kanjiReadingService.updateReading(params.id, body)
+    }
   }
 
   @Delete(':id')
@@ -203,8 +232,11 @@ export class KanjiReadingController {
     description: 'Xóa cách đọc thành công'
   })
   @HttpCode(HttpStatus.OK)
-  delete(@Param() params: GetKanjiReadingByIdParamsDTO, @I18nLang() lang: string) {
-    return this.kanjiReadingService.delete(params.id, lang)
+  async delete(@Param() params: GetKanjiReadingByIdParamsDTO, @I18nLang() lang: string) {
+    await this.kanjiReadingService.delete(params.id)
+    return {
+      message: this.i18nService.translate(KanjiReadingMessage.DELETE_SUCCESS, lang)
+    }
   }
 
   @Delete('kanji/:kanjiId')
@@ -222,11 +254,14 @@ export class KanjiReadingController {
     description: 'Xóa cách đọc thành công'
   })
   @HttpCode(HttpStatus.OK)
-  deleteByKanjiId(
+  async deleteByKanjiId(
     @Param() params: GetKanjiReadingsByKanjiIdParamsDTO,
     @I18nLang() lang: string
   ) {
-    return this.kanjiReadingService.deleteByKanjiId(params.kanjiId, lang)
+    await this.kanjiReadingService.deleteByKanjiId(params.kanjiId)
+    return {
+      message: this.i18nService.translate(KanjiReadingMessage.DELETE_SUCCESS, lang)
+    }
   }
 
   @Get('stats/reading-types')
@@ -238,7 +273,10 @@ export class KanjiReadingController {
     status: 200,
     description: 'Lấy thống kê loại cách đọc thành công'
   })
-  getReadingTypeStats(@I18nLang() lang: string) {
-    return this.kanjiReadingService.getReadingTypeStats(lang)
+  async getReadingTypeStats(@I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(KanjiReadingMessage.GET_STATS_SUCCESS, lang),
+      data: await this.kanjiReadingService.getReadingTypeStats()
+    }
   }
 }

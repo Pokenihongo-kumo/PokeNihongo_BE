@@ -158,7 +158,7 @@ export class UserRewardHistoryService {
     let languageId: number | undefined
     try {
       const language = await this.languagesService.findByCode({ code: normalizedLang })
-      languageId = language?.data?.id
+      languageId = language?.id
     } catch {
       this.logger.warn(`Language ${normalizedLang} not found, using default`)
     }

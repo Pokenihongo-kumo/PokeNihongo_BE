@@ -13,10 +13,7 @@ describe('TranslationService', () => {
     create: jest.fn(),
     delete: jest.fn()
   }
-  const service = new TranslationService(
-    repo as never,
-    { translate: (k: string) => k } as never
-  )
+  const service = new TranslationService(repo as never)
   const body = { languageId: 1, key: 'lesson.title', value: 'Bài' }
 
   beforeAll(() => {
@@ -27,9 +24,9 @@ describe('TranslationService', () => {
   it('by-language lists as { results, pagination } (was { data[], total, page, limit, totalPages })', async () => {
     repo.findByLanguage.mockResolvedValue({ data: [{ id: 1 }], total: 3 })
 
-    const res = await service.findByLanguage({ languageId: 1, page: 1, limit: 2 }, 'en')
+    const res = await service.findByLanguage({ languageId: 1, page: 1, limit: 2 })
 
-    expect(res.data).toEqual({
+    expect(res).toEqual({
       results: [{ id: 1 }],
       pagination: { current: 1, pageSize: 2, totalPage: 2, totalItem: 3 }
     })

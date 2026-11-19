@@ -1,3 +1,5 @@
+import { I18nService } from '@/i18n/i18n.service'
+import { TranslationMessage } from '@/i18n/message-keys'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import {
   CreateTranslationBodyDTO,
@@ -43,7 +45,10 @@ import { TranslationService } from './translation.service'
 @ApiTags('Translation')
 @Controller('translation')
 export class TranslationController {
-  constructor(private readonly translationService: TranslationService) {}
+  constructor(
+    private readonly translationService: TranslationService,
+    private readonly i18nService: I18nService
+  ) {}
 
   @Get()
   @ApiBearerAuth()
@@ -57,8 +62,11 @@ export class TranslationController {
     description: 'Lấy danh sách bản dịch thành công',
     type: TranslationListSwaggerResponseDTO
   })
-  findMany(@Query() query: GetTranslationListQueryDTO, @I18nLang() lang: string) {
-    return this.translationService.findMany(query, lang)
+  async findMany(@Query() query: GetTranslationListQueryDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(TranslationMessage.GET_LIST_SUCCESS, lang),
+      data: await this.translationService.findMany(query)
+    }
   }
 
   @Get('by-key')
@@ -77,8 +85,14 @@ export class TranslationController {
     description: 'Lấy bản dịch theo key thành công',
     type: TranslationByKeySwaggerResponseDTO
   })
-  findByKey(@Query() query: GetTranslationsByKeyQueryDTO, @I18nLang() lang: string) {
-    return this.translationService.getByKey(query, lang)
+  async findByKey(
+    @Query() query: GetTranslationsByKeyQueryDTO,
+    @I18nLang() lang: string
+  ) {
+    return {
+      message: this.i18nService.translate(TranslationMessage.GET_SUCCESS, lang),
+      data: await this.translationService.getByKey(query)
+    }
   }
 
   @Get('by-language')
@@ -109,11 +123,14 @@ export class TranslationController {
     description: 'Lấy bản dịch theo ngôn ngữ thành công',
     type: TranslationListSwaggerResponseDTO
   })
-  findByLanguage(
+  async findByLanguage(
     @Query() query: GetTranslationsByLanguageQueryDTO,
     @I18nLang() lang: string
   ) {
-    return this.translationService.findByLanguage(query, lang)
+    return {
+      message: this.i18nService.translate(TranslationMessage.GET_LIST_SUCCESS, lang),
+      data: await this.translationService.findByLanguage(query)
+    }
   }
 
   @Get(':id')
@@ -136,8 +153,11 @@ export class TranslationController {
     status: 404,
     description: 'Bản dịch không tồn tại'
   })
-  findById(@Param() params: GetTranslationByIdParamsDTO, @I18nLang() lang: string) {
-    return this.translationService.getById(params.id, lang)
+  async findById(@Param() params: GetTranslationByIdParamsDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(TranslationMessage.GET_SUCCESS, lang),
+      data: await this.translationService.getById(params.id)
+    }
   }
 
   @Post()
@@ -155,8 +175,11 @@ export class TranslationController {
     description: 'Tạo bản dịch thành công',
     type: TranslationSwaggerResponseDTO
   })
-  create(@Body() body: CreateTranslationBodyDTO, @I18nLang() lang: string) {
-    return this.translationService.createTranslation(body, lang)
+  async create(@Body() body: CreateTranslationBodyDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(TranslationMessage.CREATE_SUCCESS, lang),
+      data: await this.translationService.createTranslation(body)
+    }
   }
 
   @Post('bulk')
@@ -182,8 +205,11 @@ export class TranslationController {
       }
     }
   })
-  createMany(@Body() body: CreateTranslationsBodyDTO, @I18nLang() lang: string) {
-    return this.translationService.createTranslations(body, lang)
+  async createMany(@Body() body: CreateTranslationsBodyDTO, @I18nLang() lang: string) {
+    return {
+      message: this.i18nService.translate(TranslationMessage.CREATE_SUCCESS, lang),
+      data: await this.translationService.createTranslations(body)
+    }
   }
 
   @Put(':id')
@@ -201,12 +227,15 @@ export class TranslationController {
     type: UpdateTranslationSwaggerDTO,
     description: 'Dữ liệu cập nhật bản dịch'
   })
-  update(
+  async update(
     @Param() params: GetTranslationByIdParamsDTO,
     @Body() body: UpdateTranslationBodyDTO,
     @I18nLang() lang: string
   ) {
-    return this.translationService.updateTranslation(params.id, body, lang)
+    return {
+      message: this.i18nService.translate(TranslationMessage.UPDATE_SUCCESS, lang),
+      data: await this.translationService.updateTranslation(params.id, body)
+    }
   }
 
   @Delete(':id')

@@ -12,10 +12,7 @@ describe('KanjiReadingService', () => {
     findById: jest.fn(),
     update: jest.fn()
   }
-  const service = new KanjiReadingService(
-    repo as never,
-    { translate: (k: string) => k } as never
-  )
+  const service = new KanjiReadingService(repo as never)
   const body = { kanjiId: 4, readingType: 'onyomi', reading: 'トウ' }
 
   beforeAll(() => {

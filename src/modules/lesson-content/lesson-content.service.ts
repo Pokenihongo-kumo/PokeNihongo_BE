@@ -345,7 +345,7 @@ export class LessonContentService {
       if (languageCode) {
         try {
           const language = await this.languagesService.findByCode({ code: languageCode })
-          languageId = language?.data?.id
+          languageId = language?.id
         } catch {
           this.logger.warn(
             `Language ${languageCode} not found, returning without language filter`
@@ -483,7 +483,7 @@ export class LessonContentService {
                       arr.map(async (t) => {
                         const lang = await this.languagesService.findById(t.languageId)
                         return {
-                          language: lang?.data?.code || String(t.languageId),
+                          language: lang?.code || String(t.languageId),
                           value: t.value
                         }
                       })
@@ -567,7 +567,7 @@ export class LessonContentService {
                     (all.translations || []).map(async (t) => {
                       const lang = await this.languagesService.findById(t.languageId)
                       return {
-                        language: lang?.data?.code || String(t.languageId),
+                        language: lang?.code || String(t.languageId),
                         value: t.value
                       }
                     })
@@ -590,7 +590,7 @@ export class LessonContentService {
                     (all.translations || []).map(async (t) => {
                       const lang = await this.languagesService.findById(t.languageId)
                       return {
-                        language: lang?.data?.code || String(t.languageId),
+                        language: lang?.code || String(t.languageId),
                         value: t.value
                       }
                     })
@@ -655,7 +655,7 @@ export class LessonContentService {
                     (all.translations || []).map(async (t) => {
                       const lang = await this.languagesService.findById(t.languageId)
                       return {
-                        language: lang?.data?.code || String(t.languageId),
+                        language: lang?.code || String(t.languageId),
                         value: t.value
                       }
                     })

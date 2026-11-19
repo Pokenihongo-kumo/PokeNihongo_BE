@@ -19,10 +19,7 @@ describe('TypeEffectiveness', () => {
 
   describe('calculateMultiTypeEffectiveness', () => {
     const repo = { getEffectivenessMatrix: jest.fn(), findActiveTypeNames: jest.fn() }
-    const service = new TypeEffectivenessService(
-      repo as never,
-      { translate: (k: string) => k } as never
-    )
+    const service = new TypeEffectivenessService(repo as never)
 
     it('multiplies the multiplier of every defender type, repeats included', async () => {
       repo.getEffectivenessMatrix.mockResolvedValue({
@@ -31,7 +28,7 @@ describe('TypeEffectiveness', () => {
       })
       repo.findActiveTypeNames.mockResolvedValue(['fire', 'fire'])
 
-      const { data } = await service.calculateMultiTypeEffectiveness([1, 1])
+      const data = await service.calculateMultiTypeEffectiveness([1, 1])
 
       expect(repo.findActiveTypeNames).toHaveBeenCalledWith([1, 1])
       expect(data).toEqual({ weaknesses: { water: 4 }, resistances: {}, immunities: {} })
@@ -44,7 +41,7 @@ describe('TypeEffectiveness', () => {
       })
       repo.findActiveTypeNames.mockResolvedValue(['grass', 'normal'])
 
-      const { data } = await service.calculateMultiTypeEffectiveness([2, 3])
+      const data = await service.calculateMultiTypeEffectiveness([2, 3])
 
       expect(data).toEqual({
         weaknesses: {},

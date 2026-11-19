@@ -1,5 +1,3 @@
-import { I18nService } from '@/i18n/i18n.service'
-import { MeaningMessage } from '@/i18n/message-keys'
 import { TranslationHelperService } from '@/modules/translation/translation.helper.service'
 import { toPaginationMeta } from '@/shared/utils/pagination'
 import {
@@ -29,46 +27,32 @@ export class MeaningService {
 
   constructor(
     private readonly meaningRepository: MeaningRepo,
-    private readonly translationHelper: TranslationHelperService,
-    private readonly i18nService: I18nService
+    private readonly translationHelper: TranslationHelperService
   ) {}
 
   //#region HTTP routes (envelope + translated message)
-  async findMany(params: GetMeaningListQuery, lang: string = 'vi') {
+  async findMany(params: GetMeaningListQuery) {
     const result = await this.meaningRepository.findMany(params)
     return {
-      statusCode: 200,
-      message: this.i18nService.translate(MeaningMessage.GET_LIST_SUCCESS, lang),
-      data: {
-        results: result.data,
-        pagination: toPaginationMeta(params.page, params.limit, result.total)
-      }
+      results: result.data,
+      pagination: toPaginationMeta(params.page, params.limit, result.total)
     }
   }
 
-  async getByVocabularyId(vocabularyId: number, lang: string = 'vi') {
-    return {
-      data: await this.findByVocabularyId(vocabularyId),
-      message: this.i18nService.translate(MeaningMessage.GET_SUCCESS, lang)
-    }
+  async getByVocabularyId(vocabularyId: number) {
+    return await this.findByVocabularyId(vocabularyId)
   }
 
-  async createMeaning(data: CreateMeaningBody, lang: string = 'vi') {
-    return {
-      data: await this.create(data),
-      message: this.i18nService.translate(MeaningMessage.CREATE_SUCCESS, lang)
-    }
+  async createMeaning(data: CreateMeaningBody) {
+    return await this.create(data)
   }
 
-  async update(id: number, data: UpdateMeaningBody, lang: string = 'vi') {
+  async update(id: number, data: UpdateMeaningBody) {
     try {
       if (!(await this.meaningRepository.findById(id))) {
         throw new MeaningNotFoundException()
       }
-      return {
-        data: await this.meaningRepository.update(id, data),
-        message: this.i18nService.translate(MeaningMessage.UPDATE_SUCCESS, lang)
-      }
+      return await this.meaningRepository.update(id, data)
     } catch (error) {
       throw this.toMeaningError(error)
     }

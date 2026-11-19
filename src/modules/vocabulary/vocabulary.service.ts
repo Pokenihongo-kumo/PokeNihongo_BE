@@ -58,7 +58,7 @@ export class VocabularyService {
       let languageId: number | undefined
       try {
         const language = await this.languagesService.findByCode({ code: lang })
-        languageId = language?.data?.id
+        languageId = language?.id
       } catch {
         languageId = undefined
       }
@@ -658,10 +658,10 @@ export class VocabularyService {
     if (vocabulary.wordType) {
       try {
         const language = await this.languagesService.findByCode({ code: lang })
-        if (language?.data?.id) {
+        if (language?.id) {
           const translation = await this.translationService.findByKeyAndLanguage(
             vocabulary.wordType.nameKey,
-            language.data.id
+            language.id
           )
           const name = translation?.value || vocabulary.wordType.nameKey
           vocabularyWithWordType = {
@@ -718,7 +718,7 @@ export class VocabularyService {
     let languageId: number | undefined
     try {
       const language = await this.languagesService.findByCode({ code: lang })
-      languageId = language?.data?.id
+      languageId = language?.id
     } catch {
       languageId = undefined
     }
@@ -793,10 +793,10 @@ export class VocabularyService {
             // Fallback: thử lấy translation tiếng Việt nếu không có translation cho ngôn ngữ hiện tại
             try {
               const viLanguage = await this.languagesService.findByCode({ code: 'vi' })
-              if (viLanguage?.data?.id) {
+              if (viLanguage?.id) {
                 const viTranslation = await this.translationService.findByKeyAndLanguage(
                   vocabulary.wordType.nameKey,
-                  viLanguage.data.id
+                  viLanguage.id
                 )
                 wordTypeName = viTranslation?.value || ''
               }
@@ -817,7 +817,7 @@ export class VocabularyService {
       let viLanguageId: number | undefined
       try {
         const viLanguage = await this.languagesService.findByCode({ code: 'vi' })
-        viLanguageId = viLanguage?.data?.id
+        viLanguageId = viLanguage?.id
       } catch {
         viLanguageId = undefined
       }
@@ -937,7 +937,7 @@ export class VocabularyService {
       let languageId: number | undefined
       try {
         const language = await this.languagesService.findByCode({ code: lang })
-        languageId = language?.data?.id
+        languageId = language?.id
       } catch {
         languageId = undefined
       }
@@ -1010,7 +1010,7 @@ export class VocabularyService {
       let languageId: number | undefined
       try {
         const language = await this.languagesService.findByCode({ code: lang })
-        languageId = language?.data?.id
+        languageId = language?.id
       } catch {
         languageId = undefined
       }

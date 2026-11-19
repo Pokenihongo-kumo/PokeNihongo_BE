@@ -1,5 +1,3 @@
-import { I18nService } from '@/i18n/i18n.service'
-import { LanguagesMessage } from '@/i18n/message-keys'
 import { toPaginationMeta } from '@/shared/utils/pagination'
 import {
   isNotFoundPrismaError,
@@ -25,49 +23,36 @@ import { LanguagesRepo } from './languages.repo'
 export class LanguagesService {
   private readonly logger = new Logger(LanguagesService.name)
 
-  constructor(
-    private readonly languagesRepository: LanguagesRepo,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly languagesRepository: LanguagesRepo) {}
 
-  async findMany(params: GetLanguagesListQuery, lang: string = 'vi') {
+  async findMany(params: GetLanguagesListQuery) {
     const result = await this.languagesRepository.findMany(params)
 
     return {
-      statusCode: 200,
-      message: this.i18nService.translate(LanguagesMessage.GET_LIST_SUCCESS, lang),
-      data: {
-        results: result.data,
-        pagination: toPaginationMeta(params.currentPage, params.pageSize, result.total)
-      }
+      results: result.data,
+      pagination: toPaginationMeta(params.currentPage, params.pageSize, result.total)
     }
   }
 
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const language = await this.languagesRepository.findById(id)
     if (!language) {
       throw new LanguagesNotFoundException()
     }
 
-    return {
-      data: language,
-      message: this.i18nService.translate(LanguagesMessage.GET_SUCCESS, lang)
-    }
+    return language
   }
 
-  async findByCode(params: GetLanguagesByCodeParams, lang: string = 'vi') {
+  async findByCode(params: GetLanguagesByCodeParams) {
     const language = await this.languagesRepository.findByCode(params.code)
     if (!language) {
       throw new LanguagesNotFoundException()
     }
 
-    return {
-      data: language,
-      message: this.i18nService.translate(LanguagesMessage.GET_SUCCESS, lang)
-    }
+    return language
   }
 
-  async create(data: CreateLanguagesBody, lang: string = 'vi') {
+  async create(data: CreateLanguagesBody) {
     try {
       const existingLanguage = await this.languagesRepository.findByCode(data.code)
       if (existingLanguage) {
@@ -77,16 +62,13 @@ export class LanguagesService {
       const language = await this.languagesRepository.create(data)
       this.logger.log(`Language created: ${language.id} (${language.code})`)
 
-      return {
-        data: language,
-        message: this.i18nService.translate(LanguagesMessage.CREATE_SUCCESS, lang)
-      }
+      return language
     } catch (error) {
       throw this.toLanguagesError(error, 'rethrow')
     }
   }
 
-  async update(id: number, data: UpdateLanguagesBody, lang: string = 'vi') {
+  async update(id: number, data: UpdateLanguagesBody) {
     try {
       const existingLanguage = await this.languagesRepository.findById(id)
       if (!existingLanguage) {
@@ -101,16 +83,13 @@ export class LanguagesService {
       }
 
       const language = await this.languagesRepository.update(id, data)
-      return {
-        data: language,
-        message: this.i18nService.translate(LanguagesMessage.UPDATE_SUCCESS, lang)
-      }
+      return language
     } catch (error) {
       throw this.toLanguagesError(error, 'rethrow')
     }
   }
 
-  async updateByCode(code: string, data: UpdateLanguagesBody, lang: string = 'vi') {
+  async updateByCode(code: string, data: UpdateLanguagesBody) {
     try {
       const existingLanguage = await this.languagesRepository.findByCode(code)
       if (!existingLanguage) {
@@ -125,16 +104,13 @@ export class LanguagesService {
       }
 
       const language = await this.languagesRepository.updateByCode(code, data)
-      return {
-        data: language,
-        message: this.i18nService.translate(LanguagesMessage.UPDATE_SUCCESS, lang)
-      }
+      return language
     } catch (error) {
       throw this.toLanguagesError(error, 'invalid-data')
     }
   }
 
-  async delete(id: number, lang: string = 'vi') {
+  async delete(id: number) {
     try {
       const existingLanguage = await this.languagesRepository.findById(id)
       if (!existingLanguage) {
@@ -144,16 +120,13 @@ export class LanguagesService {
       await this.languagesRepository.delete(id)
       // data: null keeps this an envelope for TransformInterceptor (without it
       // the message ended up nested under data)
-      return {
-        data: null,
-        message: this.i18nService.translate(LanguagesMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       throw this.toLanguagesError(error, 'invalid-data')
     }
   }
 
-  async deleteByCode(code: string, lang: string = 'vi') {
+  async deleteByCode(code: string) {
     try {
       const existingLanguage = await this.languagesRepository.findByCode(code)
       if (!existingLanguage) {
@@ -161,10 +134,7 @@ export class LanguagesService {
       }
 
       await this.languagesRepository.deleteByCode(code)
-      return {
-        data: null,
-        message: this.i18nService.translate(LanguagesMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       throw this.toLanguagesError(error, 'invalid-data')
     }

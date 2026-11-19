@@ -1,5 +1,3 @@
-import { I18nService } from '@/i18n/i18n.service'
-import { AttendenceConfigMessage } from '@/i18n/message-keys'
 import { NotFoundRecordException } from '@/shared/error'
 import { PaginationQuery } from '@/shared/models/request.model'
 import {
@@ -16,52 +14,34 @@ import {
 
 @Injectable()
 export class AttendenceConfigService {
-  constructor(
-    private readonly attendenceConfigRepo: AttendenceConfigRepo,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly attendenceConfigRepo: AttendenceConfigRepo) {}
 
-  async list(pagination: PaginationQuery, lang: string = 'vi') {
+  async list(pagination: PaginationQuery) {
     const data = await this.attendenceConfigRepo.list(pagination)
-    return {
-      statusCode: HttpStatus.OK,
-      data,
-      message: this.i18nService.translate(AttendenceConfigMessage.GET_LIST_SUCCESS, lang)
-    }
+    return data
   }
 
-  async findById(id: number, lang: string = 'vi') {
+  async findById(id: number) {
     const attendenceConfig = await this.attendenceConfigRepo.findById(id)
     if (!attendenceConfig) {
       throw new NotFoundRecordException()
     }
-    return {
-      statusCode: HttpStatus.OK,
-      data: attendenceConfig,
-      message: this.i18nService.translate(AttendenceConfigMessage.GET_SUCCESS, lang)
-    }
+    return attendenceConfig
   }
 
-  async create(
-    {
-      data,
-      createdById
-    }: {
-      data: CreateAttendanceConfigBody
-      createdById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async create({
+    data,
+    createdById
+  }: {
+    data: CreateAttendanceConfigBody
+    createdById: number
+  }) {
     try {
       const attendenceConfig = await this.attendenceConfigRepo.create({
         createdById,
         data
       })
-      return {
-        statusCode: HttpStatus.CREATED,
-        data: attendenceConfig,
-        message: this.i18nService.translate(AttendenceConfigMessage.CREATE_SUCCESS, lang)
-      }
+      return attendenceConfig
     } catch (error) {
       if (isUniqueConstraintPrismaError(error)) {
         throw new AttendenceConfigAlreadyExistsException()
@@ -70,29 +50,22 @@ export class AttendenceConfigService {
     }
   }
 
-  async update(
-    {
-      id,
-      data,
-      updatedById
-    }: {
-      id: number
-      data: UpdateAttendanceConfigBody
-      updatedById: number
-    },
-    lang: string = 'vi'
-  ) {
+  async update({
+    id,
+    data,
+    updatedById
+  }: {
+    id: number
+    data: UpdateAttendanceConfigBody
+    updatedById: number
+  }) {
     try {
       const updatedAttendenceConfig = await this.attendenceConfigRepo.update({
         id,
         updatedById,
         data
       })
-      return {
-        statusCode: HttpStatus.OK,
-        data: updatedAttendenceConfig,
-        message: this.i18nService.translate(AttendenceConfigMessage.UPDATE_SUCCESS, lang)
-      }
+      return updatedAttendenceConfig
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
@@ -104,20 +77,13 @@ export class AttendenceConfigService {
     }
   }
 
-  async delete(
-    { id, deletedById }: { id: number; deletedById: number },
-    lang: string = 'vi'
-  ) {
+  async delete({ id, deletedById }: { id: number; deletedById: number }) {
     try {
       await this.attendenceConfigRepo.delete({
         id,
         deletedById
       })
-      return {
-        statusCode: HttpStatus.OK,
-        data: null,
-        message: this.i18nService.translate(AttendenceConfigMessage.DELETE_SUCCESS, lang)
-      }
+      return
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new NotFoundRecordException()
