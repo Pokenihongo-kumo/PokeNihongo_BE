@@ -57,7 +57,8 @@ export const jaMessages = {
     INVALID_TOKEN: '無効な認証トークンです',
     UPDATE_LEVEL_JLPT_SUCCESS: 'JLPTレベルの更新が完了しました',
     UPDATE_SUCCESS: '更新が完了しました',
-    INVALID_EMAIL: 'メールアドレスが無効です'
+    INVALID_EMAIL: 'メールアドレスが無効です',
+    GOOGLE_LINK_SUCCESS: 'Google ログイン URL を取得しました'
   },
   reward: {
     CREATE_SUCCESS: '報酬の作成が完了しました',

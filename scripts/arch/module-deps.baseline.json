@@ -10,11 +10,11 @@
     "httpSchemasInEntities": 0,
     "handWrittenEnvelopes": 2,
     "serviceEnvelopeFiles": 6,
-    "controllerTranslateFiles": 53,
+    "controllerTranslateFiles": 42,
     "prismaOutsideRepoCalls": 0,
     "serviceStatusCodes": 11,
     "serviceMessages": 19,
-    "controllerTranslateCalls": 319
+    "controllerTranslateCalls": 226
   },
   "details": {
     "crossModuleRepoImports": [
@@ -74,14 +74,9 @@
     ],
     "controllerTranslateFiles": [
       "modules/achievement-group/achievement-group.controller.ts",
-      "modules/achievement/achievement.controller.ts",
-      "modules/ai-conversation-room/ai-conversation-room.controller.ts",
       "modules/answer/answer.controller.ts",
-      "modules/auth/auth.controller.ts",
-      "modules/daily-request/daily-request.controller.ts",
       "modules/debuff-round/debuff-round.controller.ts",
       "modules/feature/feature.controller.ts",
-      "modules/flashcard/flashcard.controller.ts",
       "modules/gacha-banner/gacha-banner.controller.ts",
       "modules/gacha-item-rate/gacha-item-rate.controller.ts",
       "modules/gacha-item/gacha-item.controller.ts",
@@ -96,7 +91,6 @@
       "modules/match-round-participant/match-round-participant.controller.ts",
       "modules/match-round/match-round.controller.ts",
       "modules/match/match.controller.ts",
-      "modules/notification/notification.controller.ts",
       "modules/payment/invoice-checkout.controller.ts",
       "modules/payment/payment.controller.ts",
       "modules/permission/permission.controller.ts",
@@ -115,15 +109,10 @@
       "modules/subscription-plan/subscription-plan.controller.ts",
       "modules/subscription/subscription.controller.ts",
       "modules/testset-questionbank/testset-questionbank.controller.ts",
-      "modules/user-achievement/user-achievement.controller.ts",
-      "modules/user-ai-conversation/user-ai-conversation.controller.ts",
-      "modules/user-daily-request/user-daily-request.controller.ts",
       "modules/user-gacha-pity/user-gacha-pity.controller.ts",
-      "modules/user-pokemon/user-pokemon.controller.ts",
       "modules/user-reward-history/user-reward-history.controller.ts",
       "modules/user-season-history/user-season-history.controller.ts",
       "modules/user-subscription/user-subscription.controller.ts",
-      "modules/user/user.controller.ts",
       "modules/wallet-transaction/wallet-transaction.controller.ts",
       "modules/wallet/wallet.controller.ts"
     ]

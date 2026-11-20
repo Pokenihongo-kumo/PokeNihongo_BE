@@ -57,7 +57,8 @@ export const enMessages = {
     INVALID_TOKEN: 'Invalid authentication token',
     UPDATE_LEVEL_JLPT_SUCCESS: 'JLPT level updated successfully',
     UPDATE_SUCCESS: 'Update successful',
-    INVALID_EMAIL: 'Invalid email'
+    INVALID_EMAIL: 'Invalid email',
+    GOOGLE_LINK_SUCCESS: 'Google sign-in URL created'
   },
   reward: {
     CREATE_SUCCESS: 'Reward created successfully',

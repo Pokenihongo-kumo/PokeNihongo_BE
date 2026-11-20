@@ -1,5 +1,5 @@
+import { ResponseMessage, msg } from '@/i18n/response-message'
 import { TypeOfVerificationCode } from '@/common/constants/auth.constant'
-import { I18nService } from '@/i18n/i18n.service'
 import { AuthMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { IsPublic } from '@/common/decorators/auth.decorator'
@@ -7,7 +7,6 @@ import { RateLimit } from '@/common/decorators/rate-limit.decorator'
 import { otpSendLimits, otpVerifyLimits } from '@/common/constants/otp-rate-limit'
 import { UserAgent } from '@/common/decorators/user-agent.decorator'
 import { RateLimitGuard } from '@/common/guards/rate-limit.guard'
-import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import {
   AccountResDTO,
   ChangePasswordBodyDTO,
@@ -58,8 +57,7 @@ import { GoogleService } from './google.service'
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly googleService: GoogleService,
-    private readonly i18nService: I18nService
+    private readonly googleService: GoogleService
   ) {}
 
   @Post('verify-otp')
@@ -72,17 +70,17 @@ export class AuthController {
   async sendOTP(
     @Body() body: VerifyOTPBodyDTO,
     @UserAgent() userAgent: string,
-    @Ip() ip: string,
-    @I18nLang() lang: string
+    @Ip() ip: string
   ) {
     const { outcome, data } = await this.authService.verifyOTP(body, userAgent, ip)
     return {
       data,
-      // the forgot-password message was always Vietnamese
-      message:
+      // in the request language (the forgot-password one was always Vietnamese)
+      message: msg(
         outcome === 'forgot-password'
-          ? this.i18nService.translate(AuthMessage.VERIFY_OTP_FORGOT_PASSWORD_SUCCESS)
-          : this.i18nService.translate(AuthMessage.OTP_AUTHENTICATION_SUCCESS, lang)
+          ? AuthMessage.VERIFY_OTP_FORGOT_PASSWORD_SUCCESS
+          : AuthMessage.OTP_AUTHENTICATION_SUCCESS
+      )
     }
   }
 
@@ -91,20 +89,17 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @IsPublic()
   @ZodSerializerDto(LoginResDTO)
+  @ResponseMessage(AuthMessage.LOGIN_SUCCESS)
   async login(
     @Body() body: LoginBodyDTO,
     @UserAgent() userAgent: string,
-    @Ip() ip: string,
-    @I18nLang() lang: string
+    @Ip() ip: string
   ) {
-    return {
-      message: this.i18nService.translate(AuthMessage.LOGIN_SUCCESS, lang),
-      data: await this.authService.login({
-        ...body,
-        userAgent,
-        ip
-      })
-    }
+    return this.authService.login({
+      ...body,
+      userAgent,
+      ip
+    })
   }
 
   @Post('register')
@@ -113,36 +108,30 @@ export class AuthController {
   @UseInterceptors(AnyFilesInterceptor())
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: RegisterMultipartSwaggerDTO }) // dùng class để render form đẹp
+  @ResponseMessage(AuthMessage.REGISTER_SUCCESS)
   async register(
     @Body() body: RegisterBodyDTO,
     @UserAgent() userAgent: string,
-    @Ip() ip: string,
-    @I18nLang() lang: string
+    @Ip() ip: string
   ) {
-    return {
-      message: this.i18nService.translate(AuthMessage.REGISTER_SUCCESS, lang),
-      data: await this.authService.register(body, userAgent, ip)
-    }
+    return this.authService.register(body, userAgent, ip)
   }
 
   @Post('refresh-token')
   @ApiBearerAuth()
   @IsPublic()
   @ZodSerializerDto(RefreshTokenResDTO)
+  @ResponseMessage(AuthMessage.REFRESH_TOKEN_SUCCESS)
   async refreshToken(
     @Body() body: RefreshTokenBodyDTO,
     @UserAgent() userAgent: string,
-    @Ip() ip: string,
-    @I18nLang() lang: string
+    @Ip() ip: string
   ) {
-    return {
-      message: this.i18nService.translate(AuthMessage.REFRESH_TOKEN_SUCCESS, lang),
-      data: await this.authService.refreshToken({
-        refreshToken: body.refreshToken,
-        userAgent,
-        ip
-      })
-    }
+    return this.authService.refreshToken({
+      refreshToken: body.refreshToken,
+      userAgent,
+      ip
+    })
   }
 
   @Post('logout')
@@ -150,12 +139,9 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @ZodSerializerDto(MessageResDTO)
-  async logout(@Body() body: LogoutBodyDTO, @I18nLang() lang: string) {
+  @ResponseMessage(AuthMessage.LOGOUT_SUCCESS)
+  async logout(@Body() body: LogoutBodyDTO) {
     await this.authService.logout(body.refreshToken)
-    return {
-      message: this.i18nService.translate(AuthMessage.LOGOUT_SUCCESS, lang),
-      data: null
-    }
   }
 
   // gui otp qua email
@@ -166,41 +152,31 @@ export class AuthController {
   @UseGuards(RateLimitGuard)
   @RateLimit(otpSendLimits((req) => req.body?.email))
   @ZodSerializerDto(MessageResDTO)
-  async forgotPassword(@Body() body: ForgotPasswordBodyDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(AuthMessage.SEND_OTP_SUCCESS, lang),
-      data: await this.authService.forgotPassword(body)
-    }
+  @ResponseMessage(AuthMessage.SEND_OTP_SUCCESS)
+  async forgotPassword(@Body() body: ForgotPasswordBodyDTO) {
+    return this.authService.forgotPassword(body)
   }
 
   @Post('reset-password')
   @ApiBearerAuth()
   @ZodSerializerDto(MessageResDTO)
+  @ResponseMessage(AuthMessage.RESET_PASSWORD_SUCCESS)
   async resetPassword(
     @Body() body: ResetPasswordBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
     await this.authService.resetPassword(body, userId)
-    return {
-      message: this.i18nService.translate(AuthMessage.RESET_PASSWORD_SUCCESS, lang),
-      data: null
-    }
   }
 
   // change-password
   @Post('change-password')
   @ZodSerializerDto(MessageResDTO)
+  @ResponseMessage(AuthMessage.CHANGE_PASSWORD_SUCCESS)
   async changePassword(
     @Body() body: ChangePasswordBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
     await this.authService.changePassword(body, userId)
-    return {
-      message: this.i18nService.translate(AuthMessage.CHANGE_PASSWORD_SUCCESS, lang),
-      data: null
-    }
   }
 
   // neu mail ton tai la login, khong thi la register
@@ -211,8 +187,7 @@ export class AuthController {
   async checkEmailExist(
     @Param() { email }: CheckEmailParamsDTO,
     @UserAgent() userAgent: string,
-    @Ip() ip: string,
-    @I18nLang() lang: string
+    @Ip() ip: string
   ) {
     const data = await this.authService.checkMailToAction(email, userAgent, ip)
     // new email: OTP to register; known user: OTP only on a new device
@@ -222,35 +197,27 @@ export class AuthController {
         : data.requiresOtp
           ? AuthMessage.FIRST_LOGIN
           : AuthMessage.NOT_FIRST_LOGIN
-    return { data, message: this.i18nService.translate(key, lang) }
+    return { data, message: msg(key) }
   }
 
   @Get('me')
   @ApiBearerAuth()
   @ZodSerializerDto(GetAccountProfileResDTO)
-  async me(@ActiveUser('userId') userId: number, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(AuthMessage.GET_PROFILE_SUCCESS, lang),
-      data: await this.authService.getMe(userId)
-    }
+  @ResponseMessage(AuthMessage.GET_PROFILE_SUCCESS)
+  async me(@ActiveUser('userId') userId: number) {
+    return this.authService.getMe(userId)
   }
 
   @Put('me')
   @ZodSerializerDto(AccountResDTO)
   @ApiBearerAuth()
   @ApiBody({ type: UpdateMeBodyDTO })
-  async updateMe(
-    @Body() body: UpdateMeBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
-  ) {
-    return {
-      message: this.i18nService.translate(AuthMessage.UPDATE_PROFILE_SUCCESS, lang),
-      data: await this.authService.updateMe({
-        userId,
-        data: body
-      })
-    }
+  @ResponseMessage(AuthMessage.UPDATE_PROFILE_SUCCESS)
+  async updateMe(@Body() body: UpdateMeBodyDTO, @ActiveUser('userId') userId: number) {
+    return this.authService.updateMe({
+      userId,
+      data: body
+    })
   }
 
   @Put('fcm-token')
@@ -265,8 +232,8 @@ export class AuthController {
       deviceId,
       fcmToken: body.fcmToken
     })
-    // always Vietnamese, as before
-    return { data: null, message: this.i18nService.translate(AuthMessage.UPDATE_SUCCESS) }
+    // in the request language (was always Vietnamese)
+    return { data: null, message: msg(AuthMessage.UPDATE_SUCCESS) }
   }
 
   // Google sign-in (ADR D-auth §3): PKCE challenge in, one-time code out,
@@ -274,11 +241,9 @@ export class AuthController {
   @Get('google-link')
   @IsPublic()
   @ZodSerializerDto(GetAuthorizationUrlResDTO)
-  async getAuthorizationUrl(@Query() query: GoogleLinkQueryDTO) {
-    return {
-      data: await this.googleService.getAuthorizationUrl(query),
-      message: 'Lấy URL đăng nhập Google thành công'
-    }
+  @ResponseMessage(AuthMessage.GOOGLE_LINK_SUCCESS)
+  getAuthorizationUrl(@Query() query: GoogleLinkQueryDTO) {
+    return this.googleService.getAuthorizationUrl(query)
   }
 
   @Get('google/callback')
@@ -295,15 +260,12 @@ export class AuthController {
   @IsPublic()
   @HttpCode(HttpStatus.OK)
   @ZodSerializerDto(GoogleExchangeResDTO)
+  @ResponseMessage(AuthMessage.GOOGLE_EXCHANGE_SUCCESS)
   async googleExchange(
     @Body() body: GoogleExchangeBodyDTO,
     @UserAgent() userAgent: string,
-    @Ip() ip: string,
-    @I18nLang() lang: string
+    @Ip() ip: string
   ) {
-    return {
-      message: this.i18nService.translate(AuthMessage.GOOGLE_EXCHANGE_SUCCESS, lang),
-      data: await this.googleService.exchange(body, userAgent, ip)
-    }
+    return this.googleService.exchange(body, userAgent, ip)
   }
 }

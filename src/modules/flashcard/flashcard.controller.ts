@@ -1,4 +1,4 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage } from '@/i18n/response-message'
 import { FlashcardMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
@@ -65,31 +65,19 @@ import { FlashcardService } from './flashcard.service'
 @ApiBearerAuth()
 @Controller('flashcards')
 export class FlashcardController {
-  constructor(
-    private readonly flashcardService: FlashcardService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly flashcardService: FlashcardService) {}
 
   @Post('decks')
   @ApiOperation({ summary: 'Tạo bộ flashcard mới' })
   @ApiResponse({ status: 201, type: MessageResDTO })
   @ApiBody({ type: CreateFlashcardDeckSwaggerDTO })
   @ZodSerializerDto(MessageResDTO)
+  @ResponseMessage(FlashcardMessage.CREATE_DECK_SUCCESS)
   async createDeck(
     @Body() body: CreateFlashcardDeckBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(
-        FlashcardMessage.CREATE_DECK_SUCCESS,
-        lang ?? undefined
-      ),
-      data: await this.flashcardService.createDeck(
-        userId,
-        body as CreateFlashcardDeckBody
-      )
-    }
+    return this.flashcardService.createDeck(userId, body as CreateFlashcardDeckBody)
   }
 
   @Put('decks/cards')
@@ -97,21 +85,19 @@ export class FlashcardController {
   @ApiResponse({ status: 200, type: MessageResDTO })
   @ApiBody({ type: UpdateFlashcardCardSwaggerDTO })
   @ZodSerializerDto(MessageResDTO)
+  @ResponseMessage(FlashcardMessage.UPDATE_CARD_SUCCESS)
   async updateCard(
     @Body() body: UpdateFlashcardCardBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return {
-      message: this.i18nService.translate(FlashcardMessage.UPDATE_CARD_SUCCESS, lang),
-      data: await this.flashcardService.updateCard(
-        body.deckId,
-        body.cardId,
-        userId,
-        body as UpdateFlashcardCardBody,
-        lang ?? undefined
-      )
-    }
+    return this.flashcardService.updateCard(
+      body.deckId,
+      body.cardId,
+      userId,
+      body as UpdateFlashcardCardBody,
+      lang
+    )
   }
 
   @Put('read')
@@ -119,21 +105,19 @@ export class FlashcardController {
   @ApiResponse({ status: 200, type: MessageResDTO })
   @ApiBody({ type: FlashcardReadBodySwaggerDTO })
   @ZodSerializerDto(MessageResDTO)
+  @ResponseMessage(FlashcardMessage.UPDATE_CARD_SUCCESS)
   async markRead(
     @Body() body: FlashcardReadBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return {
-      message: this.i18nService.translate(FlashcardMessage.UPDATE_CARD_SUCCESS, lang),
-      data: await this.flashcardService.markRead(
-        body.deckId,
-        body.cardId,
-        body.read,
-        userId,
-        lang ?? undefined
-      )
-    }
+    return this.flashcardService.markRead(
+      body.deckId,
+      body.cardId,
+      body.read,
+      userId,
+      lang
+    )
   }
 
   @Get('decks')
@@ -141,52 +125,38 @@ export class FlashcardController {
   @ApiResponse({ status: 200, type: PaginationResponseDTO })
   @ApiQuery({ type: GetFlashcardDeckListQuerySwaggerDTO })
   @ZodSerializerDto(PaginationResponseDTO)
+  @ResponseMessage(FlashcardMessage.GET_DECK_LIST_SUCCESS)
   async getDecks(
     @Query() query: GetFlashcardDeckListQueryDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(
-        FlashcardMessage.GET_DECK_LIST_SUCCESS,
-        lang ?? undefined
-      ),
-      data: await this.flashcardService.getDecks(userId, query)
-    }
+    return this.flashcardService.getDecks(userId, query)
   }
 
   @Get('decks/:deckId')
   @ApiOperation({ summary: 'Lấy chi tiết bộ flashcard (kèm danh sách thẻ)' })
   @ApiResponse({ status: 200, type: MessageResDTO })
   @ZodSerializerDto(MessageResDTO)
+  @ResponseMessage(FlashcardMessage.GET_DECK_SUCCESS)
   async getDeckById(
     @Param() { deckId }: FlashcardDeckParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return {
-      message: this.i18nService.translate(FlashcardMessage.GET_DECK_SUCCESS, lang),
-      data: await this.flashcardService.getDeckById(deckId, userId, lang ?? undefined)
-    }
+    return this.flashcardService.getDeckById(deckId, userId, lang)
   }
 
   @Get('decks/:deckId/export')
   @ApiOperation({ summary: 'Xuất dữ liệu bộ flashcard (phục vụ offline cache)' })
   @ApiResponse({ status: 200, type: MessageResDTO })
   @ZodSerializerDto(MessageResDTO)
+  @ResponseMessage(FlashcardMessage.EXPORT_DECK_SUCCESS)
   async exportDeck(
     @Param() params: FlashcardDeckParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return {
-      message: this.i18nService.translate(FlashcardMessage.EXPORT_DECK_SUCCESS, lang),
-      data: await this.flashcardService.exportDeck(
-        params.deckId,
-        userId,
-        lang ?? undefined
-      )
-    }
+    return this.flashcardService.exportDeck(params.deckId, userId, lang)
   }
 
   @Put('decks/:deckId')
@@ -194,23 +164,17 @@ export class FlashcardController {
   @ApiResponse({ status: 200, type: MessageResDTO })
   @ApiBody({ type: UpdateFlashcardDeckSwaggerDTO })
   @ZodSerializerDto(MessageResDTO)
+  @ResponseMessage(FlashcardMessage.UPDATE_DECK_SUCCESS)
   async updateDeck(
     @Param() { deckId }: FlashcardDeckParamsDTO,
     @Body() body: UpdateFlashcardDeckBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(
-        FlashcardMessage.UPDATE_DECK_SUCCESS,
-        lang ?? undefined
-      ),
-      data: await this.flashcardService.updateDeck(
-        deckId,
-        userId,
-        body as UpdateFlashcardDeckBody
-      )
-    }
+    return this.flashcardService.updateDeck(
+      deckId,
+      userId,
+      body as UpdateFlashcardDeckBody
+    )
   }
 
   @Delete('decks/cards')
@@ -218,19 +182,12 @@ export class FlashcardController {
   @ApiBody({ type: DeleteFlashcardCardsBodySwaggerDTO })
   @ApiResponse({ status: 200, type: MessageResDTO })
   @ZodSerializerDto(MessageResDTO)
+  @ResponseMessage(FlashcardMessage.DELETE_CARD_SUCCESS)
   async deleteCards(
     @Body() body: DeleteFlashcardCardsBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
     await this.flashcardService.deleteCards(body.deckId, body.cardIds, userId)
-    return {
-      message: this.i18nService.translate(
-        FlashcardMessage.DELETE_CARD_SUCCESS,
-        lang ?? undefined
-      ),
-      data: null
-    }
   }
 
   // The app's delete deck (src/services/flashcard deleteDeck): soft delete
@@ -238,19 +195,12 @@ export class FlashcardController {
   @ApiOperation({ summary: 'Xóa bộ flashcard' })
   @ApiResponse({ status: 200, type: MessageResDTO })
   @ZodSerializerDto(MessageResDTO)
+  @ResponseMessage(FlashcardMessage.DELETE_DECK_SUCCESS)
   async deleteDeck(
     @Param() { deckId }: FlashcardDeckParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
     await this.flashcardService.deleteDeck(deckId, userId)
-    return {
-      message: this.i18nService.translate(
-        FlashcardMessage.DELETE_DECK_SUCCESS,
-        lang ?? undefined
-      ),
-      data: null
-    }
   }
 
   @Get('decks/:deckId/cards')
@@ -258,21 +208,19 @@ export class FlashcardController {
   @ApiResponse({ status: 200, type: PaginationResponseDTO })
   @ApiQuery({ type: GetFlashcardCardListQuerySwaggerDTO })
   @ZodSerializerDto(PaginationResponseDTO)
+  @ResponseMessage(FlashcardMessage.GET_DECK_SUCCESS)
   async getDeckCards(
     @Param() { deckId }: FlashcardDeckParamsDTO,
     @Query() query: GetFlashcardCardListQueryDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return {
-      message: this.i18nService.translate(FlashcardMessage.GET_DECK_SUCCESS, lang),
-      data: await this.flashcardService.getDeckCards(
-        deckId,
-        userId,
-        query as GetFlashcardCardListQuery,
-        lang ?? undefined
-      )
-    }
+    return this.flashcardService.getDeckCards(
+      deckId,
+      userId,
+      query as GetFlashcardCardListQuery,
+      lang
+    )
   }
 
   @Post('decks/:deckId/cards')
@@ -280,21 +228,19 @@ export class FlashcardController {
   @ApiResponse({ status: 201, type: MessageResDTO })
   @ApiBody({ type: CreateFlashcardCardSwaggerDTO })
   @ZodSerializerDto(MessageResDTO)
+  @ResponseMessage(FlashcardMessage.CREATE_CARD_SUCCESS)
   async createCard(
     @Param() { deckId }: FlashcardDeckParamsDTO,
     @Body() body: CreateFlashcardCardBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return {
-      message: this.i18nService.translate(FlashcardMessage.CREATE_CARD_SUCCESS, lang),
-      data: await this.flashcardService.createCard(
-        deckId,
-        userId,
-        body as CreateFlashcardCardBody,
-        lang ?? undefined
-      )
-    }
+    return this.flashcardService.createCard(
+      deckId,
+      userId,
+      body as CreateFlashcardCardBody,
+      lang
+    )
   }
 
   @Post('decks/:deckId/cards/import')
@@ -305,21 +251,19 @@ export class FlashcardController {
   @ApiResponse({ status: 200, type: MessageResDTO })
   @ApiBody({ type: FlashcardImportCardsBodySwaggerDTO })
   @ZodSerializerDto(MessageResDTO)
+  @ResponseMessage(FlashcardMessage.IMPORT_CARD_SUCCESS)
   async importCards(
     @Param() params: FlashcardDeckParamsDTO,
     @Body() body: ImportFlashcardCardsBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return {
-      message: this.i18nService.translate(FlashcardMessage.IMPORT_CARD_SUCCESS, lang),
-      data: await this.flashcardService.importCards(
-        params.deckId,
-        userId,
-        body as ImportFlashcardCardsBody,
-        lang ?? undefined
-      )
-    }
+    return this.flashcardService.importCards(
+      params.deckId,
+      userId,
+      body as ImportFlashcardCardsBody,
+      lang
+    )
   }
 
   @Get('decks/:deckId/review')
@@ -327,21 +271,19 @@ export class FlashcardController {
   @ApiResponse({ status: 200, type: PaginationResponseDTO })
   @ApiQuery({ type: FlashcardReviewQuerySwaggerDTO })
   @ZodSerializerDto(PaginationResponseDTO)
+  @ResponseMessage(FlashcardMessage.GET_REVIEW_LIST_SUCCESS)
   async getReviewCards(
     @Param() params: FlashcardDeckParamsDTO,
     @Query() query: FlashcardReviewQueryDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return {
-      message: this.i18nService.translate(FlashcardMessage.GET_REVIEW_LIST_SUCCESS, lang),
-      data: await this.flashcardService.getReviewCards(
-        params.deckId,
-        userId,
-        query as FlashcardReviewQuery,
-        lang ?? undefined
-      )
-    }
+    return this.flashcardService.getReviewCards(
+      params.deckId,
+      userId,
+      query as FlashcardReviewQuery,
+      lang
+    )
   }
 
   @Post('review')
@@ -350,20 +292,18 @@ export class FlashcardController {
   @ApiResponse({ status: 200, type: MessageResDTO })
   @ApiBody({ type: FlashcardReviewActionSwaggerDTO })
   @ZodSerializerDto(MessageResDTO)
+  @ResponseMessage(FlashcardMessage.REVIEW_CARD_SUCCESS)
   async reviewCard(
     @Body() body: FlashcardReviewActionBodyDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return {
-      message: this.i18nService.translate(FlashcardMessage.REVIEW_CARD_SUCCESS, lang),
-      data: await this.flashcardService.reviewCard(
-        body.deckId,
-        body.cardId,
-        userId,
-        body as FlashcardReviewActionBody,
-        lang ?? undefined
-      )
-    }
+    return this.flashcardService.reviewCard(
+      body.deckId,
+      body.cardId,
+      userId,
+      body as FlashcardReviewActionBody,
+      lang
+    )
   }
 }

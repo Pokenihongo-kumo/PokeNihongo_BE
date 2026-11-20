@@ -1,7 +1,6 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage } from '@/i18n/response-message'
 import { AIConversationRoomMessage as M } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
-import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { ZodSerializerDto } from 'nestjs-zod'
@@ -20,94 +19,70 @@ import {
 @ApiBearerAuth()
 @Controller('ai-conversation-room')
 export class AIConversationRoomController {
-  constructor(
-    private readonly aiConversationRoomService: AIConversationRoomService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly aiConversationRoomService: AIConversationRoomService) {}
 
   @Post()
   @ApiOperation({ summary: 'Tạo phòng hội thoại AI mới' })
   @ZodSerializerDto(AIConversationRoomResDTO)
+  @ResponseMessage(M.CREATE_SUCCESS)
   async create(
     @Body() body: CreateAIConversationRoomBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(M.CREATE_SUCCESS, lang),
-      data: await this.aiConversationRoomService.create({ ...body, userId })
-    }
+    return this.aiConversationRoomService.create({ ...body, userId })
   }
 
   @Get()
   @ApiOperation({ summary: 'Lấy danh sách phòng hội thoại AI' })
+  @ResponseMessage(M.GET_LIST_SUCCESS)
   async findAll(
     @Query() query: GetAIConversationRoomListQueryDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: await this.aiConversationRoomService.findAll(query, userId)
-    }
+    return this.aiConversationRoomService.findAll(query, userId)
   }
 
   @Get('conversation/:conversationId')
   @ApiOperation({ summary: 'Lấy thông tin phòng theo conversationId' })
+  @ResponseMessage(M.GET_SUCCESS)
   async findByConversationId(
     @Param() { conversationId }: GetAIConversationRoomByConversationParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(M.GET_SUCCESS, lang),
-      data: await this.aiConversationRoomService.findByConversationId(
-        conversationId,
-        userId
-      )
-    }
+    return this.aiConversationRoomService.findByConversationId(conversationId, userId)
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Lấy thông tin phòng hội thoại AI theo ID' })
   @ZodSerializerDto(AIConversationRoomResDTO)
+  @ResponseMessage(M.GET_SUCCESS)
   async findOne(
     @Param() { id }: GetAIConversationRoomByIdParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(M.GET_SUCCESS, lang),
-      data: await this.aiConversationRoomService.findOne(id, userId)
-    }
+    return this.aiConversationRoomService.findOne(id, userId)
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Cập nhật phòng hội thoại AI' })
   @ZodSerializerDto(AIConversationRoomResDTO)
+  @ResponseMessage(M.UPDATE_SUCCESS)
   async update(
     @Param() { id }: GetAIConversationRoomByIdParamsDTO,
     @Body() body: UpdateAIConversationRoomBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
-      data: await this.aiConversationRoomService.update(id, userId, body)
-    }
+    return this.aiConversationRoomService.update(id, userId, body)
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Xóa phòng hội thoại AI' })
   @ZodSerializerDto(AIConversationRoomResDTO)
+  @ResponseMessage(M.DELETE_SUCCESS)
   async remove(
     @Param() { id }: GetAIConversationRoomByIdParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(M.DELETE_SUCCESS, lang),
-      data: await this.aiConversationRoomService.remove(id, userId)
-    }
+    return this.aiConversationRoomService.remove(id, userId)
   }
 }
