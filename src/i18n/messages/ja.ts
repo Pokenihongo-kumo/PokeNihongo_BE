@@ -469,7 +469,12 @@ export const jaMessages = {
     INVALID_DATA: '単語のデータが無効です',
     MEANING_ALREADY_EXISTS: 'この意味はすでに存在します',
     JAPANESE_TEXT_INVALID: '単語は日本語（ひらがな・カタカナ・漢字）でなければなりません',
-    INVALID_ID: '単語IDが無効です'
+    INVALID_ID: '単語IDが無効です',
+    IMPORT_XLSX_SUCCESS:
+      '単語をインポートしました：追加 {created} 件、スキップ {skipped} 件',
+    IMPORT_TXT_SUCCESS:
+      'TXT をインポートしました：追加 {created} 件、スキップ {skipped} 件',
+    MEANING_ADDED: '新しい意味を追加しました'
   },
   srs_review: {
     GET_SUCCESS: '復習を取得しました',

@@ -63,6 +63,7 @@ describe('Vocabulary: web create -> mobile search (e2e)', () => {
 
     token = await loginAsTestAdmin(app, [
       { method: 'POST', path: '/vocabulary/full' },
+      { method: 'POST', path: '/vocabulary/add-meaning' },
       { method: 'GET', path: '/vocabulary' },
       { method: 'GET', path: '/vocabulary/search' },
       { method: 'GET', path: '/vocabulary/search/:id' },
@@ -172,6 +173,21 @@ describe('Vocabulary: web create -> mobile search (e2e)', () => {
     expect(
       res.body.data.results.map((h: { searchKeyword: string }) => h.searchKeyword)
     ).toContain(wordJp)
+  })
+
+  // P5d: this message was a hard-coded Vietnamese string, en got it too
+  it('web: add a meaning, the message follows the request language', async () => {
+    const vi = await http('vi')
+      .post('/vocabulary/add-meaning')
+      .send({ vocabularyId, exampleSentenceJp: 'これは例文です。' })
+    const en = await http('en')
+      .post('/vocabulary/add-meaning')
+      .send({ vocabularyId, exampleSentenceJp: 'これも例文です。' })
+
+    expect([vi.status, en.status]).toEqual([201, 201])
+    expect(vi.body.message).toBe('Thêm nghĩa mới thành công')
+    expect(en.body.message).toBe('New meaning added')
+    expect(en.body.data).toMatchObject({ vocabularyId })
   })
 
   it('web: update with regenerateAudio=false keeps the audio (no TTS call)', async () => {

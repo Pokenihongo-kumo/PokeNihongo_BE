@@ -67,18 +67,31 @@ src/modules/<feature>/
 ## 5. Service
 
 - Service trả kết quả nghiệp vụ có type (entity, `{ results, pagination }`, `void`) và ném exception khi lỗi; không dựng `{ statusCode, message, data }`, không nhận `lang` chỉ để dịch message (giai đoạn 5; mẫu: Level, WordType). `lang` chỉ còn khi dữ liệu trả về phụ thuộc ngôn ngữ (WordType `findAll` dịch `name`).
-- Controller dịch message thành công bằng `I18nService.translate(key, lang)`, `lang` từ `@I18nLang()` (cùng `resolveLanguage` với filter), và trả `{ message, data }`; route chỉ có message trả `{ message }` (hoặc `data: null` khi snapshot cũ có `data: null`). `TransformInterceptor` đặt `statusCode` = HTTP status; `ZodSerializerInterceptor` (đăng ký trước, bọc ngoài) kiểm envelope sau đó. Wire format không đổi: contract snapshot phải giữ nguyên.
+- Message thành công do `TransformInterceptor` dịch, ở một chỗ (P5d), theo `Accept-Language` của request (cùng `resolveLanguage` với filter). Key có kiểu `MessageKey` (`src/i18n/response-message.ts`), gõ sai thì tsc báo. Controller không gọi `translate`; `arch:deps` đếm `controllerTranslateFiles`/`controllerTranslateCalls` và không cho tăng. `@I18nLang()` chỉ còn ở route truyền `lang` vào service (dữ liệu dịch theo ngôn ngữ). `TransformInterceptor` đặt `statusCode` = HTTP status; `ZodSerializerInterceptor` (đăng ký trước, bọc ngoài) kiểm envelope sau đó, lúc message đã là chuỗi. Wire format không đổi: contract snapshot phải giữ nguyên.
+  - Message cố định: `@ResponseMessage(KEY)` trên handler, handler trả dữ liệu (trả `undefined`/`null` thì `data: null`).
+  - Message handler chọn hoặc có tham số: trả `{ message: msg(KEY, args?), data }` (hoặc `{ message: msg(KEY) }` khi không có dữ liệu). `msg()` chỉ nhận key; chọn key nào là việc của handler.
+  - Không viết chuỗi message cứng trong controller: thêm key và câu ở cả vi/en/ja (`message-keys.spec` kiểm đủ ba thứ tiếng).
 
   ```ts
   @Get(':id')
-  @ZodSerializerDto(WordTypeResDTO)
-  async findById(@Param() params: GetWordTypeByIdParamsDTO, @I18nLang() lang: string) {
+  @ZodSerializerDto(VocabularyResDTO)
+  @ResponseMessage(VocabularyMessage.GET_SUCCESS)
+  findOne(@Param() params: GetVocabularyByIdParamsDTO, @I18nLang() lang: string) {
+    return this.vocabularyService.findOne(params.id, lang) // lang dịch nghĩa của từ
+  }
+
+  @Post('full')
+  async createFull(...) {
+    const result = await this.vocabularyService.createFullVocabularyWithFiles(...)
+    // từ đã có thì chỉ thêm nghĩa: handler chọn key
     return {
-      message: this.i18nService.translate(WordTypeMessage.GET_SUCCESS, lang),
-      data: await this.wordTypeService.findById(params.id)
+      data: result.data,
+      message: msg(result.meaningAdded ? M.ADD_MEANING_SUCCESS : M.CREATE_FULL_SUCCESS)
     }
   }
   ```
+
+  Module chưa chuyển P5d vẫn tự `translate` ở controller (interceptor nhận cả hai).
 
 - Route mà status là kết quả nghiệp vụ (ghi từng phần: 201/207/400) dùng `@Res()`: service trả dữ liệu kèm số đếm, controller chọn status + message và gửi `{ statusCode, data, message }` (mẫu: `POST /answer/multiple`).
 - Chuyển một nhóm: `node scripts/codemods/p5-envelope-to-controller.mjs <module>...`, rồi `node scripts/codemods/p5-drop-envelope-data.mjs` tới khi tsc sạch, sửa tay các method nó liệt kê, grep `.data` trên kết quả đọc qua `any` ở các module gọi tới (tsc không thấy), chạy contract snapshot.

@@ -1,5 +1,5 @@
-import { I18nService } from '@/i18n/i18n.service'
 import { VocabularyMessage as M } from '@/i18n/message-keys'
+import { msg, ResponseMessage } from '@/i18n/response-message'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { IsPublic } from '@/common/decorators/auth.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
@@ -81,10 +81,7 @@ import { VocabularyService } from './vocabulary.service'
 @ApiTags('Vocabulary')
 @Controller('vocabulary')
 export class VocabularyController {
-  constructor(
-    private readonly vocabularyService: VocabularyService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly vocabularyService: VocabularyService) {}
 
   @Put('by-word/:wordJp')
   @UseInterceptors(
@@ -114,10 +111,10 @@ export class VocabularyController {
     description: 'Form data với reading, imageUrl và audioUrl (optional)'
   })
   @ZodSerializerDto(VocabularyResDTO)
+  @ResponseMessage(M.UPDATE_SUCCESS)
   async updateByWordJp(
     @Param('wordJp') wordJp: string,
     @Body() body: UpdateVocabularyMultipartSwaggerDTO,
-    @I18nLang() lang: string,
     @UploadedFiles()
     files?: { imageUrl?: Express.Multer.File[]; audioUrl?: Express.Multer.File[] },
     // A query value is a string: without the pipe "false" was truthy and every
@@ -139,16 +136,13 @@ export class VocabularyController {
     if (body.wordJp) updateData.wordJp = body.wordJp
     if (body.reading) updateData.reading = body.reading
 
-    return {
-      message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
-      data: await this.vocabularyService.update(
-        vocabulary.id,
-        updateData,
-        imageFile,
-        audioFile,
-        regenerateAudio
-      )
-    }
+    return this.vocabularyService.update(
+      vocabulary.id,
+      updateData,
+      imageFile,
+      audioFile,
+      regenerateAudio
+    )
   }
 
   @Post('import')
@@ -199,7 +193,10 @@ export class VocabularyController {
       parsedLevelN
     )
     return {
-      message: `Import từ vựng thành công: ${data.created.length} mục, bỏ qua ${data.skipped.length} mục`,
+      message: msg(M.IMPORT_XLSX_SUCCESS, {
+        created: data.created.length,
+        skipped: data.skipped.length
+      }),
       data
     }
   }
@@ -224,7 +221,10 @@ export class VocabularyController {
   ) {
     const data = await this.vocabularyService.importFromTxt(file, userId, language)
     return {
-      message: `Import TXT thành công: ${data.created.length} mục, bỏ qua ${data.skipped.length} mục`,
+      message: msg(M.IMPORT_TXT_SUCCESS, {
+        created: data.created.length,
+        skipped: data.skipped.length
+      }),
       data
     }
   }
@@ -239,11 +239,9 @@ export class VocabularyController {
   })
   @ApiQuery({ type: GetVocabularyListQuerySwaggerDTO })
   @ZodSerializerDto(VocabularyListResDTO)
-  async findAll(@Query() query: GetVocabularyListQueryDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: await this.vocabularyService.findAll(query, lang)
-    }
+  @ResponseMessage(M.GET_LIST_SUCCESS)
+  findAll(@Query() query: GetVocabularyListQueryDTO, @I18nLang() lang: string) {
+    return this.vocabularyService.findAll(query, lang)
   }
 
   @Get('search')
@@ -255,21 +253,19 @@ export class VocabularyController {
   })
   @ApiQuery({ type: VocabularySearchQuerySwaggerDTO })
   @ZodSerializerDto(VocabularySearchResDTO)
-  async search(
+  @ResponseMessage(M.GET_LIST_SUCCESS)
+  search(
     @Query() query: VocabularySearchQueryDTO,
     @I18nLang() lang: string,
     @ActiveUser('userId') userId?: number
   ) {
-    return {
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: await this.vocabularyService.search(
-        query.keyword,
-        lang,
-        query.currentPage,
-        query.pageSize,
-        userId
-      )
-    }
+    return this.vocabularyService.search(
+      query.keyword,
+      lang,
+      query.currentPage,
+      query.pageSize,
+      userId
+    )
   }
 
   @Get('search/:id')
@@ -285,15 +281,13 @@ export class VocabularyController {
     type: VocabularyDetailResponseSwaggerDTO
   })
   @ZodSerializerDto(VocabularyDetailResDTO)
-  async findOneBySearch(
+  @ResponseMessage(M.GET_SUCCESS)
+  findOneBySearch(
     @Param() params: GetVocabularyByIdParamsDTO,
     @I18nLang() lang: string,
     @ActiveUser('userId') userId?: number
   ) {
-    return {
-      message: this.i18nService.translate(M.GET_SUCCESS, lang),
-      data: await this.vocabularyService.findOneDetail(params.id, lang, userId)
-    }
+    return this.vocabularyService.findOneDetail(params.id, lang, userId)
   }
 
   @Get('search-history')
@@ -310,20 +304,18 @@ export class VocabularyController {
     type: VocabularySearchHistoryResponseSwaggerDTO
   })
   @ZodSerializerDto(VocabularySearchHistoryResDTO)
-  async getSearchHistory(
+  @ResponseMessage(M.GET_LIST_SUCCESS)
+  getSearchHistory(
     @Query() query: VocabularySearchHistoryQueryDTO,
     @I18nLang() lang: string,
     @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: await this.vocabularyService.getSearchHistory(
-        userId,
-        query.currentPage,
-        query.pageSize,
-        lang
-      )
-    }
+    return this.vocabularyService.getSearchHistory(
+      userId,
+      query.currentPage,
+      query.pageSize,
+      lang
+    )
   }
 
   @Get('statistics')
@@ -335,11 +327,9 @@ export class VocabularyController {
     type: VocabularyStatisticsResponseSwaggerDTO
   })
   @ZodSerializerDto(VocabularyStatisticsResDTO)
-  async getStatistics(@I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(M.GET_STATS_SUCCESS, lang),
-      data: await this.vocabularyService.getStatistics()
-    }
+  @ResponseMessage(M.GET_STATS_SUCCESS)
+  getStatistics() {
+    return this.vocabularyService.getStatistics()
   }
 
   @Get(':id')
@@ -351,11 +341,9 @@ export class VocabularyController {
     type: VocabularyResponseSwaggerDTO
   })
   @ZodSerializerDto(VocabularyResDTO)
-  async findOne(@Param() params: GetVocabularyByIdParamsDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(M.GET_SUCCESS, lang),
-      data: await this.vocabularyService.findOne(params.id, lang)
-    }
+  @ResponseMessage(M.GET_SUCCESS)
+  findOne(@Param() params: GetVocabularyByIdParamsDTO, @I18nLang() lang: string) {
+    return this.vocabularyService.findOne(params.id, lang)
   }
 
   @Delete(':id')
@@ -368,11 +356,9 @@ export class VocabularyController {
     type: VocabularyResponseSwaggerDTO
   })
   @ZodSerializerDto(VocabularyResDTO)
-  async remove(@Param() params: GetVocabularyByIdParamsDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(M.DELETE_SUCCESS, lang),
-      data: await this.vocabularyService.remove(params.id)
-    }
+  @ResponseMessage(M.DELETE_SUCCESS)
+  remove(@Param() params: GetVocabularyByIdParamsDTO) {
+    return this.vocabularyService.remove(params.id)
   }
 
   @Post('add-meaning')
@@ -393,15 +379,13 @@ export class VocabularyController {
     status: 404,
     description: 'Không tìm thấy từ vựng'
   })
-  async addMeaning(@Body() body: AddMeaningToVocabularyDTO) {
+  @ResponseMessage(M.MEANING_ADDED)
+  addMeaning(@Body() body: AddMeaningToVocabularyDTO) {
     const { vocabularyId, ...meaningData } = body
-    return {
-      data: await this.vocabularyService.addMeaningToExistingVocabulary(
-        vocabularyId,
-        meaningData
-      ),
-      message: 'Thêm nghĩa mới thành công'
-    }
+    return this.vocabularyService.addMeaningToExistingVocabulary(
+      vocabularyId,
+      meaningData
+    )
   }
 
   @Post('full')
@@ -426,7 +410,6 @@ export class VocabularyController {
     @Body() body: CreateVocabularyFullMultipartDTO,
     @UploadedFiles()
     files: { audioFile?: Express.Multer.File[]; imageFile?: Express.Multer.File[] },
-    @I18nLang() lang: string,
     @ActiveUser('userId') userId?: number
   ) {
     const audioFile = files?.audioFile?.[0]
@@ -450,10 +433,7 @@ export class VocabularyController {
     // an existing word only gets the new meaning
     return {
       data: result.data,
-      message: this.i18nService.translate(
-        result.meaningAdded ? M.ADD_MEANING_SUCCESS : M.CREATE_FULL_SUCCESS,
-        lang
-      )
+      message: msg(result.meaningAdded ? M.ADD_MEANING_SUCCESS : M.CREATE_FULL_SUCCESS)
     }
   }
 
@@ -476,15 +456,10 @@ export class VocabularyController {
     description: 'Dữ liệu không hợp lệ'
   })
   @ZodSerializerDto(VocabularyListResDTO)
-  async createSampleVocabularies(
-    @ActiveUser('userId') userId: number | undefined,
-    @I18nLang() lang: string
-  ) {
+  async createSampleVocabularies(@ActiveUser('userId') userId: number | undefined) {
     const { data } = await this.vocabularyService.createSampleVocabularies(userId)
     return {
-      message: this.i18nService.translate(M.CREATE_SAMPLE_SUCCESS, lang, {
-        count: data.results.length
-      }),
+      message: msg(M.CREATE_SAMPLE_SUCCESS, { count: data.results.length }),
       data
     }
   }

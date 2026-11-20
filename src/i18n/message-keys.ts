@@ -438,7 +438,10 @@ export const VocabularyMessage = {
   INVALID_DATA: 'vocabulary.INVALID_DATA',
   MEANING_ALREADY_EXISTS: 'vocabulary.MEANING_ALREADY_EXISTS',
   JAPANESE_TEXT_INVALID: 'vocabulary.JAPANESE_TEXT_INVALID',
-  INVALID_ID: 'vocabulary.INVALID_ID'
+  INVALID_ID: 'vocabulary.INVALID_ID',
+  IMPORT_XLSX_SUCCESS: 'vocabulary.IMPORT_XLSX_SUCCESS',
+  IMPORT_TXT_SUCCESS: 'vocabulary.IMPORT_TXT_SUCCESS',
+  MEANING_ADDED: 'vocabulary.MEANING_ADDED'
 } as const
 
 export const SrsReviewMessage = {

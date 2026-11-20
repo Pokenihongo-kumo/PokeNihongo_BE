@@ -468,7 +468,10 @@ export const viMessages = {
     INVALID_DATA: 'Dữ liệu từ vựng không hợp lệ',
     MEANING_ALREADY_EXISTS: 'Nghĩa này đã tồn tại trong hệ thống',
     JAPANESE_TEXT_INVALID: 'Từ vựng phải là tiếng Nhật thuần (Hiragana/Katakana/Kanji)',
-    INVALID_ID: 'ID từ vựng không hợp lệ'
+    INVALID_ID: 'ID từ vựng không hợp lệ',
+    IMPORT_XLSX_SUCCESS: 'Import từ vựng thành công: {created} mục, bỏ qua {skipped} mục',
+    IMPORT_TXT_SUCCESS: 'Import TXT thành công: {created} mục, bỏ qua {skipped} mục',
+    MEANING_ADDED: 'Thêm nghĩa mới thành công'
   },
   srs_review: {
     GET_SUCCESS: 'Lấy thông tin SRS thành công',

@@ -22,6 +22,10 @@
 //   serviceMessages          `message:` properties whose value is message text: a
 //                            translation, a string or a MESSAGE constant (same); a copied
 //                            data field such as `message: row.message` is not counted
+//   controllerTranslateFiles *.controller.ts files that call `translate(` themselves (P5d:
+//                            TransformInterceptor translates; handlers use
+//                            @ResponseMessage or msg())
+//   controllerTranslateCalls those calls
 //
 // Owner of a file: src/modules/<name>/... -> modules/<name>; any other file ->
 // its top folder under src (shared, cronjobs, websockets, infrastructure, ...).
@@ -166,11 +170,13 @@ export function measure() {
     prismaOutsideRepoFiles: [],
     httpSchemasInEntities: [],
     handWrittenEnvelopes: [],
-    serviceEnvelopeFiles: []
+    serviceEnvelopeFiles: [],
+    controllerTranslateFiles: []
   }
   let prismaOutsideRepoCalls = 0
   let serviceStatusCodes = 0
   let serviceMessages = 0
+  let controllerTranslateCalls = 0
 
   for (const file of files) {
     const rel = srcRel(file)
@@ -233,6 +239,12 @@ export function measure() {
       serviceMessages += messages
     }
 
+    if (rel.endsWith('.controller.ts')) {
+      const calls = text.match(/\btranslate\(/g)?.length ?? 0
+      if (calls > 0) details.controllerTranslateFiles.push(rel)
+      controllerTranslateCalls += calls
+    }
+
     const isRepoFile = isRepoPath(rel)
     const isPrismaService = rel === 'shared/services/prisma.service.ts'
     if (!isRepoFile && !isPrismaService) {
@@ -251,6 +263,7 @@ export function measure() {
   metrics.prismaOutsideRepoCalls = prismaOutsideRepoCalls
   metrics.serviceStatusCodes = serviceStatusCodes
   metrics.serviceMessages = serviceMessages
+  metrics.controllerTranslateCalls = controllerTranslateCalls
   return { metrics, details }
 }
 
