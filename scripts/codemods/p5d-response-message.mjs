@@ -216,7 +216,12 @@ for (const m of modules) {
     report.push(`${m}: no such module`)
     continue
   }
-  for (const f of fs.readdirSync(dir).filter((f) => f.endsWith('.controller.ts'))) {
+  // controllers in sub-folders too (gemini-config/ConfigService)
+  const files = fs
+    .readdirSync(dir, { recursive: true })
+    .map(String)
+    .filter((f) => f.endsWith('.controller.ts'))
+  for (const f of files) {
     const r = transform(path.join(dir, f))
     if (r) done.push(`${r.file}: ${r.edits} edits`)
   }

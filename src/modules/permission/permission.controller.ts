@@ -1,7 +1,6 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage } from '@/i18n/response-message'
 import { PermissionMessage } from 'src/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
-import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
 import { PaginationResponseSchema } from '@/shared/models/response.model'
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common'
@@ -21,78 +20,61 @@ import { MessageResDTO } from 'src/shared/dtos/response.dto'
 @Controller('permissions')
 @ApiBearerAuth()
 export class PermissionController {
-  constructor(
-    private readonly permissionService: PermissionService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly permissionService: PermissionService) {}
 
   //permissions?currentPage=1&pageSize=15&qs=name:like=POST,path:like=/auth/l,sort:-name
   @Get()
   @ZodSerializerDto(PaginationResponseSchema)
-  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(PermissionMessage.GET_LIST_SUCCESS, lang),
-      data: await this.permissionService.list(query)
-    }
+  @ResponseMessage(PermissionMessage.GET_LIST_SUCCESS)
+  async list(@Query() query: PaginationQueryDTO) {
+    return this.permissionService.list(query)
   }
 
   @Get(':permissionId')
   @ZodSerializerDto(GetPermissionDetailResDTO)
-  async findById(@Param() params: GetPermissionParamsDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(PermissionMessage.GET_SUCCESS, lang),
-      data: await this.permissionService.findById(params.permissionId)
-    }
+  @ResponseMessage(PermissionMessage.GET_SUCCESS)
+  async findById(@Param() params: GetPermissionParamsDTO) {
+    return this.permissionService.findById(params.permissionId)
   }
 
   @Post()
   @ZodSerializerDto(CreatePermissionResDTO)
+  @ResponseMessage(PermissionMessage.CREATE_SUCCESS)
   async create(
     @Body() body: CreatePermissionBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(PermissionMessage.CREATE_SUCCESS, lang),
-      data: await this.permissionService.create({
-        data: body,
-        createdById: userId
-      })
-    }
+    return this.permissionService.create({
+      data: body,
+      createdById: userId
+    })
   }
 
   @Put(':permissionId')
   @ZodSerializerDto(UpdatePermissionResDTO)
+  @ResponseMessage(PermissionMessage.UPDATE_SUCCESS)
   async update(
     @Body() body: UpdatePermissionBodyDTO,
     @Param() params: GetPermissionParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(PermissionMessage.UPDATE_SUCCESS, lang),
-      data: await this.permissionService.update({
-        data: body,
-        id: params.permissionId,
-        updatedById: userId
-      })
-    }
+    return this.permissionService.update({
+      data: body,
+      id: params.permissionId,
+      updatedById: userId
+    })
   }
 
   @Delete(':permissionId')
   @ZodSerializerDto(MessageResDTO)
+  @ResponseMessage(PermissionMessage.DELETE_SUCCESS)
   async delete(
     @Param() params: GetPermissionParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
     await this.permissionService.delete({
       id: params.permissionId,
       deletedById: userId
     })
-    return {
-      message: this.i18nService.translate(PermissionMessage.DELETE_SUCCESS, lang),
-      data: null
-    }
   }
 }
