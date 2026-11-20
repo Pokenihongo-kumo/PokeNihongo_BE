@@ -10,11 +10,11 @@
     "httpSchemasInEntities": 0,
     "handWrittenEnvelopes": 2,
     "serviceEnvelopeFiles": 6,
-    "controllerTranslateFiles": 10,
+    "controllerTranslateFiles": 3,
     "prismaOutsideRepoCalls": 0,
     "serviceStatusCodes": 11,
     "serviceMessages": 19,
-    "controllerTranslateCalls": 48
+    "controllerTranslateCalls": 3
   },
   "details": {
     "crossModuleRepoImports": [
@@ -73,15 +73,8 @@
       "modules/vocabulary/vocabulary.service.ts"
     ],
     "controllerTranslateFiles": [
-      "modules/achievement-group/achievement-group.controller.ts",
       "modules/answer/answer.controller.ts",
-      "modules/feature/feature.controller.ts",
-      "modules/gemini-config/ConfigService/gemini-service-config.controller.ts",
-      "modules/gemini-config/gemini-config.controller.ts",
-      "modules/permission/permission.controller.ts",
-      "modules/pokemon/pokemon.controller.ts",
       "modules/question-bank/question-bank.controller.ts",
-      "modules/role/role.controller.ts",
       "modules/testset-questionbank/testset-questionbank.controller.ts"
     ]
   }

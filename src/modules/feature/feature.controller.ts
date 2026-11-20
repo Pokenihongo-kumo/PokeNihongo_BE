@@ -1,4 +1,4 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage } from '@/i18n/response-message'
 import { FeatureMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { AuthenticationGuard } from '@/common/guards/authentication.guard'
@@ -33,85 +33,68 @@ import { FeatureService } from './feature.service'
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class FeatureController {
-  constructor(
-    private readonly FeatureService: FeatureService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly FeatureService: FeatureService) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseSchema)
+  @ResponseMessage(FeatureMessage.GET_LIST_SUCCESS)
   async list(
     @Query() query: PaginationQueryDTO,
     @I18nLang() lang: string,
     @ActiveUser('roleName') roleName: string
   ) {
-    return {
-      message: this.i18nService.translate(FeatureMessage.GET_LIST_SUCCESS, lang),
-      data: await this.FeatureService.list(query, lang, roleName)
-    }
+    return this.FeatureService.list(query, lang, roleName)
   }
 
   @Post()
   @ZodSerializerDto(CreateFeatureResDTO)
+  @ResponseMessage(FeatureMessage.CREATE_SUCCESS)
   async create(
     @Body() body: CreatedFeatureBodyInputDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(FeatureMessage.CREATE_SUCCESS, lang),
-      data: await this.FeatureService.create({
-        data: body,
-        createdById: userId
-      })
-    }
+    return this.FeatureService.create({
+      data: body,
+      createdById: userId
+    })
   }
 
   @Get(':featureId')
   @ZodSerializerDto(GetFeatureDetailResDTO)
+  @ResponseMessage(FeatureMessage.GET_SUCCESS)
   async findById(
     @Param() params: GetFeatureParamsDTO,
     @I18nLang() lang: string,
     @ActiveUser('roleName') roleName: string
   ) {
-    return {
-      message: this.i18nService.translate(FeatureMessage.GET_SUCCESS, lang),
-      data: await this.FeatureService.findById(params.featureId, roleName, lang)
-    }
+    return this.FeatureService.findById(params.featureId, roleName, lang)
   }
 
   @Put(':featureId')
   @ZodSerializerDto(UpdateFeatureResDTO)
+  @ResponseMessage(FeatureMessage.UPDATE_SUCCESS)
   async update(
     @Body() body: UpdateFeatureBodyInputDTO,
     @Param() params: GetFeatureParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(FeatureMessage.UPDATE_SUCCESS, lang),
-      data: await this.FeatureService.update({
-        data: body,
-        id: params.featureId,
-        updatedById: userId
-      })
-    }
+    return this.FeatureService.update({
+      data: body,
+      id: params.featureId,
+      updatedById: userId
+    })
   }
 
   @Delete(':featureId')
   @ZodSerializerDto(MessageResDTO)
+  @ResponseMessage(FeatureMessage.DELETE_SUCCESS)
   async delete(
     @Param() params: GetFeatureParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
     await this.FeatureService.delete({
       id: params.featureId,
       deletedById: userId
     })
-    return {
-      message: this.i18nService.translate(FeatureMessage.DELETE_SUCCESS, lang),
-      data: null
-    }
   }
 }

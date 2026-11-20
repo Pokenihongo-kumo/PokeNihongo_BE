@@ -1,4 +1,5 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage } from '@/i18n/response-message'
+import { ENTITY_MESSAGE } from '@/i18n/message-keys'
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common'
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger'
 import { ZodSerializerDto } from 'nestjs-zod'
@@ -17,10 +18,7 @@ import { MessageResDTO } from '@/shared/dtos/response.dto'
 @Controller('gemini-config/service-configs')
 @ApiBearerAuth()
 export class GeminiServiceConfigController {
-  constructor(
-    private readonly geminiConfigService: GeminiConfigService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly geminiConfigService: GeminiConfigService) {}
 
   @Post()
   @ApiOperation({
@@ -72,14 +70,10 @@ export class GeminiServiceConfigController {
     description: 'Thay đổi geminiConfigId cho service config'
   })
   @ZodSerializerDto(GeminiServiceConfigSwaggerDTO as any)
-  async update(@Param('id') id: number, @Body() body: { geminiConfigId: number }) {
-    return {
-      message: this.i18nService.translate('UPDATE_SUCCESS', 'vi'),
-      data: await this.geminiConfigService.updateServiceConfig(
-        Number(id),
-        body.geminiConfigId
-      )
-    }
+  // in the request language (was always Vietnamese, P5d D-P5d-4)
+  @ResponseMessage(ENTITY_MESSAGE.UPDATE_SUCCESS)
+  update(@Param('id') id: number, @Body() body: { geminiConfigId: number }) {
+    return this.geminiConfigService.updateServiceConfig(Number(id), body.geminiConfigId)
   }
 
   @Patch(':id/toggle')
