@@ -169,9 +169,9 @@ Kiểm tra: `npm run arch:deps` đo các chỉ số trong `scripts/arch/module-d
 
 | Chỉ số | Mục | Lý do |
 | --- | --- | --- |
-| Repo chéo module (16) | shop: banner ↔ item, item ↔ rarity price, banner ↔ purchase, rarity price → item/banner (8) | Use case tạo/random item và đổi giá gọi chéo nhau; gỡ cần dời use case lên module trên (giai đoạn 6) |
+| Repo chéo module (15) | shop: banner ↔ item, item ↔ rarity price, banner ↔ purchase, rarity price → item/banner (8) | Use case tạo/random item và đổi giá gọi chéo nhau; gỡ cần dời use case lên module trên (giai đoạn 6) |
 | | gacha: item ↔ banner (2) | Như shop |
-| | test ↔ user-test-attempt: `test.module` cung cấp `UserTestAttemptRepo`, test đọc `UserTestRepo`/`UserTestAttemptRepo`, attempt đọc `TestRepo` (4) | `UserTestAttemptModule` import `TestModule`; import ngược là vòng; gỡ khi tách test/attempt |
+| | test → user-test-attempt: `test.module` cung cấp `UserTestAttemptRepo`, `TestQuestionPicker` đọc `UserTestRepo`/`UserTestAttemptRepo` (3; chiều attempt → `TestRepo` đã gỡ ở X3, attempt đọc đề qua `TestService`) | `UserTestAttemptModule` import `TestModule`; import ngược là vòng; còn lại là chọn câu placement/lesson review đọc lịch sử làm bài |
 | | `UserService` → `UserSeasonHistoryRepo` | Inject service khép vòng user → season history → reward → user (Nest không dựng được) |
 | | `UserRewardHistoryService` → `RewardRepo` | Ghi lịch sử chụp reward vào `meta` (là ghi, không dùng R4); reward gọi lại user-reward-history |
 | `forwardRef` (8 module, 6 inject) | shop, gacha, reward ↔ user-reward-history, match-participant/match, processor round-question | Cùng các vòng trên; battle: luồng trận là một quy trình trải trên nhiều module |

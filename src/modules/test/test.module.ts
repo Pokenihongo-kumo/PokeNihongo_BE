@@ -1,3 +1,4 @@
+import { TestQuestionPicker } from './test-question-picker.service'
 import { Module } from '@nestjs/common'
 import { TestController } from './test.controller'
 import { TestService } from './test.service'
@@ -12,7 +13,7 @@ import { UserTestModule } from '../user-test/user-test.module'
 @Module({
   imports: [TestSetQuestionBankModule, UserTestModule],
   controllers: [TestController],
-  providers: [TestService, TestRepo, UserTestAttemptRepo],
+  providers: [TestService, TestRepo, UserTestAttemptRepo, TestQuestionPicker],
   exports: [TestService, TestRepo]
 })
 export class TestModule {}
