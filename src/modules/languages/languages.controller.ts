@@ -1,6 +1,5 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage } from '@/i18n/response-message'
 import { LanguagesMessage } from '@/i18n/message-keys'
-import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import {
   CreateLanguagesBodyDTO,
   UpdateLanguagesBodyDTO,
@@ -41,10 +40,7 @@ import { LanguagesService } from './languages.service'
 @ApiTags('Languages')
 @Controller('languages')
 export class LanguagesController {
-  constructor(
-    private readonly languagesService: LanguagesService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly languagesService: LanguagesService) {}
 
   @Get()
   @ApiBearerAuth()
@@ -80,11 +76,9 @@ export class LanguagesController {
     type: LanguagesListSwaggerResponseDTO
   })
   @ZodSerializerDto(LanguagesListResDTO)
-  async findMany(@Query() query: GetLanguagesListQueryDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(LanguagesMessage.GET_LIST_SUCCESS, lang),
-      data: await this.languagesService.findMany(query)
-    }
+  @ResponseMessage(LanguagesMessage.GET_LIST_SUCCESS)
+  async findMany(@Query() query: GetLanguagesListQueryDTO) {
+    return this.languagesService.findMany(query)
   }
 
   @Get('check/:code')
@@ -137,11 +131,9 @@ export class LanguagesController {
     description: 'Ngôn ngữ không tồn tại'
   })
   @ZodSerializerDto(LanguagesResDTO)
-  async findById(@Param() params: GetLanguagesByIdParamsDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(LanguagesMessage.GET_SUCCESS, lang),
-      data: await this.languagesService.findById(params.id)
-    }
+  @ResponseMessage(LanguagesMessage.GET_SUCCESS)
+  async findById(@Param() params: GetLanguagesByIdParamsDTO) {
+    return this.languagesService.findById(params.id)
   }
 
   @Get('by-code/:code')
@@ -165,14 +157,9 @@ export class LanguagesController {
     description: 'Ngôn ngữ không tồn tại'
   })
   @ZodSerializerDto(LanguagesResDTO)
-  async findByCode(
-    @Param() params: GetLanguagesByCodeParamsDTO,
-    @I18nLang() lang: string
-  ) {
-    return {
-      message: this.i18nService.translate(LanguagesMessage.GET_SUCCESS, lang),
-      data: await this.languagesService.findByCode(params)
-    }
+  @ResponseMessage(LanguagesMessage.GET_SUCCESS)
+  async findByCode(@Param() params: GetLanguagesByCodeParamsDTO) {
+    return this.languagesService.findByCode(params)
   }
 
   @Post()
@@ -199,11 +186,9 @@ export class LanguagesController {
     description: 'Ngôn ngữ với mã này đã tồn tại'
   })
   @ZodSerializerDto(LanguagesResDTO)
-  async create(@Body() body: CreateLanguagesBodyDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(LanguagesMessage.CREATE_SUCCESS, lang),
-      data: await this.languagesService.create(body)
-    }
+  @ResponseMessage(LanguagesMessage.CREATE_SUCCESS)
+  async create(@Body() body: CreateLanguagesBodyDTO) {
+    return this.languagesService.create(body)
   }
 
   @Put(':id')
@@ -239,15 +224,12 @@ export class LanguagesController {
     description: 'Mã ngôn ngữ đã tồn tại'
   })
   @ZodSerializerDto(LanguagesResDTO)
+  @ResponseMessage(LanguagesMessage.UPDATE_SUCCESS)
   async update(
     @Param() params: GetLanguagesByIdParamsDTO,
-    @Body() body: UpdateLanguagesBodyDTO,
-    @I18nLang() lang: string
+    @Body() body: UpdateLanguagesBodyDTO
   ) {
-    return {
-      message: this.i18nService.translate(LanguagesMessage.UPDATE_SUCCESS, lang),
-      data: await this.languagesService.update(params.id, body)
-    }
+    return this.languagesService.update(params.id, body)
   }
 
   @Put('by-code/:code')
@@ -283,15 +265,12 @@ export class LanguagesController {
     description: 'Mã ngôn ngữ đã tồn tại'
   })
   @ZodSerializerDto(LanguagesResDTO)
+  @ResponseMessage(LanguagesMessage.UPDATE_SUCCESS)
   async updateByCode(
     @Param() params: GetLanguagesByCodeParamsDTO,
-    @Body() body: UpdateLanguagesBodyDTO,
-    @I18nLang() lang: string
+    @Body() body: UpdateLanguagesBodyDTO
   ) {
-    return {
-      message: this.i18nService.translate(LanguagesMessage.UPDATE_SUCCESS, lang),
-      data: await this.languagesService.updateByCode(params.code, body)
-    }
+    return this.languagesService.updateByCode(params.code, body)
   }
 
   @Delete(':id')
@@ -314,12 +293,9 @@ export class LanguagesController {
     status: 404,
     description: 'Ngôn ngữ không tồn tại'
   })
-  async delete(@Param() params: GetLanguagesByIdParamsDTO, @I18nLang() lang: string) {
+  @ResponseMessage(LanguagesMessage.DELETE_SUCCESS)
+  async delete(@Param() params: GetLanguagesByIdParamsDTO) {
     await this.languagesService.delete(params.id)
-    return {
-      message: this.i18nService.translate(LanguagesMessage.DELETE_SUCCESS, lang),
-      data: null
-    }
   }
 
   @Delete('by-code/:code')
@@ -342,15 +318,9 @@ export class LanguagesController {
     status: 404,
     description: 'Ngôn ngữ không tồn tại'
   })
-  async deleteByCode(
-    @Param() params: GetLanguagesByCodeParamsDTO,
-    @I18nLang() lang: string
-  ) {
+  @ResponseMessage(LanguagesMessage.DELETE_SUCCESS)
+  async deleteByCode(@Param() params: GetLanguagesByCodeParamsDTO) {
     await this.languagesService.deleteByCode(params.code)
-    return {
-      message: this.i18nService.translate(LanguagesMessage.DELETE_SUCCESS, lang),
-      data: null
-    }
   }
 
   @Post('create-default')

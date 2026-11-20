@@ -10,11 +10,11 @@
     "httpSchemasInEntities": 0,
     "handWrittenEnvelopes": 2,
     "serviceEnvelopeFiles": 6,
-    "controllerTranslateFiles": 79,
+    "controllerTranslateFiles": 70,
     "prismaOutsideRepoCalls": 0,
     "serviceStatusCodes": 11,
     "serviceMessages": 19,
-    "controllerTranslateCalls": 539
+    "controllerTranslateCalls": 477
   },
   "details": {
     "crossModuleRepoImports": [
@@ -78,11 +78,9 @@
       "modules/ai-conversation-room/ai-conversation-room.controller.ts",
       "modules/answer/answer.controller.ts",
       "modules/attendance/attendance.controller.ts",
-      "modules/attendence-config/attendence-config.controller.ts",
       "modules/auth/auth.controller.ts",
       "modules/daily-request/daily-request.controller.ts",
       "modules/debuff-round/debuff-round.controller.ts",
-      "modules/elemental-type/elemental-type.controller.ts",
       "modules/exercises/exercises.controller.ts",
       "modules/feature/feature.controller.ts",
       "modules/flashcard/flashcard.controller.ts",
@@ -96,19 +94,15 @@
       "modules/grammar-usage/grammar-usage.controller.ts",
       "modules/grammar/grammar.controller.ts",
       "modules/invoice/invoice.controller.ts",
-      "modules/kanji-reading/kanji-reading.controller.ts",
       "modules/kanji/kanji.controller.ts",
-      "modules/languages/languages.controller.ts",
       "modules/leaderboard-season/leaderboard-season.controller.ts",
       "modules/lesson-category/lesson-category.controller.ts",
       "modules/lesson/lesson.controller.ts",
-      "modules/level/level.controller.ts",
       "modules/match-participant/match-participant.controller.ts",
       "modules/match-queue/match-queue.controller.ts",
       "modules/match-round-participant/match-round-participant.controller.ts",
       "modules/match-round/match-round.controller.ts",
       "modules/match/match.controller.ts",
-      "modules/meaning/meaning.controller.ts",
       "modules/notification/notification.controller.ts",
       "modules/payment/invoice-checkout.controller.ts",
       "modules/payment/payment.controller.ts",
@@ -130,8 +124,6 @@
       "modules/test/test.controller.ts",
       "modules/testset-questionbank/testset-questionbank.controller.ts",
       "modules/testset/testset.controller.ts",
-      "modules/translation/translation.controller.ts",
-      "modules/type-effectiveness/type-effectiveness.controller.ts",
       "modules/user-achievement/user-achievement.controller.ts",
       "modules/user-ai-conversation/user-ai-conversation.controller.ts",
       "modules/user-answer-log/user-answer-log.controller.ts",
@@ -150,8 +142,7 @@
       "modules/user-test/user-test.controller.ts",
       "modules/user/user.controller.ts",
       "modules/wallet-transaction/wallet-transaction.controller.ts",
-      "modules/wallet/wallet.controller.ts",
-      "modules/wordtype/wordtype.controller.ts"
+      "modules/wallet/wallet.controller.ts"
     ]
   }
 }

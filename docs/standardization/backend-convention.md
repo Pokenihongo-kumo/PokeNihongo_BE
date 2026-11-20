@@ -92,6 +92,7 @@ src/modules/<feature>/
   ```
 
   Module chưa chuyển P5d vẫn tự `translate` ở controller (interceptor nhận cả hai).
+  Chuyển một nhóm: `node scripts/codemods/p5d-response-message.mjs <module>...` (TypeScript AST): route có đúng một `return` với key cố định → `@ResponseMessage`, còn lại → `msg()` tại chỗ; bỏ `@I18nLang() lang` không còn dùng và `I18nService` thừa; liệt kê chỗ dịch theo ngôn ngữ khác `lang` hoặc envelope có field khác để sửa tay.
 
 - Route mà status là kết quả nghiệp vụ (ghi từng phần: 201/207/400) dùng `@Res()`: service trả dữ liệu kèm số đếm, controller chọn status + message và gửi `{ statusCode, data, message }` (mẫu: `POST /answer/multiple`).
 - Chuyển một nhóm: `node scripts/codemods/p5-envelope-to-controller.mjs <module>...`, rồi `node scripts/codemods/p5-drop-envelope-data.mjs` tới khi tsc sạch, sửa tay các method nó liệt kê, grep `.data` trên kết quả đọc qua `any` ở các module gọi tới (tsc không thấy), chạy contract snapshot.
