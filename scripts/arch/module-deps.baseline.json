@@ -10,11 +10,11 @@
     "httpSchemasInEntities": 0,
     "handWrittenEnvelopes": 2,
     "serviceEnvelopeFiles": 6,
-    "controllerTranslateFiles": 63,
+    "controllerTranslateFiles": 62,
     "prismaOutsideRepoCalls": 0,
     "serviceStatusCodes": 11,
     "serviceMessages": 19,
-    "controllerTranslateCalls": 399
+    "controllerTranslateCalls": 389
   },
   "details": {
     "crossModuleRepoImports": [
@@ -91,7 +91,6 @@
       "modules/gemini-config/ConfigService/gemini-service-config.controller.ts",
       "modules/gemini-config/gemini-config.controller.ts",
       "modules/invoice/invoice.controller.ts",
-      "modules/kanji/kanji.controller.ts",
       "modules/leaderboard-season/leaderboard-season.controller.ts",
       "modules/match-participant/match-participant.controller.ts",
       "modules/match-queue/match-queue.controller.ts",
