@@ -28,9 +28,9 @@
       "modules/shop-purchase/shop-purchase.service.ts -> modules/shop-item/shop-item.repo.ts",
       "modules/shop-rarity-price/shop-rarity-price.service.ts -> modules/shop-banner/shop-banner.repo.ts",
       "modules/shop-rarity-price/shop-rarity-price.service.ts -> modules/shop-item/shop-item.repo.ts",
+      "modules/test/test-question-picker.service.ts -> modules/user-test-attempt/user-test-attempt.repo.ts",
+      "modules/test/test-question-picker.service.ts -> modules/user-test/user-test.repo.ts",
       "modules/test/test.module.ts -> modules/user-test-attempt/user-test-attempt.repo.ts",
-      "modules/test/test.service.ts -> modules/user-test-attempt/user-test-attempt.repo.ts",
-      "modules/test/test.service.ts -> modules/user-test/user-test.repo.ts",
       "modules/user-reward-history/user-reward-history.service.ts -> modules/reward/reward.repo.ts",
       "modules/user/user.service.ts -> modules/user-season-history/user-season-history.repo.ts"
     ],

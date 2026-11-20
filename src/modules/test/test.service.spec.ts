@@ -1,4 +1,5 @@
 import { HttpStatus } from '@nestjs/common'
+import { TestQuestionPicker } from './test-question-picker.service'
 import { TestService } from './test.service'
 
 describe('TestService', () => {
@@ -15,13 +16,15 @@ describe('TestService', () => {
   }
   const userTests = { updateStatusByTestId: jest.fn(), initAllUsersTests: jest.fn() }
   const userTestRepo = { findByUserAndTest: jest.fn() }
-  const service = new TestService(
+  // the placement questions are built by TestQuestionPicker (phase 6 X4)
+  const picker = new TestQuestionPicker(
     repo as never,
     {} as never,
     {} as never,
     userTestRepo as never,
     userTests as never
   )
+  const service = new TestService(repo as never, userTests as never, picker)
 
   beforeEach(() => {
     jest.resetAllMocks()
