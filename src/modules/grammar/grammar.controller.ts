@@ -1,6 +1,5 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage } from '@/i18n/response-message'
 import { GrammarMessage } from '@/i18n/message-keys'
-import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import {
   Body,
   Controller,
@@ -47,10 +46,7 @@ import { GrammarResponseDTO } from './dto/grammar.response.dto'
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class GrammarController {
-  constructor(
-    private readonly grammarService: GrammarService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly grammarService: GrammarService) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -64,11 +60,9 @@ export class GrammarController {
   @ApiResponse({ status: 400, description: 'Dữ liệu không hợp lệ' })
   @ApiResponse({ status: 409, description: 'Ngữ pháp đã tồn tại' })
   @ZodSerializerDto(GrammarResponseDTO)
-  async createGrammar(@Body() body: CreateGrammarBodyDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(GrammarMessage.CREATE_SUCCESS, lang),
-      data: await this.grammarService.createGrammar(body)
-    }
+  @ResponseMessage(GrammarMessage.CREATE_SUCCESS)
+  async createGrammar(@Body() body: CreateGrammarBodyDTO) {
+    return this.grammarService.createGrammar(body)
   }
 
   @Get()
@@ -79,11 +73,9 @@ export class GrammarController {
     type: GrammarListResponseSwaggerDTO
   })
   @ApiQuery({ type: GetGrammarListQuerySwaggerDTO })
-  async getGrammarList(@Query() query: GetGrammarListQueryDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(GrammarMessage.GET_LIST_SUCCESS, lang),
-      data: await this.grammarService.getGrammarList(query)
-    }
+  @ResponseMessage(GrammarMessage.GET_LIST_SUCCESS)
+  async getGrammarList(@Query() query: GetGrammarListQueryDTO) {
+    return this.grammarService.getGrammarList(query)
   }
 
   @Get(':id')
@@ -94,14 +86,9 @@ export class GrammarController {
     type: GrammarResponseSwaggerDTO
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy ngữ pháp' })
-  async getGrammarById(
-    @Param() params: GetGrammarByIdParamsDTO,
-    @I18nLang() lang: string
-  ) {
-    return {
-      message: this.i18nService.translate(GrammarMessage.GET_SUCCESS, lang),
-      data: await this.grammarService.getGrammarById(params.id)
-    }
+  @ResponseMessage(GrammarMessage.GET_SUCCESS)
+  async getGrammarById(@Param() params: GetGrammarByIdParamsDTO) {
+    return this.grammarService.getGrammarById(params.id)
   }
 
   @Put(':id')
@@ -114,15 +101,12 @@ export class GrammarController {
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy ngữ pháp' })
   @ApiResponse({ status: 409, description: 'Cấu trúc ngữ pháp đã tồn tại' })
+  @ResponseMessage(GrammarMessage.UPDATE_SUCCESS)
   async updateGrammar(
     @Param() params: GetGrammarByIdParamsDTO,
-    @Body() body: UpdateGrammarBodyDTO,
-    @I18nLang() lang: string
+    @Body() body: UpdateGrammarBodyDTO
   ) {
-    return {
-      message: this.i18nService.translate(GrammarMessage.UPDATE_SUCCESS, lang),
-      data: await this.grammarService.updateGrammar(params.id, body)
-    }
+    return this.grammarService.updateGrammar(params.id, body)
   }
 
   @Delete(':id')
@@ -131,11 +115,8 @@ export class GrammarController {
   @ApiResponse({ status: 204, description: 'Xóa ngữ pháp thành công' })
   @ApiResponse({ status: 404, description: 'Không tìm thấy ngữ pháp' })
   @ZodSerializerDto(MessageResDTO)
-  async deleteGrammar(
-    @Param() params: GetGrammarByIdParamsDTO,
-    @I18nLang() lang: string
-  ) {
+  @ResponseMessage(GrammarMessage.DELETE_SUCCESS)
+  async deleteGrammar(@Param() params: GetGrammarByIdParamsDTO) {
     await this.grammarService.deleteGrammar(params.id)
-    return { message: this.i18nService.translate(GrammarMessage.DELETE_SUCCESS, lang) }
   }
 }
