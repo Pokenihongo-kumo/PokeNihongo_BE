@@ -1,4 +1,4 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage } from '@/i18n/response-message'
 import { MatchRoundMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { AuthenticationGuard } from '@/common/guards/authentication.guard'
@@ -33,89 +33,70 @@ import { MatchRoundService } from './match-round.service'
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class MatchRoundController {
-  constructor(
-    private readonly matchRoundService: MatchRoundService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly matchRoundService: MatchRoundService) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseSchema)
+  @ResponseMessage(MatchRoundMessage.GET_LIST_SUCCESS)
   async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(MatchRoundMessage.GET_LIST_SUCCESS, lang),
-      data: await this.matchRoundService.list(query, lang)
-    }
+    return this.matchRoundService.list(query, lang)
   }
 
   @Get('now/user')
   @ZodSerializerDto(GetMatchRoundDetailForUserResDTO)
+  @ResponseMessage(MatchRoundMessage.GET_LIST_SUCCESS)
   async getListMatchRoundByUser(
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return {
-      message: this.i18nService.translate(MatchRoundMessage.GET_LIST_SUCCESS, lang),
-      data: await this.matchRoundService.listNowByUser(userId, lang)
-    }
+    return this.matchRoundService.listNowByUser(userId, lang)
   }
 
   @Post()
   // @ZodSerializerDto(CreateMatchRoundResDTO)
+  @ResponseMessage(MatchRoundMessage.CREATE_SUCCESS)
   async create(
     @Body() data: CreateMatchRoundBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(MatchRoundMessage.CREATE_SUCCESS, lang),
-      data: await this.matchRoundService.create({
-        createdById: userId,
-        data
-      })
-    }
+    return this.matchRoundService.create({
+      createdById: userId,
+      data
+    })
   }
 
   @Get(':matchRoundId')
   @ZodSerializerDto(GetMatchRoundDetailResDTO)
-  async findById(@Param() params: GetMatchRoundParamsDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(MatchRoundMessage.GET_SUCCESS, lang),
-      data: await this.matchRoundService.findById(params.matchRoundId)
-    }
+  @ResponseMessage(MatchRoundMessage.GET_SUCCESS)
+  async findById(@Param() params: GetMatchRoundParamsDTO) {
+    return this.matchRoundService.findById(params.matchRoundId)
   }
 
   @Put(':matchRoundId')
   @ZodSerializerDto(UpdateMatchRoundResDTO)
+  @ResponseMessage(MatchRoundMessage.UPDATE_SUCCESS)
   async update(
     @Body() body: UpdateMatchRoundBodyDTO,
     @Param() params: GetMatchRoundParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(MatchRoundMessage.UPDATE_SUCCESS, lang),
-      data: await this.matchRoundService.update({
-        data: body,
-        id: params.matchRoundId,
-        updatedById: userId
-      })
-    }
+    return this.matchRoundService.update({
+      data: body,
+      id: params.matchRoundId,
+      updatedById: userId
+    })
   }
 
   @Delete(':matchRoundId')
   @ZodSerializerDto(MessageResDTO)
+  @ResponseMessage(MatchRoundMessage.DELETE_SUCCESS)
   async delete(
     @Param() params: GetMatchRoundParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
     await this.matchRoundService.delete({
       id: params.matchRoundId,
       deletedById: userId
     })
-    return {
-      message: this.i18nService.translate(MatchRoundMessage.DELETE_SUCCESS, lang),
-      data: null
-    }
   }
 }
