@@ -18,6 +18,8 @@ import { UserAIConversationModule } from '@/modules/user-ai-conversation/user-ai
 import { GeminiConfigModule } from '@/modules/gemini-config/gemini-config.module'
 import { KaiwaProcessor } from '../shared/workers/kaiwa.processor'
 import { KaiwaGateway } from './kaiwa.gateway'
+import { KaiwaAiService } from './kaiwa/kaiwa-ai.service'
+import { KaiwaAudioService } from './kaiwa/kaiwa-audio.service'
 
 // @Global()
 @Module({
@@ -56,6 +58,8 @@ import { KaiwaGateway } from './kaiwa.gateway'
     MatchingGateway,
     UserGateway,
     KaiwaGateway,
+    KaiwaAiService, // kaiwa AI calls, no socket (phase 6 X7)
+    KaiwaAudioService, // kaiwa audio decode/convert/upload (phase 6 X7)
     KaiwaProcessor // Processor để xử lý background jobs (optional, có thể dùng sau)
   ],
   exports: [
