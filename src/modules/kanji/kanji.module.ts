@@ -1,3 +1,4 @@
+import { KanjiImportService } from './kanji-import.service'
 import { Module } from '@nestjs/common'
 import { KanjiController } from './kanji.controller'
 import { KanjiService } from './kanji.service'
@@ -9,7 +10,7 @@ import { UploadModule } from '@/modules/upload/upload.module'
 @Module({
   imports: [SharedModule, KanjiReadingModule, UploadModule],
   controllers: [KanjiController],
-  providers: [KanjiService, KanjiRepo],
+  providers: [KanjiImportService, KanjiService, KanjiRepo],
   exports: [KanjiService, KanjiRepo]
 })
 export class KanjiModule {}

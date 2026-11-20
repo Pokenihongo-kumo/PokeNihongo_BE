@@ -1,3 +1,4 @@
+import { VocabularyImportService } from './vocabulary-import.service'
 import { Module } from '@nestjs/common'
 import { VocabularyController } from './vocabulary.controller'
 import { VocabularyRepo } from './vocabulary.repo'
@@ -22,7 +23,12 @@ import { WordTypeModule } from '@/modules/wordtype/wordtype.module'
     WordTypeModule
   ],
   controllers: [VocabularyController],
-  providers: [VocabularyService, VocabularyRepo, VocabularyHelperService],
+  providers: [
+    VocabularyImportService,
+    VocabularyService,
+    VocabularyRepo,
+    VocabularyHelperService
+  ],
   exports: [VocabularyService, VocabularyRepo, VocabularyHelperService]
 })
 export class VocabularyModule {}

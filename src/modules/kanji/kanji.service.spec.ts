@@ -16,7 +16,8 @@ describe('KanjiService', () => {
   const service = new KanjiService(
     repo as never,
     readings as never,
-    { uploadFile: jest.fn() } as never
+    { uploadFile: jest.fn() } as never,
+    {} as never // KanjiImportService (imports are not under test here)
   )
   const kanji = { id: 7, character: '龘', meaningKey: 'kanji.7.meaning', readings: [] }
 

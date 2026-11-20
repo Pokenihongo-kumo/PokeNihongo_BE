@@ -69,7 +69,7 @@
       "modules/payment/payment.service.ts",
       "modules/pokemon/pokemon.service.ts",
       "modules/upload/upload.service.ts",
-      "modules/vocabulary/vocabulary.service.ts"
+      "modules/vocabulary/vocabulary-import.service.ts"
     ],
     "controllerTranslateFiles": [
       "modules/answer/answer.controller.ts",
