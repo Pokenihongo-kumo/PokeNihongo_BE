@@ -1229,4 +1229,12 @@ export class TestService {
     }
     return shuffled
   }
+
+  // ---- For other modules (user-test-attempt) ----
+
+  findWithTestSetsAndQuestions(
+    ...args: Parameters<TestRepo['findByIdWithTestSetsAndQuestions']>
+  ) {
+    return this.testRepo.findByIdWithTestSetsAndQuestions(...args)
+  }
 }

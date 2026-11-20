@@ -1,6 +1,6 @@
 {
   "metrics": {
-    "crossModuleRepoImports": 16,
+    "crossModuleRepoImports": 15,
     "moduleForeignRepoProviders": 1,
     "forwardRefModuleFiles": 8,
     "injectForwardRefFiles": 6,
@@ -32,7 +32,6 @@
       "modules/test/test.service.ts -> modules/user-test-attempt/user-test-attempt.repo.ts",
       "modules/test/test.service.ts -> modules/user-test/user-test.repo.ts",
       "modules/user-reward-history/user-reward-history.service.ts -> modules/reward/reward.repo.ts",
-      "modules/user-test-attempt/user-test-attempt.service.ts -> modules/test/test.repo.ts",
       "modules/user/user.service.ts -> modules/user-season-history/user-season-history.repo.ts"
     ],
     "moduleForeignRepoProviders": [

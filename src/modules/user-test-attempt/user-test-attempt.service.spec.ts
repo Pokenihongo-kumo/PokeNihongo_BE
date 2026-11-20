@@ -1,33 +1,53 @@
 import { UserTestAttemptMessage as M } from '@/i18n/message-keys'
 import { HttpException, HttpStatus } from '@nestjs/common'
+import { PlacementEvaluationService } from './placement-evaluation.service'
+import { TestAttemptGradingService } from './test-attempt-grading.service'
+import { TestAttemptReviewService } from './test-attempt-review.service'
 import { UserTestAttemptService } from './user-test-attempt.service'
 
 // Only the dependencies touched by the paths under test are faked.
 function createService() {
   const repo = {
     findById: jest.fn(),
+    findUnique: jest.fn(),
     update: jest.fn(),
     hasCompletedAttempt: jest.fn()
   }
   const userTestAnswerLogService = { findByUserTestAttemptId: jest.fn() }
-  const testRepo = { findByIdWithTestSetsAndQuestions: jest.fn() }
-  const service = new UserTestAttemptService(
+  const testService = { findWithTestSetsAndQuestions: jest.fn() }
+  // the façade forwards checking/submitting, reviews and placement (phase 6 X3)
+  const grading = new TestAttemptGradingService(
     repo as any,
-    {} as any,
-    {} as any,
     userTestAnswerLogService as any,
-    {} as any,
-    testRepo as any,
-    {} as any,
-    {} as any,
-    {} as any,
     {} as any,
     {} as any,
     {} as any,
     {} as any,
     {} as any
   )
-  return { service, repo, userTestAnswerLogService, testRepo }
+  const review = new TestAttemptReviewService(
+    repo as any,
+    userTestAnswerLogService as any,
+    testService as any,
+    {} as any
+  )
+  const placement = new PlacementEvaluationService(
+    repo as any,
+    userTestAnswerLogService as any,
+    {} as any,
+    {} as any
+  )
+  const service = new UserTestAttemptService(
+    repo as any,
+    {} as any,
+    userTestAnswerLogService as any,
+    testService as any,
+    {} as any,
+    grading,
+    review,
+    placement
+  )
+  return { service, repo, userTestAnswerLogService, testService }
 }
 
 async function expectHttpError(promise: Promise<unknown>, status: HttpStatus) {
@@ -103,9 +123,9 @@ describe('UserTestAttemptService', () => {
 
   describe('getTestAttemptReview', () => {
     it('throws 403 with the translated key when the score is below 80% and nothing was completed', async () => {
-      const { service, repo, userTestAnswerLogService, testRepo } = createService()
-      jest.spyOn(service, 'findOne').mockResolvedValue(completedAttempt as any)
-      testRepo.findByIdWithTestSetsAndQuestions.mockResolvedValue({
+      const { service, repo, userTestAnswerLogService, testService } = createService()
+      repo.findUnique.mockResolvedValue(completedAttempt)
+      testService.findWithTestSetsAndQuestions.mockResolvedValue({
         testType: 'MATCH_TEST',
         testTestSets: [{ testSet: { testSetQuestionBanks: [{}, {}, {}, {}, {}] } }]
       })
@@ -126,7 +146,7 @@ describe('UserTestAttemptService', () => {
   describe('getLessonTestAttemptReview', () => {
     it('throws 403 with the translated key when the score is below 80% and nothing was completed', async () => {
       const { service, repo, userTestAnswerLogService } = createService()
-      jest.spyOn(service, 'findOne').mockResolvedValue(completedAttempt as any)
+      repo.findUnique.mockResolvedValue(completedAttempt)
       userTestAnswerLogService.findByUserTestAttemptId.mockResolvedValue(oneCorrectOfFive)
       repo.hasCompletedAttempt.mockResolvedValue(false)
 
