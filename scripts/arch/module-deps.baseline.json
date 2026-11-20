@@ -10,11 +10,11 @@
     "httpSchemasInEntities": 0,
     "handWrittenEnvelopes": 2,
     "serviceEnvelopeFiles": 6,
-    "controllerTranslateFiles": 62,
+    "controllerTranslateFiles": 53,
     "prismaOutsideRepoCalls": 0,
     "serviceStatusCodes": 11,
     "serviceMessages": 19,
-    "controllerTranslateCalls": 389
+    "controllerTranslateCalls": 319
   },
   "details": {
     "crossModuleRepoImports": [
@@ -77,7 +77,6 @@
       "modules/achievement/achievement.controller.ts",
       "modules/ai-conversation-room/ai-conversation-room.controller.ts",
       "modules/answer/answer.controller.ts",
-      "modules/attendance/attendance.controller.ts",
       "modules/auth/auth.controller.ts",
       "modules/daily-request/daily-request.controller.ts",
       "modules/debuff-round/debuff-round.controller.ts",
@@ -118,20 +117,12 @@
       "modules/testset-questionbank/testset-questionbank.controller.ts",
       "modules/user-achievement/user-achievement.controller.ts",
       "modules/user-ai-conversation/user-ai-conversation.controller.ts",
-      "modules/user-answer-log/user-answer-log.controller.ts",
       "modules/user-daily-request/user-daily-request.controller.ts",
-      "modules/user-exercise-attempt/user-exercise-attempt.controller.ts",
       "modules/user-gacha-pity/user-gacha-pity.controller.ts",
-      "modules/user-history/user-history.controller.ts",
       "modules/user-pokemon/user-pokemon.controller.ts",
-      "modules/user-progress/user-progress.controller.ts",
       "modules/user-reward-history/user-reward-history.controller.ts",
       "modules/user-season-history/user-season-history.controller.ts",
-      "modules/user-srs-review/user-srs-review.controller.ts",
       "modules/user-subscription/user-subscription.controller.ts",
-      "modules/user-test-answer-log/user-test-answer-log.controller.ts",
-      "modules/user-test-attempt/user-test-attempt.controller.ts",
-      "modules/user-test/user-test.controller.ts",
       "modules/user/user.controller.ts",
       "modules/wallet-transaction/wallet-transaction.controller.ts",
       "modules/wallet/wallet.controller.ts"

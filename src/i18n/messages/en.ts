@@ -494,7 +494,11 @@ export const enMessages = {
     INVALID_PAGE: 'Page must be a positive integer',
     INVALID_PAGE_SIZE: 'Page size must be a positive integer',
     INVALID_PERCENTAGE: 'Progress percentage must be from 0 to 100',
-    INVALID_STATUS: 'Invalid progress status'
+    INVALID_STATUS: 'Invalid progress status',
+    INIT_NO_USERS: 'There are no users',
+    INIT_NO_LESSONS: 'There are no lessons',
+    INIT_USER_DONE: 'User progress initialized',
+    INIT_ALL_DONE: 'User progress initialized for every user'
   },
   user_answer_log: {
     GET_SUCCESS: 'Answer retrieved successfully',
