@@ -1,0 +1,388 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RewardService.convertRewardsWithUser grants each type, queues the level reward, records and notifies 1`] = `
+{
+  "credits": [
+    {
+      "amount": 20,
+      "createdById": 7,
+      "description": "Received 20 POKE_COINS from EXERCISE",
+      "purpose": "REWARD",
+      "referenceId": 42,
+      "source": "EVENT_REWARD",
+      "type": "POKE_COINS",
+      "userId": 7,
+    },
+    {
+      "amount": 10,
+      "createdById": 7,
+      "description": "Received 10 SPARKLES from EXERCISE",
+      "purpose": "REWARD",
+      "referenceId": 42,
+      "source": "EVENT_REWARD",
+      "type": "SPARKLES",
+      "userId": 7,
+    },
+    {
+      "amount": 600,
+      "createdById": 7,
+      "description": "Converted duplicate Pokemon #25 (P25) to 600 SPARKLES",
+      "purpose": "REWARD",
+      "referenceId": 42,
+      "source": "EVENT_REWARD",
+      "type": "SPARKLES",
+      "userId": 7,
+    },
+    {
+      "amount": 14,
+      "createdById": 7,
+      "description": "Received 14 SPARKLES from EXERCISE",
+      "purpose": "REWARD",
+      "referenceId": 42,
+      "source": "EVENT_REWARD",
+      "type": "SPARKLES",
+      "userId": 7,
+    },
+  ],
+  "history": [
+    {
+      "amount": 150,
+      "rewardId": 1,
+      "sourceId": 42,
+      "sourceType": "EXERCISE",
+      "target": "EXP",
+      "userId": 7,
+    },
+    {
+      "amount": 20,
+      "rewardId": 2,
+      "sourceId": 42,
+      "sourceType": "EXERCISE",
+      "target": "POKE_COINS",
+      "userId": 7,
+    },
+    {
+      "amount": 10,
+      "rewardId": 3,
+      "sourceId": 42,
+      "sourceType": "EXERCISE",
+      "target": "SPARKLES",
+      "userId": 7,
+    },
+    {
+      "amount": 600,
+      "meta": {
+        "coinValue": 600,
+        "pokemonId": 25,
+      },
+      "note": "Converted pokemon 25 reward to coins",
+      "rewardId": 4,
+      "rewardTargetSnapshot": "SPARKLES",
+      "sourceType": "REWARD_SERVICE",
+      "userId": 7,
+    },
+    {
+      "amount": 1,
+      "meta": {
+        "pokemonId": 30,
+      },
+      "note": undefined,
+      "rewardId": 5,
+      "rewardTargetSnapshot": "POKEMON",
+      "sourceType": "REWARD_SERVICE",
+      "userId": 7,
+    },
+    {
+      "amount": 14,
+      "rewardId": 6,
+      "sourceId": 42,
+      "sourceType": "EXERCISE",
+      "target": "SPARKLES",
+      "userId": 7,
+    },
+  ],
+  "notifications": [
+    {
+      "data": {
+        "bodyKey": "notification.YOU_HAVE_NEW_REWARD",
+        "data": {
+          "exp": {
+            "amount": 150,
+          },
+        },
+        "titleKey": "notification.NOTI_REWARD",
+        "type": "EXERCISE",
+        "userId": 7,
+      },
+      "userId": 7,
+    },
+    {
+      "data": {
+        "bodyKey": "notification.YOU_HAVE_NEW_REWARD",
+        "data": {
+          "poke_coins": {
+            "amount": 20,
+          },
+        },
+        "titleKey": "notification.NOTI_REWARD",
+        "type": "EXERCISE",
+        "userId": 7,
+      },
+      "userId": 7,
+    },
+    {
+      "data": {
+        "bodyKey": "notification.YOU_HAVE_NEW_REWARD",
+        "data": {
+          "sparkles": {
+            "amount": 10,
+          },
+        },
+        "titleKey": "notification.NOTI_REWARD",
+        "type": "EXERCISE",
+        "userId": 7,
+      },
+      "userId": 7,
+    },
+    {
+      "data": {
+        "bodyKey": "notification.YOU_HAVE_NEW_REWARD",
+        "data": {
+          "pokemon": {
+            "converted_sparkles": {
+              "amount": 600,
+            },
+            "id": 25,
+            "name": "P25",
+            "rarity": "RARE",
+          },
+        },
+        "titleKey": "notification.NOTI_REWARD",
+        "type": "EXERCISE",
+        "userId": 7,
+      },
+      "userId": 7,
+    },
+    {
+      "data": {
+        "bodyKey": "notification.YOU_HAVE_NEW_REWARD",
+        "data": {
+          "pokemon": {
+            "id": 30,
+            "name": "P30",
+            "rarity": "RARE",
+          },
+        },
+        "titleKey": "notification.NOTI_REWARD",
+        "type": "EXERCISE",
+        "userId": 7,
+      },
+      "userId": 7,
+    },
+    {
+      "data": {
+        "bodyKey": "notification.YOU_HAVE_NEW_REWARD",
+        "data": {
+          "sparkles": {
+            "amount": 14,
+          },
+        },
+        "titleKey": "notification.NOTI_REWARD",
+        "type": "EXERCISE",
+        "userId": 7,
+      },
+      "userId": 7,
+    },
+    {
+      "data": {
+        "bodyKey": "notification.YOU_HAVE_LEVELED_UP",
+        "data": {
+          "level": {
+            "from": 1,
+            "reward": {
+              "sparkles": {
+                "amount": 7,
+              },
+            },
+            "to": 2,
+          },
+        },
+        "titleKey": "notification.NOTI_LEVEL_UP",
+        "type": "LEVEL",
+        "userId": 7,
+      },
+      "userId": 7,
+    },
+  ],
+  "pokemonInserts": [
+    {
+      "data": {
+        "isMain": false,
+        "pokemonId": 30,
+      },
+      "userId": 7,
+    },
+  ],
+  "result": {
+    "levelRewards": [
+      {
+        "fromLevel": 1,
+        "id": 6,
+        "rewardItem": 7,
+        "rewardTarget": "SPARKLES",
+        "toLevel": 2,
+      },
+    ],
+    "levelsGained": 1,
+    "pokeCoins": {
+      "balance": 20,
+      "type": "POKE_COINS",
+    },
+    "pokemons": [
+      {
+        "action": "converted_to_coins",
+        "coinValue": 600,
+        "pokemon": {
+          "id": 25,
+          "nameJp": "P25",
+          "rarity": "RARE",
+        },
+        "wallet": {
+          "balance": 600,
+          "type": "SPARKLES",
+        },
+      },
+      {
+        "action": "added",
+        "pokemon": {
+          "id": 99,
+          "pokemonId": 30,
+        },
+      },
+    ],
+    "sparkles": {
+      "balance": 14,
+      "type": "SPARKLES",
+    },
+  },
+  "socket": [
+    {
+      "payload": {
+        "data": {
+          "exp": {
+            "amount": 150,
+          },
+        },
+        "notificationId": 100,
+        "timestamp": "date",
+        "type": "REWARDS_RECEIVED",
+        "userId": 7,
+      },
+      "userId": 7,
+    },
+    {
+      "payload": {
+        "data": {
+          "poke_coins": {
+            "amount": 20,
+          },
+        },
+        "notificationId": 101,
+        "timestamp": "date",
+        "type": "REWARDS_RECEIVED",
+        "userId": 7,
+      },
+      "userId": 7,
+    },
+    {
+      "payload": {
+        "data": {
+          "sparkles": {
+            "amount": 10,
+          },
+        },
+        "notificationId": 102,
+        "timestamp": "date",
+        "type": "REWARDS_RECEIVED",
+        "userId": 7,
+      },
+      "userId": 7,
+    },
+    {
+      "payload": {
+        "data": {
+          "pokemon": {
+            "converted_sparkles": {
+              "amount": 600,
+            },
+            "id": 25,
+            "name": "P25",
+            "rarity": "RARE",
+          },
+        },
+        "notificationId": 103,
+        "timestamp": "date",
+        "type": "REWARDS_RECEIVED",
+        "userId": 7,
+      },
+      "userId": 7,
+    },
+    {
+      "payload": {
+        "data": {
+          "pokemon": {
+            "id": 30,
+            "name": "P30",
+            "rarity": "RARE",
+          },
+        },
+        "notificationId": 104,
+        "timestamp": "date",
+        "type": "REWARDS_RECEIVED",
+        "userId": 7,
+      },
+      "userId": 7,
+    },
+    {
+      "payload": {
+        "data": {
+          "sparkles": {
+            "amount": 14,
+          },
+        },
+        "notificationId": 105,
+        "timestamp": "date",
+        "type": "REWARDS_RECEIVED",
+        "userId": 7,
+      },
+      "userId": 7,
+    },
+    {
+      "payload": {
+        "data": {
+          "level": {
+            "from": 1,
+            "reward": {
+              "sparkles": {
+                "amount": 7,
+              },
+            },
+            "to": 2,
+          },
+        },
+        "notificationId": 106,
+        "timestamp": "date",
+        "type": "LEVEL_UP",
+        "userId": 7,
+      },
+      "userId": 7,
+    },
+  ],
+  "userAddExp": [
+    [
+      7,
+      150,
+    ],
+  ],
+}
+`;
