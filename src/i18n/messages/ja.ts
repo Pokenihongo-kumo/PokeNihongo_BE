@@ -69,7 +69,8 @@ export const jaMessages = {
     NOT_FOUND: '報酬が見つかりません',
     ALREADY_EXISTS: '報酬は既に存在します',
     INVALID_DATA: '無効な報酬データです',
-    NAME_REQUIRED: '報酬名は必須です'
+    NAME_REQUIRED: '報酬名は必須です',
+    CONVERT_SUCCESS: '報酬を変換しました'
   },
   attendence_config: {
     CREATE_SUCCESS: '出席設定を作成しました',

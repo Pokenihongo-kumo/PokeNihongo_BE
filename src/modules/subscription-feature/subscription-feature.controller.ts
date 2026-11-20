@@ -1,7 +1,6 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage } from '@/i18n/response-message'
 import { SubscriptionFeatureMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
-import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
 import { MessageResDTO, PaginationResponseDTO } from '@/shared/dtos/response.dto'
 import { Body, Controller, Delete, Get, Param, Put, Query } from '@nestjs/common'
@@ -17,77 +16,50 @@ import { SubscriptionFeatureService } from './subscription-feature.service'
 
 @Controller('subscription-feature')
 export class SubscriptionFeatureController {
-  constructor(
-    private readonly subscriptionFeatureService: SubscriptionFeatureService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly subscriptionFeatureService: SubscriptionFeatureService) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseDTO)
-  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(
-        SubscriptionFeatureMessage.GET_LIST_SUCCESS,
-        lang
-      ),
-      data: await this.subscriptionFeatureService.list(query)
-    }
+  @ResponseMessage(SubscriptionFeatureMessage.GET_LIST_SUCCESS)
+  async list(@Query() query: PaginationQueryDTO) {
+    return this.subscriptionFeatureService.list(query)
   }
 
   @Get(':subscriptionFeatureId')
   @ZodSerializerDto(GetSubscriptionFeatureDetailResDTO)
+  @ResponseMessage(SubscriptionFeatureMessage.GET_LIST_SUCCESS)
   async findById(
     @Param() params: GetSubscriptionFeatureParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(
-        SubscriptionFeatureMessage.GET_LIST_SUCCESS,
-        lang
-      ),
-      data: await this.subscriptionFeatureService.findById(params.subscriptionFeatureId)
-    }
+    return this.subscriptionFeatureService.findById(params.subscriptionFeatureId)
   }
 
   @Put('subscription/:subscriptionId')
   @ZodSerializerDto(UpdateWithListItemResDTO)
+  @ResponseMessage(SubscriptionFeatureMessage.UPDATE_SUCCESS)
   async updateWithListFeature(
     @Body() body: UpdateWithListItemBodyDTO,
     @Param() params: GetSubscriptionParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(
-        SubscriptionFeatureMessage.UPDATE_SUCCESS,
-        lang
-      ),
-      data: await this.subscriptionFeatureService.updateWithListFeature({
-        subscriptionId: params.subscriptionId,
-        updatedById: userId,
-        data: body
-      })
-    }
+    return this.subscriptionFeatureService.updateWithListFeature({
+      subscriptionId: params.subscriptionId,
+      updatedById: userId,
+      data: body
+    })
   }
 
   @Delete(':subscriptionFeatureId')
   @ZodSerializerDto(MessageResDTO)
+  @ResponseMessage(SubscriptionFeatureMessage.DELETE_SUCCESS)
   async delete(
     @Param() params: GetSubscriptionFeatureParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
     await this.subscriptionFeatureService.delete({
       id: params.subscriptionFeatureId,
       userId
     })
-    return {
-      message: this.i18nService.translate(
-        SubscriptionFeatureMessage.DELETE_SUCCESS,
-        lang
-      ),
-      data: null
-    }
   }
 }

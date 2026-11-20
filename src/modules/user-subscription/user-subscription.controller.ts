@@ -1,4 +1,4 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage } from '@/i18n/response-message'
 import { UserSubscriptionMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
@@ -18,105 +18,80 @@ import { UserSubscriptionService } from './user-subscription.service'
 
 @Controller('user-subscription')
 export class UserSubscriptionController {
-  constructor(
-    private readonly userSubscriptionService: UserSubscriptionService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly userSubscriptionService: UserSubscriptionService) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseDTO)
-  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(UserSubscriptionMessage.GET_LIST_SUCCESS, lang),
-      data: await this.userSubscriptionService.list(query)
-    }
+  @ResponseMessage(UserSubscriptionMessage.GET_LIST_SUCCESS)
+  async list(@Query() query: PaginationQueryDTO) {
+    return this.userSubscriptionService.list(query)
   }
 
   @Get('user')
   @ZodSerializerDto(PaginationResponseDTO)
+  @ResponseMessage(UserSubscriptionMessage.GET_LIST_SUCCESS)
   async getUserSubWithSubPlan(
     @Query() query: PaginationQueryDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return {
-      message: this.i18nService.translate(UserSubscriptionMessage.GET_LIST_SUCCESS, lang),
-      data: await this.userSubscriptionService.getUserSubWithSubPlan(query, userId, lang)
-    }
+    return this.userSubscriptionService.getUserSubWithSubPlan(query, userId, lang)
   }
 
   @Get('user/features')
   // @ZodSerializerDto(PaginationResponseDTO)
-  async getListFeatureOfUser(
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
-  ) {
-    return {
-      message: this.i18nService.translate(UserSubscriptionMessage.GET_LIST_SUCCESS, lang),
-      data: await this.userSubscriptionService.getListFeatureOfUser(userId)
-    }
+  @ResponseMessage(UserSubscriptionMessage.GET_LIST_SUCCESS)
+  async getListFeatureOfUser(@ActiveUser('userId') userId: number) {
+    return this.userSubscriptionService.getListFeatureOfUser(userId)
   }
 
   @Get(':userSubscriptionId')
   @ZodSerializerDto(GetUserSubscriptionDetailResDTO)
+  @ResponseMessage(UserSubscriptionMessage.GET_LIST_SUCCESS)
   async findById(
     @Param() params: GetUserSubscriptionParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(UserSubscriptionMessage.GET_LIST_SUCCESS, lang),
-      data: await this.userSubscriptionService.findById(params.userSubscriptionId)
-    }
+    return this.userSubscriptionService.findById(params.userSubscriptionId)
   }
   @Post()
   @ZodSerializerDto(CreateUserSubscriptionResDTO)
+  @ResponseMessage(UserSubscriptionMessage.CREATE_SUCCESS)
   async create(
     @Body() body: CreateUserSubscriptionBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(UserSubscriptionMessage.CREATE_SUCCESS, lang),
-      data: await this.userSubscriptionService.create({
-        userId,
-        data: body
-      })
-    }
+    return this.userSubscriptionService.create({
+      userId,
+      data: body
+    })
   }
 
   @Put(':userSubscriptionId')
   @ZodSerializerDto(UpdateUserSubscriptionResDTO)
+  @ResponseMessage(UserSubscriptionMessage.UPDATE_SUCCESS)
   async update(
     @Body() body: UpdateUserSubscriptionBodyDTO,
     @Param() params: GetUserSubscriptionParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(UserSubscriptionMessage.UPDATE_SUCCESS, lang),
-      data: await this.userSubscriptionService.update({
-        data: body,
-        id: params.userSubscriptionId,
-        userId
-      })
-    }
+    return this.userSubscriptionService.update({
+      data: body,
+      id: params.userSubscriptionId,
+      userId
+    })
   }
 
   @Delete(':userSubscriptionId')
   @ZodSerializerDto(MessageResDTO)
+  @ResponseMessage(UserSubscriptionMessage.DELETE_SUCCESS)
   async delete(
     @Param() params: GetUserSubscriptionParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
     await this.userSubscriptionService.delete({
       id: params.userSubscriptionId,
       userId
     })
-    return {
-      message: this.i18nService.translate(UserSubscriptionMessage.DELETE_SUCCESS, lang),
-      data: null
-    }
   }
 }

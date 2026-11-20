@@ -1,7 +1,6 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage, msg } from '@/i18n/response-message'
 import { UserGachaPityMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
-import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
 import { MessageResDTO, PaginationResponseDTO } from '@/shared/dtos/response.dto'
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common'
@@ -18,30 +17,24 @@ import { UserGachaPityService } from './user-gacha-pity.service'
 
 @Controller('user-gacha-pity')
 export class UserGachaPityController {
-  constructor(
-    private readonly userGachaPityService: UserGachaPityService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly userGachaPityService: UserGachaPityService) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseDTO)
-  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(UserGachaPityMessage.GET_LIST_SUCCESS, lang),
-      data: await this.userGachaPityService.list(query)
-    }
+  @ResponseMessage(UserGachaPityMessage.GET_LIST_SUCCESS)
+  async list(@Query() query: PaginationQueryDTO) {
+    return this.userGachaPityService.list(query)
   }
 
   @Get('user/present')
   @ZodSerializerDto(GetUserGachaPityDetailResDTO)
-  async getUserPityNow(@ActiveUser('userId') userId: number, @I18nLang() lang: string) {
+  async getUserPityNow(@ActiveUser('userId') userId: number) {
     const { created, data } = await this.userGachaPityService.getUserPityNow(userId)
     return {
-      message: this.i18nService.translate(
+      message: msg(
         created
           ? UserGachaPityMessage.CREATE_SUCCESS
-          : UserGachaPityMessage.GET_LIST_SUCCESS,
-        lang
+          : UserGachaPityMessage.GET_LIST_SUCCESS
       ),
       data
     }
@@ -49,65 +42,52 @@ export class UserGachaPityController {
 
   @Get(':userGachaPityId')
   @ZodSerializerDto(GetUserGachaPityDetailResDTO)
+  @ResponseMessage(UserGachaPityMessage.GET_LIST_SUCCESS)
   async findById(
     @Param() params: GetUserGachaPityParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(UserGachaPityMessage.GET_LIST_SUCCESS, lang),
-      data: await this.userGachaPityService.findById(params.userGachaPityId)
-    }
+    return this.userGachaPityService.findById(params.userGachaPityId)
   }
 
   @Post()
   @ZodSerializerDto(CreateUserGachaPityResDTO)
+  @ResponseMessage(UserGachaPityMessage.CREATE_SUCCESS)
   async create(
     @Body() body: CreateUserGachaPityBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(UserGachaPityMessage.CREATE_SUCCESS, lang),
-      data: await this.userGachaPityService.create({
-        userId,
-        data: body
-      })
-    }
+    return this.userGachaPityService.create({
+      userId,
+      data: body
+    })
   }
 
   @Put(':userGachaPityId')
   @ZodSerializerDto(UpdateUserGachaPityResDTO)
+  @ResponseMessage(UserGachaPityMessage.UPDATE_SUCCESS)
   async update(
     @Body() body: UpdateUserGachaPityBodyDTO,
     @Param() params: GetUserGachaPityParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(UserGachaPityMessage.UPDATE_SUCCESS, lang),
-      data: await this.userGachaPityService.update({
-        data: body,
-        id: params.userGachaPityId,
-        userId
-      })
-    }
+    return this.userGachaPityService.update({
+      data: body,
+      id: params.userGachaPityId,
+      userId
+    })
   }
 
   @Delete(':userGachaPityId')
   @ZodSerializerDto(MessageResDTO)
+  @ResponseMessage(UserGachaPityMessage.DELETE_SUCCESS)
   async delete(
     @Param() params: GetUserGachaPityParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
     await this.userGachaPityService.delete({
       id: params.userGachaPityId,
       userId
     })
-    return {
-      message: this.i18nService.translate(UserGachaPityMessage.DELETE_SUCCESS, lang),
-      data: null
-    }
   }
 }

@@ -1,4 +1,4 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage } from '@/i18n/response-message'
 import { GachaPurchaseMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
@@ -16,56 +16,43 @@ import { GachaPurchaseService } from './gacha-purchase.service'
 
 @Controller('gacha-purchase')
 export class GachaPurchaseController {
-  constructor(
-    private readonly gachaPurchaseService: GachaPurchaseService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly gachaPurchaseService: GachaPurchaseService) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseDTO)
-  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(GachaPurchaseMessage.GET_LIST_SUCCESS, lang),
-      data: await this.gachaPurchaseService.list(query)
-    }
+  @ResponseMessage(GachaPurchaseMessage.GET_LIST_SUCCESS)
+  async list(@Query() query: PaginationQueryDTO) {
+    return this.gachaPurchaseService.list(query)
   }
 
   @Get('user')
   @ZodSerializerDto(GetGachaPurchaseListResDTO)
-  async getByUser(@ActiveUser('userId') userId: number, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(GachaPurchaseMessage.GET_LIST_SUCCESS, lang),
-      data: await this.gachaPurchaseService.getByUser(userId)
-    }
+  @ResponseMessage(GachaPurchaseMessage.GET_LIST_SUCCESS)
+  async getByUser(@ActiveUser('userId') userId: number) {
+    return this.gachaPurchaseService.getByUser(userId)
   }
 
   @Get(':gachaPurchaseId')
   @ZodSerializerDto(GetGachaPurchaseDetailResDTO)
+  @ResponseMessage(GachaPurchaseMessage.GET_LIST_SUCCESS)
   async findById(
     @Param() params: GetGachaPurchaseParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(GachaPurchaseMessage.GET_LIST_SUCCESS, lang),
-      data: await this.gachaPurchaseService.findById(params.gachaPurchaseId)
-    }
+    return this.gachaPurchaseService.findById(params.gachaPurchaseId)
   }
 
   @Post()
   // @ZodSerializerDto(CreateGachaPurchaseResDTO)
+  @ResponseMessage(GachaPurchaseMessage.CREATE_SUCCESS)
   async create(
     @Body() body: CreateGachaPurchaseBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(GachaPurchaseMessage.CREATE_SUCCESS, lang),
-      data: await this.gachaPurchaseService.create({
-        userId,
-        data: body
-      })
-    }
+    return this.gachaPurchaseService.create({
+      userId,
+      data: body
+    })
   }
 
   // @Put(':gachaPurchaseId')
