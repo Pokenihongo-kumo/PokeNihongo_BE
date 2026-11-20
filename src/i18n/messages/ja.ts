@@ -518,7 +518,11 @@ export const jaMessages = {
     INVALID_PAGE: 'ページは正の整数でなければなりません',
     INVALID_PAGE_SIZE: 'ページサイズは正の整数でなければなりません',
     INVALID_PERCENTAGE: '進捗率は0〜100です',
-    INVALID_STATUS: '進捗のステータスが無効です'
+    INVALID_STATUS: '進捗のステータスが無効です',
+    INIT_NO_USERS: 'ユーザーがいません',
+    INIT_NO_LESSONS: 'レッスンがありません',
+    INIT_USER_DONE: 'ユーザー進捗を初期化しました',
+    INIT_ALL_DONE: '全ユーザーの進捗を初期化しました'
   },
   user_answer_log: {
     GET_SUCCESS: '回答を取得しました',

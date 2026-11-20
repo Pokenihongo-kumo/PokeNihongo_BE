@@ -507,7 +507,11 @@ export const viMessages = {
     INVALID_PAGE: 'Trang phải là số nguyên dương',
     INVALID_PAGE_SIZE: 'Kích thước trang phải là số nguyên dương',
     INVALID_PERCENTAGE: 'Phần trăm tiến độ phải từ 0 đến 100',
-    INVALID_STATUS: 'Trạng thái tiến độ không hợp lệ'
+    INVALID_STATUS: 'Trạng thái tiến độ không hợp lệ',
+    INIT_NO_USERS: 'Không có user nào trong hệ thống',
+    INIT_NO_LESSONS: 'Không có lesson nào trong hệ thống',
+    INIT_USER_DONE: 'Khởi tạo UserProgress thành công',
+    INIT_ALL_DONE: 'Khởi tạo UserProgress cho tất cả user thành công'
   },
   user_answer_log: {
     GET_SUCCESS: 'Lấy thông tin log câu trả lời thành công',

@@ -65,7 +65,13 @@ function transform(file) {
     if (!envelopes.length) return
 
     const callArgs = (e) => e.call.arguments
-    const langOk = (e) => callArgs(e)[1] && callArgs(e)[1].getText(sf) === 'lang'
+    // the request language: whatever the method calls its @I18nLang() parameter
+    const langNames = method.parameters
+      .filter((p) =>
+        (ts.getDecorators(p) ?? []).some((d) => d.getText(sf).startsWith('@I18nLang('))
+      )
+      .map((p) => p.name.getText(sf))
+    const langOk = (e) => callArgs(e)[1] && langNames.includes(callArgs(e)[1].getText(sf))
     const fixedKey = (e) =>
       callArgs(e).length === 2 &&
       langOk(e) &&

@@ -1,4 +1,4 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { MessageKey, ResponseMessage, msg } from '@/i18n/response-message'
 import { UserTestAttemptMessage as M } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import {
@@ -49,7 +49,7 @@ import {
 } from './user-test-attempt.service'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 
-const COMPLETION_MESSAGE: Record<TestCompletionOutcome, string> = {
+const COMPLETION_MESSAGE: Record<TestCompletionOutcome, MessageKey> = {
   'not-enough-answers': M.NOT_ENOUGH_ANSWERS,
   'no-answer': M.SUBMITTED_NO_ANSWER,
   incomplete: M.SUBMITTED_INCOMPLETE,
@@ -62,10 +62,7 @@ const COMPLETION_MESSAGE: Record<TestCompletionOutcome, string> = {
 @ApiTags('User Test Attempt')
 @Controller('user-test-attempt')
 export class UserTestAttemptController {
-  constructor(
-    private readonly userTestAttemptService: UserTestAttemptService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly userTestAttemptService: UserTestAttemptService) {}
 
   @Post(':testId')
   @ApiBearerAuth()
@@ -76,15 +73,12 @@ export class UserTestAttemptController {
     type: UserTestAttemptResponseSwaggerDTO
   })
   @ZodSerializerDto(UserTestAttemptResDTO)
+  @ResponseMessage(M.CREATE_SUCCESS)
   async create(
     @Param() { testId }: CreateUserTestAttemptParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(M.CREATE_SUCCESS, lang),
-      data: await this.userTestAttemptService.create(userId, testId)
-    }
+    return this.userTestAttemptService.create(userId, testId)
   }
 
   @Get()
@@ -97,14 +91,9 @@ export class UserTestAttemptController {
   })
   @ApiQuery({ type: GetUserTestAttemptListQuerySwaggerDTO })
   @ZodSerializerDto(UserTestAttemptListResDTO)
-  async findAll(
-    @Query() query: GetUserTestAttemptListQueryDTO,
-    @I18nLang() lang: string
-  ) {
-    return {
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: await this.userTestAttemptService.findAll(query)
-    }
+  @ResponseMessage(M.GET_LIST_SUCCESS)
+  async findAll(@Query() query: GetUserTestAttemptListQueryDTO) {
+    return this.userTestAttemptService.findAll(query)
   }
 
   @Get(':id')
@@ -116,14 +105,9 @@ export class UserTestAttemptController {
     type: UserTestAttemptResponseSwaggerDTO
   })
   @ZodSerializerDto(UserTestAttemptResDTO)
-  async findOne(
-    @Param() { id }: GetUserTestAttemptByIdParamsDTO,
-    @I18nLang() lang: string
-  ) {
-    return {
-      message: this.i18nService.translate(M.GET_SUCCESS, lang),
-      data: await this.userTestAttemptService.findOne(id)
-    }
+  @ResponseMessage(M.GET_SUCCESS)
+  async findOne(@Param() { id }: GetUserTestAttemptByIdParamsDTO) {
+    return this.userTestAttemptService.findOne(id)
   }
 
   @Put(':id')
@@ -136,15 +120,12 @@ export class UserTestAttemptController {
     type: UserTestAttemptResponseSwaggerDTO
   })
   @ZodSerializerDto(UserTestAttemptResDTO)
+  @ResponseMessage(M.UPDATE_SUCCESS)
   async update(
     @Param() { id }: GetUserTestAttemptByIdParamsDTO,
-    @Body() body: UpdateUserTestAttemptBodyDTO,
-    @I18nLang() lang: string
+    @Body() body: UpdateUserTestAttemptBodyDTO
   ) {
-    return {
-      message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
-      data: await this.userTestAttemptService.update(id, body)
-    }
+    return this.userTestAttemptService.update(id, body)
   }
 
   @Delete(':id')
@@ -157,15 +138,12 @@ export class UserTestAttemptController {
     type: UserTestAttemptResponseSwaggerDTO
   })
   @ZodSerializerDto(UserTestAttemptResDTO)
+  @ResponseMessage(M.DELETE_SUCCESS)
   async remove(
     @Param() { id }: GetUserTestAttemptByIdParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(M.DELETE_SUCCESS, lang),
-      data: await this.userTestAttemptService.remove(id, userId)
-    }
+    return this.userTestAttemptService.remove(id, userId)
   }
 
   @Put(':id/submit-completion')
@@ -180,8 +158,7 @@ export class UserTestAttemptController {
   async submitCompletion(
     @Param() { id }: GetUserTestAttemptByIdParamsDTO,
     @ActiveUser('userId') userId: number,
-    @Body() body: CheckTestCompletionBodyDTO,
-    @I18nLang() lang: string
+    @Body() body: CheckTestCompletionBodyDTO
   ) {
     const { outcome, data } = await this.userTestAttemptService.submitTestCompletion(
       id,
@@ -189,7 +166,7 @@ export class UserTestAttemptController {
       body.time
     )
     return {
-      message: this.i18nService.translate(COMPLETION_MESSAGE[outcome], lang),
+      message: msg(COMPLETION_MESSAGE[outcome]),
       data
     }
   }
@@ -203,20 +180,17 @@ export class UserTestAttemptController {
     description: 'Nộp bài placement test thành công',
     type: MessageResDTO
   })
+  @ResponseMessage(M.PLACEMENT_DONE)
   async submitPlacementTestCompletion(
     @Param() { id }: GetUserTestAttemptByIdParamsDTO,
     @ActiveUser('userId') userId: number,
-    @Body() body: CheckTestCompletionBodyDTO,
-    @I18nLang() lang: string
+    @Body() body: CheckTestCompletionBodyDTO
   ) {
-    return {
-      message: this.i18nService.translate(M.PLACEMENT_DONE, lang),
-      data: await this.userTestAttemptService.submitPlacementTestCompletion(
-        id,
-        userId,
-        body.time
-      )
-    }
+    return this.userTestAttemptService.submitPlacementTestCompletion(
+      id,
+      userId,
+      body.time
+    )
   }
 
   @Get(':id/check-completion')
@@ -229,15 +203,14 @@ export class UserTestAttemptController {
   })
   async checkCompletion(
     @Param() { id }: GetUserTestAttemptByIdParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() languageCode: string
+    @ActiveUser('userId') userId: number
   ) {
     const { outcome, data } = await this.userTestAttemptService.checkTestCompletion(
       id,
       userId
     )
     return {
-      message: this.i18nService.translate(COMPLETION_MESSAGE[outcome], languageCode),
+      message: msg(COMPLETION_MESSAGE[outcome]),
       data
     }
   }
@@ -252,16 +225,13 @@ export class UserTestAttemptController {
     type: UserTestAttemptResponseSwaggerDTO
   })
   @ZodSerializerDto(UserTestAttemptResDTO)
+  @ResponseMessage(M.ABANDON_SUCCESS)
   async abandon(
     @Param() { id }: GetUserTestAttemptByIdParamsDTO,
     @ActiveUser('userId') userId: number,
-    @Body() body: CheckTestCompletionBodyDTO,
-    @I18nLang() lang: string
+    @Body() body: CheckTestCompletionBodyDTO
   ) {
-    return {
-      message: this.i18nService.translate(M.ABANDON_SUCCESS, lang),
-      data: await this.userTestAttemptService.abandon(id, userId, body.time)
-    }
+    return this.userTestAttemptService.abandon(id, userId, body.time)
   }
 
   @Get(':id/status')
@@ -273,15 +243,12 @@ export class UserTestAttemptController {
     type: UserTestAttemptResponseSwaggerDTO
   })
   @ZodSerializerDto(UserTestAttemptResDTO)
+  @ResponseMessage(M.GET_STATUS_SUCCESS)
   async getStatus(
     @Param() { id }: GetUserTestAttemptByIdParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(M.GET_STATUS_SUCCESS, lang),
-      data: await this.userTestAttemptService.getStatus(id, userId)
-    }
+    return this.userTestAttemptService.getStatus(id, userId)
   }
 
   @Get('/test/:id')
@@ -296,19 +263,13 @@ export class UserTestAttemptController {
     description: 'Lấy bài test của user thành công',
     type: UserTestAttemptResponseSwaggerDTO
   })
+  @ResponseMessage(M.QUESTIONS_SUCCESS)
   async getTestAttemptByTestId(
     @Param() { id }: UserTestAttemptTestParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() languageCode: string
   ) {
-    return {
-      data: await this.userTestAttemptService.getTestAttemptByTestId(
-        id,
-        userId,
-        languageCode
-      ),
-      message: this.i18nService.translate(M.QUESTIONS_SUCCESS, languageCode)
-    }
+    return this.userTestAttemptService.getTestAttemptByTestId(id, userId, languageCode)
   }
 
   @Get('/test/:id/review')
@@ -332,10 +293,7 @@ export class UserTestAttemptController {
       languageCode
     )
     return {
-      message: this.i18nService.translate(
-        completed ? M.REVIEW_SUCCESS : M.REVIEW_NOT_COMPLETED,
-        languageCode
-      ),
+      message: msg(completed ? M.REVIEW_SUCCESS : M.REVIEW_NOT_COMPLETED),
       data
     }
   }
@@ -363,10 +321,7 @@ export class UserTestAttemptController {
         languageCode
       )
     return {
-      message: this.i18nService.translate(
-        completed ? M.REVIEW_SUCCESS : M.REVIEW_NOT_COMPLETED,
-        languageCode
-      ),
+      message: msg(completed ? M.REVIEW_SUCCESS : M.REVIEW_NOT_COMPLETED),
       data
     }
   }

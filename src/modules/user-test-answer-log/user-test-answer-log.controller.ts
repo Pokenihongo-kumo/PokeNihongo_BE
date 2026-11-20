@@ -1,4 +1,4 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage } from '@/i18n/response-message'
 import { UserTestAnswerLogMessage as M } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import {
@@ -37,16 +37,12 @@ import {
   ApiTags
 } from '@nestjs/swagger'
 import { ZodSerializerDto } from 'nestjs-zod'
-import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { UserTestAnswerLogService } from './user-test-answer-log.service'
 
 @ApiTags('User Test Answer Log')
 @Controller('user-test-answer-log')
 export class UserTestAnswerLogController {
-  constructor(
-    private readonly userTestAnswerLogService: UserTestAnswerLogService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly userTestAnswerLogService: UserTestAnswerLogService) {}
 
   @Post()
   @ApiBearerAuth()
@@ -58,11 +54,9 @@ export class UserTestAnswerLogController {
     type: UserTestAnswerLogResponseSwaggerDTO
   })
   @ZodSerializerDto(UserTestAnswerLogResDTO)
-  async create(@Body() body: CreateUserTestAnswerLogBodyDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(M.CREATE_SUCCESS, lang),
-      data: await this.userTestAnswerLogService.create(body)
-    }
+  @ResponseMessage(M.CREATE_SUCCESS)
+  async create(@Body() body: CreateUserTestAnswerLogBodyDTO) {
+    return this.userTestAnswerLogService.create(body)
   }
 
   @Post('upsert')
@@ -78,15 +72,12 @@ export class UserTestAnswerLogController {
     type: UserTestAnswerLogResponseSwaggerDTO
   })
   @ZodSerializerDto(UserTestAnswerLogResDTO)
+  @ResponseMessage(M.CREATE_SUCCESS)
   async upsert(
     @Body() body: CreateUserTestAnswerLogBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(M.CREATE_SUCCESS, lang),
-      data: await this.userTestAnswerLogService.upsert(body, userId)
-    }
+    return this.userTestAnswerLogService.upsert(body, userId)
   }
 
   @Get()
@@ -99,14 +90,9 @@ export class UserTestAnswerLogController {
   })
   @ApiQuery({ type: GetUserTestAnswerLogListQuerySwaggerDTO })
   @ZodSerializerDto(UserTestAnswerLogListResDTO)
-  async findAll(
-    @Query() query: GetUserTestAnswerLogListQueryDTO,
-    @I18nLang() lang: string
-  ) {
-    return {
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: await this.userTestAnswerLogService.findAll(query)
-    }
+  @ResponseMessage(M.GET_LIST_SUCCESS)
+  async findAll(@Query() query: GetUserTestAnswerLogListQueryDTO) {
+    return this.userTestAnswerLogService.findAll(query)
   }
 
   @Get(':id')
@@ -118,14 +104,9 @@ export class UserTestAnswerLogController {
     type: UserTestAnswerLogResponseSwaggerDTO
   })
   @ZodSerializerDto(UserTestAnswerLogResDTO)
-  async findOne(
-    @Param() params: GetUserTestAnswerLogByIdParamsDTO,
-    @I18nLang() lang: string
-  ) {
-    return {
-      message: this.i18nService.translate(M.GET_SUCCESS, lang),
-      data: await this.userTestAnswerLogService.findOne(params.id)
-    }
+  @ResponseMessage(M.GET_SUCCESS)
+  async findOne(@Param() params: GetUserTestAnswerLogByIdParamsDTO) {
+    return this.userTestAnswerLogService.findOne(params.id)
   }
 
   @Put(':id')
@@ -138,15 +119,12 @@ export class UserTestAnswerLogController {
     type: UserTestAnswerLogResponseSwaggerDTO
   })
   @ZodSerializerDto(UserTestAnswerLogResDTO)
+  @ResponseMessage(M.UPDATE_SUCCESS)
   async update(
     @Param() params: GetUserTestAnswerLogByIdParamsDTO,
-    @Body() body: UpdateUserTestAnswerLogBodyDTO,
-    @I18nLang() lang: string
+    @Body() body: UpdateUserTestAnswerLogBodyDTO
   ) {
-    return {
-      message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
-      data: await this.userTestAnswerLogService.update(params.id, body)
-    }
+    return this.userTestAnswerLogService.update(params.id, body)
   }
 
   @Delete(':id')
@@ -159,13 +137,8 @@ export class UserTestAnswerLogController {
     type: UserTestAnswerLogResponseSwaggerDTO
   })
   @ZodSerializerDto(UserTestAnswerLogResDTO)
-  async remove(
-    @Param() params: GetUserTestAnswerLogByIdParamsDTO,
-    @I18nLang() lang: string
-  ) {
-    return {
-      message: this.i18nService.translate(M.DELETE_SUCCESS, lang),
-      data: await this.userTestAnswerLogService.remove(params.id)
-    }
+  @ResponseMessage(M.DELETE_SUCCESS)
+  async remove(@Param() params: GetUserTestAnswerLogByIdParamsDTO) {
+    return this.userTestAnswerLogService.remove(params.id)
   }
 }

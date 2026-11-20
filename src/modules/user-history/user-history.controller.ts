@@ -1,3 +1,4 @@
+import { ResponseMessage } from '@/i18n/response-message'
 import { Controller, Get, Query } from '@nestjs/common'
 import {
   ApiBearerAuth,
@@ -10,7 +11,6 @@ import { ZodSerializerDto } from 'nestjs-zod'
 import { UserHistoryService } from './user-history.service'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
-import { I18nService } from '@/i18n/i18n.service'
 import { UserHistoryMessage } from '@/i18n/message-keys'
 import {
   GetHistoryListQueryDTO,
@@ -35,10 +35,7 @@ import {
 @ApiTags('User History')
 @Controller('user-history')
 export class UserHistoryController {
-  constructor(
-    private readonly userHistoryService: UserHistoryService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly userHistoryService: UserHistoryService) {}
 
   @Get()
   @ApiBearerAuth()
@@ -50,15 +47,13 @@ export class UserHistoryController {
     type: HistoryListResponseSwaggerDTO
   })
   @ZodSerializerDto(HistoryListResDTO)
+  @ResponseMessage(UserHistoryMessage.GET_LIST_SUCCESS)
   async getHistory(
     @Query() query: GetHistoryListQueryDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return {
-      message: this.i18nService.translate(UserHistoryMessage.GET_LIST_SUCCESS, lang),
-      data: await this.userHistoryService.findHistory(userId, query, lang)
-    }
+    return this.userHistoryService.findHistory(userId, query, lang)
   }
 
   @Get('admin/all')
@@ -75,14 +70,12 @@ export class UserHistoryController {
     type: AdminHistoryListResponseSwaggerDTO
   })
   @ZodSerializerDto(AdminHistoryListResDTO)
+  @ResponseMessage(UserHistoryMessage.GET_LIST_SUCCESS)
   async getAllHistory(
     @Query() query: GetAdminHistoryListQueryDTO,
     @I18nLang() lang: string
   ) {
-    return {
-      message: this.i18nService.translate(UserHistoryMessage.GET_LIST_SUCCESS, lang),
-      data: await this.userHistoryService.findAllHistory(query, lang)
-    }
+    return this.userHistoryService.findAllHistory(query, lang)
   }
 
   @Get('recent-exercises')
@@ -95,15 +88,13 @@ export class UserHistoryController {
     type: RecentExercisesResponseSwaggerDTO
   })
   @ZodSerializerDto(RecentExercisesResDTO)
+  @ResponseMessage(UserHistoryMessage.GET_LIST_SUCCESS)
   async getRecentExercises(
     @Query() query: GetRecentExercisesQueryDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return {
-      message: this.i18nService.translate(UserHistoryMessage.GET_LIST_SUCCESS, lang),
-      data: await this.userHistoryService.findRecentExercises(userId, query, lang)
-    }
+    return this.userHistoryService.findRecentExercises(userId, query, lang)
   }
 
   @Get('history-exercises')
@@ -111,15 +102,13 @@ export class UserHistoryController {
   @ApiOperation({ summary: 'Lấy danh sách bài exercise đã làm' })
   @ApiQuery({ type: GetRecentExercisesQuerySwaggerDTO })
   @ZodSerializerDto(HistoryExercisesResDTO)
+  @ResponseMessage(UserHistoryMessage.GET_LIST_SUCCESS)
   async getHistoryExercises(
     @Query() query: GetRecentExercisesQueryDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return {
-      message: this.i18nService.translate(UserHistoryMessage.GET_LIST_SUCCESS, lang),
-      data: await this.userHistoryService.findHistoryExercises(userId, query, lang)
-    }
+    return this.userHistoryService.findHistoryExercises(userId, query, lang)
   }
 
   @Get('history-tests')
@@ -127,14 +116,12 @@ export class UserHistoryController {
   @ApiOperation({ summary: 'Lấy danh sách bài test đã làm' })
   @ApiQuery({ type: GetRecentExercisesQuerySwaggerDTO })
   @ZodSerializerDto(HistoryTestsResDTO)
+  @ResponseMessage(UserHistoryMessage.GET_LIST_SUCCESS)
   async getHistoryTests(
     @Query() query: GetRecentExercisesQueryDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return {
-      message: this.i18nService.translate(UserHistoryMessage.GET_LIST_SUCCESS, lang),
-      data: await this.userHistoryService.findHistoryTests(userId, query, lang)
-    }
+    return this.userHistoryService.findHistoryTests(userId, query, lang)
   }
 }

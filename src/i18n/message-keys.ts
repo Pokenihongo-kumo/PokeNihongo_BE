@@ -479,7 +479,11 @@ export const UserProgressMessage = {
   INVALID_PAGE: 'user_progress.INVALID_PAGE',
   INVALID_PAGE_SIZE: 'user_progress.INVALID_PAGE_SIZE',
   INVALID_PERCENTAGE: 'user_progress.INVALID_PERCENTAGE',
-  INVALID_STATUS: 'user_progress.INVALID_STATUS'
+  INVALID_STATUS: 'user_progress.INVALID_STATUS',
+  INIT_NO_USERS: 'user_progress.INIT_NO_USERS',
+  INIT_NO_LESSONS: 'user_progress.INIT_NO_LESSONS',
+  INIT_USER_DONE: 'user_progress.INIT_USER_DONE',
+  INIT_ALL_DONE: 'user_progress.INIT_ALL_DONE'
 } as const
 
 export const UserAnswerLogMessage = {

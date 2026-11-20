@@ -1,4 +1,4 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { msg, ResponseMessage } from '@/i18n/response-message'
 import { UserProgressMessage as M } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import {
@@ -44,22 +44,18 @@ import {
 } from '@nestjs/swagger'
 import { ZodSerializerDto } from 'nestjs-zod'
 import { UserProgressService } from './user-progress.service'
-import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 
-// Admin init routes: fixed Vietnamese messages, as before
+// Admin init routes (the Vietnamese texts are the old fixed messages)
 const INIT_MESSAGE = {
-  'no-users': 'Không có user nào trong hệ thống',
-  'no-lessons': 'Không có lesson nào trong hệ thống',
-  done: 'Khởi tạo UserProgress thành công'
+  'no-users': M.INIT_NO_USERS,
+  'no-lessons': M.INIT_NO_LESSONS,
+  done: M.INIT_USER_DONE
 } as const
 
 @ApiTags('User Progress')
 @Controller('user-progress')
 export class UserProgressController {
-  constructor(
-    private readonly userProgressService: UserProgressService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly userProgressService: UserProgressService) {}
 
   @Post()
   @ApiBearerAuth()
@@ -71,11 +67,9 @@ export class UserProgressController {
     type: UserProgressResponseSwaggerDTO
   })
   @ZodSerializerDto(UserProgressResDTO)
-  async create(@Body() body: CreateUserProgressBodyDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(M.CREATE_SUCCESS, lang),
-      data: await this.userProgressService.create(body)
-    }
+  @ResponseMessage(M.CREATE_SUCCESS)
+  async create(@Body() body: CreateUserProgressBodyDTO) {
+    return this.userProgressService.create(body)
   }
 
   @Get()
@@ -90,11 +84,9 @@ export class UserProgressController {
   })
   @ApiQuery({ type: GetUserProgressListQuerySwaggerDTO })
   @ZodSerializerDto(UserProgressListResDTO)
-  async findAll(@Query() query: GetUserProgressListQueryDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: await this.userProgressService.findAll(query)
-    }
+  @ResponseMessage(M.GET_LIST_SUCCESS)
+  async findAll(@Query() query: GetUserProgressListQueryDTO) {
+    return this.userProgressService.findAll(query)
   }
 
   @Get('my')
@@ -107,15 +99,12 @@ export class UserProgressController {
   })
   @ApiQuery({ type: GetUserProgressListQuerySwaggerDTO })
   @ZodSerializerDto(UserProgressListResDTO)
+  @ResponseMessage(M.GET_MY_SUCCESS)
   async getMy(
     @Query() query: GetUserProgressListQueryDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(M.GET_MY_SUCCESS, lang),
-      data: await this.userProgressService.getMy(userId, query)
-    }
+    return this.userProgressService.getMy(userId, query)
   }
 
   // @Get(':id')
@@ -157,15 +146,12 @@ export class UserProgressController {
     type: UserProgressResponseSwaggerDTO
   })
   @ZodSerializerDto(UserProgressResDTO)
+  @ResponseMessage(M.UPDATE_SUCCESS)
   async update(
     @Param() params: GetUserProgressByIdParamsDTO,
-    @Body() body: UpdateUserProgressBodyDTO,
-    @I18nLang() lang: string
+    @Body() body: UpdateUserProgressBodyDTO
   ) {
-    return {
-      message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
-      data: await this.userProgressService.update(params.id, body)
-    }
+    return this.userProgressService.update(params.id, body)
   }
 
   @Put('user/lesson/:lessonId')
@@ -177,20 +163,13 @@ export class UserProgressController {
     type: UserProgressResponseSwaggerDTO
   })
   @ZodSerializerDto(UserProgressResDTO)
+  @ResponseMessage(M.UPDATE_SUCCESS)
   async updateByUserAndLesson(
     @ActiveUser('userId') userId: number,
     @Param() params: UserProgressLessonParamsDTO,
-    @Body() body: UpdateUserProgressBodyDTO,
-    @I18nLang() lang: string
+    @Body() body: UpdateUserProgressBodyDTO
   ) {
-    return {
-      message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
-      data: await this.userProgressService.updateByUserAndLesson(
-        userId,
-        params.lessonId,
-        body
-      )
-    }
+    return this.userProgressService.updateByUserAndLesson(userId, params.lessonId, body)
   }
 
   @Delete(':id')
@@ -203,11 +182,9 @@ export class UserProgressController {
     type: UserProgressResponseSwaggerDTO
   })
   @ZodSerializerDto(UserProgressResDTO)
-  async remove(@Param() params: GetUserProgressByIdParamsDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(M.DELETE_SUCCESS, lang),
-      data: await this.userProgressService.remove(params.id)
-    }
+  @ResponseMessage(M.DELETE_SUCCESS)
+  async remove(@Param() params: GetUserProgressByIdParamsDTO) {
+    return this.userProgressService.remove(params.id)
   }
 
   @Post('start-lesson')
@@ -219,15 +196,12 @@ export class UserProgressController {
     type: UserProgressResponseSwaggerDTO
   })
   @ZodSerializerDto(UserProgressResDTO)
+  @ResponseMessage(M.START_LESSON_SUCCESS)
   async startLesson(
     @Body() body: StartLessonBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(M.START_LESSON_SUCCESS, lang),
-      data: await this.userProgressService.startLesson(userId, body.lessonId)
-    }
+    return this.userProgressService.startLesson(userId, body.lessonId)
   }
 
   @Post('complete-lesson')
@@ -239,15 +213,12 @@ export class UserProgressController {
     type: UserProgressResponseSwaggerDTO
   })
   @ZodSerializerDto(UserProgressResDTO)
+  @ResponseMessage(M.COMPLETE_LESSON_SUCCESS)
   async completeLesson(
     @Body() body: CompleteLessonBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(M.COMPLETE_LESSON_SUCCESS, lang),
-      data: await this.userProgressService.completeLesson(userId, body.lessonId)
-    }
+    return this.userProgressService.completeLesson(userId, body.lessonId)
   }
 
   @Post('admin/init-user-progress/:userId')
@@ -263,7 +234,7 @@ export class UserProgressController {
     const { outcome, data } = await this.userProgressService.initUserProgressForAdmin(
       params.userId
     )
-    return { message: INIT_MESSAGE[outcome], data }
+    return { message: msg(INIT_MESSAGE[outcome]), data }
   }
 
   @Post('admin/init-all-users-progress')
@@ -280,10 +251,7 @@ export class UserProgressController {
   async initAllUsersProgress() {
     const { outcome, data } = await this.userProgressService.initAllUsersProgress()
     return {
-      message:
-        outcome === 'done'
-          ? 'Khởi tạo UserProgress cho tất cả user thành công'
-          : INIT_MESSAGE[outcome],
+      message: msg(outcome === 'done' ? M.INIT_ALL_DONE : INIT_MESSAGE[outcome]),
       data
     }
   }

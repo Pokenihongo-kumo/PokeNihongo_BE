@@ -1,4 +1,4 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { msg, ResponseMessage } from '@/i18n/response-message'
 import { UserTestMessage as M } from '@/i18n/message-keys'
 import {
   Controller,
@@ -46,10 +46,7 @@ import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 @ApiTags('UserTest')
 @Controller('user-test')
 export class UserTestController {
-  constructor(
-    private readonly userTestService: UserTestService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly userTestService: UserTestService) {}
 
   @Post()
   @ApiBearerAuth()
@@ -59,11 +56,9 @@ export class UserTestController {
     description: 'Tạo UserTest thành công',
     type: UserTestResponseSwaggerDTO
   })
-  async create(@Body() body: CreateUserTestBodyDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(M.CREATE_SUCCESS, lang),
-      data: await this.userTestService.create(body)
-    }
+  @ResponseMessage(M.CREATE_SUCCESS)
+  async create(@Body() body: CreateUserTestBodyDTO) {
+    return this.userTestService.create(body)
   }
 
   @Get()
@@ -76,11 +71,9 @@ export class UserTestController {
     type: UserTestListResponseSwaggerDTO
   })
   @ZodSerializerDto(UserTestListResDTO)
+  @ResponseMessage(M.GET_LIST_SUCCESS)
   async findAll(@Query() query: GetUserTestListQueryDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: await this.userTestService.findAll(query, lang)
-    }
+    return this.userTestService.findAll(query, lang)
   }
 
   @Get('my')
@@ -93,20 +86,14 @@ export class UserTestController {
     type: UserTestMyListResponseSwaggerDTO
   })
   @ZodSerializerDto(UserTestMyListResDTO)
+  @ResponseMessage(M.GET_LIST_SUCCESS)
   async getMy(
     @Query() query: GetUserTestMyListQueryDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
     const { type, ...rest } = query
-    return {
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: await this.userTestService.findAll(
-        { ...rest, userId, testType: type },
-        lang,
-        true
-      )
-    }
+    return this.userTestService.findAll({ ...rest, userId, testType: type }, lang, true)
   }
 
   @Get(':id')
@@ -117,11 +104,9 @@ export class UserTestController {
     description: 'Lấy thông tin UserTest thành công',
     type: UserTestResponseSwaggerDTO
   })
-  async findOne(@Param() { id }: GetUserTestByIdParamsDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(M.GET_SUCCESS, lang),
-      data: await this.userTestService.findOne(id)
-    }
+  @ResponseMessage(M.GET_SUCCESS)
+  async findOne(@Param() { id }: GetUserTestByIdParamsDTO) {
+    return this.userTestService.findOne(id)
   }
 
   @Put(':id')
@@ -132,15 +117,12 @@ export class UserTestController {
     description: 'Cập nhật UserTest thành công',
     type: UserTestResponseSwaggerDTO
   })
+  @ResponseMessage(M.UPDATE_SUCCESS)
   async update(
     @Param() { id }: GetUserTestByIdParamsDTO,
-    @Body() body: UpdateUserTestBodyDTO,
-    @I18nLang() lang: string
+    @Body() body: UpdateUserTestBodyDTO
   ) {
-    return {
-      message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
-      data: await this.userTestService.update(id, body)
-    }
+    return this.userTestService.update(id, body)
   }
 
   @Delete(':id')
@@ -151,9 +133,9 @@ export class UserTestController {
     status: 200,
     description: 'Xóa UserTest thành công'
   })
-  async delete(@Param() { id }: GetUserTestByIdParamsDTO, @I18nLang() lang: string) {
+  @ResponseMessage(M.DELETE_SUCCESS)
+  async delete(@Param() { id }: GetUserTestByIdParamsDTO) {
     await this.userTestService.delete(id)
-    return { message: this.i18nService.translate(M.DELETE_SUCCESS, lang) }
   }
 
   @Post('init-all')
@@ -164,18 +146,15 @@ export class UserTestController {
     status: 200,
     description: 'Khởi tạo UserTest thành công'
   })
-  async initAllUsersTests(@I18nLang() lang: string) {
+  async initAllUsersTests() {
     const result = await this.userTestService.initAllUsersTests()
     const message =
       result.outcome === 'done'
-        ? this.i18nService.translate(M.INIT_ALL_SUCCESS, lang, {
+        ? msg(M.INIT_ALL_SUCCESS, {
             tests: result.data.totalTests,
             users: result.data.totalUsers
           })
-        : this.i18nService.translate(
-            result.outcome === 'no-users' ? M.INIT_ALL_NO_USERS : M.INIT_ALL_NO_TESTS,
-            lang
-          )
+        : msg(result.outcome === 'no-users' ? M.INIT_ALL_NO_USERS : M.INIT_ALL_NO_TESTS)
     return { message, data: result.data }
   }
 
