@@ -1,4 +1,4 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage, msg } from '@/i18n/response-message'
 import { LessonCategoryMessage } from '@/i18n/message-keys'
 import {
   Body,
@@ -49,10 +49,7 @@ import {
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class LessonCategoryController {
-  constructor(
-    private readonly lessonCategoryService: LessonCategoryService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly lessonCategoryService: LessonCategoryService) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -67,21 +64,16 @@ export class LessonCategoryController {
   // Writes return the stored row (nameKey); was the translated view schema: 500
   @ZodSerializerDto(LessonCategoryEntityResponseDTO)
   @ApiBody({ type: CreateLessonCategorySwaggerDTO })
-  async createLessonCategory(
-    @Body() body: CreateLessonCategoryBodyDTO,
-    @I18nLang() lang: string
-  ) {
-    return {
-      message: this.i18nService.translate(LessonCategoryMessage.CREATE_SUCCESS, lang),
-      data: await this.lessonCategoryService.createLessonCategory(body)
-    }
+  @ResponseMessage(LessonCategoryMessage.CREATE_SUCCESS)
+  async createLessonCategory(@Body() body: CreateLessonCategoryBodyDTO) {
+    return this.lessonCategoryService.createLessonCategory(body)
   }
 
   @Post('create-defaults')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Tạo các danh mục bài học mặc định' })
   @ApiResponse({ status: 201, description: 'Tạo danh mục bài học mặc định thành công' })
-  async createDefaultLessonCategories(@I18nLang() lang: string) {
+  async createDefaultLessonCategories() {
     const results = await this.lessonCategoryService.createDefaultLessonCategories()
     // the page fields of this route's old answer are kept
     return {
@@ -90,10 +82,7 @@ export class LessonCategoryController {
       limit: results.length,
       total: results.length,
       totalPages: 1,
-      message: this.i18nService.translate(
-        LessonCategoryMessage.CREATE_DEFAULT_SUCCESS,
-        lang
-      )
+      message: msg(LessonCategoryMessage.CREATE_DEFAULT_SUCCESS)
     }
   }
 
@@ -108,15 +97,12 @@ export class LessonCategoryController {
   @ApiResponse({ status: 409, description: 'Danh mục bài học đã tồn tại' })
   @ZodSerializerDto(LessonCategoryEntityResponseDTO)
   @ApiBody({ type: UpdateLessonCategorySwaggerDTO })
+  @ResponseMessage(LessonCategoryMessage.UPDATE_SUCCESS)
   async updateLessonCategory(
     @Param() params: GetLessonCategoryByIdParamsDTO,
-    @Body() body: UpdateLessonCategoryBodyDTO,
-    @I18nLang() lang: string
+    @Body() body: UpdateLessonCategoryBodyDTO
   ) {
-    return {
-      message: this.i18nService.translate(LessonCategoryMessage.UPDATE_SUCCESS, lang),
-      data: await this.lessonCategoryService.updateLessonCategory(params.id, body)
-    }
+    return this.lessonCategoryService.updateLessonCategory(params.id, body)
   }
 
   @Delete(':id')
@@ -126,14 +112,9 @@ export class LessonCategoryController {
   @ApiResponse({ status: 204, description: 'Xóa danh mục bài học thành công' })
   @ApiResponse({ status: 404, description: 'Không tìm thấy danh mục bài học' })
   @ZodSerializerDto(MessageResDTO)
-  async deleteLessonCategory(
-    @Param() params: GetLessonCategoryByIdParamsDTO,
-    @I18nLang() lang: string
-  ) {
+  @ResponseMessage(LessonCategoryMessage.DELETE_SUCCESS)
+  async deleteLessonCategory(@Param() params: GetLessonCategoryByIdParamsDTO) {
     await this.lessonCategoryService.deleteLessonCategory(params.id)
-    return {
-      message: this.i18nService.translate(LessonCategoryMessage.DELETE_SUCCESS, lang)
-    }
   }
 
   @Get()
@@ -144,14 +125,12 @@ export class LessonCategoryController {
     type: LessonCategoryListResponseSwaggerDTO
   })
   @ZodSerializerDto(LessonCategoryListResponseDTO)
+  @ResponseMessage(LessonCategoryMessage.GET_LIST_SUCCESS)
   async getLessonCategoryList(
     @Query() query: GetLessonCategoryListQueryDTO,
     @I18nLang() lang: string
   ) {
-    return {
-      message: this.i18nService.translate(LessonCategoryMessage.GET_LIST_SUCCESS, lang),
-      data: await this.lessonCategoryService.getLessonCategoryList(query, lang)
-    }
+    return this.lessonCategoryService.getLessonCategoryList(query, lang)
   }
 
   @Get('by-id/:id')
@@ -164,14 +143,12 @@ export class LessonCategoryController {
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy danh mục bài học' })
   @ZodSerializerDto(LessonCategoryResponseDTO)
+  @ResponseMessage(LessonCategoryMessage.GET_SUCCESS)
   async getLessonCategoryById(
     @Param() params: GetLessonCategoryByIdParamsDTO,
     @I18nLang() lang: string
   ) {
-    return {
-      message: this.i18nService.translate(LessonCategoryMessage.GET_SUCCESS, lang),
-      data: await this.lessonCategoryService.getLessonCategoryById(params, lang)
-    }
+    return this.lessonCategoryService.getLessonCategoryById(params, lang)
   }
 
   @Get('by-slug/:slug')
@@ -183,10 +160,8 @@ export class LessonCategoryController {
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy danh mục bài học' })
   @ZodSerializerDto(LessonCategoryResponseDTO)
+  @ResponseMessage(LessonCategoryMessage.GET_SUCCESS)
   async getLessonCategoryBySlug(@Param('slug') slug: string, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(LessonCategoryMessage.GET_SUCCESS, lang),
-      data: await this.lessonCategoryService.getLessonCategoryBySlug(slug, lang)
-    }
+    return this.lessonCategoryService.getLessonCategoryBySlug(slug, lang)
   }
 }

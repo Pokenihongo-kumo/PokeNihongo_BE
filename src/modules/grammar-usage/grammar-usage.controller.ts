@@ -1,6 +1,5 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage } from '@/i18n/response-message'
 import { GrammarUsageMessage } from '@/i18n/message-keys'
-import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import {
   Body,
   Controller,
@@ -50,10 +49,7 @@ import {
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class GrammarUsageController {
-  constructor(
-    private readonly grammarUsageService: GrammarUsageService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly grammarUsageService: GrammarUsageService) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -68,14 +64,9 @@ export class GrammarUsageController {
   @ApiResponse({ status: 404, description: 'Không tìm thấy ngữ pháp' })
   @ApiResponse({ status: 409, description: 'Cách sử dụng ngữ pháp đã tồn tại' })
   @ZodSerializerDto(GrammarUsageWithGrammarResponseDTO)
-  async createGrammarUsage(
-    @Body() body: CreateGrammarUsageBodyDTO,
-    @I18nLang() lang: string
-  ) {
-    return {
-      message: this.i18nService.translate(GrammarUsageMessage.CREATE_SUCCESS, lang),
-      data: await this.grammarUsageService.createGrammarUsage(body)
-    }
+  @ResponseMessage(GrammarUsageMessage.CREATE_SUCCESS)
+  async createGrammarUsage(@Body() body: CreateGrammarUsageBodyDTO) {
+    return this.grammarUsageService.createGrammarUsage(body)
   }
 
   @Get()
@@ -87,14 +78,9 @@ export class GrammarUsageController {
     type: GrammarUsageListResponseSwaggerDTO
   })
   @ZodSerializerDto(GrammarUsageListResponseDTO)
-  async getGrammarUsageList(
-    @Query() query: GetGrammarUsageListQueryDTO,
-    @I18nLang() lang: string
-  ) {
-    return {
-      message: this.i18nService.translate(GrammarUsageMessage.GET_LIST_SUCCESS, lang),
-      data: await this.grammarUsageService.getGrammarUsageList(query)
-    }
+  @ResponseMessage(GrammarUsageMessage.GET_LIST_SUCCESS)
+  async getGrammarUsageList(@Query() query: GetGrammarUsageListQueryDTO) {
+    return this.grammarUsageService.getGrammarUsageList(query)
   }
 
   @Get(':id')
@@ -106,14 +92,9 @@ export class GrammarUsageController {
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy cách sử dụng ngữ pháp' })
   @ZodSerializerDto(GrammarUsageWithGrammarResponseDTO)
-  async getGrammarUsageById(
-    @Param() params: GetGrammarUsageByIdParamsDTO,
-    @I18nLang() lang: string
-  ) {
-    return {
-      message: this.i18nService.translate(GrammarUsageMessage.GET_SUCCESS, lang),
-      data: await this.grammarUsageService.getGrammarUsageById(params)
-    }
+  @ResponseMessage(GrammarUsageMessage.GET_SUCCESS)
+  async getGrammarUsageById(@Param() params: GetGrammarUsageByIdParamsDTO) {
+    return this.grammarUsageService.getGrammarUsageById(params)
   }
 
   @Put(':id')
@@ -127,15 +108,12 @@ export class GrammarUsageController {
   @ApiResponse({ status: 404, description: 'Không tìm thấy cách sử dụng ngữ pháp' })
   @ApiResponse({ status: 409, description: 'Cách sử dụng ngữ pháp đã tồn tại' })
   @ZodSerializerDto(GrammarUsageWithGrammarResponseDTO)
+  @ResponseMessage(GrammarUsageMessage.UPDATE_SUCCESS)
   async updateGrammarUsage(
     @Param() params: GetGrammarUsageByIdParamsDTO,
-    @Body() body: UpdateGrammarUsageBodyDTO,
-    @I18nLang() lang: string
+    @Body() body: UpdateGrammarUsageBodyDTO
   ) {
-    return {
-      message: this.i18nService.translate(GrammarUsageMessage.UPDATE_SUCCESS, lang),
-      data: await this.grammarUsageService.updateGrammarUsage(params.id, body)
-    }
+    return this.grammarUsageService.updateGrammarUsage(params.id, body)
   }
 
   @Delete(':id')
@@ -144,13 +122,8 @@ export class GrammarUsageController {
   @ApiResponse({ status: 204, description: 'Xóa cách sử dụng ngữ pháp thành công' })
   @ApiResponse({ status: 404, description: 'Không tìm thấy cách sử dụng ngữ pháp' })
   @ZodSerializerDto(MessageResDTO)
-  async deleteGrammarUsage(
-    @Param() params: GetGrammarUsageByIdParamsDTO,
-    @I18nLang() lang: string
-  ) {
+  @ResponseMessage(GrammarUsageMessage.DELETE_SUCCESS)
+  async deleteGrammarUsage(@Param() params: GetGrammarUsageByIdParamsDTO) {
     await this.grammarUsageService.deleteGrammarUsage(params.id)
-    return {
-      message: this.i18nService.translate(GrammarUsageMessage.DELETE_SUCCESS, lang)
-    }
   }
 }

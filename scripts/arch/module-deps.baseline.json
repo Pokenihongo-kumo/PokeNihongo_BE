@@ -10,11 +10,11 @@
     "httpSchemasInEntities": 0,
     "handWrittenEnvelopes": 2,
     "serviceEnvelopeFiles": 6,
-    "controllerTranslateFiles": 70,
+    "controllerTranslateFiles": 67,
     "prismaOutsideRepoCalls": 0,
     "serviceStatusCodes": 11,
     "serviceMessages": 19,
-    "controllerTranslateCalls": 477
+    "controllerTranslateCalls": 460
   },
   "details": {
     "crossModuleRepoImports": [
@@ -91,12 +91,9 @@
       "modules/gacha-roll-history/gacha-roll-history.controller.ts",
       "modules/gemini-config/ConfigService/gemini-service-config.controller.ts",
       "modules/gemini-config/gemini-config.controller.ts",
-      "modules/grammar-usage/grammar-usage.controller.ts",
-      "modules/grammar/grammar.controller.ts",
       "modules/invoice/invoice.controller.ts",
       "modules/kanji/kanji.controller.ts",
       "modules/leaderboard-season/leaderboard-season.controller.ts",
-      "modules/lesson-category/lesson-category.controller.ts",
       "modules/lesson/lesson.controller.ts",
       "modules/match-participant/match-participant.controller.ts",
       "modules/match-queue/match-queue.controller.ts",
