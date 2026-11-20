@@ -69,7 +69,8 @@ export const enMessages = {
     NOT_FOUND: 'Reward not found',
     ALREADY_EXISTS: 'Reward already exists',
     INVALID_DATA: 'Invalid reward data',
-    NAME_REQUIRED: 'Reward name is required'
+    NAME_REQUIRED: 'Reward name is required',
+    CONVERT_SUCCESS: 'Convert rewards successfully'
   },
   grammar: {
     CREATE_SUCCESS: 'Grammar created successfully',

@@ -1,4 +1,4 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage } from '@/i18n/response-message'
 import { RewardMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { IsPublic } from '@/common/decorators/auth.decorator'
@@ -44,19 +44,14 @@ import { UserRewardSourceType } from '@prisma/client'
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class RewardController {
-  constructor(
-    private readonly rewardService: RewardService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly rewardService: RewardService) {}
 
   @Get()
   @IsPublic()
   @ZodSerializerDto(PaginationResponseSchema)
+  @ResponseMessage(RewardMessage.GET_LIST_SUCCESS)
   async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(RewardMessage.GET_LIST_SUCCESS, lang),
-      data: await this.rewardService.list(query, lang)
-    }
+    return this.rewardService.list(query, lang)
   }
 
   @Post('convert')
@@ -73,103 +68,84 @@ export class RewardController {
     type: ConvertRewardsResponseSwaggerDTO
   })
   @ZodSerializerDto(ConvertRewardsResDTO)
+  @ResponseMessage(RewardMessage.CONVERT_SUCCESS)
   async convertRewards(
     @Body() body: ConvertRewardsBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
     const targetUserId = body.userId ?? userId
-    return {
-      message: 'Convert rewards successfully',
-      data: await this.rewardService.convertRewards({
-        rewardIds: body.rewardIds,
-        userId,
-        sourceType: body.sourceType ?? UserRewardSourceType.REWARD_SERVICE
-      })
-    }
+    return this.rewardService.convertRewards({
+      rewardIds: body.rewardIds,
+      userId,
+      sourceType: body.sourceType ?? UserRewardSourceType.REWARD_SERVICE
+    })
   }
 
   @Get('admin')
   @IsPublic()
   @ZodSerializerDto(PaginationResponseSchema)
+  @ResponseMessage(RewardMessage.GET_LIST_SUCCESS)
   async getListWithAllLang(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(RewardMessage.GET_LIST_SUCCESS, lang),
-      data: await this.rewardService.getListWithAllLang(query, lang)
-    }
+    return this.rewardService.getListWithAllLang(query, lang)
   }
 
   @Post()
   @ZodSerializerDto(CreateRewardResDTO)
+  @ResponseMessage(RewardMessage.CREATE_SUCCESS)
   async create(
     @Body() body: CreatedRewardBodyInputDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(RewardMessage.CREATE_SUCCESS, lang),
-      data: await this.rewardService.create({
-        data: body,
-        createdById: userId
-      })
-    }
+    return this.rewardService.create({
+      data: body,
+      createdById: userId
+    })
   }
 
   @Get('admin/:rewardId')
   @IsPublic()
   @ZodSerializerDto(GetRewardDetailWithAllLangResDTO)
+  @ResponseMessage(RewardMessage.GET_SUCCESS)
   async findByIdWithAllLang(
     @Param() params: GetRewardParamsDTO,
     @I18nLang() lang: string
   ) {
-    return {
-      message: this.i18nService.translate(RewardMessage.GET_SUCCESS, lang),
-      data: await this.rewardService.findByIdWithAllLang(params.rewardId, lang)
-    }
+    return this.rewardService.findByIdWithAllLang(params.rewardId, lang)
   }
 
   @Get(':rewardId')
   @IsPublic()
   @ZodSerializerDto(GetRewardDetailResDTO)
+  @ResponseMessage(RewardMessage.GET_SUCCESS)
   async findById(@Param() params: GetRewardParamsDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(RewardMessage.GET_SUCCESS, lang),
-      data: await this.rewardService.findById(params.rewardId, lang)
-    }
+    return this.rewardService.findById(params.rewardId, lang)
   }
 
   @Put(':rewardId')
   @ZodSerializerDto(UpdateRewardResDTO)
+  @ResponseMessage(RewardMessage.UPDATE_SUCCESS)
   async update(
     @Body() body: UpdateRewardBodyInputDTO,
     @Param() params: GetRewardParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(RewardMessage.UPDATE_SUCCESS, lang),
-      data: await this.rewardService.update({
-        data: body,
-        id: params.rewardId,
-        updatedById: userId
-      })
-    }
+    return this.rewardService.update({
+      data: body,
+      id: params.rewardId,
+      updatedById: userId
+    })
   }
 
   @Delete(':rewardId')
   @ZodSerializerDto(MessageResDTO)
+  @ResponseMessage(RewardMessage.DELETE_SUCCESS)
   async delete(
     @Param() params: GetRewardParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
     await this.rewardService.delete({
       id: params.rewardId,
       deletedById: userId
     })
-    return {
-      message: this.i18nService.translate(RewardMessage.DELETE_SUCCESS, lang),
-      data: null
-    }
   }
 }

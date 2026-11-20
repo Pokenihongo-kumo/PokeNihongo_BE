@@ -1,4 +1,4 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage } from '@/i18n/response-message'
 import { ShopBannerMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { AuthenticationGuard } from '@/common/guards/authentication.guard'
@@ -34,120 +34,96 @@ import { ShopBannerService } from './shop-banner.service'
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class ShopBannerController {
-  constructor(
-    private readonly shopBannerService: ShopBannerService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly shopBannerService: ShopBannerService) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseSchema)
+  @ResponseMessage(ShopBannerMessage.GET_LIST_SUCCESS)
   async list(
     @Query() query: PaginationQueryDTO,
     @I18nLang() lang: string,
     @ActiveUser('roleName') roleName: string
   ) {
-    return {
-      message: this.i18nService.translate(ShopBannerMessage.GET_LIST_SUCCESS, lang),
-      data: await this.shopBannerService.list(query, lang, roleName)
-    }
+    return this.shopBannerService.list(query, lang, roleName)
   }
 
   @Get('all-pokemon/:shopBannerId')
   @ZodSerializerDto(PaginationResponseSchema)
+  @ResponseMessage(ShopBannerMessage.GET_LIST_SUCCESS)
   async getListAllPokemonWithShopId(
     @Param('shopBannerId') shopBannerId: number,
-    @Query() query: PaginationQueryDTO,
-    @I18nLang() lang: string
+    @Query() query: PaginationQueryDTO
   ) {
-    return {
-      message: this.i18nService.translate(ShopBannerMessage.GET_LIST_SUCCESS, lang),
-      data: await this.shopBannerService.getListAllPokemonWithShopId(shopBannerId, query)
-    }
+    return this.shopBannerService.getListAllPokemonWithShopId(shopBannerId, query)
   }
 
   @Get('all/details')
   @ZodSerializerDto(PaginationResponseSchema)
+  @ResponseMessage(ShopBannerMessage.GET_LIST_SUCCESS)
   async listwithDetail(
     @Query() query: PaginationQueryDTO,
     @I18nLang() lang: string,
     @ActiveUser('roleName') roleName: string
   ) {
-    return {
-      message: this.i18nService.translate(ShopBannerMessage.GET_LIST_SUCCESS, lang),
-      data: await this.shopBannerService.listwithDetail(query, lang, roleName)
-    }
+    return this.shopBannerService.listwithDetail(query, lang, roleName)
   }
 
   @Get('today/user')
   @ZodSerializerDto(GetShopBannerByTodayResDTO)
+  @ResponseMessage(ShopBannerMessage.GET_LIST_SUCCESS)
   async getByToday(@I18nLang() lang: string, @ActiveUser('userId') userId?: number) {
-    return {
-      message: this.i18nService.translate(ShopBannerMessage.GET_LIST_SUCCESS, lang),
-      data: await this.shopBannerService.getByToday(lang, userId)
-    }
+    return this.shopBannerService.getByToday(lang, userId)
   }
 
   @Get(':shopBannerId')
   @ZodSerializerDto(GetShopBannerDetailResDTO)
+  @ResponseMessage(ShopBannerMessage.GET_SUCCESS)
   async findById(
     @Param() params: GetShopBannerParamsDTO,
     @I18nLang() lang: string,
     @ActiveUser('roleName') roleName: string
   ) {
-    return {
-      message: this.i18nService.translate(ShopBannerMessage.GET_SUCCESS, lang),
-      data: await this.shopBannerService.findById(params.shopBannerId, lang, roleName)
-    }
+    return this.shopBannerService.findById(params.shopBannerId, lang, roleName)
   }
 
   @Post()
   @ZodSerializerDto(CreateShopBannerResDTO)
+  @ResponseMessage(ShopBannerMessage.CREATE_SUCCESS)
   async create(
     @Body() body: CreatedShopBannerBodyInputDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(ShopBannerMessage.CREATE_SUCCESS, lang),
-      data: await this.shopBannerService.create({
-        data: body,
-        createdById: userId
-      })
-    }
+    return this.shopBannerService.create({
+      data: body,
+      createdById: userId
+    })
   }
 
   @Put(':shopBannerId')
   @ZodSerializerDto(UpdateShopBannerResDTO)
+  @ResponseMessage(ShopBannerMessage.UPDATE_SUCCESS)
   async update(
     @Body() body: UpdateShopBannerBodyInputDTO,
     @Param() params: GetShopBannerParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(ShopBannerMessage.UPDATE_SUCCESS, lang),
-      data: await this.shopBannerService.update({
-        data: body,
-        id: params.shopBannerId,
-        updatedById: userId
-      })
-    }
+    return this.shopBannerService.update({
+      data: body,
+      id: params.shopBannerId,
+      updatedById: userId
+    })
   }
 
   @Delete(':shopBannerId')
   @ZodSerializerDto(MessageResDTO)
+  @ResponseMessage(ShopBannerMessage.DELETE_SUCCESS)
   async delete(
     @Param() params: GetShopBannerParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
     await this.shopBannerService.delete({
       id: params.shopBannerId,
       deletedById: userId
     })
-    return {
-      message: this.i18nService.translate(ShopBannerMessage.DELETE_SUCCESS, lang),
-      data: null
-    }
   }
 }

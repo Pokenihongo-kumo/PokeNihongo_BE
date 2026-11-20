@@ -1,7 +1,6 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage } from '@/i18n/response-message'
 import { ShopPurchaseMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
-import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
 import { MessageResDTO, PaginationResponseDTO } from '@/shared/dtos/response.dto'
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common'
@@ -19,90 +18,70 @@ import { ShopPurchaseService } from './shop-purchase.service'
 
 @Controller('shop-purchase')
 export class ShopPurchaseController {
-  constructor(
-    private readonly shopPurchaseService: ShopPurchaseService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly shopPurchaseService: ShopPurchaseService) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseDTO)
-  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(ShopPurchaseMessage.GET_LIST_SUCCESS, lang),
-      data: await this.shopPurchaseService.list(query)
-    }
+  @ResponseMessage(ShopPurchaseMessage.GET_LIST_SUCCESS)
+  async list(@Query() query: PaginationQueryDTO) {
+    return this.shopPurchaseService.list(query)
   }
 
   @Get('user')
   @ZodSerializerDto(GetShopPurchaseListResDTO)
-  async getByUser(@ActiveUser('userId') userId: number, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(ShopPurchaseMessage.GET_LIST_SUCCESS, lang),
-      data: await this.shopPurchaseService.getByUser(userId)
-    }
+  @ResponseMessage(ShopPurchaseMessage.GET_LIST_SUCCESS)
+  async getByUser(@ActiveUser('userId') userId: number) {
+    return this.shopPurchaseService.getByUser(userId)
   }
 
   @Get(':shopPurchaseId')
   @ZodSerializerDto(GetShopPurchaseDetailResDTO)
+  @ResponseMessage(ShopPurchaseMessage.GET_LIST_SUCCESS)
   async findById(
     @Param() params: GetShopPurchaseParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(ShopPurchaseMessage.GET_LIST_SUCCESS, lang),
-      data: await this.shopPurchaseService.findById(params.shopPurchaseId)
-    }
+    return this.shopPurchaseService.findById(params.shopPurchaseId)
   }
 
   @Post()
   @ZodSerializerDto(CreateShopPurchaseResDTO)
+  @ResponseMessage(ShopPurchaseMessage.CREATE_SUCCESS)
   async create(
     @Body() body: CreateShopPurchaseBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(ShopPurchaseMessage.CREATE_SUCCESS, lang),
-      data: await this.shopPurchaseService.create({
-        userId,
-        data: body
-      })
-    }
+    return this.shopPurchaseService.create({
+      userId,
+      data: body
+    })
   }
 
   @Put(':shopPurchaseId')
   @ZodSerializerDto(UpdateShopPurchaseResDTO)
+  @ResponseMessage(ShopPurchaseMessage.UPDATE_SUCCESS)
   async update(
     @Body() body: UpdateShopPurchaseBodyDTO,
     @Param() params: GetShopPurchaseParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(ShopPurchaseMessage.UPDATE_SUCCESS, lang),
-      data: await this.shopPurchaseService.update({
-        data: body,
-        id: params.shopPurchaseId,
-        userId
-      })
-    }
+    return this.shopPurchaseService.update({
+      data: body,
+      id: params.shopPurchaseId,
+      userId
+    })
   }
 
   @Delete(':shopPurchaseId')
   @ZodSerializerDto(MessageResDTO)
+  @ResponseMessage(ShopPurchaseMessage.DELETE_SUCCESS)
   async delete(
     @Param() params: GetShopPurchaseParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
     await this.shopPurchaseService.delete({
       id: params.shopPurchaseId,
       userId
     })
-    return {
-      message: this.i18nService.translate(ShopPurchaseMessage.DELETE_SUCCESS, lang),
-      data: null
-    }
   }
 }

@@ -1,4 +1,4 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage } from '@/i18n/response-message'
 import { UserRewardHistoryMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import {
@@ -34,10 +34,7 @@ import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 @ApiTags('User Reward History')
 @Controller('user-reward-history')
 export class UserRewardHistoryController {
-  constructor(
-    private readonly userRewardHistoryService: UserRewardHistoryService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly userRewardHistoryService: UserRewardHistoryService) {}
 
   @Post()
   @ApiBearerAuth()
@@ -49,11 +46,9 @@ export class UserRewardHistoryController {
     type: UserRewardHistoryResponseSwaggerDTO
   })
   @ZodSerializerDto(UserRewardHistoryResDTO)
-  async create(@Body() body: CreateUserRewardHistoryBodyDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(UserRewardHistoryMessage.CREATE_SUCCESS, lang),
-      data: await this.userRewardHistoryService.create(body)
-    }
+  @ResponseMessage(UserRewardHistoryMessage.CREATE_SUCCESS)
+  async create(@Body() body: CreateUserRewardHistoryBodyDTO) {
+    return this.userRewardHistoryService.create(body)
   }
 
   @Get()
@@ -66,17 +61,9 @@ export class UserRewardHistoryController {
     type: UserRewardHistoryListResponseSwaggerDTO
   })
   @ZodSerializerDto(UserRewardHistoryListResDTO)
-  async findAll(
-    @Query() query: GetUserRewardHistoryListQueryDTO,
-    @I18nLang() lang: string
-  ) {
-    return {
-      message: this.i18nService.translate(
-        UserRewardHistoryMessage.GET_LIST_SUCCESS,
-        lang
-      ),
-      data: await this.userRewardHistoryService.findAll(query)
-    }
+  @ResponseMessage(UserRewardHistoryMessage.GET_LIST_SUCCESS)
+  async findAll(@Query() query: GetUserRewardHistoryListQueryDTO) {
+    return this.userRewardHistoryService.findAll(query)
   }
 
   @Get('my')
@@ -89,18 +76,13 @@ export class UserRewardHistoryController {
     type: UserRewardHistoryListResponseSwaggerDTO
   })
   @ZodSerializerDto(UserRewardHistoryListResDTO)
+  @ResponseMessage(UserRewardHistoryMessage.GET_LIST_SUCCESS)
   async getMy(
     @Query() query: GetMyRewardHistoryQueryDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() languageCode: string
   ) {
-    return {
-      message: this.i18nService.translate(
-        UserRewardHistoryMessage.GET_LIST_SUCCESS,
-        languageCode
-      ),
-      data: await this.userRewardHistoryService.getMy(userId, query, languageCode)
-    }
+    return this.userRewardHistoryService.getMy(userId, query, languageCode)
   }
 
   @Get(':id')
@@ -112,14 +94,9 @@ export class UserRewardHistoryController {
     type: UserRewardHistoryResponseSwaggerDTO
   })
   @ZodSerializerDto(UserRewardHistoryResDTO)
-  async findOne(
-    @Param() params: GetUserRewardHistoryByIdParamsDTO,
-    @I18nLang() lang: string
-  ) {
-    return {
-      message: this.i18nService.translate(UserRewardHistoryMessage.GET_SUCCESS, lang),
-      data: await this.userRewardHistoryService.findOne(params.id)
-    }
+  @ResponseMessage(UserRewardHistoryMessage.GET_SUCCESS)
+  async findOne(@Param() params: GetUserRewardHistoryByIdParamsDTO) {
+    return this.userRewardHistoryService.findOne(params.id)
   }
 
   @Put(':id')
@@ -132,15 +109,12 @@ export class UserRewardHistoryController {
     type: UserRewardHistoryResponseSwaggerDTO
   })
   @ZodSerializerDto(UserRewardHistoryResDTO)
+  @ResponseMessage(UserRewardHistoryMessage.UPDATE_SUCCESS)
   async update(
     @Param() params: GetUserRewardHistoryByIdParamsDTO,
-    @Body() body: UpdateUserRewardHistoryBodyDTO,
-    @I18nLang() lang: string
+    @Body() body: UpdateUserRewardHistoryBodyDTO
   ) {
-    return {
-      message: this.i18nService.translate(UserRewardHistoryMessage.UPDATE_SUCCESS, lang),
-      data: await this.userRewardHistoryService.update(params.id, body)
-    }
+    return this.userRewardHistoryService.update(params.id, body)
   }
 
   @Delete(':id')
@@ -152,13 +126,8 @@ export class UserRewardHistoryController {
     type: UserRewardHistoryResponseSwaggerDTO
   })
   @ZodSerializerDto(UserRewardHistoryResDTO)
-  async remove(
-    @Param() params: GetUserRewardHistoryByIdParamsDTO,
-    @I18nLang() lang: string
-  ) {
-    return {
-      message: this.i18nService.translate(UserRewardHistoryMessage.DELETE_SUCCESS, lang),
-      data: await this.userRewardHistoryService.remove(params.id)
-    }
+  @ResponseMessage(UserRewardHistoryMessage.DELETE_SUCCESS)
+  async remove(@Param() params: GetUserRewardHistoryByIdParamsDTO) {
+    return this.userRewardHistoryService.remove(params.id)
   }
 }

@@ -1,8 +1,7 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage } from '@/i18n/response-message'
 import { WalletMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { AuthenticationGuard } from '@/common/guards/authentication.guard'
-import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
 import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { PaginationResponseSchema } from '@/shared/models/response.model'
@@ -36,102 +35,74 @@ import { WalletService } from './wallet.service'
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class WalletController {
-  constructor(
-    private readonly walletService: WalletService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly walletService: WalletService) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseSchema)
-  async list(@Query() query: PaginationQueryDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(WalletMessage.GET_LIST_SUCCESS, lang),
-      data: await this.walletService.list(query)
-    }
+  @ResponseMessage(WalletMessage.GET_LIST_SUCCESS)
+  async list(@Query() query: PaginationQueryDTO) {
+    return this.walletService.list(query)
   }
 
   @Get('user')
   @ZodSerializerDto(GetWalletsWithUserResDTO)
-  async getWalletsByUser(@ActiveUser('userId') userId: number, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(WalletMessage.GET_LIST_SUCCESS, lang),
-      data: await this.walletService.getWalletsByUser(userId)
-    }
+  @ResponseMessage(WalletMessage.GET_LIST_SUCCESS)
+  async getWalletsByUser(@ActiveUser('userId') userId: number) {
+    return this.walletService.getWalletsByUser(userId)
   }
 
   @Get(':walletId')
   @ZodSerializerDto(GetWalletDetailResDTO)
-  async findById(@Param() params: GetWalletParamsDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(WalletMessage.GET_SUCCESS, lang),
-      data: await this.walletService.findById(params.walletId)
-    }
+  @ResponseMessage(WalletMessage.GET_SUCCESS)
+  async findById(@Param() params: GetWalletParamsDTO) {
+    return this.walletService.findById(params.walletId)
   }
 
   @Post('generate/users')
   @HttpCode(HttpStatus.OK)
   @ZodSerializerDto(MessageResDTO)
-  async generateWalletForAllUsers(
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
-  ) {
+  @ResponseMessage(WalletMessage.CREATE_SUCCESS)
+  async generateWalletForAllUsers(@ActiveUser('userId') userId: number) {
     await this.walletService.generateWalletForAllUsers({
       createdById: userId
     })
-    return {
-      message: this.i18nService.translate(WalletMessage.CREATE_SUCCESS, lang),
-      data: null
-    }
   }
 
   @Post()
   @ZodSerializerDto(CreateWalletResDTO)
-  async create(
-    @Body() body: CreatedWalletBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
-  ) {
-    return {
-      message: this.i18nService.translate(WalletMessage.CREATE_SUCCESS, lang),
-      data: await this.walletService.create({
-        data: body,
-        createdById: userId
-      })
-    }
+  @ResponseMessage(WalletMessage.CREATE_SUCCESS)
+  async create(@Body() body: CreatedWalletBodyDTO, @ActiveUser('userId') userId: number) {
+    return this.walletService.create({
+      data: body,
+      createdById: userId
+    })
   }
 
   @Put(':walletId')
   @ZodSerializerDto(UpdateWalletResDTO)
+  @ResponseMessage(WalletMessage.UPDATE_SUCCESS)
   async update(
     @Body() body: UpdateWalletBodyDTO,
     @Param() params: GetWalletParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(WalletMessage.UPDATE_SUCCESS, lang),
-      data: await this.walletService.update({
-        data: body,
-        id: params.walletId,
-        updatedById: userId
-      })
-    }
+    return this.walletService.update({
+      data: body,
+      id: params.walletId,
+      updatedById: userId
+    })
   }
 
   @Delete(':walletId')
   @ZodSerializerDto(MessageResDTO)
+  @ResponseMessage(WalletMessage.DELETE_SUCCESS)
   async delete(
     @Param() params: GetWalletParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
     await this.walletService.delete({
       id: params.walletId,
       deletedById: userId
     })
-    return {
-      message: this.i18nService.translate(WalletMessage.DELETE_SUCCESS, lang),
-      data: null
-    }
   }
 }

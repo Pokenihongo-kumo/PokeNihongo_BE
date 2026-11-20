@@ -64,7 +64,8 @@ export const RewardMessage = {
   NOT_FOUND: 'reward.NOT_FOUND',
   ALREADY_EXISTS: 'reward.ALREADY_EXISTS',
   INVALID_DATA: 'reward.INVALID_DATA',
-  NAME_REQUIRED: 'reward.NAME_REQUIRED'
+  NAME_REQUIRED: 'reward.NAME_REQUIRED',
+  CONVERT_SUCCESS: 'reward.CONVERT_SUCCESS'
 } as const
 
 export const GrammarMessage = {

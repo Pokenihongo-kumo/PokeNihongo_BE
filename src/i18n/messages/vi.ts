@@ -68,7 +68,8 @@ export const viMessages = {
     NOT_FOUND: 'Không tìm thấy phần thưởng',
     ALREADY_EXISTS: 'Phần thưởng đã tồn tại',
     INVALID_DATA: 'Dữ liệu phần thưởng không hợp lệ',
-    NAME_REQUIRED: 'Tên phần thưởng không được để trống'
+    NAME_REQUIRED: 'Tên phần thưởng không được để trống',
+    CONVERT_SUCCESS: 'Convert rewards successfully'
   },
   grammar: {
     CREATE_SUCCESS: 'Tạo ngữ pháp thành công',
