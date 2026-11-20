@@ -1,4 +1,4 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage, msg } from '@/i18n/response-message'
 import { TestMessage as M } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { ActiveRolePermissions } from '@/common/decorators/active-role-permissions.decorator'
@@ -54,10 +54,7 @@ import { TestService } from './test.service'
 @ApiTags('Test')
 @Controller('test')
 export class TestController {
-  constructor(
-    private readonly testService: TestService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly testService: TestService) {}
 
   @Post('with-meanings')
   @ApiBearerAuth()
@@ -72,15 +69,12 @@ export class TestController {
     description: 'Tạo bài test với meanings thành công',
     type: TestResponseSwaggerDTO
   })
+  @ResponseMessage(M.CREATE_SUCCESS)
   async createTestWithMeanings(
     @Body() body: CreateTestWithMeaningsBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(M.CREATE_SUCCESS, lang),
-      data: await this.testService.createTestWithMeanings(body, userId)
-    }
+    return this.testService.createTestWithMeanings(body, userId)
   }
 
   @Get()
@@ -93,6 +87,7 @@ export class TestController {
   })
   @ApiQuery({ type: GetTestListQuerySwaggerDTO })
   @ZodSerializerDto(TestListResDTO)
+  @ResponseMessage(M.GET_LIST_SUCCESS)
   async findAll(
     @Query() query: GetTestListQueryDTO,
     @I18nLang() lang: string,
@@ -100,10 +95,7 @@ export class TestController {
   ) {
     // Nếu là admin thì lấy tất cả translations (không filter theo language)
     const isAdmin = roleName === RoleName.Admin
-    return {
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: await this.testService.findAll(query, isAdmin ? undefined : lang)
-    }
+    return this.testService.findAll(query, isAdmin ? undefined : lang)
   }
 
   @Get(':id/placement-questions')
@@ -118,19 +110,13 @@ export class TestController {
     description: 'Lấy câu hỏi placement test thành công',
     type: MessageResDTO
   })
+  @ResponseMessage(M.PLACEMENT_QUESTIONS_SUCCESS)
   async getPlacementQuestions(
     @Param() params: GetTestByIdParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return {
-      message: this.i18nService.translate(M.PLACEMENT_QUESTIONS_SUCCESS, lang),
-      data: await this.testService.getRandomQuestionsForPlacementTest(
-        params.id,
-        userId,
-        lang
-      )
-    }
+    return this.testService.getRandomQuestionsForPlacementTest(params.id, userId, lang)
   }
 
   @Get(':id/random-questions')
@@ -161,7 +147,7 @@ export class TestController {
       lang
     )
     return {
-      message: this.i18nService.translate(M.LEVEL_QUESTIONS_SUCCESS, lang, {
+      message: msg(M.LEVEL_QUESTIONS_SUCCESS, {
         count: data.count,
         level: data.levelN
       }),
@@ -182,15 +168,13 @@ export class TestController {
     description: 'Lấy câu hỏi bài test ôn tập thành công',
     type: TestResponseSwaggerDTO
   })
+  @ResponseMessage(M.GET_SUCCESS)
   async generateLessonReviewTest(
     @Param() params: GetLessonReviewParamsDTO,
     @ActiveUser('userId') userId: number,
     @I18nLang() lang: string
   ) {
-    return {
-      message: this.i18nService.translate(M.GET_SUCCESS, lang),
-      data: await this.testService.generateLessonReviewTest(params.testId, userId, lang)
-    }
+    return this.testService.generateLessonReviewTest(params.testId, userId, lang)
   }
 
   @Get(':id/full')
@@ -201,11 +185,9 @@ export class TestController {
     description: 'Lấy thông tin bài test thành công',
     type: TestResponseSwaggerDTO
   })
+  @ResponseMessage(M.GET_SUCCESS)
   async findFull(@Param() params: GetTestByIdParamsDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(M.GET_SUCCESS, lang),
-      data: await this.testService.findFullById(params.id, lang)
-    }
+    return this.testService.findFullById(params.id, lang)
   }
 
   @Get(':id/full-user')
@@ -216,11 +198,9 @@ export class TestController {
     description: 'Lấy thông tin bài test thành công',
     type: TestResponseSwaggerDTO
   })
+  @ResponseMessage(M.GET_SUCCESS)
   async findFullUser(@Param() params: GetTestByIdParamsDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(M.GET_SUCCESS, lang),
-      data: await this.testService.findFullByIdForUser(params.id, lang)
-    }
+    return this.testService.findFullByIdForUser(params.id, lang)
   }
 
   @Get(':id')
@@ -231,11 +211,9 @@ export class TestController {
     description: 'Lấy thông tin bài test thành công',
     type: TestResponseSwaggerDTO
   })
+  @ResponseMessage(M.GET_SUCCESS)
   async findOne(@Param() params: GetTestByIdParamsDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(M.GET_SUCCESS, lang),
-      data: await this.testService.findOne(params.id, lang)
-    }
+    return this.testService.findOne(params.id, lang)
   }
 
   @Put(':id/with-meanings')
@@ -247,16 +225,13 @@ export class TestController {
     description: 'Cập nhật bài test với meanings thành công',
     type: TestResponseSwaggerDTO
   })
+  @ResponseMessage(M.UPDATE_SUCCESS)
   async updateTestWithMeanings(
     @Param() params: GetTestByIdParamsDTO,
     @Body() body: UpdateTestWithMeaningsBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
-      data: await this.testService.updateTestWithMeanings(params.id, body, userId)
-    }
+    return this.testService.updateTestWithMeanings(params.id, body, userId)
   }
 
   @Delete('bulk')
@@ -286,12 +261,11 @@ export class TestController {
   })
   async deleteManyTests(
     @Body() body: DeleteManyTestsBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
     const data = await this.testService.deleteManyTests(body, userId)
     return {
-      message: this.i18nService.translate(M.DELETE_MANY_SUCCESS, lang, {
+      message: msg(M.DELETE_MANY_SUCCESS, {
         deleted: data.deletedCount,
         requested: data.requestedCount
       }),
@@ -308,15 +282,12 @@ export class TestController {
     description: 'Xóa bài test thành công',
     type: TestResponseSwaggerDTO
   })
+  @ResponseMessage(M.DELETE_SUCCESS)
   async deleteTest(
     @Param() params: GetTestByIdParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(M.DELETE_SUCCESS, lang),
-      data: await this.testService.deleteTest(params.id, userId)
-    }
+    return this.testService.deleteTest(params.id, userId)
   }
 
   @Post('lesson/:lessonId/testSets')
@@ -329,15 +300,12 @@ export class TestController {
     description: 'Thêm TestSet vào Test thành công',
     type: MessageResDTO
   })
+  @ResponseMessage(M.ADD_TESTSETS_SUCCESS)
   async addTestSetsToLessonReviewTest(
     @Param() params: GetTestByLessonParamsDTO,
-    @Body() body: AddTestSetsToTestBodyDTO,
-    @I18nLang() lang: string
+    @Body() body: AddTestSetsToTestBodyDTO
   ) {
-    return {
-      message: this.i18nService.translate(M.ADD_TESTSETS_SUCCESS, lang),
-      data: await this.testService.addTestSetsToLessonReviewTest(params.lessonId, body)
-    }
+    return this.testService.addTestSetsToLessonReviewTest(params.lessonId, body)
   }
 
   @Post(':id/testSets')
@@ -350,15 +318,12 @@ export class TestController {
     description: 'Thêm TestSet vào Test thành công',
     type: MessageResDTO
   })
+  @ResponseMessage(M.ADD_TESTSETS_SUCCESS)
   async addTestSetsToTest(
     @Param() params: GetTestByIdParamsDTO,
-    @Body() body: AddTestSetsToTestBodyDTO,
-    @I18nLang() lang: string
+    @Body() body: AddTestSetsToTestBodyDTO
   ) {
-    return {
-      message: this.i18nService.translate(M.ADD_TESTSETS_SUCCESS, lang),
-      data: await this.testService.addTestSetsToTest(params.id, body)
-    }
+    return this.testService.addTestSetsToTest(params.id, body)
   }
 
   @Delete(':id/testSets')
@@ -371,15 +336,12 @@ export class TestController {
     description: 'Xóa TestSet khỏi Test thành công',
     type: MessageResDTO
   })
+  @ResponseMessage(M.REMOVE_TESTSETS_SUCCESS)
   async removeTestSetsFromTest(
     @Param() params: GetTestByIdParamsDTO,
-    @Body() body: RemoveTestSetsFromTestBodyDTO,
-    @I18nLang() lang: string
+    @Body() body: RemoveTestSetsFromTestBodyDTO
   ) {
-    return {
-      message: this.i18nService.translate(M.REMOVE_TESTSETS_SUCCESS, lang),
-      data: await this.testService.removeTestSetsFromTest(params.id, body)
-    }
+    return this.testService.removeTestSetsFromTest(params.id, body)
   }
 
   @Post('auto-add-free-testsets')
@@ -394,14 +356,14 @@ export class TestController {
     description: 'Thêm TestSet vào Test thành công',
     type: MessageResDTO
   })
-  async autoAddFreeTestSets(@I18nLang() lang: string) {
+  async autoAddFreeTestSets() {
     const { outcome, data } = await this.testService.autoAddFreeTestSets()
     const message =
       outcome === 'no-placement'
-        ? this.i18nService.translate(M.AUTO_ADD_NO_PLACEMENT, lang)
+        ? msg(M.AUTO_ADD_NO_PLACEMENT)
         : outcome === 'no-free-testsets'
-          ? this.i18nService.translate(M.AUTO_ADD_NO_FREE_TESTSETS, lang)
-          : this.i18nService.translate(M.AUTO_ADD_SUCCESS, lang, {
+          ? msg(M.AUTO_ADD_NO_FREE_TESTSETS)
+          : msg(M.AUTO_ADD_SUCCESS, {
               added: data.totalTestSetsAdded,
               tests: data.totalTests
             })

@@ -1,4 +1,4 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage } from '@/i18n/response-message'
 import { ExercisesMessage as M } from '@/i18n/message-keys'
 import {
   Controller,
@@ -44,10 +44,7 @@ import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class ExercisesController {
-  constructor(
-    private readonly exercisesService: ExercisesService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly exercisesService: ExercisesService) {}
 
   @Post()
   @ApiOperation({
@@ -69,11 +66,9 @@ export class ExercisesController {
     description: 'Tạo bài tập thành công',
     type: ExercisesResponseSwaggerDTO
   })
-  async create(@Body() body: CreateExercisesBodyDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(M.CREATE_SUCCESS, lang),
-      data: await this.exercisesService.create(body)
-    }
+  @ResponseMessage(M.CREATE_SUCCESS)
+  async create(@Body() body: CreateExercisesBodyDTO) {
+    return this.exercisesService.create(body)
   }
 
   @Get()
@@ -88,14 +83,9 @@ export class ExercisesController {
     description: 'Lấy danh sách bài tập thành công',
     type: ExercisesListResponseSwaggerDTO
   })
-  async getExercisesList(
-    @Query() query: GetExercisesListQueryDTO,
-    @I18nLang() lang: string
-  ) {
-    return {
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: await this.exercisesService.getExercisesList(query)
-    }
+  @ResponseMessage(M.GET_LIST_SUCCESS)
+  async getExercisesList(@Query() query: GetExercisesListQueryDTO) {
+    return this.exercisesService.getExercisesList(query)
   }
 
   @Get(':id')
@@ -108,14 +98,9 @@ export class ExercisesController {
     description: 'Lấy thông tin bài tập thành công',
     type: ExercisesResponseSwaggerDTO
   })
-  async getExercisesById(
-    @Param() params: GetExercisesByIdParamsDTO,
-    @I18nLang() lang: string
-  ) {
-    return {
-      message: this.i18nService.translate(M.GET_SUCCESS, lang),
-      data: await this.exercisesService.getExercisesById(params.id)
-    }
+  @ResponseMessage(M.GET_SUCCESS)
+  async getExercisesById(@Param() params: GetExercisesByIdParamsDTO) {
+    return this.exercisesService.getExercisesById(params.id)
   }
 
   @Get(':id/plain')
@@ -128,14 +113,9 @@ export class ExercisesController {
     description: 'Lấy thông tin bài tập (gọn) thành công',
     type: ExercisesResponseSwaggerDTO
   })
-  async getExercisesByIdPlain(
-    @Param() params: GetExercisesByIdParamsDTO,
-    @I18nLang() lang: string
-  ) {
-    return {
-      message: this.i18nService.translate(M.GET_SUCCESS, lang),
-      data: await this.exercisesService.getExercisesByIdHaveQuestionBanks(params.id)
-    }
+  @ResponseMessage(M.GET_SUCCESS)
+  async getExercisesByIdPlain(@Param() params: GetExercisesByIdParamsDTO) {
+    return this.exercisesService.getExercisesByIdHaveQuestionBanks(params.id)
   }
 
   @Get('lesson/:lessonId')
@@ -148,14 +128,12 @@ export class ExercisesController {
     description: 'Lấy danh sách bài tập theo bài học thành công',
     type: [ExercisesResponseSwaggerDTO]
   })
+  @ResponseMessage(M.GET_LIST_SUCCESS)
   async getExercisesByLessonId(
     @Param() params: GetExercisesByLessonParamsDTO,
     @I18nLang() lang: string
   ) {
-    return {
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: await this.exercisesService.getExercisesByLessonId(params.lessonId, lang)
-    }
+    return this.exercisesService.getExercisesByLessonId(params.lessonId, lang)
   }
 
   @Put(':id')
@@ -172,15 +150,12 @@ export class ExercisesController {
     description: 'Cập nhật bài tập thành công',
     type: ExercisesResponseSwaggerDTO
   })
+  @ResponseMessage(M.UPDATE_SUCCESS)
   async update(
     @Param() params: GetExercisesByIdParamsDTO,
-    @Body() body: UpdateExercisesBodyDTO,
-    @I18nLang() lang: string
+    @Body() body: UpdateExercisesBodyDTO
   ) {
-    return {
-      message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
-      data: await this.exercisesService.update(params.id, body)
-    }
+    return this.exercisesService.update(params.id, body)
   }
 
   @Delete(':id')
@@ -194,8 +169,8 @@ export class ExercisesController {
     description: 'Xóa bài tập thành công',
     type: ExercisesResponseSwaggerDTO
   })
-  async delete(@Param() params: GetExercisesByIdParamsDTO, @I18nLang() lang: string) {
+  @ResponseMessage(M.DELETE_SUCCESS)
+  async delete(@Param() params: GetExercisesByIdParamsDTO) {
     await this.exercisesService.delete(params.id)
-    return { message: this.i18nService.translate(M.DELETE_SUCCESS, lang) }
   }
 }

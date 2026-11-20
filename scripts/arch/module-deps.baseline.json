@@ -10,11 +10,11 @@
     "httpSchemasInEntities": 0,
     "handWrittenEnvelopes": 2,
     "serviceEnvelopeFiles": 6,
-    "controllerTranslateFiles": 66,
+    "controllerTranslateFiles": 63,
     "prismaOutsideRepoCalls": 0,
     "serviceStatusCodes": 11,
     "serviceMessages": 19,
-    "controllerTranslateCalls": 430
+    "controllerTranslateCalls": 399
   },
   "details": {
     "crossModuleRepoImports": [
@@ -81,7 +81,6 @@
       "modules/auth/auth.controller.ts",
       "modules/daily-request/daily-request.controller.ts",
       "modules/debuff-round/debuff-round.controller.ts",
-      "modules/exercises/exercises.controller.ts",
       "modules/feature/feature.controller.ts",
       "modules/flashcard/flashcard.controller.ts",
       "modules/gacha-banner/gacha-banner.controller.ts",
@@ -94,7 +93,6 @@
       "modules/invoice/invoice.controller.ts",
       "modules/kanji/kanji.controller.ts",
       "modules/leaderboard-season/leaderboard-season.controller.ts",
-      "modules/lesson/lesson.controller.ts",
       "modules/match-participant/match-participant.controller.ts",
       "modules/match-queue/match-queue.controller.ts",
       "modules/match-round-participant/match-round-participant.controller.ts",
@@ -118,7 +116,6 @@
       "modules/subscription-feature/subscription-feature.controller.ts",
       "modules/subscription-plan/subscription-plan.controller.ts",
       "modules/subscription/subscription.controller.ts",
-      "modules/test/test.controller.ts",
       "modules/testset-questionbank/testset-questionbank.controller.ts",
       "modules/user-achievement/user-achievement.controller.ts",
       "modules/user-ai-conversation/user-ai-conversation.controller.ts",
