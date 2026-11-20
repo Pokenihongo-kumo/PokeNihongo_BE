@@ -455,7 +455,10 @@ export const enMessages = {
     INVALID_DATA: 'Invalid word data',
     MEANING_ALREADY_EXISTS: 'This meaning already exists',
     JAPANESE_TEXT_INVALID: 'The word must be Japanese (Hiragana/Katakana/Kanji)',
-    INVALID_ID: 'Invalid word ID'
+    INVALID_ID: 'Invalid word ID',
+    IMPORT_XLSX_SUCCESS: 'Words imported: {created} added, {skipped} skipped',
+    IMPORT_TXT_SUCCESS: 'TXT imported: {created} added, {skipped} skipped',
+    MEANING_ADDED: 'New meaning added'
   },
   srs_review: {
     GET_SUCCESS: 'Review retrieved successfully',
