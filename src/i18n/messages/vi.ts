@@ -56,7 +56,8 @@ export const viMessages = {
     INVALID_TOKEN: 'Token xác thực không hợp lệ',
     UPDATE_LEVEL_JLPT_SUCCESS: 'Cập nhật cấp độ JLPT thành công',
     UPDATE_SUCCESS: 'Cập nhật thành công',
-    INVALID_EMAIL: 'Email không hợp lệ'
+    INVALID_EMAIL: 'Email không hợp lệ',
+    GOOGLE_LINK_SUCCESS: 'Lấy URL đăng nhập Google thành công'
   },
   reward: {
     CREATE_SUCCESS: 'Tạo phần thưởng thành công',

@@ -1,4 +1,4 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage } from '@/i18n/response-message'
 import { AchievementMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { AuthenticationGuard } from '@/common/guards/authentication.guard'
@@ -33,85 +33,68 @@ import {
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class AchievementController {
-  constructor(
-    private readonly achievementService: AchievementService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly achievementService: AchievementService) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseSchema)
+  @ResponseMessage(AchievementMessage.GET_LIST_SUCCESS)
   async list(
     @Query() query: PaginationQueryDTO,
     @I18nLang() lang: string,
     @ActiveUser('roleName') roleName: string
   ) {
-    return {
-      message: this.i18nService.translate(AchievementMessage.GET_LIST_SUCCESS, lang),
-      data: await this.achievementService.list(query, lang, roleName)
-    }
+    return this.achievementService.list(query, lang, roleName)
   }
 
   @Post()
   @ZodSerializerDto(CreateAchievementResDTO)
+  @ResponseMessage(AchievementMessage.CREATE_SUCCESS)
   async create(
     @Body() body: CreateAchievementBodyInputDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(AchievementMessage.CREATE_SUCCESS, lang),
-      data: await this.achievementService.create({
-        data: body,
-        createdById: userId
-      })
-    }
+    return this.achievementService.create({
+      data: body,
+      createdById: userId
+    })
   }
 
   @Get(':achievementId')
   @ZodSerializerDto(GetAchievementDetailResDTO)
+  @ResponseMessage(AchievementMessage.GET_SUCCESS)
   async findById(
     @Param() params: GetAchievementParamsDTO,
     @I18nLang() lang: string,
     @ActiveUser('roleName') roleName: string
   ) {
-    return {
-      message: this.i18nService.translate(AchievementMessage.GET_SUCCESS, lang),
-      data: await this.achievementService.findById(params.achievementId, roleName, lang)
-    }
+    return this.achievementService.findById(params.achievementId, roleName, lang)
   }
 
   @Put(':achievementId')
   @ZodSerializerDto(UpdateAchievementResDTO)
+  @ResponseMessage(AchievementMessage.UPDATE_SUCCESS)
   async update(
     @Body() body: UpdateAchievementBodyInputDTO,
     @Param() params: GetAchievementParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(AchievementMessage.UPDATE_SUCCESS, lang),
-      data: await this.achievementService.update({
-        data: body,
-        id: params.achievementId,
-        updatedById: userId
-      })
-    }
+    return this.achievementService.update({
+      data: body,
+      id: params.achievementId,
+      updatedById: userId
+    })
   }
 
   @Delete(':achievementId')
   @ZodSerializerDto(MessageResDTO)
+  @ResponseMessage(AchievementMessage.DELETE_SUCCESS)
   async delete(
     @Param() params: GetAchievementParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
     await this.achievementService.delete({
       id: params.achievementId,
       deletedById: userId
     })
-    return {
-      message: this.i18nService.translate(AchievementMessage.DELETE_SUCCESS, lang),
-      data: null
-    }
   }
 }

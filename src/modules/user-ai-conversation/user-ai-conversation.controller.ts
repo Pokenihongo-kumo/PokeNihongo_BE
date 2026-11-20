@@ -1,4 +1,4 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage, msg } from '@/i18n/response-message'
 import { UserAIConversationMessage as M } from '@/i18n/message-keys'
 import {
   Body,
@@ -22,7 +22,6 @@ import {
 } from '@nestjs/swagger'
 import { ZodSerializerDto } from 'nestjs-zod'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
-import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { UserAIConversationService } from './user-ai-conversation.service'
 import {
   CreateUserAIConversationBodyDTO,
@@ -47,10 +46,7 @@ import {
 @ApiBearerAuth()
 @Controller('user-ai-conversation')
 export class UserAIConversationController {
-  constructor(
-    private readonly userAIConversationService: UserAIConversationService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly userAIConversationService: UserAIConversationService) {}
 
   @Post()
   @ApiBearerAuth()
@@ -62,15 +58,12 @@ export class UserAIConversationController {
     type: UserAIConversationResponseSwaggerDTO
   })
   @ZodSerializerDto(UserAIConversationResDTO)
+  @ResponseMessage(M.CREATE_SUCCESS)
   async create(
     @Body() body: CreateUserAIConversationBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(M.CREATE_SUCCESS, lang),
-      data: await this.userAIConversationService.create({ ...body, userId })
-    }
+    return this.userAIConversationService.create({ ...body, userId })
   }
 
   @Get()
@@ -82,15 +75,12 @@ export class UserAIConversationController {
     description: 'Lấy danh sách cuộc hội thoại AI thành công',
     type: UserAIConversationListResponseSwaggerDTO
   })
+  @ResponseMessage(M.GET_LIST_SUCCESS)
   async findAll(
     @Query() query: GetUserAIConversationListQueryDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: await this.userAIConversationService.findAll(query, userId)
-    }
+    return this.userAIConversationService.findAll(query, userId)
   }
 
   @Get('conversation/:conversationId')
@@ -101,18 +91,12 @@ export class UserAIConversationController {
     description: 'Lấy danh sách messages thành công',
     type: UserAIConversationListResponseSwaggerDTO
   })
+  @ResponseMessage(M.GET_LIST_SUCCESS)
   async findByConversationId(
     @Param() { conversationId }: GetUserAIConversationByConversationParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: await this.userAIConversationService.findByConversationId(
-        conversationId,
-        userId
-      )
-    }
+    return this.userAIConversationService.findByConversationId(conversationId, userId)
   }
 
   @Get(':id')
@@ -124,15 +108,12 @@ export class UserAIConversationController {
     type: UserAIConversationResponseSwaggerDTO
   })
   @ZodSerializerDto(UserAIConversationResDTO)
+  @ResponseMessage(M.GET_SUCCESS)
   async findOne(
     @Param() { id }: GetUserAIConversationByIdParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(M.GET_SUCCESS, lang),
-      data: await this.userAIConversationService.findOne(id, userId)
-    }
+    return this.userAIConversationService.findOne(id, userId)
   }
 
   @Patch(':id')
@@ -145,16 +126,13 @@ export class UserAIConversationController {
     type: UserAIConversationResponseSwaggerDTO
   })
   @ZodSerializerDto(UserAIConversationResDTO)
+  @ResponseMessage(M.UPDATE_SUCCESS)
   async update(
     @Param() { id }: GetUserAIConversationByIdParamsDTO,
     @Body() body: UpdateUserAIConversationBodyDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
-      data: await this.userAIConversationService.updateOwned(id, userId, body)
-    }
+    return this.userAIConversationService.updateOwned(id, userId, body)
   }
 
   @Delete(':id')
@@ -167,15 +145,12 @@ export class UserAIConversationController {
     type: UserAIConversationResponseSwaggerDTO
   })
   @ZodSerializerDto(UserAIConversationResDTO)
+  @ResponseMessage(M.DELETE_SUCCESS)
   async remove(
     @Param() { id }: GetUserAIConversationByIdParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(M.DELETE_SUCCESS, lang),
-      data: await this.userAIConversationService.remove(id, userId)
-    }
+    return this.userAIConversationService.remove(id, userId)
   }
 
   @Delete('conversation/:conversationId')
@@ -189,8 +164,7 @@ export class UserAIConversationController {
   })
   async removeByConversationId(
     @Param() { conversationId }: GetUserAIConversationByConversationParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
     const data = await this.userAIConversationService.removeByConversationId(
       conversationId,
@@ -198,7 +172,7 @@ export class UserAIConversationController {
     )
     return {
       data,
-      message: this.i18nService.translate(M.DELETE_BY_CONVERSATION_SUCCESS, lang, {
+      message: msg(M.DELETE_BY_CONVERSATION_SUCCESS, {
         count: data.deletedCount
       })
     }
