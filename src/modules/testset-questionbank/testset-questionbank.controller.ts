@@ -1,3 +1,4 @@
+import { ResponseMessage } from '@/i18n/response-message'
 import { I18nService } from '@/i18n/i18n.service'
 import { TestSetQuestionBankMessage as M } from '@/i18n/message-keys'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
@@ -75,11 +76,9 @@ export class TestSetQuestionBankController {
     description: 'Tạo liên kết thành công',
     type: TestSetQuestionBankResponseSwaggerDTO
   })
-  async create(@Body() body: CreateTestSetQuestionBankBodyDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(M.CREATE_SUCCESS, lang),
-      data: await this.testSetQuestionBankService.create(body)
-    }
+  @ResponseMessage(M.CREATE_SUCCESS)
+  async create(@Body() body: CreateTestSetQuestionBankBodyDTO) {
+    return this.testSetQuestionBankService.create(body)
   }
 
   @Post('multiple')
@@ -152,14 +151,9 @@ export class TestSetQuestionBankController {
     description: 'Lấy thông tin thành công',
     type: TestSetQuestionBankResponseSwaggerDTO
   })
-  async findById(
-    @Param() params: GetTestSetQuestionBankByIdParamsDTO,
-    @I18nLang() lang: string
-  ) {
-    return {
-      message: this.i18nService.translate(M.GET_SUCCESS, lang),
-      data: await this.testSetQuestionBankService.findById(params.id)
-    }
+  @ResponseMessage(M.GET_SUCCESS)
+  async findById(@Param() params: GetTestSetQuestionBankByIdParamsDTO) {
+    return this.testSetQuestionBankService.findById(params.id)
   }
 
   @Get('testset/:testSetId')
@@ -173,14 +167,9 @@ export class TestSetQuestionBankController {
     description: 'Lấy danh sách thành công',
     type: TestSetQuestionBankListResponseSwaggerDTO
   })
-  async findByTestSetId(
-    @Param() params: GetTestSetQuestionBankByTestSetIdParamsDTO,
-    @I18nLang() lang: string
-  ) {
-    return {
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: await this.testSetQuestionBankService.findByTestSetId(params.testSetId)
-    }
+  @ResponseMessage(M.GET_LIST_SUCCESS)
+  async findByTestSetId(@Param() params: GetTestSetQuestionBankByTestSetIdParamsDTO) {
+    return this.testSetQuestionBankService.findByTestSetId(params.testSetId)
   }
 
   @Get('testset/:testSetId/full')
@@ -189,17 +178,12 @@ export class TestSetQuestionBankController {
     summary: 'Lấy danh sách TestSetQuestionBank',
     description: 'Trả về các liên kết cùng dữ liệu QuestionBank'
   })
+  @ResponseMessage(M.GET_LIST_SUCCESS)
   async findFullByTestSetId(
     @Param() params: GetTestSetQuestionBankByTestSetIdParamsDTO,
     @I18nLang() lang: string
   ) {
-    return {
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: await this.testSetQuestionBankService.getFullByTestSetId(
-        params.testSetId,
-        lang
-      )
-    }
+    return this.testSetQuestionBankService.getFullByTestSetId(params.testSetId, lang)
   }
 
   @Get('testset/:testSetId/full-with-answer')
@@ -210,17 +194,15 @@ export class TestSetQuestionBankController {
     description:
       'Trả về các liên kết cùng dữ liệu QuestionBank và Answers với translations theo ngôn ngữ'
   })
+  @ResponseMessage(M.GET_LIST_SUCCESS)
   async findFullWithAnswerByTestSetId(
     @Param() params: GetTestSetQuestionBankByTestSetIdParamsDTO,
     @I18nLang() lang: string
   ) {
-    return {
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: await this.testSetQuestionBankService.getFullWithAnswerByTestSetId(
-        params.testSetId,
-        lang
-      )
-    }
+    return this.testSetQuestionBankService.getFullWithAnswerByTestSetId(
+      params.testSetId,
+      lang
+    )
   }
 
   @Delete('delete-many')
@@ -238,14 +220,9 @@ export class TestSetQuestionBankController {
       }
     }
   })
-  async deleteMany(
-    @Body() body: DeleteManyTestSetQuestionBankBodyDTO,
-    @I18nLang() lang: string
-  ) {
-    return {
-      message: this.i18nService.translate(M.DELETE_SUCCESS, lang),
-      data: await this.testSetQuestionBankService.deleteMany(body)
-    }
+  @ResponseMessage(M.DELETE_SUCCESS)
+  async deleteMany(@Body() body: DeleteManyTestSetQuestionBankBodyDTO) {
+    return this.testSetQuestionBankService.deleteMany(body)
   }
 
   @Put(':id')
@@ -263,15 +240,12 @@ export class TestSetQuestionBankController {
     description: 'Cập nhật thành công',
     type: TestSetQuestionBankResponseSwaggerDTO
   })
+  @ResponseMessage(M.UPDATE_SUCCESS)
   async update(
     @Param() params: GetTestSetQuestionBankByIdParamsDTO,
-    @Body() body: UpdateTestSetQuestionBankBodyDTO,
-    @I18nLang() lang: string
+    @Body() body: UpdateTestSetQuestionBankBodyDTO
   ) {
-    return {
-      message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
-      data: await this.testSetQuestionBankService.update(params.id, body)
-    }
+    return this.testSetQuestionBankService.update(params.id, body)
   }
 
   @Put(':id/question-order')
@@ -294,18 +268,15 @@ export class TestSetQuestionBankController {
     description: 'Cập nhật thứ tự thành công',
     type: TestSetQuestionBankResponseSwaggerDTO
   })
+  @ResponseMessage(M.UPDATE_QUESTION_ORDER_SUCCESS)
   async updateQuestionOrder(
     @Param() params: GetTestSetQuestionBankByIdParamsDTO,
-    @Body() body: UpdateQuestionOrderDTO,
-    @I18nLang() lang: string
+    @Body() body: UpdateQuestionOrderDTO
   ) {
-    return {
-      message: this.i18nService.translate(M.UPDATE_QUESTION_ORDER_SUCCESS, lang),
-      data: await this.testSetQuestionBankService.updateQuestionOrder(
-        params.id,
-        body.questionOrder
-      )
-    }
+    return this.testSetQuestionBankService.updateQuestionOrder(
+      params.id,
+      body.questionOrder
+    )
   }
 
   @Delete(':id')
@@ -320,12 +291,9 @@ export class TestSetQuestionBankController {
     type: TestSetQuestionBankResponseSwaggerDTO
   })
   @HttpCode(HttpStatus.OK)
-  async delete(
-    @Param() params: GetTestSetQuestionBankByIdParamsDTO,
-    @I18nLang() lang: string
-  ) {
+  @ResponseMessage(M.DELETE_SUCCESS)
+  async delete(@Param() params: GetTestSetQuestionBankByIdParamsDTO) {
     await this.testSetQuestionBankService.delete(params.id)
-    return { message: this.i18nService.translate(M.DELETE_SUCCESS, lang) }
   }
 
   @Delete('testset/:testSetId')
@@ -340,13 +308,8 @@ export class TestSetQuestionBankController {
     type: TestSetQuestionBankResponseSwaggerDTO
   })
   @HttpCode(HttpStatus.OK)
-  async deleteByTestSetId(
-    @Param() params: GetTestSetQuestionBankByTestSetIdParamsDTO,
-    @I18nLang() lang: string
-  ) {
-    return {
-      message: this.i18nService.translate(M.DELETE_BY_TESTSET_SUCCESS, lang),
-      data: await this.testSetQuestionBankService.deleteByTestSetId(params.testSetId)
-    }
+  @ResponseMessage(M.DELETE_BY_TESTSET_SUCCESS)
+  async deleteByTestSetId(@Param() params: GetTestSetQuestionBankByTestSetIdParamsDTO) {
+    return this.testSetQuestionBankService.deleteByTestSetId(params.testSetId)
   }
 }
