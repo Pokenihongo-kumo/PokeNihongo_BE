@@ -1,4 +1,4 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { msg, ResponseMessage } from '@/i18n/response-message'
 import { KanjiMessage as M } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { UploadedFile, UseInterceptors } from '@nestjs/common'
@@ -53,17 +53,13 @@ import {
   ApiTags
 } from '@nestjs/swagger'
 import { ZodSerializerDto } from 'nestjs-zod'
-import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { KanjiService } from './kanji.service'
 
 @ApiTags('Kanji')
 @Controller('kanji')
 @ApiBearerAuth()
 export class KanjiController {
-  constructor(
-    private readonly kanjiService: KanjiService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly kanjiService: KanjiService) {}
 
   @Get()
   @ApiOperation({
@@ -77,11 +73,9 @@ export class KanjiController {
   })
   @ApiQuery({ type: GetKanjiListQuerySwaggerDTO })
   @ZodSerializerDto(KanjiListResDTO)
-  async findAll(@Query() query: GetKanjiListQueryDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: await this.kanjiService.findMany(query)
-    }
+  @ResponseMessage(M.GET_LIST_SUCCESS)
+  async findAll(@Query() query: GetKanjiListQueryDTO) {
+    return this.kanjiService.findMany(query)
   }
 
   @Get('management')
@@ -92,14 +86,9 @@ export class KanjiController {
   })
   @ApiQuery({ type: GetKanjiListQuerySwaggerDTO })
   @ZodSerializerDto(KanjiManagementListResDTO)
-  async getKanjiManagementList(
-    @Query() query: GetKanjiListQueryDTO,
-    @I18nLang() lang: string
-  ) {
-    return {
-      message: this.i18nService.translate(M.GET_MANAGEMENT_LIST_SUCCESS, lang),
-      data: await this.kanjiService.getKanjiManagementList(query)
-    }
+  @ResponseMessage(M.GET_MANAGEMENT_LIST_SUCCESS)
+  async getKanjiManagementList(@Query() query: GetKanjiListQueryDTO) {
+    return this.kanjiService.getKanjiManagementList(query)
   }
 
   @Get('stats')
@@ -131,11 +120,9 @@ export class KanjiController {
     type: KanjiSwaggerResponseDTO
   })
   @ZodSerializerDto(KanjiResDTO)
-  async findByCharacter(@Param('character') character: string, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(M.GET_SUCCESS, lang),
-      data: await this.kanjiService.findByCharacter(character)
-    }
+  @ResponseMessage(M.GET_SUCCESS)
+  async findByCharacter(@Param('character') character: string) {
+    return this.kanjiService.findByCharacter(character)
   }
 
   @Get(':id')
@@ -154,11 +141,9 @@ export class KanjiController {
     type: KanjiSwaggerResponseDTO
   })
   @ZodSerializerDto(KanjiResDTO)
-  async findById(@Param() params: GetKanjiByIdParamsDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(M.GET_SUCCESS, lang),
-      data: await this.kanjiService.findById(params.id)
-    }
+  @ResponseMessage(M.GET_SUCCESS)
+  async findById(@Param() params: GetKanjiByIdParamsDTO) {
+    return this.kanjiService.findById(params.id)
   }
 
   @Post('with-meanings')
@@ -219,15 +204,12 @@ export class KanjiController {
     type: KanjiWithMeaningsResponseSwaggerDTO
   })
   @ZodSerializerDto(KanjiWithMeaningsResDTO)
+  @ResponseMessage(M.CREATE_SUCCESS)
   async createWithMeanings(
     @Body() body: CreateKanjiWithMeaningsBodyDTO,
-    @I18nLang() lang: string,
     @UploadedFile() image?: Express.Multer.File
   ) {
-    return {
-      message: this.i18nService.translate(M.CREATE_SUCCESS, lang),
-      data: await this.kanjiService.createWithMeanings(body, image)
-    }
+    return this.kanjiService.createWithMeanings(body, image)
   }
 
   @Put(':identifier/with-meanings')
@@ -248,16 +230,13 @@ export class KanjiController {
     type: UpdateKanjiWithMeaningsResponseSwaggerDTO
   })
   @ZodSerializerDto(UpdateKanjiWithMeaningsResDTO)
+  @ResponseMessage(M.UPDATE_SUCCESS)
   async updateWithMeanings(
     @Param('identifier') identifier: string,
     @Body() body: UpdateKanjiWithMeaningsBodyDTO,
-    @I18nLang() lang: string,
     @UploadedFile() image?: Express.Multer.File
   ) {
-    return {
-      message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
-      data: await this.kanjiService.updateWithMeanings(identifier, body, image)
-    }
+    return this.kanjiService.updateWithMeanings(identifier, body, image)
   }
 
   @Delete('all')
@@ -283,9 +262,9 @@ export class KanjiController {
   })
   async deleteAllKanjiData() {
     const data = await this.kanjiService.deleteAllKanjiData()
-    // always Vietnamese, as before
+    // in the request language (was always Vietnamese, P5d D-P5d-4)
     return {
-      message: this.i18nService.translate(M.DELETE_ALL_SUCCESS, 'vi', {
+      message: msg(M.DELETE_ALL_SUCCESS, {
         kanji: data.kanjiDeleted,
         readings: data.readingDeleted,
         translations: data.translationDeleted
@@ -309,9 +288,9 @@ export class KanjiController {
     description: 'Xóa Kanji thành công'
   })
   @HttpCode(HttpStatus.OK)
-  async delete(@Param() params: GetKanjiByIdParamsDTO, @I18nLang() lang: string) {
+  @ResponseMessage(M.DELETE_SUCCESS)
+  async delete(@Param() params: GetKanjiByIdParamsDTO) {
     await this.kanjiService.delete(params.id)
-    return { message: this.i18nService.translate(M.DELETE_SUCCESS, lang) }
   }
 
   @Post('import')
@@ -330,9 +309,9 @@ export class KanjiController {
       language || 'vi',
       userId
     )
-    // always Vietnamese, as before
+    // in the request language (was always Vietnamese, P5d D-P5d-4)
     return {
-      message: this.i18nService.translate(M.IMPORT_XLSX_SUCCESS, 'vi', {
+      message: msg(M.IMPORT_XLSX_SUCCESS, {
         created: data.created.length,
         updated: data.updated.length,
         skipped: data.skipped.length
@@ -359,9 +338,9 @@ export class KanjiController {
     @Body('language') language?: string
   ) {
     const { data } = await this.kanjiService.importFromTxt(file, language || 'en')
-    // always Vietnamese, as before
+    // in the request language (was always Vietnamese, P5d D-P5d-4)
     return {
-      message: this.i18nService.translate(M.IMPORT_TXT_SUCCESS, 'vi', {
+      message: msg(M.IMPORT_TXT_SUCCESS, {
         language: data.language,
         created: data.created.length,
         updated: data.updated.length,
