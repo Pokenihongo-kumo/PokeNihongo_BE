@@ -26,17 +26,6 @@ const TranslationsSchema = z.object({
   examples: z.array(ExampleTranslationSchema).optional()
 })
 
-// Main schema (for JSON body)
-export const CreateVocabularyFullSchema = z.object({
-  word_jp: z.string().min(1, 'Từ tiếng Nhật không được để trống'),
-  reading: z.string().min(1, 'Cách đọc không được để trống'),
-  level_n: z.number().min(1).max(5).optional(),
-  word_type_id: z.number().min(1, 'Word type ID phải lớn hơn 0').optional(),
-  audio_url: z.string().url().optional(),
-  image_url: z.string().url().optional(),
-  translations: TranslationsSchema
-})
-
 // Schema for multipart/form-data (translations as string or object)
 export const CreateVocabularyFullMultipartSchema = z.object({
   word_jp: z.string().min(1, 'Từ tiếng Nhật không được để trống'),
@@ -123,66 +112,6 @@ export class TranslationsSwaggerDTO {
     required: false
   })
   examples?: ExampleTranslationSwaggerDTO[]
-}
-
-export class CreateVocabularyFullSwaggerDTO {
-  @ApiProperty({
-    example: '日本語',
-    description: 'Từ tiếng Nhật'
-  })
-  word_jp: string
-
-  @ApiProperty({
-    example: 'にほんご',
-    description: 'Cách đọc (Hiragana)'
-  })
-  reading: string
-
-  @ApiProperty({
-    example: 5,
-    description: 'Cấp độ JLPT (N5-N1)',
-    required: false
-  })
-  level_n?: number
-
-  @ApiProperty({
-    example: 1,
-    description:
-      'ID loại từ: 1=noun, 2=pronoun, 3=particle, 4=adverb, 5=conjunction, 6=interjection, 7=numeral, 8=counter, 9=prefix, 10=suffix, 11=i_adjective, 12=na_adjective, 13=no_adjective, 14=verb_ichidan, 15=verb_godan, 16=verb_irregular, 17=verb_suru, 18=verb_kuru, 19-31=verb_forms, 32=onomatopoeia, 33=mimetic_word, 34=honorific, 35=humble, 36=polite, 37=casual',
-    enum: [
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
-      24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37
-    ],
-    required: false
-  })
-  word_type_id?: number
-
-  @ApiProperty({
-    example: 'https://res.cloudinary.com/audio.mp3',
-    description: 'URL file âm thanh',
-    required: false
-  })
-  audio_url?: string
-
-  @ApiProperty({
-    example: 'https://res.cloudinary.com/image.jpg',
-    description: 'URL hình ảnh',
-    required: false
-  })
-  image_url?: string
-
-  @ApiProperty({
-    oneOf: [
-      {
-        type: 'string',
-        example:
-          '{"meaning":[{"language_code":"vi","value":"Tiếng Nhật"},{"language_code":"en","value":"Japanese language"}],"examples":[{"original_sentence":"私は日本語を勉強しています","translations":[{"language_code":"vi","sentence":"Tôi đang học tiếng Nhật"},{"language_code":"en","sentence":"I am studying Japanese"}]}]}'
-      },
-      { type: 'object', $ref: '#/components/schemas/TranslationsSwaggerDTO' }
-    ],
-    description: 'Các bản dịch nghĩa và ví dụ (có thể là JSON string hoặc object)'
-  })
-  translations: string | TranslationsSwaggerDTO
 }
 
 // Swagger DTO for multipart/form-data with file uploads
@@ -445,21 +374,7 @@ const CreateVocabularyFullResponseSchema = z.object({
   }),
   message: z.string()
 })
-
-// Zod DTOs for response
-export class VocabularyDataResponseDTO extends createZodDto(
-  VocabularyDataResponseSchema
-) {}
-export class MeaningDataResponseDTO extends createZodDto(MeaningDataResponseSchema) {}
 export class CreateVocabularyFullResponseDTO extends createZodDto(
   CreateVocabularyFullResponseSchema
 ) {}
-
-// Type exports
-export type CreateVocabularyFull = z.infer<typeof CreateVocabularyFullSchema>
-export type TranslationItem = z.infer<typeof TranslationItemSchema>
-export type ExampleTranslation = z.infer<typeof ExampleTranslationSchema>
 export type Translations = z.infer<typeof TranslationsSchema>
-export type CreateVocabularyFullResponse = z.infer<
-  typeof CreateVocabularyFullResponseSchema
->

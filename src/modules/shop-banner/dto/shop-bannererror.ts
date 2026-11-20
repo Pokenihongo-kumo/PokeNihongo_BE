@@ -28,15 +28,6 @@ export class OnlyOneShopBannerActiveException extends BadRequestException {
   }
 }
 
-export class InvalidAmountShopBannerException extends BadRequestException {
-  constructor() {
-    super({
-      message: ShopBannerMessage.INVALID_MIN_MAX,
-      errorKey: ShopBannerMessage.INVALID_MIN_MAX
-    })
-  }
-}
-
 export class InvalidMinMaxShopBannerException extends BadRequestException {
   constructor() {
     super({

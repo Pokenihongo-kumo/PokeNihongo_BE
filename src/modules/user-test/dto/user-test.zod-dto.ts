@@ -57,21 +57,15 @@ export const UserTestResSchema = z
   })
   .strict()
 
-export type UserTestRes = z.infer<typeof UserTestResSchema>
-
 export class UserTestResDTO extends createZodDto(UserTestResSchema) {}
 
 export const UserTestListResSchema = paginatedResSchema(UserTestSchema).strict()
-
-export type UserTestListRes = z.infer<typeof UserTestListResSchema>
 
 export class UserTestListResDTO extends createZodDto(UserTestListResSchema) {}
 
 // Response schema for my endpoint (with Test info)
 
 export const UserTestMyListResSchema = paginatedResSchema(UserTestWithTestSchema).strict()
-
-export type UserTestMyListRes = z.infer<typeof UserTestMyListResSchema>
 
 export class UserTestMyListResDTO extends createZodDto(UserTestMyListResSchema) {}
 
@@ -80,8 +74,6 @@ export class UserTestMyListResDTO extends createZodDto(UserTestMyListResSchema) 
 export const GetUserTestByIdParamsSchema = z
   .object({ id: checkIdSchema(M.INVALID_ID) })
   .strict()
-
-export type GetUserTestByIdParams = z.infer<typeof GetUserTestByIdParamsSchema>
 
 export class GetUserTestByIdParamsDTO extends createZodDto(GetUserTestByIdParamsSchema) {}
 
@@ -121,8 +113,6 @@ export const GetUserTestMyListQuerySchema = z
     order: OrderSchema.optional().default('asc')
   })
   .strict()
-
-export type GetUserTestMyListQuery = z.infer<typeof GetUserTestMyListQuerySchema>
 
 export class GetUserTestMyListQueryDTO extends createZodDto(
   GetUserTestMyListQuerySchema

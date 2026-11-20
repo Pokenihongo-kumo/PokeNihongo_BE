@@ -66,15 +66,11 @@ export const GetQuestionBankByIdParamsSchema = z
   })
   .strict()
 
-export type GetQuestionBankByIdParams = z.infer<typeof GetQuestionBankByIdParamsSchema>
-
 export class GetQuestionBankByIdParamsDTO extends createZodDto(
   GetQuestionBankByIdParamsSchema
 ) {}
 
 export const QuestionBankResSchema = resSchema(QuestionBankSchema).strict()
-
-export type QuestionBankRes = z.infer<typeof QuestionBankResSchema>
 
 export class QuestionBankResDTO extends createZodDto(QuestionBankResSchema) {}
 
@@ -94,8 +90,6 @@ export const BulkDeleteQuestionBankBodySchema = z
       .max(100, M.IDS_TOO_MANY)
   })
   .strict()
-
-export type BulkDeleteQuestionBankBody = z.infer<typeof BulkDeleteQuestionBankBodySchema>
 
 export class BulkDeleteQuestionBankBodyDTO extends createZodDto(
   BulkDeleteQuestionBankBodySchema
@@ -158,8 +152,6 @@ export const GetQuestionBanksByIdsQuerySchema = z
   })
   .strict()
 
-export type GetQuestionBanksByIdsQuery = z.infer<typeof GetQuestionBanksByIdsQuerySchema>
-
 export class GetQuestionBanksByIdsQueryDTO extends createZodDto(
   GetQuestionBanksByIdsQuerySchema
 ) {}
@@ -174,10 +166,6 @@ export const CreateQuestionBankWithMeaningsBodySchema = z
 export type CreateQuestionBankWithMeaningsBody = z.infer<
   typeof CreateQuestionBankWithMeaningsBodySchema
 >
-
-export class CreateQuestionBankWithMeaningsBodyDTO extends createZodDto(
-  CreateQuestionBankWithMeaningsBodySchema
-) {}
 
 // Every field optional; the SPEAKING rule applies when questionType is sent
 

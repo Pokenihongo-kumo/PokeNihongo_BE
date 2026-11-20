@@ -33,8 +33,6 @@ export const GetTranslationByIdParamsSchema = z.object({
   id: checkIdSchema(TranslationMessage.INVALID_ID)
 })
 
-export type GetTranslationByIdParams = z.infer<typeof GetTranslationByIdParamsSchema>
-
 export class GetTranslationByIdParamsDTO extends createZodDto(
   GetTranslationByIdParamsSchema
 ) {}

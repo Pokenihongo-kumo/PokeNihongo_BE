@@ -46,8 +46,6 @@ export const GetExercisesByIdParamsSchema = z.object({
   id: checkIdSchema(M.INVALID_ID)
 })
 
-export type GetExercisesByIdParams = z.infer<typeof GetExercisesByIdParamsSchema>
-
 export class GetExercisesByIdParamsDTO extends createZodDto(
   GetExercisesByIdParamsSchema
 ) {}

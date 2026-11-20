@@ -7,15 +7,6 @@ import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
 import { VerificationCodeSchema, emailSchema } from '../entities/auth.entities'
 
-export const SendOTPBodySchema = VerificationCodeSchema.pick({
-  email: true,
-  type: true
-}).strict()
-
-export type SendOTPBody = z.infer<typeof SendOTPBodySchema>
-
-export class SendOTPBodyDTO extends createZodDto(SendOTPBodySchema) {}
-
 // GET /auth/check-email/:email (any string used to be taken as a new email)
 
 export const CheckEmailParamsSchema = z
@@ -30,17 +21,7 @@ export const VerifyOTPBodySchema = VerificationCodeSchema.pick({
   type: true
 }).strict()
 
-export type VerifyOTPBody = z.infer<typeof VerifyOTPBodySchema>
-
 export class VerifyOTPBodyDTO extends createZodDto(VerifyOTPBodySchema) {}
-
-export const VerifyOTPResSchema = resSchema(
-  z.object({
-    message: z.string()
-  })
-).strict()
-
-export class VerifyOTPResDTO extends createZodDto(VerifyOTPResSchema) {}
 
 export const LoginBodySchema = z
   .object({ email: emailSchema, password: UserSchema.shape.password })
@@ -72,8 +53,6 @@ export const LoginResSchema = resSchema(
   })
 ).strict()
 
-export type LoginRes = z.infer<typeof LoginResSchema>
-
 export class LoginResDTO extends createZodDto(LoginResSchema) {}
 
 export const RegisterBodySchema = UserSchema.pick({
@@ -104,8 +83,6 @@ export class RegisterBodyDTO extends createZodDto(RegisterBodySchema) {}
 // })
 export const RegisterResSchema = LoginResSchema
 
-export type RegisterRes = z.infer<typeof RegisterResSchema>
-
 export class RegisterResDTO extends createZodDto(RegisterResSchema) {}
 
 export const RefreshTokenBodySchema = z
@@ -131,8 +108,6 @@ export const GetAuthorizationUrlResSchema = resSchema(
     url: z.string().url()
   })
 )
-
-export type GetAuthorizationUrlRes = z.infer<typeof GetAuthorizationUrlResSchema>
 
 export class GetAuthorizationUrlResDTO extends createZodDto(
   GetAuthorizationUrlResSchema
@@ -183,31 +158,6 @@ export const ForgotPasswordBodySchema = z
 export type ForgotPasswordBody = z.infer<typeof ForgotPasswordBodySchema>
 
 export class ForgotPasswordBodyDTO extends createZodDto(ForgotPasswordBodySchema) {}
-
-export const verifyForgotPasswordBodySchema = z
-  .object({
-    email: emailSchema,
-    code: z.string().length(6)
-  })
-  .strict()
-
-export type verifyForgotPasswordBody = z.infer<typeof verifyForgotPasswordBodySchema>
-
-export class verifyForgotPasswordBodyDTO extends createZodDto(
-  verifyForgotPasswordBodySchema
-) {}
-
-export const verifyForgotPasswordResSchema = resSchema(
-  z.object({
-    accessToken: z.string()
-  })
-).strict()
-
-export type verifyForgotPasswordRes = z.infer<typeof verifyForgotPasswordResSchema>
-
-export class verifyForgotPasswordResDTO extends createZodDto(
-  verifyForgotPasswordResSchema
-) {}
 
 export const ResetPasswordBodySchema = z
   .object({
@@ -293,19 +243,7 @@ export const AccountResSchema = z.object({
   message: z.string()
 })
 
-export type AccountRes = z.infer<typeof AccountResSchema>
-
 export class AccountResDTO extends createZodDto(AccountResSchema) {}
-
-export const VerifyEmailBodySchema = UserSchema.pick({
-  email: true
-}).strict()
-
-//type
-
-export type VerifyEmailBody = z.infer<typeof VerifyEmailBodySchema>
-
-export class VerifyEmailBodyDTO extends createZodDto(VerifyEmailBodySchema) {}
 
 export const GetAccountProfileResSchema = resSchema(
   z.object({
@@ -329,10 +267,4 @@ export const GetAccountProfileResSchema = resSchema(
   })
 ).strict()
 
-export type GetAccountProfileRes = z.infer<typeof GetAccountProfileResSchema>
-
 export class GetAccountProfileResDTO extends createZodDto(GetAccountProfileResSchema) {}
-
-export type RefreshTokenResType = LoginRes
-
-export type LogoutBodyType = RefreshTokenBody

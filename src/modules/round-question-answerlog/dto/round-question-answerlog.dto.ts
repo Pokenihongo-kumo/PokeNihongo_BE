@@ -5,8 +5,7 @@ import {
   GetRoundQuestionsAnswerLogDetailResSchema,
   GetRoundQuestionsAnswerLogParamsSchema,
   UpdateRoundQuestionsAnswerLogBodySchema,
-  UpdateRoundQuestionsAnswerLogResSchema,
-  UpdateWithListItemResSchema
+  UpdateRoundQuestionsAnswerLogResSchema
 } from './round-question-answerlog.zod-dto'
 
 // Request DTOs
@@ -29,7 +28,6 @@ export class CreateRoundQuestionsAnswerLogResDTO extends createZodDto(
 export class UpdateRoundQuestionsAnswerLogResDTO extends createZodDto(
   UpdateRoundQuestionsAnswerLogResSchema
 ) {}
-export class UpdateWithListItemResDTO extends createZodDto(UpdateWithListItemResSchema) {}
 export class GetRoundQuestionsAnswerLogDetailResDTO extends createZodDto(
   GetRoundQuestionsAnswerLogDetailResSchema
 ) {}

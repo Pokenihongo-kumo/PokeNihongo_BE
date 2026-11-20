@@ -84,27 +84,8 @@ export const GetLeaderboardSeasonParamsSchema = z
   })
   .strict()
 
-export type GetLeaderboardSeasonParams = z.infer<typeof GetLeaderboardSeasonParamsSchema>
-
 export class GetLeaderboardSeasonParamsDTO extends createZodDto(
   GetLeaderboardSeasonParamsSchema
-) {}
-
-export const GetLeaderboardSeasonDetailWithAllLangResSchema = resSchema(
-  LeaderboardSeasonSchema.extend({
-    nameTranslations: z
-      .array(
-        z.object({
-          key: z.string(),
-          value: z.string()
-        })
-      )
-      .optional()
-  })
-)
-
-export class GetLeaderboardSeasonDetailWithAllLangResDTO extends createZodDto(
-  GetLeaderboardSeasonDetailWithAllLangResSchema
 ) {}
 
 export const GetLeaderboardWithRewardSeasonDetailResSchema = resSchema(
@@ -140,10 +121,6 @@ export const GetLeaderboardSeasonDetailResSchema = resSchema(
     )
   })
 )
-
-export type GetLeaderboardSeasonDetailRes = z.infer<
-  typeof GetLeaderboardSeasonDetailResSchema
->
 
 export class GetLeaderboardSeasonDetailResDTO extends createZodDto(
   GetLeaderboardSeasonDetailResSchema

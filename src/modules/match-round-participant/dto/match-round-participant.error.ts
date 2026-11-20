@@ -10,15 +10,6 @@ export class MatchRoundParticipantNotFoundException extends NotFoundException {
   }
 }
 
-export class MatchRoundParticipantAlreadyExistsException extends BadRequestException {
-  constructor() {
-    super({
-      message: MatchRoundParticipantMessage.ALREADY_EXISTS,
-      errorKey: MatchRoundParticipantMessage.ALREADY_EXISTS
-    })
-  }
-}
-
 // The pick timer starts on a participant's turn (endTimeSelected): before
 // that, picking is out of turn
 export class NotYourTurnToPickException extends ConflictException {

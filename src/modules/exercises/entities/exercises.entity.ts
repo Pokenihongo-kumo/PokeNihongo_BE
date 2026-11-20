@@ -29,4 +29,3 @@ export const ExercisesSchema = z.object({
 
 // Type exports
 export type Exercises = z.infer<typeof ExercisesSchema>
-export type RewardSummary = z.infer<typeof RewardSummarySchema>

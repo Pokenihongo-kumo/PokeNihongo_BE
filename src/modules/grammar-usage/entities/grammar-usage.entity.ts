@@ -25,7 +25,3 @@ export const GrammarUsageWithGrammarSchema = GrammarUsageSchema.extend({
     })
     .optional()
 })
-
-// Type exports
-export type GrammarUsage = z.infer<typeof GrammarUsageSchema>
-export type GrammarUsageWithGrammar = z.infer<typeof GrammarUsageWithGrammarSchema>

@@ -252,44 +252,6 @@ export class GetVocabularyListQuerySwaggerDTO {
   sort?: VocabularySortOrder
 }
 
-// Multipart DTOs for file uploads
-export class CreateVocabularyMultipartSwaggerDTO {
-  @ApiProperty({
-    example: '日本語',
-    description:
-      'Từ tiếng Nhật (CHỈ chứa Hiragana, Katakana, hoặc Kanji - không cho phép số hoặc ký tự Latin)',
-    minLength: 1,
-    maxLength: 500
-  })
-  wordJp: string
-
-  @ApiProperty({
-    example: 'にほんご',
-    description:
-      'Cách đọc của từ tiếng Nhật (Hiragana - chỉ chứa ký tự Hiragana và dấu câu cơ bản)',
-    minLength: 1,
-    maxLength: 500
-  })
-  reading: string
-
-  @ApiProperty({
-    type: 'string',
-    format: 'binary',
-    description: 'Hình ảnh minh họa từ vựng (jpg, png, gif) - tối đa 5MB',
-    required: false
-  })
-  imageUrl?: Express.Multer.File
-
-  @ApiProperty({
-    type: 'string',
-    format: 'binary',
-    description:
-      'File âm thanh của từ vựng (mp3, wav, ogg) - tối đa 10MB. Nếu không có, hệ thống sẽ tự động tạo bằng Text-to-Speech',
-    required: false
-  })
-  audioUrl?: Express.Multer.File
-}
-
 export class UpdateVocabularyMultipartSwaggerDTO {
   @ApiProperty({
     example: '日本語',
@@ -326,15 +288,6 @@ export class UpdateVocabularyMultipartSwaggerDTO {
     required: false
   })
   audioUrl?: Express.Multer.File
-}
-
-// Advanced Vocabulary Creation DTOs
-export class MeaningDTO {
-  @ApiProperty({ example: 'vi', description: 'Mã ngôn ngữ' })
-  language_code: string
-
-  @ApiProperty({ example: 'Xin chào', description: 'Nghĩa của từ' })
-  meaning_text: string
 }
 
 // Import DTOs

@@ -77,8 +77,6 @@ export const GetLessonByIdParamsSchema = z.object({
   id: checkIdSchema(M.INVALID_ID)
 })
 
-export type GetLessonByIdParams = z.infer<typeof GetLessonByIdParamsSchema>
-
 export class GetLessonByIdParamsDTO extends createZodDto(GetLessonByIdParamsSchema) {}
 
 export const GetLessonListQuerySchema = z.object({
@@ -115,7 +113,5 @@ export const LessonResSchema = resSchema(LessonWithRelationsSchema)
 export class LessonResDTO extends createZodDto(LessonResSchema) {}
 
 export const LessonListResSchema = paginatedResSchema(LessonWithRelationsSchema)
-
-export type LessonListRes = z.infer<typeof LessonListResSchema>
 
 export class LessonListResDTO extends createZodDto(LessonListResSchema) {}

@@ -54,26 +54,7 @@ export const GetFeatureParamsSchema = z
   })
   .strict()
 
-export type GetFeatureParams = z.infer<typeof GetFeatureParamsSchema>
-
 export class GetFeatureParamsDTO extends createZodDto(GetFeatureParamsSchema) {}
-
-export const GetFeatureDetailWithAllLangResSchema = resSchema(
-  FeatureSchema.extend({
-    nameTranslations: z
-      .array(
-        z.object({
-          key: z.string(),
-          value: z.string()
-        })
-      )
-      .optional()
-  })
-)
-
-export class GetFeatureDetailWithAllLangResDTO extends createZodDto(
-  GetFeatureDetailWithAllLangResSchema
-) {}
 
 export const GetFeatureDetailResSchema = resSchema(
   FeatureSchema.extend({
@@ -81,7 +62,5 @@ export const GetFeatureDetailResSchema = resSchema(
     nameTranslations: TranslationInputSchema.nullable().optional()
   })
 )
-
-export type GetFeatureDetailRes = z.infer<typeof GetFeatureDetailResSchema>
 
 export class GetFeatureDetailResDTO extends createZodDto(GetFeatureDetailResSchema) {}

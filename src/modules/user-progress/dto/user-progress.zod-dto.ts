@@ -49,15 +49,11 @@ export const UserProgressResSchema = z
   })
   .strict()
 
-export type UserProgressRes = z.infer<typeof UserProgressResSchema>
-
 export class UserProgressResDTO extends createZodDto(UserProgressResSchema) {}
 
 export const UserProgressListResSchema = paginatedResSchema(
   UserProgressWithRelationsSchema
 ).strict()
-
-export type UserProgressListRes = z.infer<typeof UserProgressListResSchema>
 
 export class UserProgressListResDTO extends createZodDto(UserProgressListResSchema) {}
 
@@ -128,8 +124,6 @@ export const StartLessonBodySchema = z
   })
   .strict()
 
-export type StartLessonBody = z.infer<typeof StartLessonBodySchema>
-
 export class StartLessonBodyDTO extends createZodDto(StartLessonBodySchema) {}
 
 // Complete lesson schema
@@ -140,7 +134,5 @@ export const CompleteLessonBodySchema = z
     score: z.number().optional()
   })
   .strict()
-
-export type CompleteLessonBody = z.infer<typeof CompleteLessonBodySchema>
 
 export class CompleteLessonBodyDTO extends createZodDto(CompleteLessonBodySchema) {}

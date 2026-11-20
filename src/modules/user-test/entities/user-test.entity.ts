@@ -43,5 +43,3 @@ export const UserTestWithTestSchema = z.object({
 
 // Types
 export type UserTest = z.infer<typeof UserTestSchema>
-export type TestInfo = z.infer<typeof TestInfoSchema>
-export type UserTestWithTest = z.infer<typeof UserTestWithTestSchema>

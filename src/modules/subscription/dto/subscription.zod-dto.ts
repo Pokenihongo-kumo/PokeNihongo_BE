@@ -7,10 +7,7 @@ import { TranslationInputSchema } from '@/shared/models/translation-input.model'
 import { resSchema } from '@/shared/utils/res-schema'
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
-import {
-  GetLeaderboardWithRewardSeasonDetailSchema,
-  SubscriptionSchema
-} from '../entities/subscription.entity'
+import { SubscriptionSchema } from '../entities/subscription.entity'
 
 export const CreateSubscriptionBodyInputSchema = SubscriptionSchema.pick({
   tagName: true
@@ -67,42 +64,7 @@ export const GetSubscriptionParamsSchema = z
   })
   .strict()
 
-export type GetSubscriptionParams = z.infer<typeof GetSubscriptionParamsSchema>
-
 export class GetSubscriptionParamsDTO extends createZodDto(GetSubscriptionParamsSchema) {}
-
-export const GetSubscriptionDetailWithAllLangResSchema = resSchema(
-  SubscriptionSchema.extend({
-    nameTranslations: z
-      .array(
-        z.object({
-          key: z.string(),
-          value: z.string()
-        })
-      )
-      .optional(),
-    descriptionTranslations: z
-      .array(
-        z.object({
-          key: z.string(),
-          value: z.string()
-        })
-      )
-      .optional()
-  })
-)
-
-export class GetSubscriptionDetailWithAllLangResDTO extends createZodDto(
-  GetSubscriptionDetailWithAllLangResSchema
-) {}
-
-export const GetLeaderboardWithRewardSeasonDetailResSchema = resSchema(
-  GetLeaderboardWithRewardSeasonDetailSchema
-)
-
-export class GetLeaderboardWithRewardSeasonDetailResDTO extends createZodDto(
-  GetLeaderboardWithRewardSeasonDetailResSchema
-) {}
 
 export const GetSubscriptionDetailResSchema = resSchema(
   SubscriptionSchema.extend({
@@ -121,8 +83,6 @@ export const GetSubscriptionDetailResSchema = resSchema(
       .optional()
   })
 )
-
-export type GetSubscriptionDetailRes = z.infer<typeof GetSubscriptionDetailResSchema>
 
 export class GetSubscriptionDetailResDTO extends createZodDto(
   GetSubscriptionDetailResSchema

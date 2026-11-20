@@ -17,9 +17,6 @@ export const LessonCategoryWithRelationsSchema = z.object({
   createdAt: z.date(),
   updatedAt: z.date()
 })
-
-// Type exports
-export type LessonCategory = z.infer<typeof LessonCategorySchema>
 export type LessonCategoryWithRelations = z.infer<
   typeof LessonCategoryWithRelationsSchema
 >

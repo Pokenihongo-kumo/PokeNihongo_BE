@@ -1,7 +1,6 @@
 import { AttendancesStatus } from '@/common/constants/attendance.constant'
 import { WeekDay } from '@/common/constants/attendence-config.constant'
 
-import { UserSchema } from '@/shared/models/shared-user.model'
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -38,18 +37,8 @@ export const GetAttendanceSchema = AttendanceSchema.extend({
     .nullable()
 })
 
-export const GetAttendanceWithUserSchema = AttendanceSchema.extend({
-  user: UserSchema.pick({
-    id: true,
-    name: true,
-    email: true
-  })
-})
-
 //type
 export type Attendance = z.infer<typeof AttendanceSchema>
-export type GetAttendance = z.infer<typeof GetAttendanceSchema>
-export type GetAttendanceWithUser = z.infer<typeof GetAttendanceWithUserSchema>
 //field
 type AttendanceFieldType = keyof z.infer<typeof AttendanceSchema>
 export const ATTENDANCE_FIELDS = Object.keys(

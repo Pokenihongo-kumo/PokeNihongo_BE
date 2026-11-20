@@ -20,12 +20,3 @@ export class RoundQuestionAlreadyAnsweredException extends ConflictException {
     })
   }
 }
-
-export class RoundQuestionAlreadyExistsException extends ConflictException {
-  constructor() {
-    super({
-      message: RoundQuestionMessage.ALREADY_EXISTS,
-      errorKey: RoundQuestionMessage.ALREADY_EXISTS
-    })
-  }
-}

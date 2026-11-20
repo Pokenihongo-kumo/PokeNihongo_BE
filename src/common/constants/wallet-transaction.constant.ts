@@ -7,9 +7,6 @@ export const walletPurposeType = {
   REFUND: 'REFUND'
 } as const
 
-export type WalletPurposeTypeType =
-  (typeof walletPurposeType)[keyof typeof walletPurposeType]
-
 export const WalletTransactionType = {
   INCREASE: 'INCREASE',
   DECREASE: 'DECREASE'
@@ -27,18 +24,3 @@ export const WalletTransactionSourceType = {
   SUBSCRIPTION_DISCOUNT: 'SUBSCRIPTION_DISCOUNT',
   ADMIN_ADJUST: 'ADMIN_ADJUST'
 } as const
-
-export type WalletTransactionSourceTypeType =
-  (typeof WalletTransactionSourceType)[keyof typeof WalletTransactionSourceType]
-
-export const TransactionPurposeType = {
-  SUBSCRIPTION: 'SUBSCRIPTION',
-  GACHA: 'GACHA',
-  SHOP: 'SHOP',
-  QUIZ_ATTEMPT: 'QUIZ_ATTEMPT',
-  REWARD: 'REWARD',
-  REFUND: 'REFUND'
-} as const
-
-export type TransactionPurposeTypeType =
-  (typeof TransactionPurposeType)[keyof typeof TransactionPurposeType]

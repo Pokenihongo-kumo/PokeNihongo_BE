@@ -30,15 +30,11 @@ export type UpdateSubscriptionPlanBody = z.infer<typeof UpdateSubscriptionPlanBo
 
 export const UpdateSubscriptionPlanResSchema = CreateSubscriptionPlanResSchema
 
-export const UpdateWithListItemResSchema = resSchema(z.array(SubscriptionPlanSchema))
-
 // Query Schema
 
 export const GetSubscriptionPlanParamsSchema = z.object({
   subscriptionPlanId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
-
-export type GetSubscriptionPlanParams = z.infer<typeof GetSubscriptionPlanParamsSchema>
 
 export const GetDiscountBySubPlanResSchema = resSchema(
   z.object({

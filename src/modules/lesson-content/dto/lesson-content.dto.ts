@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { LessonContentSortField, SortOrder } from '@/common/enum/enum'
-import e from 'express'
 
 export class LessonContentResponseSwaggerDTO {
   @ApiProperty({
@@ -92,22 +91,6 @@ export class CreateLessonContentSwaggerDTO {
     description: 'Loại nội dung (VOCABULARY, GRAMMAR, KANJI, etc.)'
   })
   contentType: string
-}
-
-export class UpdateLessonContentSwaggerDTO {
-  @ApiProperty({
-    example: 'VOCABULARY',
-    description: 'Loại nội dung (VOCABULARY, GRAMMAR, KANJI, etc.)',
-    required: false
-  })
-  contentType?: string
-
-  @ApiProperty({
-    example: 2,
-    description: 'Thứ tự nội dung trong bài học',
-    required: false
-  })
-  contentOrder?: number
 }
 
 export class UpdateLessonContentOrderSwaggerDTO {

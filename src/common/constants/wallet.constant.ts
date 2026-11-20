@@ -12,5 +12,3 @@ export const walletTransactionType = {
 
 export type walletTransactionType =
   (typeof walletTransactionType)[keyof typeof walletTransactionType]
-
-export type WalletTransactionTypeType = walletTransactionType

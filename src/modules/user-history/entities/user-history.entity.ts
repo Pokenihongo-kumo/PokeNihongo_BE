@@ -73,11 +73,3 @@ export const HistoryTestItemSchema = z.object({
   incorrectAnswers: z.number(),
   updatedAt: z.date()
 })
-
-// Type exports
-export type HistoryType = z.infer<typeof HistoryTypeSchema>
-export type HistoryItem = z.infer<typeof HistoryItemSchema>
-export type AdminHistoryItem = z.infer<typeof AdminHistoryItemSchema>
-export type RecentExerciseItem = z.infer<typeof RecentExerciseItemSchema>
-export type HistoryExerciseItem = z.infer<typeof HistoryExerciseItemSchema>
-export type HistoryTestItem = z.infer<typeof HistoryTestItemSchema>

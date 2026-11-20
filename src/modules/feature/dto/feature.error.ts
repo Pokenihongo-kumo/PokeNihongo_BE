@@ -9,12 +9,3 @@ export class FeatureAlreadyExistsException extends ConflictException {
     })
   }
 }
-
-export class FeatureHasInvalidToActiveException extends ConflictException {
-  constructor() {
-    super({
-      message: FeatureMessage.INVALID_DATA,
-      errorKey: FeatureMessage.INVALID_DATA
-    })
-  }
-}

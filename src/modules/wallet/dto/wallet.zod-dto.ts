@@ -26,10 +26,6 @@ export const GetWalletParamsSchema = z
   })
   .strict()
 
-export type GetWalletParams = z.infer<typeof GetWalletParamsSchema>
-
 export const GetWalletDetailResSchema = CreateWalletResSchema
-
-export type GetWalletDetailRes = z.infer<typeof GetWalletDetailResSchema>
 
 export const GetWalletsWithUserResSchema = resSchema(z.array(WalletSchema))

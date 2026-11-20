@@ -20,15 +20,6 @@ export class PokemonAlreadyExistsException extends ConflictException {
   }
 }
 
-export class InvalidEvolutionException extends ConflictException {
-  constructor() {
-    super({
-      message: 'Evolution không hợp lệ - Pokemon evolution phải có level cao hơn',
-      errorKey: PokemonMessage.INVALID_EVOLUTION
-    })
-  }
-}
-
 export class InvalidFormatException extends ConflictException {
   constructor() {
     super({

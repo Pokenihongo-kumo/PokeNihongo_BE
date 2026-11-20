@@ -71,10 +71,6 @@ export const GetTestSetQuestionBankByTestSetIdParamsSchema = z
   })
   .strict()
 
-export type GetTestSetQuestionBankByTestSetIdParams = z.infer<
-  typeof GetTestSetQuestionBankByTestSetIdParamsSchema
->
-
 export class GetTestSetQuestionBankByTestSetIdParamsDTO extends createZodDto(
   GetTestSetQuestionBankByTestSetIdParamsSchema
 ) {}
@@ -87,10 +83,6 @@ export const GetTestSetQuestionBankByIdParamsSchema = z
   })
   .strict()
 
-export type GetTestSetQuestionBankByIdParams = z.infer<
-  typeof GetTestSetQuestionBankByIdParamsSchema
->
-
 export class GetTestSetQuestionBankByIdParamsDTO extends createZodDto(
   GetTestSetQuestionBankByIdParamsSchema
 ) {}
@@ -102,8 +94,6 @@ export const UpdateQuestionOrderSchema = z
     questionOrder: QuestionOrderSchema
   })
   .strict()
-
-export type UpdateQuestionOrder = z.infer<typeof UpdateQuestionOrderSchema>
 
 export class UpdateQuestionOrderDTO extends createZodDto(UpdateQuestionOrderSchema) {}
 

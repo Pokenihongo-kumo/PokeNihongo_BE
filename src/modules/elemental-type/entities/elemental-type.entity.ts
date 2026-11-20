@@ -28,10 +28,6 @@ export const ElementalTypeSchema = z.object({
   updatedAt: z.date()
 })
 
-// Types
-export type ElementalType = z.infer<typeof ElementalTypeSchema>
-export type DisplayName = z.infer<typeof DisplayNameSchema>
-
 // Fields for query parsing
 type ElementalTypeFieldType = keyof z.infer<typeof ElementalTypeSchema>
 export const ELEMENTAL_TYPE_FIELDS = [

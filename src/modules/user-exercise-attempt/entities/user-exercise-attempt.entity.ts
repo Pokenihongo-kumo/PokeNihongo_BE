@@ -36,8 +36,5 @@ export const LatestExerciseAttemptSchema = z.object({
   createdAt: z.date(),
   updatedAt: z.date()
 })
-
-// Types
-export type ExerciseAttemptStatus = z.infer<typeof ExerciseAttemptStatusSchema>
 export type UserExerciseAttempt = z.infer<typeof UserExerciseAttemptSchema>
 export type LatestExerciseAttempt = z.infer<typeof LatestExerciseAttemptSchema>

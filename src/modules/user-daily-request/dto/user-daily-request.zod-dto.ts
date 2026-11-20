@@ -1,6 +1,6 @@
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { ENTITY_MESSAGE } from '@/i18n/message-keys'
-import { RewardSchema } from '@/modules/reward/entities/reward.entity'
+
 import { resSchema } from '@/shared/utils/res-schema'
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
@@ -52,17 +52,11 @@ export const GetUserDailyRequestParamsSchema = z
   })
   .strict()
 
-export type GetUserDailyRequestParams = z.infer<typeof GetUserDailyRequestParamsSchema>
-
 export class GetUserDailyRequestParamsDTO extends createZodDto(
   GetUserDailyRequestParamsSchema
 ) {}
 
 export const GetUserDailyRequestDetailResSchema = resSchema(UserDailyRequestDetailSchema)
-
-export type GetUserDailyRequestDetailRes = z.infer<
-  typeof GetUserDailyRequestDetailResSchema
->
 
 export class GetUserDailyRequestDetailResDTO extends createZodDto(
   GetUserDailyRequestDetailResSchema
@@ -74,21 +68,4 @@ export const GetListUserDailyRequestTodayDetailResSchema = resSchema(
 
 export class GetListUserDailyRequestTodayDetailResDTO extends createZodDto(
   GetListUserDailyRequestTodayDetailResSchema
-) {}
-
-export const GetRewardListUserDailyRequestTodayDetailResSchema = resSchema(
-  z.object({
-    rewardsReceived: z.array(
-      RewardSchema.pick({
-        id: true,
-        rewardType: true,
-        rewardTarget: true,
-        rewardItem: true
-      })
-    )
-  })
-)
-
-export class GetRewardListUserDailyRequestTodayDetailResDTO extends createZodDto(
-  GetRewardListUserDailyRequestTodayDetailResSchema
 ) {}

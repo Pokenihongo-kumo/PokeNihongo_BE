@@ -25,8 +25,6 @@ export const CreateGachaPurchaseBodySchema = GachaPurchaseSchema.pick({
 
 export type CreateGachaPurchaseBody = z.infer<typeof CreateGachaPurchaseBodySchema>
 
-export const CreateGachaPurchaseResSchema = resSchema(GachaPurchaseSchema)
-
 // Update Schema
 
 export const UpdateGachaPurchaseBodySchema = CreateGachaPurchaseBodySchema.extend({})
@@ -35,15 +33,11 @@ export const UpdateGachaPurchaseBodySchema = CreateGachaPurchaseBodySchema.exten
 
 export type UpdateGachaPurchaseBody = z.infer<typeof UpdateGachaPurchaseBodySchema>
 
-export const UpdateGachaPurchaseResSchema = CreateGachaPurchaseResSchema
-
 // Query Schema
 
 export const GetGachaPurchaseParamsSchema = z.object({
   gachaPurchaseId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
-
-export type GetGachaPurchaseParams = z.infer<typeof GetGachaPurchaseParamsSchema>
 
 export const GetGachaPurchaseListResSchema = resSchema(
   z.array(GetGachaPurchaseDetailSchema)

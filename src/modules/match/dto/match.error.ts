@@ -18,12 +18,3 @@ export class NotHaveActiveLeaderboardSeasonException extends ConflictException {
     })
   }
 }
-
-export class MatchingNotExistException extends ConflictException {
-  constructor() {
-    super({
-      message: MatchMessage.NOT_FOUND,
-      errorKey: MatchMessage.NOT_FOUND
-    })
-  }
-}

@@ -20,8 +20,6 @@ export const CreateVocabularyBodySchema = VocabularySchema.pick({
   audioUrl: true
 }).strict()
 
-export type CreateVocabularyBody = z.infer<typeof CreateVocabularyBodySchema>
-
 export class CreateVocabularyBodyDTO extends createZodDto(CreateVocabularyBodySchema) {}
 
 export const UpdateVocabularyBodySchema = VocabularySchema.pick({
@@ -39,13 +37,9 @@ export class UpdateVocabularyBodyDTO extends createZodDto(UpdateVocabularyBodySc
 
 export const VocabularyResSchema = resSchema(VocabularySchema).strict()
 
-export type VocabularyRes = z.infer<typeof VocabularyResSchema>
-
 export class VocabularyResDTO extends createZodDto(VocabularyResSchema) {}
 
 export const VocabularyListResSchema = paginatedResSchema(VocabularySchema).strict()
-
-export type VocabularyListRes = z.infer<typeof VocabularyListResSchema>
 
 export class VocabularyListResDTO extends createZodDto(VocabularyListResSchema) {}
 
@@ -54,8 +48,6 @@ export const GetVocabularyByIdParamsSchema = z
     id: checkIdSchema(VocabularyMessage.INVALID_ID)
   })
   .strict()
-
-export type GetVocabularyByIdParams = z.infer<typeof GetVocabularyByIdParamsSchema>
 
 export class GetVocabularyByIdParamsDTO extends createZodDto(
   GetVocabularyByIdParamsSchema
@@ -100,8 +92,6 @@ export const VocabularyStatisticsResSchema = resSchema(
   VocabularyStatisticsSchema
 ).strict()
 
-export type VocabularyStatisticsRes = z.infer<typeof VocabularyStatisticsResSchema>
-
 export class VocabularyStatisticsResDTO extends createZodDto(
   VocabularyStatisticsResSchema
 ) {}
@@ -122,21 +112,15 @@ export const VocabularySearchQuerySchema = z
   })
   .strict()
 
-export type VocabularySearchQuery = z.infer<typeof VocabularySearchQuerySchema>
-
 export class VocabularySearchQueryDTO extends createZodDto(VocabularySearchQuerySchema) {}
 
 export const VocabularySearchResSchema = paginatedResSchema(
   VocabularySearchItemSchema
 ).strict()
 
-export type VocabularySearchRes = z.infer<typeof VocabularySearchResSchema>
-
 export class VocabularySearchResDTO extends createZodDto(VocabularySearchResSchema) {}
 
 export const VocabularyDetailResSchema = resSchema(VocabularyDetailSchema).strict()
-
-export type VocabularyDetailRes = z.infer<typeof VocabularyDetailResSchema>
 
 export class VocabularyDetailResDTO extends createZodDto(VocabularyDetailResSchema) {}
 
@@ -155,10 +139,6 @@ export const VocabularySearchHistoryQuerySchema = z
   })
   .strict()
 
-export type VocabularySearchHistoryQuery = z.infer<
-  typeof VocabularySearchHistoryQuerySchema
->
-
 export class VocabularySearchHistoryQueryDTO extends createZodDto(
   VocabularySearchHistoryQuerySchema
 ) {}
@@ -166,8 +146,6 @@ export class VocabularySearchHistoryQueryDTO extends createZodDto(
 export const VocabularySearchHistoryResSchema = paginatedResSchema(
   VocabularySearchHistoryItemSchema
 ).strict()
-
-export type VocabularySearchHistoryRes = z.infer<typeof VocabularySearchHistoryResSchema>
 
 export class VocabularySearchHistoryResDTO extends createZodDto(
   VocabularySearchHistoryResSchema

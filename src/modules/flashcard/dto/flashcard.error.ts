@@ -28,15 +28,6 @@ export class FlashcardContentAlreadyExistsException extends ConflictException {
   }
 }
 
-export class InvalidFlashcardContentTypeException extends BadRequestException {
-  constructor() {
-    super({
-      message: FlashcardMessage.INVALID_CONTENT_TYPE,
-      errorKey: FlashcardMessage.INVALID_CONTENT_TYPE
-    })
-  }
-}
-
 // With a content type and id: that content does not exist (was a Vietnamese
 // message whatever the language)
 export class InvalidFlashcardImportException extends BadRequestException {

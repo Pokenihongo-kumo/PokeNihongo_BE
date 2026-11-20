@@ -52,8 +52,6 @@ export const GetWordTypeByIdParamsSchema = z.object({
   id: checkIdSchema(WordTypeMessage.INVALID_ID)
 })
 
-export type GetWordTypeByIdParams = z.infer<typeof GetWordTypeByIdParamsSchema>
-
 export class GetWordTypeByIdParamsDTO extends createZodDto(GetWordTypeByIdParamsSchema) {}
 
 // Get WordType list query schema
@@ -81,15 +79,11 @@ export const GetWordTypeByNameKeyParamsSchema = z.object({
   nameKey: z.string().min(1, 'Name key không được để trống')
 })
 
-export type GetWordTypeByNameKeyParams = z.infer<typeof GetWordTypeByNameKeyParamsSchema>
-
 export class GetWordTypeByNameKeyParamsDTO extends createZodDto(
   GetWordTypeByNameKeyParamsSchema
 ) {}
 
 export const WordTypeListResSchema = paginatedResSchema(WordTypeViewSchema)
-
-export type WordTypeListRes = z.infer<typeof WordTypeListResSchema>
 
 export class WordTypeListResDTO extends createZodDto(WordTypeListResSchema) {}
 

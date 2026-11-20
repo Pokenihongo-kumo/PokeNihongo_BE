@@ -40,12 +40,6 @@ export const GetUserSubscriptionParamsSchema = z.object({
   userSubscriptionId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
 
-export type GetUserSubscriptionParams = z.infer<typeof GetUserSubscriptionParamsSchema>
-
-export const GetRewardByLeaderboardParamsSchema = z.object({
-  leaderboardSeasonId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
-})
-
 export const GetUserSubscriptionDetailResSchema = resSchema(
   GetUserSubscriptionDetailSchema
 )

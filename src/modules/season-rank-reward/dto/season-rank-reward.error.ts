@@ -10,15 +10,6 @@ export class SeasonRankRewardNotFoundException extends NotFoundException {
   }
 }
 
-export class SeasonRankRewardAlreadyExistsException extends ConflictException {
-  constructor() {
-    super({
-      message: SeasonRankRewardMessage.ALREADY_EXISTS,
-      errorKey: SeasonRankRewardMessage.ALREADY_EXISTS
-    })
-  }
-}
-
 export class SeasonRnakRewardNameInvalidException extends ConflictException {
   constructor() {
     super({
@@ -43,16 +34,6 @@ export class MissingSeasonRankRewardOrderInvalidException extends ConflictExcept
       message: SeasonRankRewardMessage.RANK_ORDER_INVALID,
       errorKey: SeasonRankRewardMessage.RANK_ORDER_INVALID,
       data: data || null
-    })
-  }
-}
-
-export class MissingSeasonRankRewardForAllInvalidException extends ConflictException {
-  constructor(rankName?: string) {
-    super({
-      message: SeasonRankRewardMessage.MISSSING_REWARD_FOR_ALL,
-      errorKey: SeasonRankRewardMessage.MISSSING_REWARD_FOR_ALL,
-      data: rankName || null
     })
   }
 }

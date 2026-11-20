@@ -85,8 +85,6 @@ export const GetGachaBannerParamsSchema = z
   })
   .strict()
 
-export type GetGachaBannerParams = z.infer<typeof GetGachaBannerParamsSchema>
-
 export class GetGachaBannerParamsDTO extends createZodDto(GetGachaBannerParamsSchema) {}
 
 export const GetGachaBannerDetailResSchema = resSchema(
@@ -113,8 +111,6 @@ export const GetGachaBannerDetailResSchema = resSchema(
     amount1StarCurrent: z.number().optional()
   })
 )
-
-export type GetGachaBannerDetailRes = z.infer<typeof GetGachaBannerDetailResSchema>
 
 export class GetGachaBannerDetailResDTO extends createZodDto(
   GetGachaBannerDetailResSchema

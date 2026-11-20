@@ -1,10 +1,9 @@
 import { GrammarSortField, SortOrder } from '@/common/enum/enum'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { GrammarMessage } from '@/i18n/message-keys'
-import { paginatedResSchema } from '@/shared/utils/pagination'
+
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
-import { GrammarSchema } from '../entities/grammar.entity'
 
 // Request/Response Types
 
@@ -91,8 +90,6 @@ export const GetGrammarByIdParamsSchema = z.object({
   id: checkIdSchema(GrammarMessage.INVALID_ID)
 })
 
-export type GetGrammarByIdParams = z.infer<typeof GetGrammarByIdParamsSchema>
-
 export class GetGrammarByIdParamsDTO extends createZodDto(GetGrammarByIdParamsSchema) {}
 
 export const GetGrammarListQuerySchema = z.object({
@@ -108,11 +105,3 @@ export const GetGrammarListQuerySchema = z.object({
 export type GetGrammarListQuery = z.infer<typeof GetGrammarListQuerySchema>
 
 export class GetGrammarListQueryDTO extends createZodDto(GetGrammarListQuerySchema) {}
-
-// Response schemas
-
-export const GrammarListResSchema = paginatedResSchema(GrammarSchema).strict()
-
-export type GrammarListRes = z.infer<typeof GrammarListResSchema>
-
-export class GrammarListResDTO extends createZodDto(GrammarListResSchema) {}

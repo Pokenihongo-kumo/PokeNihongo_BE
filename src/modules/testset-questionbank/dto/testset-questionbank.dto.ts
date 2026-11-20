@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { QuestionType } from '@prisma/client'
 
 // Swagger DTOs - for API documentation only
 export class TestSetQuestionBankSwaggerDTO {
@@ -44,22 +43,6 @@ export class UpdateTestSetQuestionBankSwaggerDTO {
 export class UpdateQuestionOrderSwaggerDTO {
   @ApiProperty({ example: 1, description: 'Thứ tự câu hỏi mới trong bộ đề' })
   questionOrder: number
-}
-
-export class BatchUpdateQuestionOrderSwaggerDTO {
-  @ApiProperty({
-    example: [
-      { id: 1, questionOrder: 1 },
-      { id: 2, questionOrder: 2 },
-      { id: 3, questionOrder: 3 }
-    ],
-    description: 'Danh sách ID và thứ tự mới của các câu hỏi (cho drag & drop)',
-    type: [Object]
-  })
-  orders: Array<{
-    id: number
-    questionOrder: number
-  }>
 }
 
 export class DeleteManyTestSetQuestionBankSwaggerDTO {

@@ -23,10 +23,6 @@ export const CreateAIConversationRoomBodySchema = z
   })
   .strict()
 
-export type CreateAIConversationRoomBody = z.infer<
-  typeof CreateAIConversationRoomBodySchema
->
-
 export class CreateAIConversationRoomBodyDTO extends createZodDto(
   CreateAIConversationRoomBodySchema
 ) {}
@@ -45,10 +41,6 @@ export const UpdateAIConversationRoomBodySchema = z
     voiceName: voiceSchema
   })
   .strict()
-
-export type UpdateAIConversationRoomBody = z.infer<
-  typeof UpdateAIConversationRoomBodySchema
->
 
 export class UpdateAIConversationRoomBodyDTO extends createZodDto(
   UpdateAIConversationRoomBodySchema

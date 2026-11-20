@@ -237,8 +237,6 @@ export class UpsertTestSetWithQuestionBanksBodyDTO extends createZodDto(
 
 export const TestSetListResSchema = paginatedResSchema(TestSetSchema)
 
-export type TestSetListRes = z.infer<typeof TestSetListResSchema>
-
 // TestSet List Response DTO
 export class TestSetListResDTO extends createZodDto(TestSetListResSchema) {}
 
@@ -249,8 +247,6 @@ export const GetTestSetByIdParamsSchema = z
     id: checkIdSchema(M.INVALID_ID)
   })
   .strict()
-
-export type GetTestSetByIdParams = z.infer<typeof GetTestSetByIdParamsSchema>
 
 // Get TestSet by ID Params DTO
 export class GetTestSetByIdParamsDTO extends createZodDto(GetTestSetByIdParamsSchema) {}

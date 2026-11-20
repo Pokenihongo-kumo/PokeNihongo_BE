@@ -10,15 +10,6 @@ export class UserAchievementNotFoundException extends NotFoundException {
   }
 }
 
-export class UserAchievementAlreadyExistsException extends BadRequestException {
-  constructor() {
-    super({
-      message: UserAchievementMessage.ALREADY_EXISTS,
-      errorKey: UserAchievementMessage.ALREADY_EXISTS
-    })
-  }
-}
-
 export class StatusClaimedException extends BadRequestException {
   constructor() {
     super({

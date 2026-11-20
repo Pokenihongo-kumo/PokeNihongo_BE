@@ -5,8 +5,7 @@ import {
   GetGachaItemRateDetailResSchema,
   GetGachaItemRateParamsSchema,
   UpdateGachaItemRateBodySchema,
-  UpdateGachaItemRateResSchema,
-  UpdateWithListItemResSchema
+  UpdateGachaItemRateResSchema
 } from './gacha-item-rate.zod-dto'
 
 // Request DTOs
@@ -29,7 +28,6 @@ export class CreateGachaItemRateResDTO extends createZodDto(
 export class UpdateGachaItemRateResDTO extends createZodDto(
   UpdateGachaItemRateResSchema
 ) {}
-export class UpdateWithListItemResDTO extends createZodDto(UpdateWithListItemResSchema) {}
 export class GetGachaItemRateDetailResDTO extends createZodDto(
   GetGachaItemRateDetailResSchema
 ) {}

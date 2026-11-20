@@ -87,32 +87,3 @@ export class UpdateLessonCategorySwaggerDTO {
   })
   slug?: string
 }
-
-export class GetLessonCategoryListQuerySwaggerDTO {
-  @ApiProperty({
-    example: 1,
-    description: 'Số trang',
-    required: false,
-    default: 1,
-    minimum: 1
-  })
-  page?: number
-
-  @ApiProperty({
-    example: 10,
-    description: 'Số lượng danh mục mỗi trang',
-    required: false,
-    default: 10,
-    minimum: 1,
-    maximum: 100
-  })
-  limit?: number
-
-  @ApiProperty({
-    example: 'grammar',
-    description: 'Từ khóa tìm kiếm',
-    required: false,
-    maxLength: 100
-  })
-  search?: string
-}

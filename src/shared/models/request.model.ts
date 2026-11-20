@@ -1,7 +1,5 @@
 import { z } from 'zod'
 
-export const EmptyBodySchema = z.object({}).strict()
-
 export const PaginationQuerySchema = z.object({
   currentPage: z.coerce.number().int().positive().default(1), // Phải thêm coerce để chuyển từ string sang number
   pageSize: z.coerce.number().int().positive().default(15), // Phải thêm coerce để chuyển từ string sang number
@@ -9,4 +7,3 @@ export const PaginationQuerySchema = z.object({
 })
 
 export type PaginationQuery = z.infer<typeof PaginationQuerySchema>
-export type EmptyBody = z.infer<typeof EmptyBodySchema>

@@ -37,8 +37,4 @@ export const UserProgressSchema = z.object({
 export const UserProgressWithRelationsSchema = UserProgressSchema.extend({
   lesson: LessonInfoSchema.optional()
 })
-
-// Types
-export type ProgressStatus = z.infer<typeof ProgressStatusSchema>
 export type UserProgress = z.infer<typeof UserProgressSchema>
-export type UserProgressWithRelations = z.infer<typeof UserProgressWithRelationsSchema>

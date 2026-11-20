@@ -17,9 +17,6 @@ export const GeminiConfigSchema = z.object({
   createdAt: z.date().optional(),
   updatedAt: z.date().optional()
 })
-
-//type
-export type GeminiConfig = z.infer<typeof GeminiConfigSchema>
 //field
 type GeminiConfigFieldType = keyof z.infer<typeof GeminiConfigSchema>
 export const GEMINI_CONFIG_FIELDS = Object.keys(

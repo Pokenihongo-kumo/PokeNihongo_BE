@@ -69,8 +69,6 @@ export const GetParamsDailyRequestSchema = z.object({
   dailyRequestId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
 
-export type GetParamsDailyRequest = z.infer<typeof GetParamsDailyRequestSchema>
-
 export class GetDailyRequestParamsDTO extends createZodDto(GetParamsDailyRequestSchema) {}
 
 export const GetDailyRequestDetailResSchema = resSchema(
@@ -86,8 +84,6 @@ export const GetDailyRequestDetailResSchema = resSchema(
       .optional()
   })
 )
-
-export type GetParamDailyRequestDetail = z.infer<typeof GetDailyRequestDetailResSchema>
 
 export class GetDailyRequestDetailResDTO extends createZodDto(
   GetDailyRequestDetailResSchema

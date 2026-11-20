@@ -12,4 +12,3 @@ export const GachaBannerStatus = {
   EXPIRED: 'EXPIRED',
   PREVIEW: 'PREVIEW'
 } as const
-export type GachaBannerStatusType = keyof typeof GachaBannerStatus

@@ -27,14 +27,10 @@ export type UpdateGachaItemRateBody = z.infer<typeof UpdateGachaItemRateBodySche
 
 export const UpdateGachaItemRateResSchema = CreateGachaItemRateResSchema
 
-export const UpdateWithListItemResSchema = resSchema(z.array(GachaItemRateSchema))
-
 // Query Schema
 
 export const GetGachaItemRateParamsSchema = z.object({
   gachaItemRateId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
-
-export type GetGachaItemRateParams = z.infer<typeof GetGachaItemRateParamsSchema>
 
 export const GetGachaItemRateDetailResSchema = resSchema(GetGachaItemRateDetailSchema)

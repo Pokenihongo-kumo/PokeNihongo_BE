@@ -4,7 +4,6 @@ import {
   CreatePermissionResSchema,
   GetPermissionDetailResSchema,
   GetPermissionParamsSchema,
-  GetPermissionsQuerySchema,
   UpdatePermissionBodySchema,
   UpdatePermissionResSchema
 } from 'src/modules/permission/permission.model'
@@ -22,5 +21,3 @@ export class CreatePermissionResDTO extends createZodDto(CreatePermissionResSche
 
 export class UpdatePermissionBodyDTO extends createZodDto(UpdatePermissionBodySchema) {}
 export class UpdatePermissionResDTO extends createZodDto(UpdatePermissionResSchema) {}
-
-export class GetPermissionsQueryDTO extends createZodDto(GetPermissionsQuerySchema) {}

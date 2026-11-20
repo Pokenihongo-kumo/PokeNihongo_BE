@@ -19,8 +19,6 @@ export type CreateSubscriptionFeatureBody = z.infer<
   typeof CreateSubscriptionFeatureBodySchema
 >
 
-export const CreateSubscriptionFeatureResSchema = resSchema(SubscriptionFeatureSchema)
-
 // Update Schema
 
 export const UpdateSubscriptionFeatureBodySchema =
@@ -29,8 +27,6 @@ export const UpdateSubscriptionFeatureBodySchema =
 export type UpdateSubscriptionFeatureBody = z.infer<
   typeof UpdateSubscriptionFeatureBodySchema
 >
-
-export const UpdateSubscriptionFeatureResSchema = CreateSubscriptionFeatureResSchema
 
 // Update with list of features for a subscription
 
@@ -54,10 +50,6 @@ export const UpdateWithListItemResSchema = resSchema(z.array(SubscriptionFeature
 export const GetSubscriptionFeatureParamsSchema = z.object({
   subscriptionFeatureId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
-
-export type GetSubscriptionFeatureParams = z.infer<
-  typeof GetSubscriptionFeatureParamsSchema
->
 
 export const GetSubscriptionFeatureDetailResSchema = resSchema(
   GetSubscriptionFeatureDetailSchema

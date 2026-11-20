@@ -1,39 +1,10 @@
 import { AUTH_MESSAGE } from '@/common/constants/message'
 import { AuthMessage } from '@/i18n/message-keys'
 import {
-  BadRequestException,
   NotFoundException,
   UnauthorizedException,
   UnprocessableEntityException
 } from '@nestjs/common'
-
-// OTP related errors
-export class InvalidOTPException extends UnauthorizedException {
-  constructor() {
-    super({
-      message: AUTH_MESSAGE.INVALID_OTP,
-      errorKey: AuthMessage.INVALID_OTP
-    })
-  }
-}
-
-export class OTPExpiredException extends UnauthorizedException {
-  constructor() {
-    super({
-      message: AUTH_MESSAGE.OTP_EXPIRED,
-      errorKey: AuthMessage.OTP_EXPIRED
-    })
-  }
-}
-
-export class FailedToSendOTPException extends BadRequestException {
-  constructor() {
-    super({
-      message: AUTH_MESSAGE.FAILED_TO_SEND_OTP,
-      errorKey: AuthMessage.FAILED_TO_SEND_OTP
-    })
-  }
-}
 
 // Email related errors
 export class EmailAlreadyExistsException extends UnprocessableEntityException {
@@ -50,15 +21,6 @@ export class EmailNotFoundException extends NotFoundException {
     super({
       message: AUTH_MESSAGE.NOT_FOUND_EMAIL,
       errorKey: AuthMessage.NOT_FOUND_EMAIL
-    })
-  }
-}
-
-export class EmailAlreadyActiveException extends NotFoundException {
-  constructor() {
-    super({
-      message: AUTH_MESSAGE.EMAIL_ACTIVE,
-      errorKey: AuthMessage.EMAIL_ACTIVE
     })
   }
 }
@@ -101,83 +63,11 @@ export class UnauthorizedAccessException extends UnauthorizedException {
   }
 }
 
-export class AccountIsBannedException extends UnauthorizedException {
-  constructor() {
-    super({
-      message: AUTH_MESSAGE.ACCOUNT_IS_BANNED,
-      errorKey: AuthMessage.ACCOUNT_IS_BANNED
-    })
-  }
-}
-
-export class UnverifiedAccountException extends UnauthorizedException {
-  constructor() {
-    super({
-      message:
-        'Tài khoản chưa được xác thực, vui lòng kiểm tra email để xác thực tài khoản',
-      errorKey: AuthMessage.UNVERIFIED_ACCOUNT
-    })
-  }
-}
-
 // Google auth related errors
 export class GoogleUserInfoException extends Error {
   constructor() {
     super(AUTH_MESSAGE.FAILD_TO_GET_GOOGLE_USER_INFO)
     this.name = 'GoogleUserInfoException'
-  }
-}
-
-export class InvalidTOTPException extends UnprocessableEntityException {
-  constructor() {
-    super([
-      {
-        message: 'Error.InvalidTOTP',
-        errorKey: AuthMessage.INVALID_TOTP,
-        path: 'totpCode'
-      }
-    ])
-  }
-}
-
-export class TOTPAlreadyEnabledException extends UnprocessableEntityException {
-  constructor() {
-    super([
-      {
-        message: 'Error.TOTPAlreadyEnabled',
-        errorKey: AuthMessage.TOTP_ALREADY_ENABLED,
-        path: 'totpCode'
-      }
-    ])
-  }
-}
-
-export class TOTPNotEnabledException extends UnprocessableEntityException {
-  constructor() {
-    super([
-      {
-        message: 'Error.TOTPNotEnabled',
-        errorKey: AuthMessage.TOTP_NOT_ENABLED,
-        path: 'totpCode'
-      }
-    ])
-  }
-}
-
-export class InvalidTOTPAndCodeException extends UnprocessableEntityException {
-  constructor() {
-    super([
-      {
-        message: 'Error.InvalidTOTPAndCode',
-        errorKey: AuthMessage.INVALID_TOTP_AND_CODE,
-        path: 'totpCode'
-      },
-      {
-        message: 'Error.InvalidTOTPAndCode',
-        errorKey: AuthMessage.INVALID_TOTP_AND_CODE,
-        path: 'code'
-      }
-    ])
   }
 }
 

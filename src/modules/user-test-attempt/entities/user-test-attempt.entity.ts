@@ -19,7 +19,4 @@ export const UserTestAttemptSchema = z.object({
   createdAt: z.date(),
   updatedAt: z.date()
 })
-
-// Types
-export type TestAttemptStatus = z.infer<typeof TestAttemptStatusSchema>
 export type UserTestAttempt = z.infer<typeof UserTestAttemptSchema>

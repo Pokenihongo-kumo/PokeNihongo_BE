@@ -131,8 +131,6 @@ export const CreatePokemonFormDataSchema = z
 
 export type CreatePokemonFormData = z.infer<typeof CreatePokemonFormDataSchema>
 
-export class CreatePokemonFormDataDTO extends createZodDto(CreatePokemonFormDataSchema) {}
-
 export const CreatePokemonResSchema = resSchema(
   PokemonSchema.omit({ nextPokemonsId: true })
 )
@@ -276,8 +274,6 @@ export const UpdatePokemonFormDataSchema = z
 
 export type UpdatePokemonFormData = z.infer<typeof UpdatePokemonFormDataSchema>
 
-export class UpdatePokemonFormDataDTO extends createZodDto(UpdatePokemonFormDataSchema) {}
-
 export const UpdatePokemonResSchema = CreatePokemonResSchema
 
 export class UpdatePokemonResDTO extends createZodDto(UpdatePokemonResSchema) {}
@@ -287,8 +283,6 @@ export class UpdatePokemonResDTO extends createZodDto(UpdatePokemonResSchema) {}
 export const GetPokemonParamsSchema = z.object({
   pokemonId: checkIdSchema(PokemonMessage.INVALID_ID)
 })
-
-export type GetPokemonParams = z.infer<typeof GetPokemonParamsSchema>
 
 export class GetPokemonParamsDTO extends createZodDto(GetPokemonParamsSchema) {}
 
@@ -348,8 +342,6 @@ export const GetPokemonDetailResSchema = resSchema(
   })
 )
 
-export type GetPokemonDetailRes = z.infer<typeof GetPokemonDetailResSchema>
-
 export class GetPokemonDetailResDTO extends createZodDto(GetPokemonDetailResSchema) {}
 
 // Pokemon Weakness Response Schema
@@ -383,8 +375,6 @@ export const GetPokemonWeaknessResSchema = resSchema(
   })
 )
 
-export type GetPokemonWeaknessRes = z.infer<typeof GetPokemonWeaknessResSchema>
-
 export class GetPokemonWeaknessResDTO extends createZodDto(GetPokemonWeaknessResSchema) {}
 
 // Assign Types Schema
@@ -396,10 +386,6 @@ export const AssignPokemonTypesBodySchema = z
   .strict()
 
 export type AssignPokemonTypesBody = z.infer<typeof AssignPokemonTypesBodySchema>
-
-export class AssignPokemonTypesBodyDTO extends createZodDto(
-  AssignPokemonTypesBodySchema
-) {}
 
 // Evolution Schema
 
@@ -416,8 +402,6 @@ export const GetEvolutionOptionsResSchema = resSchema(
     })
   )
 )
-
-export type GetEvolutionOptionsRes = z.infer<typeof GetEvolutionOptionsResSchema>
 
 export class GetEvolutionOptionsResDTO extends createZodDto(
   GetEvolutionOptionsResSchema

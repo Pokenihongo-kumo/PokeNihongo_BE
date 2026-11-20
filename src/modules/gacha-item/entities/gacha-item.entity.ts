@@ -46,9 +46,6 @@ export const GetGachaItemDetailSchema = GachaItemSchema.extend({
   })
 })
 
-export type GetGachaItemDetail = z.infer<typeof GetGachaItemDetailSchema>
-export type GetRandomGachaItemType = z.infer<typeof GetRandomGachaItemTypeSchema>
-
 export type GachaItemFieldType = keyof z.infer<typeof GachaItemSchema>
 export const GACHA_ITEM_FIELDS = Object.keys(
   GachaItemSchema.shape

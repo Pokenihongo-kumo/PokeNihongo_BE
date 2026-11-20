@@ -73,8 +73,6 @@ export const GetShopBannerParamsSchema = z
   })
   .strict()
 
-export type GetShopBannerParams = z.infer<typeof GetShopBannerParamsSchema>
-
 export class GetShopBannerParamsDTO extends createZodDto(GetShopBannerParamsSchema) {}
 
 export const GetShopBannerDetailResSchema = resSchema(
@@ -95,8 +93,6 @@ export const GetShopBannerDetailResSchema = resSchema(
     )
   })
 )
-
-export type GetShopBannerDetailRes = z.infer<typeof GetShopBannerDetailResSchema>
 
 export class GetShopBannerDetailResDTO extends createZodDto(
   GetShopBannerDetailResSchema

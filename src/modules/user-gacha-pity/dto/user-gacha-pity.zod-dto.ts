@@ -32,14 +32,10 @@ export type UpdateUserGachaPityBody = z.infer<typeof UpdateUserGachaPityBodySche
 
 export const UpdateUserGachaPityResSchema = CreateUserGachaPityResSchema
 
-export const UpdateWithListItemResSchema = resSchema(z.array(UserGachaPitySchema))
-
 // Query Schema
 
 export const GetUserGachaPityParamsSchema = z.object({
   userGachaPityId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
-
-export type GetUserGachaPityParams = z.infer<typeof GetUserGachaPityParamsSchema>
 
 export const GetUserGachaPityDetailResSchema = resSchema(GetUserGachaPityDetailSchema)

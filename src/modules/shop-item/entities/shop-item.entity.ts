@@ -34,7 +34,6 @@ export const GetShopItemDetailSchema = ShopItemSchema.extend({
 
 // Type exports
 export type ShopItem = z.infer<typeof ShopItemSchema>
-export type GetShopItemDetail = z.infer<typeof GetShopItemDetailSchema>
 // Field for query
 export type ShopItemFieldType = keyof z.infer<typeof ShopItemSchema>
 export const SHOP_ITEM_FIELDS = Object.keys(ShopItemSchema.shape) as ShopItemFieldType[]

@@ -62,8 +62,6 @@ export const GetKanjiByIdParamsSchema = z.object({
   id: checkIdSchema(KanjiMessage.INVALID_ID)
 })
 
-export type GetKanjiByIdParams = z.infer<typeof GetKanjiByIdParamsSchema>
-
 // Get Kanji list query schema (standardize on currentPage/pageSize + sortOrder)
 
 export const GetKanjiListQuerySchema = z.object({
@@ -110,13 +108,7 @@ export const KanjiListResponseSchema = z.object({
 
 export const KanjiResSchema = resSchema(KanjiSchema).strict()
 
-export type KanjiRes = z.infer<typeof KanjiResSchema>
-
 export const KanjiListResSchema = paginatedResSchema(KanjiSchema).strict()
-
-export type KanjiListRes = z.infer<typeof KanjiListResSchema>
 
 export const KanjiManagementListResSchema =
   paginatedResSchema(KanjiManagementSchema).strict()
-
-export type KanjiManagementListRes = z.infer<typeof KanjiManagementListResSchema>

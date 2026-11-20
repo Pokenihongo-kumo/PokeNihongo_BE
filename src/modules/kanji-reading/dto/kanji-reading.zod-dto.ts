@@ -34,8 +34,6 @@ export const GetKanjiReadingByIdParamsSchema = z.object({
   id: checkIdSchema(KanjiReadingMessage.INVALID_ID)
 })
 
-export type GetKanjiReadingByIdParams = z.infer<typeof GetKanjiReadingByIdParamsSchema>
-
 export class GetKanjiReadingByIdParamsDTO extends createZodDto(
   GetKanjiReadingByIdParamsSchema
 ) {}
@@ -74,10 +72,6 @@ export const GetKanjiReadingsByKanjiIdParamsSchema = z.object({
   kanjiId: checkIdSchema(KanjiReadingMessage.KANJI_ID_INVALID)
 })
 
-export type GetKanjiReadingsByKanjiIdParams = z.infer<
-  typeof GetKanjiReadingsByKanjiIdParamsSchema
->
-
 export class GetKanjiReadingsByKanjiIdParamsDTO extends createZodDto(
   GetKanjiReadingsByKanjiIdParamsSchema
 ) {}
@@ -85,10 +79,6 @@ export class GetKanjiReadingsByKanjiIdParamsDTO extends createZodDto(
 export const GetKanjiReadingsByTypeParamsSchema = z.object({
   readingType: z.string()
 })
-
-export type GetKanjiReadingsByTypeParams = z.infer<
-  typeof GetKanjiReadingsByTypeParamsSchema
->
 
 export class GetKanjiReadingsByTypeParamsDTO extends createZodDto(
   GetKanjiReadingsByTypeParamsSchema

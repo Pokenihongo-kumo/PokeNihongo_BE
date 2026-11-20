@@ -127,5 +127,3 @@ export const SOCKET_ROOM = {
    */
   getKaiwaRoom: (conversationId: string): string => `kaiwa_${conversationId}`
 } as const
-
-export const SOCKET_EVENT = {}

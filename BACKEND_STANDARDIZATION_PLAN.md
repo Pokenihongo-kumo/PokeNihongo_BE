@@ -729,6 +729,20 @@ Baseline `dev` @ `84bba0d`: response schema nằm trong `entities/` ở 72 file 
 - [x] S4 — `backend-convention.md` mục 1–2 và mục 3 plan chính theo bố cục mới. `arch:deps` thêm `httpSchemasInEntities` (0) và `handWrittenEnvelopes` (2 ngoại lệ trên), baseline đã khóa. Giai đoạn 7 xong; `@ZodResponse` (D-SD1) vẫn để cùng giai đoạn 5.
 - [ ] Swagger DTO viết tay (309 class `*SwaggerDTO`, 1505 `@ApiProperty`, 44 file) song song với DTO Zod: giữ tới khi làm D-SD1 (`@ZodResponse`); lúc đó chuyển ví dụ/mô tả vào schema Zod rồi xóa class theo từng module, OpenAPI snapshot canh (câu hỏi của người dùng 2026-11-19: giữ vì Swagger cần ví dụ mẫu). Cùng đợt: `@ApiResponse` cho lỗi (26 dòng: 17 × 404, 6 × 409, 3 × 400; tổng 329 `@ApiResponse`) viết tay không đồng đều và có mã sai — 16 dòng ghi `status: 400` "Dữ liệu không hợp lệ" trong khi body sai trả 422 (vd contract content: 12 × 422, không có 400; speech/upload cần kiểm từng chỗ, có thể đúng là 400). Hướng: decorator chung kiểu `@ApiErrors(404, 409)` gắn schema lỗi chuẩn (`statusCode`, `message`, `errorKey`) + mô tả mặc định, sửa mã sai, OpenAPI snapshot canh (người dùng chọn để tới lúc dọn Swagger, 2026-11-20).
 
+### Giai đoạn 7 — Dọn migration và hoàn tất toàn src (mục 7 ở trên)
+
+Baseline `dev` @ `c497b2d8` (sau X7). Chia batch theo 5 mục của lộ trình: Z1 dọn code chết, Z2 inventory 81 module, Z3 siết lint/type, Z4 CI, Z5 tài liệu. Swagger DTO viết tay + `@ApiErrors` + D-SD1 (mục ở giai đoạn 7 schema/DTO phía trên) vẫn chờ quyết định nâng `nestjs-zod`.
+
+- [x] Z1 — Code chết. (2026-11-21, nhánh `refactor/p7-z1-dead-code`.) 220 file, −3779 dòng.
+  - 12 file không ai import (src, test, initialScript đều quét) bị xóa: `common/constants/daily-request.constant.ts`, `common/decorators/timezone.decorator.ts`, `common/decorators/user.decorator.ts` (bản cũ của `GetUser`/`CurrentUserId`, không controller nào dùng), `shared/filters/catch-everything.filter.ts` và `http-exception.filter.ts` (filter cũ; app dùng `ApiExceptionFilter`), `shared/dtos/shared-user.dto.ts`, `answer/dto/answer.response.dto.ts`, `attendance/dto/attendance.swagger.ts`, `attendance/dto/create-attendence.swagger.ts` (rỗng), `exercises/dto/exercises-with-meanings.dto.ts`, `gacha-item/dto/shop-item.error.ts` (bản sao không dùng; shop-item có bản riêng), `reward/dto/reward.controller.dto.ts`.
+  - 564 khai báo export mà không nơi nào tham chiếu, kể cả chính file (schema/type/DTO Zod và Swagger không gắn route nào, exception không ai throw, 18 nhóm hằng `*_MESSAGE` cũ trong `common/constants/message.ts`, helper `generateOTP`, `generateRandomFilename`, `todayUTCFromVN`…, decorator `Public`/`UppercaseEnum` cũ), xóa qua 3 vòng (xóa một cái làm cái khác thành chết) bằng `scripts/codemods/z1-prune-dead-exports.cjs` (TypeScript checker: đếm mọi tham chiếu đã resolve alias; chạy lại lần 4 báo 0). Import thừa bỏ theo.
+  - Không xóa: export vẫn được dùng trong chính file (chỉ thừa chữ `export`, vô hại); `shared/services/firebase.service.ts` (247 dòng, push FCM chưa nối vào module nào, có env `FIREBASE_*` và dependency `firebase-admin`) — chờ người dùng quyết giữ hay gỡ.
+  - Bằng chứng: typecheck 0, unit 201/201, e2e toàn bộ 229/229 (141 snapshot + OpenAPI không đổi — DTO bị xóa không gắn route nào), `arch:deps` không tăng, lint không thêm warning, DB test sạch.
+- [ ] Z2 — Inventory 81 module + bucket ngoài modules, recount theo source, trạng thái inventoried / contract-covered / standardized / extracted-if-needed / verified.
+- [ ] Z3 — Siết lint/type theo debt đã giải quyết; audit `any`/`eslint-disable` còn lại, ngoại lệ có lý do.
+- [ ] Z4 — CI không mutation cho BE (typecheck, lint:check, unit, arch:deps, format:check) và job integration DB/Redis riêng; consumer checks FE/MO.
+- [ ] Z5 — Tài liệu kiến trúc, convention, chạy test/demo, migration notes theo code cuối.
+
 ### Baseline (2026-11-02, trước mọi thay đổi)
 
 | Repo | Typecheck | Build | Lint | Format |

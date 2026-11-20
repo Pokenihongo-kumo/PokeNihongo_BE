@@ -9,12 +9,3 @@ export class SubscriptionAlreadyExistsException extends ConflictException {
     })
   }
 }
-
-export class SubscriptionHasInvalidToActiveException extends ConflictException {
-  constructor() {
-    super({
-      message: SubscriptionMessage.INVALID_DATA,
-      errorKey: SubscriptionMessage.INVALID_DATA
-    })
-  }
-}

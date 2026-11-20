@@ -51,8 +51,6 @@ export const UpdateShopItemWithIdSchema = z
   })
   .strict()
 
-export type UpdateShopItemWithId = z.infer<typeof UpdateShopItemWithIdSchema>
-
 export const UpdateWithListItemBodySchema = z.object({
   items: z.array(UpdateShopItemWithIdSchema).min(1)
 })
@@ -93,7 +91,5 @@ export const GetRandomShopItemResSchema = resSchema(
 export const GetShopItemParamsSchema = z.object({
   shopItemId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
-
-export type GetShopItemParams = z.infer<typeof GetShopItemParamsSchema>
 
 export const GetShopItemDetailResSchema = resSchema(GetShopItemDetailSchema)

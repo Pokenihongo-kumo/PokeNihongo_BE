@@ -6,8 +6,7 @@ import {
   GetUserAchievementListForUserQuerySchema,
   GetUserAchievementParamsSchema,
   UpdateUserAchievementBodySchema,
-  UpdateUserAchievementResSchema,
-  UpdateWithListItemResSchema
+  UpdateUserAchievementResSchema
 } from './user-achievement.zod-dto'
 
 // Request DTOs
@@ -30,7 +29,6 @@ export class CreateUserAchievementResDTO extends createZodDto(
 export class UpdateUserAchievementResDTO extends createZodDto(
   UpdateUserAchievementResSchema
 ) {}
-export class UpdateWithListItemResDTO extends createZodDto(UpdateWithListItemResSchema) {}
 export class GetUserAchievementDetailResDTO extends createZodDto(
   GetUserAchievementDetailResSchema
 ) {}

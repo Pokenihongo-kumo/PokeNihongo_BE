@@ -28,9 +28,6 @@ export const TypeEffectivenessSchema = z.object({
   updatedAt: z.date(),
   deletedAt: z.date().nullable()
 })
-
-// Type exports
-export type TypeEffectiveness = z.infer<typeof TypeEffectivenessSchema>
 //Field for query
 export type TypeEffectivenessFieldType = keyof z.infer<typeof TypeEffectivenessSchema>
 export const TYPE_EFFECTIVENESS_FIELDS = Object.keys(

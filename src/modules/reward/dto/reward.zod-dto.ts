@@ -56,8 +56,6 @@ export const GetRewardParamsSchema = z
   })
   .strict()
 
-export type GetRewardParams = z.infer<typeof GetRewardParamsSchema>
-
 export class GetRewardParamsDTO extends createZodDto(GetRewardParamsSchema) {}
 
 export const GetRewardDetailWithAllLangResSchema = resSchema(
@@ -83,8 +81,6 @@ export const GetRewardDetailResSchema = resSchema(
   })
 )
 
-export type GetRewardDetailRes = z.infer<typeof GetRewardDetailResSchema>
-
 export class GetRewardDetailResDTO extends createZodDto(GetRewardDetailResSchema) {}
 
 export const ConvertRewardsBodySchema = z
@@ -94,8 +90,6 @@ export const ConvertRewardsBodySchema = z
     sourceType: UserRewardSourceTypeSchema.optional()
   })
   .strict()
-
-export type ConvertRewardsBody = z.infer<typeof ConvertRewardsBodySchema>
 
 export class ConvertRewardsBodyDTO extends createZodDto(ConvertRewardsBodySchema) {}
 
@@ -107,7 +101,5 @@ export const ConvertRewardsResSchema = resSchema(
     pokemons: z.array(z.unknown())
   })
 )
-
-export type ConvertRewardsRes = z.infer<typeof ConvertRewardsResSchema>
 
 export class ConvertRewardsResDTO extends createZodDto(ConvertRewardsResSchema) {}

@@ -97,16 +97,6 @@ export const FlashcardImportResultSchema = z.object({
   )
 })
 
-export const FlashcardLibraryItemSchema = z.object({
-  contentType: FlashcardImportContentTypeEnum,
-  contentId: z.number(),
-  title: z.string(),
-  subtitle: z.string().nullable(),
-  jlptLevel: z.number().nullable(),
-  payload: JsonRecordSchema,
-  isAdded: z.boolean()
-})
-
 export const FlashcardReviewItemSchema = FlashcardCardSchema.extend({
   srs: z
     .object({
@@ -122,12 +112,9 @@ export const FlashcardReviewItemSchema = FlashcardCardSchema.extend({
 })
 
 export type FlashcardDeckStatus = z.infer<typeof FlashcardDeckStatusEnum>
-export type FlashcardDeckSource = z.infer<typeof FlashcardDeckSourceEnum>
-export type FlashcardCardStatus = z.infer<typeof FlashcardCardStatusEnum>
 export type FlashcardContent = z.infer<typeof FlashcardContentTypeEnum>
 export type FlashcardDeckSummary = z.infer<typeof FlashcardDeckSummarySchema>
 export type FlashcardDeckDetail = z.infer<typeof FlashcardDeckDetailSchema>
 export type FlashcardCard = z.infer<typeof FlashcardCardSchema>
 export type FlashcardImportResult = z.infer<typeof FlashcardImportResultSchema>
-export type FlashcardLibraryItem = z.infer<typeof FlashcardLibraryItemSchema>
 export type FlashcardReviewItem = z.infer<typeof FlashcardReviewItemSchema>

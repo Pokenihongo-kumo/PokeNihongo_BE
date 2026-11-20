@@ -17,6 +17,3 @@ export const MatchQueueSchema = z.object({
 
 export type MatchQueue = z.infer<typeof MatchQueueSchema>
 type MatchQueueFieldType = keyof z.infer<typeof MatchQueueSchema>
-export const MATCH_QUEUE_FIELDS = Object.keys(
-  MatchQueueSchema.shape
-) as MatchQueueFieldType[]

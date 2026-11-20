@@ -18,16 +18,12 @@ export const UpsertSrsReviewBodySchema = z.object({
   message: z.string().optional()
 })
 
-export type UpsertSrsReviewBody = z.infer<typeof UpsertSrsReviewBodySchema>
-
 export class UpsertSrsReviewDto extends createZodDto(UpsertSrsReviewBodySchema) {}
 
 export const ReviewActionBodySchema = z.object({
   result: z.enum(['correct', 'incorrect']),
   message: z.string().optional()
 })
-
-export type ReviewActionBody = z.infer<typeof ReviewActionBodySchema>
 
 export class ReviewActionDto extends createZodDto(ReviewActionBodySchema) {}
 
@@ -39,8 +35,6 @@ export const ListSrsQuerySchema = z.object({
     .transform((v) => v === 'true')
     .optional()
 })
-
-export type ListSrsQuery = z.infer<typeof ListSrsQuerySchema>
 
 export class ListSrsQueryDto extends createZodDto(ListSrsQuerySchema) {}
 

@@ -11,8 +11,6 @@ export const CreateMatchBodySchema = MatchSchema.pick({})
 
 export type CreateMatchBody = z.infer<typeof CreateMatchBodySchema>
 
-export class CreateMatchBodyDTO extends createZodDto(CreateMatchBodySchema) {}
-
 export const CreateMatchResSchema = resSchema(MatchSchema)
 
 export class CreateMatchResDTO extends createZodDto(CreateMatchResSchema) {}
@@ -33,18 +31,8 @@ export const GetMatchParamsSchema = z
   })
   .strict()
 
-export type GetMatchParams = z.infer<typeof GetMatchParamsSchema>
-
 export class GetMatchParamsDTO extends createZodDto(GetMatchParamsSchema) {}
 
-export const GetMatchDetailWithAllLangResSchema = resSchema(MatchSchema)
-
-export class GetMatchDetailWithAllLangResDTO extends createZodDto(
-  GetMatchDetailWithAllLangResSchema
-) {}
-
 export const GetMatchDetailResSchema = resSchema(MatchSchema)
-
-export type GetMatchDetailRes = z.infer<typeof GetMatchDetailResSchema>
 
 export class GetMatchDetailResDTO extends createZodDto(GetMatchDetailResSchema) {}

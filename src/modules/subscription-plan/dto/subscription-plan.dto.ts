@@ -6,8 +6,7 @@ import {
   GetSubscriptionPlanDetailResSchema,
   GetSubscriptionPlanParamsSchema,
   UpdateSubscriptionPlanBodySchema,
-  UpdateSubscriptionPlanResSchema,
-  UpdateWithListItemResSchema
+  UpdateSubscriptionPlanResSchema
 } from './subscription-plan.zod-dto'
 
 // Request DTOs
@@ -30,7 +29,6 @@ export class CreateSubscriptionPlanResDTO extends createZodDto(
 export class UpdateSubscriptionPlanResDTO extends createZodDto(
   UpdateSubscriptionPlanResSchema
 ) {}
-export class UpdateWithListItemResDTO extends createZodDto(UpdateWithListItemResSchema) {}
 export class GetSubscriptionPlanDetailResDTO extends createZodDto(
   GetSubscriptionPlanDetailResSchema
 ) {}
