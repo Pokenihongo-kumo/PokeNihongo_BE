@@ -1,4 +1,4 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage } from '@/i18n/response-message'
 import { DebuffRoundMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { AuthenticationGuard } from '@/common/guards/authentication.guard'
@@ -33,85 +33,68 @@ import {
 @UseGuards(AuthenticationGuard)
 @ApiBearerAuth()
 export class DebuffRoundController {
-  constructor(
-    private readonly debuffRoundService: DebuffRoundService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly debuffRoundService: DebuffRoundService) {}
 
   @Get()
   @ZodSerializerDto(PaginationResponseSchema)
+  @ResponseMessage(DebuffRoundMessage.GET_LIST_SUCCESS)
   async list(
     @Query() query: PaginationQueryDTO,
     @I18nLang() lang: string,
     @ActiveUser('roleName') roleName: string
   ) {
-    return {
-      message: this.i18nService.translate(DebuffRoundMessage.GET_LIST_SUCCESS, lang),
-      data: await this.debuffRoundService.list(query, lang, roleName)
-    }
+    return this.debuffRoundService.list(query, lang, roleName)
   }
 
   @Post()
   @ZodSerializerDto(CreateDebuffRoundResDTO)
+  @ResponseMessage(DebuffRoundMessage.CREATE_SUCCESS)
   async create(
     @Body() body: CreatedDebuffRoundBodyInputDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(DebuffRoundMessage.CREATE_SUCCESS, lang),
-      data: await this.debuffRoundService.create({
-        data: body,
-        createdById: userId
-      })
-    }
+    return this.debuffRoundService.create({
+      data: body,
+      createdById: userId
+    })
   }
 
   @Get(':debuffRoundId')
   @ZodSerializerDto(GetDebuffRoundDetailResDTO)
+  @ResponseMessage(DebuffRoundMessage.GET_SUCCESS)
   async findById(
     @Param() params: GetDebuffRoundParamsDTO,
     @I18nLang() lang: string,
     @ActiveUser('roleName') roleName: string
   ) {
-    return {
-      message: this.i18nService.translate(DebuffRoundMessage.GET_SUCCESS, lang),
-      data: await this.debuffRoundService.findById(params.debuffRoundId, roleName, lang)
-    }
+    return this.debuffRoundService.findById(params.debuffRoundId, roleName, lang)
   }
 
   @Put(':debuffRoundId')
   @ZodSerializerDto(UpdateDebuffRoundResDTO)
+  @ResponseMessage(DebuffRoundMessage.UPDATE_SUCCESS)
   async update(
     @Body() body: UpdateDebuffRoundBodyInputDTO,
     @Param() params: GetDebuffRoundParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
-    return {
-      message: this.i18nService.translate(DebuffRoundMessage.UPDATE_SUCCESS, lang),
-      data: await this.debuffRoundService.update({
-        data: body,
-        id: params.debuffRoundId,
-        updatedById: userId
-      })
-    }
+    return this.debuffRoundService.update({
+      data: body,
+      id: params.debuffRoundId,
+      updatedById: userId
+    })
   }
 
   @Delete(':debuffRoundId')
   @ZodSerializerDto(MessageResDTO)
+  @ResponseMessage(DebuffRoundMessage.DELETE_SUCCESS)
   async delete(
     @Param() params: GetDebuffRoundParamsDTO,
-    @ActiveUser('userId') userId: number,
-    @I18nLang() lang: string
+    @ActiveUser('userId') userId: number
   ) {
     await this.debuffRoundService.delete({
       id: params.debuffRoundId,
       deletedById: userId
     })
-    return {
-      message: this.i18nService.translate(DebuffRoundMessage.DELETE_SUCCESS, lang),
-      data: null
-    }
   }
 }

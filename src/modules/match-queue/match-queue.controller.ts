@@ -1,4 +1,4 @@
-import { I18nService } from '@/i18n/i18n.service'
+import { ResponseMessage } from '@/i18n/response-message'
 import { MatchQueueMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
@@ -10,34 +10,26 @@ import { MatchQueueService } from './match-queue.service'
 
 @Controller('match-queue')
 export class MatchQueueController {
-  constructor(
-    private readonly matchQueueService: MatchQueueService,
-    private readonly i18nService: I18nService
-  ) {}
+  constructor(private readonly matchQueueService: MatchQueueService) {}
 
   @Post()
   @ZodSerializerDto(CreateMatchQueueResDTO)
+  @ResponseMessage(MatchQueueMessage.CREATE_SUCCESS)
   async create(@ActiveUser('userId') userId: number, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(MatchQueueMessage.CREATE_SUCCESS, lang),
-      data: await this.matchQueueService.create(
-        {
-          createdById: userId
-        },
-        lang
-      )
-    }
+    return this.matchQueueService.create(
+      {
+        createdById: userId
+      },
+      lang
+    )
   }
 
   @Delete('user')
   @ZodSerializerDto(MessageResDTO)
-  async delete(@ActiveUser('userId') userId: number, @I18nLang() lang: string) {
+  @ResponseMessage(MatchQueueMessage.DELETE_SUCCESS)
+  async delete(@ActiveUser('userId') userId: number) {
     await this.matchQueueService.delete({
       deletedById: userId
     })
-    return {
-      message: this.i18nService.translate(MatchQueueMessage.DELETE_SUCCESS, lang),
-      data: null
-    }
   }
 }

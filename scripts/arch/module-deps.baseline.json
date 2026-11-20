@@ -10,11 +10,11 @@
     "httpSchemasInEntities": 0,
     "handWrittenEnvelopes": 2,
     "serviceEnvelopeFiles": 6,
-    "controllerTranslateFiles": 21,
+    "controllerTranslateFiles": 10,
     "prismaOutsideRepoCalls": 0,
     "serviceStatusCodes": 11,
     "serviceMessages": 19,
-    "controllerTranslateCalls": 108
+    "controllerTranslateCalls": 48
   },
   "details": {
     "crossModuleRepoImports": [
@@ -75,25 +75,14 @@
     "controllerTranslateFiles": [
       "modules/achievement-group/achievement-group.controller.ts",
       "modules/answer/answer.controller.ts",
-      "modules/debuff-round/debuff-round.controller.ts",
       "modules/feature/feature.controller.ts",
       "modules/gemini-config/ConfigService/gemini-service-config.controller.ts",
       "modules/gemini-config/gemini-config.controller.ts",
-      "modules/leaderboard-season/leaderboard-season.controller.ts",
-      "modules/match-participant/match-participant.controller.ts",
-      "modules/match-queue/match-queue.controller.ts",
-      "modules/match-round-participant/match-round-participant.controller.ts",
-      "modules/match-round/match-round.controller.ts",
-      "modules/match/match.controller.ts",
       "modules/permission/permission.controller.ts",
       "modules/pokemon/pokemon.controller.ts",
       "modules/question-bank/question-bank.controller.ts",
       "modules/role/role.controller.ts",
-      "modules/round-question-answerlog/round-question-answerlog.controller.ts",
-      "modules/round-question/round-question.controller.ts",
-      "modules/season-rank-reward/season-rank-reward.controller.ts",
-      "modules/testset-questionbank/testset-questionbank.controller.ts",
-      "modules/user-season-history/user-season-history.controller.ts"
+      "modules/testset-questionbank/testset-questionbank.controller.ts"
     ]
   }
 }
