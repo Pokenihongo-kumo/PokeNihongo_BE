@@ -10,11 +10,11 @@
     "httpSchemasInEntities": 0,
     "handWrittenEnvelopes": 2,
     "serviceEnvelopeFiles": 6,
-    "controllerTranslateFiles": 67,
+    "controllerTranslateFiles": 66,
     "prismaOutsideRepoCalls": 0,
     "serviceStatusCodes": 11,
     "serviceMessages": 19,
-    "controllerTranslateCalls": 460
+    "controllerTranslateCalls": 430
   },
   "details": {
     "crossModuleRepoImports": [
@@ -120,7 +120,6 @@
       "modules/subscription/subscription.controller.ts",
       "modules/test/test.controller.ts",
       "modules/testset-questionbank/testset-questionbank.controller.ts",
-      "modules/testset/testset.controller.ts",
       "modules/user-achievement/user-achievement.controller.ts",
       "modules/user-ai-conversation/user-ai-conversation.controller.ts",
       "modules/user-answer-log/user-answer-log.controller.ts",

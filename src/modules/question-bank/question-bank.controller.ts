@@ -1,3 +1,4 @@
+import { ResponseMessage, msg } from '@/i18n/response-message'
 import { I18nService } from '@/i18n/i18n.service'
 import { QuestionBankMessage as M } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
@@ -108,11 +109,9 @@ export class QuestionBankController {
     type: QuestionBankListResponseSwaggerDTO
   })
   @ApiQuery({ type: GetQuestionBankListQuerySwaggerDTO })
-  async findAll(@Query() query: GetQuestionBankListQueryDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: await this.questionBankService.findAll(query)
-    }
+  @ResponseMessage(M.GET_LIST_SUCCESS)
+  async findAll(@Query() query: GetQuestionBankListQueryDTO) {
+    return this.questionBankService.findAll(query)
   }
 
   @Get('by-ids')
@@ -124,14 +123,12 @@ export class QuestionBankController {
     description: 'Lấy thông tin câu hỏi thành công',
     type: QuestionBankListResponseSwaggerDTO
   })
+  @ResponseMessage(M.GET_LIST_SUCCESS)
   async findByIds(
     @Query() query: GetQuestionBanksByIdsQueryDTO,
     @I18nLang() lang: string
   ) {
-    return {
-      message: this.i18nService.translate(M.GET_LIST_SUCCESS, lang),
-      data: await this.questionBankService.findByIds(query.questionIds, lang)
-    }
+    return this.questionBankService.findByIds(query.questionIds, lang)
   }
 
   @Get(':id')
@@ -143,11 +140,9 @@ export class QuestionBankController {
     type: QuestionBankResponseSwaggerDTO
   })
   @ZodSerializerDto(QuestionBankResDTO)
-  async findOne(@Param() params: GetQuestionBankByIdParamsDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(M.GET_SUCCESS, lang),
-      data: await this.questionBankService.findOne(params.id)
-    }
+  @ResponseMessage(M.GET_SUCCESS)
+  async findOne(@Param() params: GetQuestionBankByIdParamsDTO) {
+    return this.questionBankService.findOne(params.id)
   }
 
   @Put(':id')
@@ -163,15 +158,12 @@ export class QuestionBankController {
     description: 'Cập nhật câu hỏi với meanings thành công',
     type: QuestionBankResponseSwaggerDTO
   })
+  @ResponseMessage(M.UPDATE_SUCCESS)
   async updateWithMeanings(
     @Param() params: GetQuestionBankByIdParamsDTO,
-    @Body() body: UpdateQuestionBankWithMeaningsBodyDTO,
-    @I18nLang() lang: string
+    @Body() body: UpdateQuestionBankWithMeaningsBodyDTO
   ) {
-    return {
-      message: this.i18nService.translate(M.UPDATE_SUCCESS, lang),
-      data: await this.questionBankService.updateWithMeanings(params.id, body)
-    }
+    return this.questionBankService.updateWithMeanings(params.id, body)
   }
 
   @Delete('bulk')
@@ -210,13 +202,10 @@ export class QuestionBankController {
       }
     }
   })
-  async removeMany(
-    @Body() body: BulkDeleteQuestionBankBodyDTO,
-    @I18nLang() lang: string
-  ) {
+  async removeMany(@Body() body: BulkDeleteQuestionBankBodyDTO) {
     const data = await this.questionBankService.removeMany(body.ids)
     return {
-      message: this.i18nService.translate(M.DELETE_MANY_SUCCESS, lang, {
+      message: msg(M.DELETE_MANY_SUCCESS, {
         deleted: data.deletedCount,
         requested: data.requestedCount
       }),
@@ -234,10 +223,8 @@ export class QuestionBankController {
     type: QuestionBankResponseSwaggerDTO
   })
   @ZodSerializerDto(QuestionBankResDTO)
-  async remove(@Param() params: GetQuestionBankByIdParamsDTO, @I18nLang() lang: string) {
-    return {
-      message: this.i18nService.translate(M.DELETE_SUCCESS, lang),
-      data: await this.questionBankService.remove(params.id)
-    }
+  @ResponseMessage(M.DELETE_SUCCESS)
+  async remove(@Param() params: GetQuestionBankByIdParamsDTO) {
+    return this.questionBankService.remove(params.id)
   }
 }
