@@ -1,3 +1,6 @@
+import { PlacementEvaluationService } from './placement-evaluation.service'
+import { TestAttemptGradingService } from './test-attempt-grading.service'
+import { TestAttemptReviewService } from './test-attempt-review.service'
 import { Module } from '@nestjs/common'
 import { UserTestAttemptController } from './user-test-attempt.controller'
 import { UserTestAttemptRepo } from './user-test-attempt.repo'
@@ -32,7 +35,14 @@ import { LessonModule } from '../lesson/lesson.module'
     LessonModule
   ],
   controllers: [UserTestAttemptController],
-  providers: [UserTestAttemptService, UserTestAttemptRepo, PrismaService],
+  providers: [
+    UserTestAttemptService,
+    UserTestAttemptRepo,
+    PrismaService,
+    TestAttemptGradingService,
+    TestAttemptReviewService,
+    PlacementEvaluationService
+  ],
   exports: [UserTestAttemptService, UserTestAttemptRepo]
 })
 export class UserTestAttemptModule {}
