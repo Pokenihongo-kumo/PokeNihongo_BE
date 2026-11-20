@@ -76,12 +76,16 @@ import {
 } from '@nestjs/swagger'
 import { ZodSerializerDto } from 'nestjs-zod'
 import { CloudinaryMultiMulterConfig } from '@/modules/upload/cloudinary/multer.config'
+import { VocabularyImportService } from './vocabulary-import.service'
 import { VocabularyService } from './vocabulary.service'
 
 @ApiTags('Vocabulary')
 @Controller('vocabulary')
 export class VocabularyController {
-  constructor(private readonly vocabularyService: VocabularyService) {}
+  constructor(
+    private readonly vocabularyService: VocabularyService,
+    private readonly vocabularyImport: VocabularyImportService
+  ) {}
 
   @Put('by-word/:wordJp')
   @UseInterceptors(
@@ -185,7 +189,7 @@ export class VocabularyController {
         : undefined
     const allowUpdateLevelN =
       parsedLevelN !== undefined || updateLevelN === 'true' || updateLevelN === '1'
-    const data = await this.vocabularyService.importFromXlsxFiles(
+    const data = await this.vocabularyImport.importFromXlsxFiles(
       files,
       userId,
       language,
@@ -219,7 +223,7 @@ export class VocabularyController {
     @ActiveUser('userId') userId?: number,
     @Query('language') language?: string
   ) {
-    const data = await this.vocabularyService.importFromTxt(file, userId, language)
+    const data = await this.vocabularyImport.importFromTxt(file, userId, language)
     return {
       message: msg(M.IMPORT_TXT_SUCCESS, {
         created: data.created.length,
@@ -457,7 +461,7 @@ export class VocabularyController {
   })
   @ZodSerializerDto(VocabularyListResDTO)
   async createSampleVocabularies(@ActiveUser('userId') userId: number | undefined) {
-    const { data } = await this.vocabularyService.createSampleVocabularies(userId)
+    const { data } = await this.vocabularyImport.createSampleVocabularies(userId)
     return {
       message: msg(M.CREATE_SAMPLE_SUCCESS, { count: data.results.length }),
       data

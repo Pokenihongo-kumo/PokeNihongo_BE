@@ -55,7 +55,6 @@ describe('VocabularyService', () => {
     {} as never,
     {} as never,
     {} as never,
-    {} as never,
     {} as never
   )
 

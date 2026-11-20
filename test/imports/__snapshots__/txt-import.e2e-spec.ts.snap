@@ -1,0 +1,165 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TXT imports (e2e) kanji: a new kanji with its readings, then the same file again 1`] = `
+{
+  "again": {
+    "body": {
+      "data": {
+        "created": [],
+        "language": "string",
+        "skipped": [],
+        "totalLines": "number",
+        "updated": [
+          {
+            "actions": [
+              "string",
+            ],
+            "kanji": {
+              "character": "string",
+              "createdAt": "string",
+              "id": "number",
+              "img": "null",
+              "jlptLevel": "number",
+              "meaningKey": "string",
+              "readings": [],
+              "strokeCount": "number",
+              "updatedAt": "string",
+            },
+            "language": "string",
+            "meaningValue": "string",
+            "updates": {},
+          },
+        ],
+      },
+      "message": "Kanji imported from TXT (en): 0 created, 1 updated, 0 skipped",
+      "statusCode": 201,
+    },
+    "counts": {
+      "created": 0,
+      "skipped": 0,
+      "updated": 1,
+    },
+    "httpStatus": 201,
+  },
+  "first": {
+    "body": {
+      "data": {
+        "created": [
+          {
+            "jlptLevel": "number",
+            "kanji": {
+              "character": "string",
+              "createdAt": "string",
+              "id": "number",
+              "img": "null",
+              "jlptLevel": "number",
+              "meaningKey": "string",
+              "readings": [],
+              "strokeCount": "number",
+              "updatedAt": "string",
+            },
+            "meaningKey": "string",
+            "meaningValue": "string",
+            "readings": [
+              {
+                "createdAt": "string",
+                "id": "number",
+                "kanjiId": "number",
+                "reading": "string",
+                "readingType": "string",
+                "updatedAt": "string",
+              },
+            ],
+            "strokeCount": "number",
+          },
+        ],
+        "language": "string",
+        "skipped": [],
+        "totalLines": "number",
+        "updated": [],
+      },
+      "message": "Kanji imported from TXT (en): 1 created, 0 updated, 0 skipped",
+      "statusCode": 201,
+    },
+    "counts": {
+      "created": 1,
+      "skipped": 0,
+      "updated": 0,
+    },
+    "httpStatus": 201,
+  },
+}
+`;
+
+exports[`TXT imports (e2e) vocabulary: a new word, then the same file again 1`] = `
+{
+  "again": {
+    "body": {
+      "data": {
+        "created": [
+          {
+            "message": "Skipped create; updated null fields and/or added translations if needed",
+            "vocabulary": {
+              "audioUrl": "null",
+              "createdAt": "string",
+              "createdById": "number",
+              "id": "number",
+              "imageUrl": "null",
+              "kanji": [],
+              "levelN": "null",
+              "reading": "string",
+              "updatedAt": "string",
+              "wordJp": "string",
+              "wordType": "null",
+              "wordTypeId": "null",
+            },
+          },
+        ],
+        "skipped": [],
+      },
+      "message": "Import TXT thành công: 1 mục, bỏ qua 0 mục",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+    "skippedReasons": [],
+  },
+  "first": {
+    "body": {
+      "data": {
+        "created": [
+          {
+            "isNew": "boolean",
+            "meaning": {
+              "examples": [],
+              "id": "number",
+              "translations": [
+                {
+                  "language_code": "string",
+                  "value": "string",
+                },
+              ],
+            },
+            "translationsCreated": "number",
+            "vocabulary": {
+              "audioUrl": "null",
+              "createdAt": "string",
+              "createdById": "number",
+              "id": "number",
+              "imageUrl": "null",
+              "levelN": "null",
+              "reading": "string",
+              "updatedAt": "string",
+              "wordJp": "string",
+              "wordTypeId": "null",
+            },
+          },
+        ],
+        "skipped": [],
+      },
+      "message": "Import TXT thành công: 1 mục, bỏ qua 0 mục",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+}
+`;
