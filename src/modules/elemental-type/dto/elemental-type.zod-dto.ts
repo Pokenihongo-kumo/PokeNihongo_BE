@@ -43,15 +43,11 @@ export const GetElementalTypeParamsSchema = z
   })
   .strict()
 
-export type GetElementalTypeParams = z.infer<typeof GetElementalTypeParamsSchema>
-
 export class GetElementalTypeParamsDTO extends createZodDto(
   GetElementalTypeParamsSchema
 ) {}
 
 export const GetElementalTypeDetailResSchema = resSchema(ElementalTypeSchema)
-
-export type GetElementalTypeDetailRes = z.infer<typeof GetElementalTypeDetailResSchema>
 
 export class GetElementalTypeDetailResDTO extends createZodDto(
   GetElementalTypeDetailResSchema

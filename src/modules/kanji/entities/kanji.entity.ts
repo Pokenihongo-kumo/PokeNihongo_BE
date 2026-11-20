@@ -70,4 +70,3 @@ export const KanjiSchema = z.object({
 
 // Type exports
 export type Kanji = z.infer<typeof KanjiSchema>
-export type KanjiManagement = z.infer<typeof KanjiManagementSchema>

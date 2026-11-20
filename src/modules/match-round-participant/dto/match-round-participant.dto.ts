@@ -7,8 +7,7 @@ import {
   GetMatchRoundParticipantDetailResSchema,
   GetMatchRoundParticipantParamsSchema,
   UpdateMatchRoundParticipantBodySchema,
-  UpdateMatchRoundParticipantResSchema,
-  UpdateWithListItemResSchema
+  UpdateMatchRoundParticipantResSchema
 } from './match-round-participant.zod-dto'
 
 // Request DTOs
@@ -35,7 +34,6 @@ export class CreateMatchRoundParticipantResDTO extends createZodDto(
 export class UpdateMatchRoundParticipantResDTO extends createZodDto(
   UpdateMatchRoundParticipantResSchema
 ) {}
-export class UpdateWithListItemResDTO extends createZodDto(UpdateWithListItemResSchema) {}
 export class GetMatchRoundParticipantDetailResDTO extends createZodDto(
   GetMatchRoundParticipantDetailResSchema
 ) {}

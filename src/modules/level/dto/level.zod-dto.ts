@@ -13,7 +13,6 @@ export const GetLevelParamsSchema = z
     levelId: checkIdSchema(LevelMessage.INVALID_DATA)
   })
   .strict()
-export type GetLevelParams = z.infer<typeof GetLevelParamsSchema>
 export class GetLevelParamsDTO extends createZodDto(GetLevelParamsSchema) {}
 
 export const CreateLevelBodySchema = LevelSchema.pick({

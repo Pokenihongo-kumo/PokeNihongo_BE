@@ -10,15 +10,6 @@ export class UserSeasonHistoryNotFoundException extends NotFoundException {
   }
 }
 
-export class UserSeasonHistoryAlreadyExistsException extends ConflictException {
-  constructor() {
-    super({
-      message: UserSeasonHistoryMessage.ALREADY_EXISTS,
-      errorKey: UserSeasonHistoryMessage.ALREADY_EXISTS
-    })
-  }
-}
-
 export class UserCanNotClaimRewardsException extends ConflictException {
   constructor() {
     super({

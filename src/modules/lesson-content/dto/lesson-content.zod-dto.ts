@@ -1,16 +1,10 @@
 import { LessonContentSortField, SortOrder } from '@/common/enum/enum'
-import { paginatedResSchema } from '@/shared/utils/pagination'
+
 import { resSchema } from '@/shared/utils/res-schema'
 import { LessonContentsType as PrismaLessonContentType } from '@prisma/client'
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
-import {
-  GroupedLessonContentSchema,
-  LessonContentSchema,
-  UpdateLessonContentOrder
-} from '../entities/lesson-content.entities'
-
-export class updateLessonContentOrder extends createZodDto(UpdateLessonContentOrder) {}
+import { GroupedLessonContentSchema } from '../entities/lesson-content.entities'
 
 // Request/Response Types
 
@@ -21,11 +15,6 @@ export const CreateLessonContentBodySchema = z.object({
 })
 
 export type CreateLessonContentBody = z.infer<typeof CreateLessonContentBodySchema>
-
-// Lesson Content DTOs
-export class CreateLessonContentBodyDTO extends createZodDto(
-  CreateLessonContentBodySchema
-) {}
 
 export const CreateMutiLessonContentBodySchema = z.object({
   lessonId: z.number(),
@@ -44,20 +33,6 @@ export const UpdateLessonContentBodySchema = z.object({
 
 export type UpdateLessonContentBody = z.infer<typeof UpdateLessonContentBodySchema>
 
-export class UpdateLessonContentBodyDTO extends createZodDto(
-  UpdateLessonContentBodySchema
-) {}
-
-export const GetLessonContentByIdParamsSchema = z.object({
-  id: z.string().transform(Number)
-})
-
-export type GetLessonContentByIdParams = z.infer<typeof GetLessonContentByIdParamsSchema>
-
-export class GetLessonContentByIdParamsDTO extends createZodDto(
-  GetLessonContentByIdParamsSchema
-) {}
-
 export const GetLessonContentListQuerySchema = z.object({
   page: z.string().transform(Number).default('1'),
   limit: z.string().transform(Number).default('10'),
@@ -75,14 +50,6 @@ export type GetLessonContentListQuery = z.infer<typeof GetLessonContentListQuery
 export class GetLessonContentListQueryDTO extends createZodDto(
   GetLessonContentListQuerySchema
 ) {}
-
-// Response schemas
-
-export const LessonContentListResSchema = paginatedResSchema(LessonContentSchema).strict()
-
-export type LessonContentListRes = z.infer<typeof LessonContentListResSchema>
-
-export class LessonContentListResDTO extends createZodDto(LessonContentListResSchema) {}
 
 export const LessonContentFullResSchema = resSchema(GroupedLessonContentSchema).strict()
 

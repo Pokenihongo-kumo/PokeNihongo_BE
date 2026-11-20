@@ -25,7 +25,6 @@ export const GetGachaPurchaseDetailSchema = GachaPurchaseSchema.extend({})
 
 // Type exports
 export type GachaPurchase = z.infer<typeof GachaPurchaseSchema>
-export type GetGachaPurchaseDetail = z.infer<typeof GetGachaPurchaseDetailSchema>
 
 // Field for query
 export type GachaPurchaseFieldType = keyof z.infer<typeof GachaPurchaseSchema>

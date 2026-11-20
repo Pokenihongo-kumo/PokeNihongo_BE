@@ -10,15 +10,6 @@ export class UserGachaPityNotFoundException extends NotFoundException {
   }
 }
 
-export class UserGachaPityAlreadyExistsException extends BadRequestException {
-  constructor() {
-    super({
-      message: UserGachaPityMessage.ALREADY_EXISTS,
-      errorKey: UserGachaPityMessage.ALREADY_EXISTS
-    })
-  }
-}
-
 export class UserGachaPityHasPendingException extends BadRequestException {
   constructor() {
     super({

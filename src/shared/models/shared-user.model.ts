@@ -1,7 +1,6 @@
 import { UserStatus } from '@/common/constants/auth.constant'
 import { AuthMessage } from '@/i18n/message-keys'
-import { PermissionSchema } from 'src/shared/models/shared-permission.model'
-import { RoleSchema } from 'src/shared/models/shared-role.model'
+
 import { z } from 'zod'
 
 export const UserSchema = z.object({
@@ -30,41 +29,7 @@ export const UserSchema = z.object({
   updatedAt: z.date()
 })
 
-/**
- * Áp dụng cho Response của api GET('profile') và GET('users/:userId')
- */
-export const GetAccountProfileResSchema = UserSchema.omit({
-  password: true
-}).extend({
-  role: RoleSchema.pick({
-    id: true,
-    name: true
-  }).extend({
-    permissions: z.array(
-      PermissionSchema.pick({
-        id: true,
-        name: true,
-        module: true,
-        path: true,
-        method: true
-      })
-    )
-  })
-})
-
-/**
- * Áp dụng cho Response của api PUT('profile') và PUT('users/:userId')
- */
-export const UpdateProfileResSchema = z.object({
-  data: UserSchema.omit({
-    password: true
-  }),
-  message: z.string()
-})
-
 export type User = z.infer<typeof UserSchema>
 
 // A user found by id or by email
 export type WhereUniqueUserType = { id: number } | { email: string }
-export type GetUserProfileRes = z.infer<typeof GetAccountProfileResSchema>
-export type UpdateProfileRes = z.infer<typeof UpdateProfileResSchema>

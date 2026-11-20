@@ -39,16 +39,10 @@ export const AnswerQuestionBodySchema = z
 
 export type AnswerQuestionBody = z.infer<typeof AnswerQuestionBodySchema>
 
-export const AnswerQuestionResSchema = resSchema(RoundQuestionSchema)
-
-export const UpdateWithListItemResSchema = resSchema(z.array(RoundQuestionSchema))
-
 // Query Schema
 
 export const GetRoundQuestionParamsSchema = z.object({
   roundQuestionId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
-
-export type GetRoundQuestionParams = z.infer<typeof GetRoundQuestionParamsSchema>
 
 export const GetRoundQuestionDetailResSchema = resSchema(GetRoundQuestionDetailSchema)

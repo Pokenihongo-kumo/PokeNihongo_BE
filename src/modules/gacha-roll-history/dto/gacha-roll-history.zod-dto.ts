@@ -37,15 +37,11 @@ export type UpdateGachaRollHistoryBody = z.infer<typeof UpdateGachaRollHistoryBo
 
 export const UpdateGachaRollHistoryResSchema = CreateGachaRollHistoryResSchema
 
-export const UpdateWithListItemResSchema = resSchema(z.array(GachaRollHistorySchema))
-
 // Query Schema
 
 export const GetGachaRollHistoryParamsSchema = z.object({
   gachaRollHistoryId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
-
-export type GetGachaRollHistoryParams = z.infer<typeof GetGachaRollHistoryParamsSchema>
 
 export const GetGachaRollHistoryDetailResSchema = resSchema(
   GetGachaRollHistoryDetailSchema

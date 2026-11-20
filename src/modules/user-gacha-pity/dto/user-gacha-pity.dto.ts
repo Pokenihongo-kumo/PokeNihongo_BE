@@ -5,8 +5,7 @@ import {
   GetUserGachaPityDetailResSchema,
   GetUserGachaPityParamsSchema,
   UpdateUserGachaPityBodySchema,
-  UpdateUserGachaPityResSchema,
-  UpdateWithListItemResSchema
+  UpdateUserGachaPityResSchema
 } from './user-gacha-pity.zod-dto'
 
 // Request DTOs
@@ -29,7 +28,6 @@ export class CreateUserGachaPityResDTO extends createZodDto(
 export class UpdateUserGachaPityResDTO extends createZodDto(
   UpdateUserGachaPityResSchema
 ) {}
-export class UpdateWithListItemResDTO extends createZodDto(UpdateWithListItemResSchema) {}
 export class GetUserGachaPityDetailResDTO extends createZodDto(
   GetUserGachaPityDetailResSchema
 ) {}

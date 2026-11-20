@@ -10,15 +10,6 @@ export class UserSubscriptionNotFoundException extends NotFoundException {
   }
 }
 
-export class UserSubscriptionAlreadyExistsException extends ConflictException {
-  constructor() {
-    super({
-      message: UserSubscriptionMessage.ALREADY_EXISTS,
-      errorKey: UserSubscriptionMessage.ALREADY_EXISTS
-    })
-  }
-}
-
 export class UserHasSubscriptionWithStatusActiveException extends ConflictException {
   constructor() {
     super({

@@ -40,7 +40,3 @@ export const AnswerWithTranslationSchema = AnswerSchema.omit({ answerKey: true }
       .optional()
   })
   .strict()
-
-// Type exports
-export type Answer = z.infer<typeof AnswerSchema>
-export type AnswerWithTranslation = z.infer<typeof AnswerWithTranslationSchema>

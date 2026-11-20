@@ -48,17 +48,6 @@ export enum GrammarSortField {
   UPDATED_AT = 'updatedAt'
 }
 
-// Question specific sort fields
-export enum QuestionSortField {
-  ID = 'id',
-  QUESTION_JP = 'questionJp',
-  QUESTION_ORDER = 'questionOrder',
-  QUESTION_KEY = 'questionKey',
-  EXERCISES_ID = 'exercisesId',
-  CREATED_AT = 'createdAt',
-  UPDATED_AT = 'updatedAt'
-}
-
 // Answer specific sort fields
 export enum AnswerSortField {
   ID = 'id',

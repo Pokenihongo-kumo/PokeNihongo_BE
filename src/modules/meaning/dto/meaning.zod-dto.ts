@@ -84,17 +84,11 @@ export const GetMeaningByIdParamsSchema = z.object({
   id: checkIdSchema(MeaningMessage.INVALID_ID)
 })
 
-export type GetMeaningByIdParams = z.infer<typeof GetMeaningByIdParamsSchema>
-
 export class GetMeaningByIdParamsDTO extends createZodDto(GetMeaningByIdParamsSchema) {}
 
 export const GetMeaningsByVocabularyParamsSchema = z.object({
   vocabularyId: checkIdSchema(MeaningMessage.VOCABULARY_ID_INVALID)
 })
-
-export type GetMeaningsByVocabularyParams = z.infer<
-  typeof GetMeaningsByVocabularyParamsSchema
->
 
 export class GetMeaningsByVocabularyParamsDTO extends createZodDto(
   GetMeaningsByVocabularyParamsSchema

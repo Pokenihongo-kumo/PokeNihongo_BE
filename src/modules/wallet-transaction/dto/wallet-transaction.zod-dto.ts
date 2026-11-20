@@ -1,6 +1,6 @@
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { WalletTransactionMessage } from '@/i18n/message-keys'
-import { WalletSchema } from '@/modules/wallet/entities/wallet.entity'
+
 import { resSchema } from '@/shared/utils/res-schema'
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
@@ -21,15 +21,7 @@ export type CreateWalletTransactionBody = z.infer<
   typeof CreateWalletTransactionBodySchema
 >
 
-export class CreatedWalletTransactionBodyDTO extends createZodDto(
-  CreateWalletTransactionBodySchema
-) {}
-
 export const CreateWalletTransactionResSchema = resSchema(WalletTransactionSchema)
-
-export class CreateWalletTransactionResDTO extends createZodDto(
-  CreateWalletTransactionResSchema
-) {}
 
 export const UpdateWalletTransactionBodySchema = CreateWalletTransactionBodySchema
 
@@ -53,20 +45,12 @@ export const GetWalletTransactionParamsSchema = z
   })
   .strict()
 
-export type GetWalletTransactionParams = z.infer<typeof GetWalletTransactionParamsSchema>
-
 export class GetWalletTransactionParamsDTO extends createZodDto(
   GetWalletTransactionParamsSchema
 ) {}
 
 export const GetWalletTransactionDetailResSchema = CreateWalletTransactionResSchema
 
-export type GetWalletTransactionDetailRes = z.infer<
-  typeof GetWalletTransactionDetailResSchema
->
-
 export class GetWalletTransactionDetailResDTO extends createZodDto(
   GetWalletTransactionDetailResSchema
 ) {}
-
-export const GetWalletsWithUserResSchema = resSchema(z.array(WalletSchema))

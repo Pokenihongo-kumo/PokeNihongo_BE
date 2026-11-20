@@ -1,8 +1,5 @@
 import { WeekDay, WeekDayType } from '@/common/constants/attendence-config.constant'
 import { Prisma } from '@prisma/client'
-import { randomInt } from 'crypto'
-import path from 'path'
-import { v4 as uuidv4 } from 'uuid'
 
 // Prisma error predicates live in ./utils/prisma-errors; re-exported so the
 // existing imports keep working while modules migrate
@@ -12,34 +9,6 @@ export {
   isRestrictViolationPrismaError,
   isUniqueConstraintPrismaError
 } from './utils/prisma-errors'
-
-export const generateOTP = () => {
-  return String(randomInt(100000, 1000000))
-}
-
-export const generateRandomFilename = (filename: string) => {
-  const ext = path.extname(filename)
-  return `${uuidv4()}${ext}`
-}
-
-export function todayUTCFromVN() {
-  const now = new Date()
-
-  // Lấy ngày hiện tại ở múi giờ VN
-  const vnYear = now.getUTCFullYear()
-  const vnMonth = now.getUTCMonth()
-  const vnDate = now.getUTCDate()
-  now.setHours(0, 0, 0, 0)
-  now.setHours(now.getHours() + 7)
-
-  // 0h VN
-  return now
-}
-
-export function mapConditionMeta(meta?: { type?: number } | null) {
-  if (!meta) return Prisma.JsonNull
-  return meta
-}
 
 export function getWeekDay(date: Date): WeekDayType {
   const days: WeekDayType[] = [
@@ -96,28 +65,6 @@ export function addDaysUTC0000(date, days) {
     0 // mili-giây = 0
   )
   return new Date(utc)
-}
-
-export function getDisplayName(
-  displayNameObj: Record<string, string> | string | null | undefined,
-  lang: string = 'vi'
-): string {
-  if (!displayNameObj) return ''
-  if (typeof displayNameObj === 'string') return displayNameObj
-  return (
-    displayNameObj[lang] ?? displayNameObj['en'] ?? Object.values(displayNameObj)[0] ?? ''
-  )
-}
-
-export function mapTypesDisplayName(
-  types: any[] | null | undefined,
-  lang: string = 'vi'
-): any[] {
-  if (!Array.isArray(types)) return []
-  return types.map((t) => ({
-    ...t,
-    display_name: getDisplayName(t?.display_name, lang)
-  }))
 }
 
 export function addTimeUTC(date, msToAdd) {

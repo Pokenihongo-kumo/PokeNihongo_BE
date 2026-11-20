@@ -44,8 +44,6 @@ export const GetNotificationParamsSchema = z.object({
   notificationId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
 
-export type GetNotificationParams = z.infer<typeof GetNotificationParamsSchema>
-
 export const UpdateNotificationReadListBodySchema = z
   .object({
     notificationIds: z.array(checkIdSchema(ENTITY_MESSAGE.INVALID_ID)).min(1)
@@ -57,9 +55,5 @@ export type UpdateNotificationReadListBody = z.infer<
 >
 
 export const UpdateNotificationReadListResSchema = resSchema(z.array(NotificationSchema))
-
-export const GetRewardByLeaderboardParamsSchema = z.object({
-  leaderboardSeasonId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
-})
 
 export const GetNotificationDetailResSchema = resSchema(GetNotificationDetailSchema)

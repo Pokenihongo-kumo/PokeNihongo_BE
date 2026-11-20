@@ -31,15 +31,6 @@ export const UserSpeakingAttemptNotFoundException = new HttpException(
   HttpStatus.NOT_FOUND
 )
 
-export const UserSpeakingAttemptAlreadyExistsException = new HttpException(
-  {
-    statusCode: HttpStatus.CONFLICT,
-    message: SPEAKING_MESSAGE.ALREADY_EXISTS,
-    error: 'USER_SPEAKING_ATTEMPT_ALREADY_EXISTS'
-  },
-  HttpStatus.CONFLICT
-)
-
 export const InvalidUserSpeakingAttemptDataException = new HttpException(
   {
     statusCode: HttpStatus.BAD_REQUEST,

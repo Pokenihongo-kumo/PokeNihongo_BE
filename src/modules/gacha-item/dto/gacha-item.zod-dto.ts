@@ -10,18 +10,6 @@ import {
   GetRandomGachaItemTypeSchema
 } from '../entities/gacha-item.entity'
 
-// ============ NEW STRUCTURE ============
-// Create single item: { starType, pokemonId }
-
-export const CreateGachaItemBodySchema = z
-  .object({
-    starType: z.nativeEnum(GachaStarType),
-    pokemonId: z.number()
-  })
-  .strict()
-
-export type CreateGachaItemBody = z.infer<typeof CreateGachaItemBodySchema>
-
 // Create multiple items: { bannerId, items: [{ starType, pokemons: [...] }] }
 
 export const CreateGachaItemByStarTypeSchema = z.object({
@@ -35,17 +23,6 @@ export const CreateWithListItemBodySchema = z.object({
 })
 
 export type CreateWithListItemBody = z.infer<typeof CreateWithListItemBodySchema>
-
-// Update single item: { starType, pokemonId }
-
-export const UpdateGachaItemBodySchema = z
-  .object({
-    starType: z.nativeEnum(GachaStarType).optional(),
-    pokemonId: z.number().optional()
-  })
-  .strict()
-
-export type UpdateGachaItemBody = z.infer<typeof UpdateGachaItemBodySchema>
 
 // Update multiple items: { bannerId, items: [{ starType, pokemons: [...] }] }
 
@@ -77,13 +54,7 @@ export const GetRandomGachaItemsResSchema = resSchema(
   })
 )
 
-// ============ RESPONSE SCHEMAS ============
-
-export const CreateGachaItemResSchema = resSchema(GachaItemSchema)
-
 export const CreateWithListItemResSchema = resSchema(z.array(GachaItemSchema))
-
-export const UpdateGachaItemResSchema = CreateGachaItemResSchema
 
 export const UpdateWithListItemResSchema = resSchema(z.array(GachaItemSchema))
 
@@ -92,9 +63,5 @@ export const UpdateWithListItemResSchema = resSchema(z.array(GachaItemSchema))
 export const GetGachaItemParamsSchema = z.object({
   gachaItemId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
-
-// ============ TYPE EXPORTS ============
-
-export type GetGachaItemParams = z.infer<typeof GetGachaItemParamsSchema>
 
 export const GetGachaItemDetailResSchema = resSchema(GetGachaItemDetailSchema)

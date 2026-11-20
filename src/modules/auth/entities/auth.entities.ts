@@ -39,13 +39,5 @@ export const RefreshTokenSchema = z.object({
   expiresAt: z.date(),
   createdAt: z.date()
 })
-
-export const GoogleAuthStateSchema = DeviceSchema.pick({
-  userAgent: true,
-  ip: true
-})
-
-export type VerificationCode = z.infer<typeof VerificationCodeSchema>
 export type RefreshToken = z.infer<typeof RefreshTokenSchema>
 export type Device = z.infer<typeof DeviceSchema>
-export type GoogleAuthState = z.infer<typeof GoogleAuthStateSchema>

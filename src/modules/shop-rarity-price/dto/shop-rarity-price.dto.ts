@@ -5,8 +5,7 @@ import {
   GetShopRarityPriceDetailResSchema,
   GetShopRarityPriceParamsSchema,
   UpdateShopRarityPriceBodySchema,
-  UpdateShopRarityPriceResSchema,
-  UpdateWithListItemResSchema
+  UpdateShopRarityPriceResSchema
 } from './shop-rarity-price.zod-dto'
 
 // Request DTOs
@@ -29,7 +28,6 @@ export class CreateShopRarityPriceResDTO extends createZodDto(
 export class UpdateShopRarityPriceResDTO extends createZodDto(
   UpdateShopRarityPriceResSchema
 ) {}
-export class UpdateWithListItemResDTO extends createZodDto(UpdateWithListItemResSchema) {}
 export class GetShopRarityPriceDetailResDTO extends createZodDto(
   GetShopRarityPriceDetailResSchema
 ) {}

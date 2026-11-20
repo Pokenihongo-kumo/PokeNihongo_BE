@@ -6,7 +6,6 @@ import {
   FlashcardCardStatusEnum,
   FlashcardContentTypeEnum,
   FlashcardDeckStatusEnum,
-  FlashcardImportContentTypeEnum,
   FlashcardImportItemSchema,
   JsonRecordSchema
 } from '../entities/flashcard.entity'
@@ -50,19 +49,7 @@ export const FlashcardDeckParamsSchema = z.object({
   deckId: checkIdSchema(M.INVALID_DECK_ID)
 })
 
-export type FlashcardDeckParams = z.infer<typeof FlashcardDeckParamsSchema>
-
 export class FlashcardDeckParamsDTO extends createZodDto(FlashcardDeckParamsSchema) {}
-
-export const FlashcardDeckCardParamsSchema = FlashcardDeckParamsSchema.extend({
-  cardId: checkIdSchema(M.INVALID_CARD_ID)
-})
-
-export type FlashcardDeckCardParams = z.infer<typeof FlashcardDeckCardParamsSchema>
-
-export class FlashcardDeckCardParamsDTO extends createZodDto(
-  FlashcardDeckCardParamsSchema
-) {}
 
 export const CreateFlashcardCardBodySchema = z
   .object({
@@ -162,23 +149,6 @@ export class GetFlashcardCardListQueryDTO extends createZodDto(
   GetFlashcardCardListQuerySchema
 ) {}
 
-export const FlashcardLibrarySearchQuerySchema = z.object({
-  type: FlashcardImportContentTypeEnum.default('VOCABULARY'),
-  currentPage: checkIdSchema(M.INVALID_PAGE).default(1),
-  pageSize: checkIdSchema(M.INVALID_PAGE_SIZE).max(100, M.INVALID_PAGE_SIZE).default(10),
-  search: z.string().trim().optional(),
-  jlptLevel: z.coerce.number().int().min(1).max(5).optional(),
-  level: z.string().trim().optional()
-})
-
-export type FlashcardLibrarySearchQuery = z.infer<
-  typeof FlashcardLibrarySearchQuerySchema
->
-
-export class FlashcardLibrarySearchQueryDTO extends createZodDto(
-  FlashcardLibrarySearchQuerySchema
-) {}
-
 export const ImportFlashcardCardsBodySchema = z.object({
   items: z.array(FlashcardImportItemSchema).min(1, M.IMPORT_ITEMS_REQUIRED)
 })
@@ -203,8 +173,6 @@ export const FlashcardReadBodySchema = z.object({
   read: z.boolean()
 })
 
-export type FlashcardReadBody = z.infer<typeof FlashcardReadBodySchema>
-
 export class FlashcardReadBodyDTO extends createZodDto(FlashcardReadBodySchema) {}
 
 export const FlashcardReviewActionBodySchema = z.object({
@@ -224,8 +192,6 @@ export const DeleteFlashcardCardsBodySchema = z.object({
   deckId: checkIdSchema(M.INVALID_DECK_ID),
   cardIds: z.array(checkIdSchema(M.INVALID_CARD_ID)).min(1, M.INVALID_CARD_ID)
 })
-
-export type DeleteFlashcardCardsBody = z.infer<typeof DeleteFlashcardCardsBodySchema>
 
 export class DeleteFlashcardCardsBodyDTO extends createZodDto(
   DeleteFlashcardCardsBodySchema

@@ -61,8 +61,6 @@ export const GetLanguagesByIdParamsSchema = z.object({
   id: checkIdSchema(LanguagesMessage.INVALID_ID)
 })
 
-export type GetLanguagesByIdParams = z.infer<typeof GetLanguagesByIdParamsSchema>
-
 export class GetLanguagesByIdParamsDTO extends createZodDto(
   GetLanguagesByIdParamsSchema
 ) {}
@@ -98,12 +96,8 @@ export class GetLanguagesByCodeParamsDTO extends createZodDto(
 
 export const LanguagesResSchema = resSchema(LanguagesSchema).strict()
 
-export type LanguagesRes = z.infer<typeof LanguagesResSchema>
-
 export class LanguagesResDTO extends createZodDto(LanguagesResSchema) {}
 
 export const LanguagesListResSchema = paginatedResSchema(LanguagesSchema)
-
-export type LanguagesListRes = z.infer<typeof LanguagesListResSchema>
 
 export class LanguagesListResDTO extends createZodDto(LanguagesListResSchema) {}

@@ -93,8 +93,6 @@ export class CreateMatchRoundBodyDTO extends createZodDto(CreateMatchRoundBodySc
 
 export const CreateMatchRoundResSchema = resSchema(MatchRoundSchema)
 
-export class CreateMatchRoundResDTO extends createZodDto(CreateMatchRoundResSchema) {}
-
 export const UpdateMatchRoundBodySchema = CreateMatchRoundBodySchema.partial().strict()
 
 export type UpdateMatchRoundBody = z.infer<typeof UpdateMatchRoundBodySchema>
@@ -111,19 +109,9 @@ export const GetMatchRoundParamsSchema = z
   })
   .strict()
 
-export type GetMatchRoundParams = z.infer<typeof GetMatchRoundParamsSchema>
-
 export class GetMatchRoundParamsDTO extends createZodDto(GetMatchRoundParamsSchema) {}
 
-export const GetMatchRoundDetailWithAllLangResSchema = resSchema(MatchRoundSchema)
-
-export class GetMatchRoundDetailWithAllLangResDTO extends createZodDto(
-  GetMatchRoundDetailWithAllLangResSchema
-) {}
-
 export const GetMatchRoundDetailResSchema = resSchema(MatchRoundSchema)
-
-export type GetMatchRoundDetailRes = z.infer<typeof GetMatchRoundDetailResSchema>
 
 export class GetMatchRoundDetailResDTO extends createZodDto(
   GetMatchRoundDetailResSchema

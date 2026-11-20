@@ -41,19 +41,11 @@ export type UpdateRoundQuestionsAnswerLogBody = z.infer<
 export const UpdateRoundQuestionsAnswerLogResSchema =
   CreateRoundQuestionsAnswerLogResSchema
 
-export const UpdateWithListItemResSchema = resSchema(
-  z.array(RoundQuestionsAnswerLogSchema)
-)
-
 // Query Schema
 
 export const GetRoundQuestionsAnswerLogParamsSchema = z.object({
   roundQuestionsAnswerLogId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
-
-export type GetRoundQuestionsAnswerLogParams = z.infer<
-  typeof GetRoundQuestionsAnswerLogParamsSchema
->
 
 export const GetRoundQuestionsAnswerLogDetailResSchema = resSchema(
   GetRoundQuestionsAnswerLogDetailSchema

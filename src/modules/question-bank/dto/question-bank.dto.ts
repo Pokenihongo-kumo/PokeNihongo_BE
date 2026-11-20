@@ -32,67 +32,6 @@ export class QuestionBankSwaggerDTO {
   updatedAt: Date
 }
 
-export class CreateQuestionBankWithMeaningsSwaggerDTO {
-  @ApiProperty({
-    example: 'あなたの名前は何ですか？',
-    description:
-      'Câu hỏi bằng tiếng Nhật. Nếu type là LISTENING, hệ thống sẽ tự động chuyển thành text-to-speech'
-  })
-  questionJp: string
-
-  @ApiProperty({
-    example: 'VOCABULARY',
-    enum: ['VOCABULARY', 'GRAMMAR', 'KANJI', 'LISTENING', 'READING', 'SPEAKING'],
-    description:
-      'Loại câu hỏi: VOCABULARY (từ vựng), GRAMMAR (ngữ pháp), KANJI (hán tự), LISTENING (nghe hiểu), READING (đọc hiểu), SPEAKING (nói)'
-  })
-  questionType: string
-
-  @ApiProperty({
-    example: 'https://example.com/audio.mp3',
-    description:
-      'URL file âm thanh. Optional - chỉ khi questionType là LISTENING và không truyền thì hệ thống sẽ tự động gen text-to-speech từ questionJp',
-    required: false
-  })
-  audioUrl?: string
-
-  @ApiProperty({
-    example: 'anata no namae wa nan desu ka',
-    description:
-      'Cách phát âm romaji. Có thể null, nhưng BẮT BUỘC phải có nếu type là SPEAKING',
-    required: false
-  })
-  pronunciation?: string
-
-  @ApiProperty({
-    example: RoleSpeaking.A,
-    enum: RoleSpeaking,
-    description: 'Vai trò trong SPEAKING (A hoặc B)',
-    required: false
-  })
-  role?: RoleSpeaking
-
-  @ApiProperty({ example: 3, description: 'Cấp độ JLPT (1-5)', required: false })
-  levelN?: number
-
-  @ApiProperty({
-    type: [Object],
-    description: 'Danh sách nghĩa của câu hỏi với translations',
-    example: [
-      {
-        translations: {
-          vi: 'Tên bạn là gì?',
-          en: 'What is your name?'
-        }
-      }
-    ]
-  })
-  meanings?: Array<{
-    meaningKey: string
-    translations: Record<string, string>
-  }>
-}
-
 export class UpdateQuestionBankWithMeaningsSwaggerDTO {
   @ApiProperty({
     example: 'あなたの名前は何ですか？',
@@ -155,26 +94,6 @@ export class UpdateQuestionBankWithMeaningsSwaggerDTO {
     meaningKey: string
     translations: Record<string, string>
   }>
-}
-
-export class UpdateQuestionBankSwaggerDTO {
-  @ApiProperty({ example: 5, description: 'Cấp độ JLPT (1-5)', required: false })
-  levelN?: number
-
-  @ApiProperty({
-    example: 'vocabulary',
-    description: 'Loại đề thi thử JLPT',
-    required: false
-  })
-  bankType?: string
-
-  @ApiProperty({
-    example: QuestionBankStatusEnum.ACTIVE,
-    enum: QuestionBankStatusEnum,
-    description: 'Trạng thái',
-    required: false
-  })
-  status?: QuestionBankStatusEnum
 }
 
 export class BulkDeleteQuestionBankSwaggerDTO {

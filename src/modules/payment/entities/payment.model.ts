@@ -106,20 +106,7 @@ const PayOSWebhookSchema = z.object({
   signature: z.string()
 })
 
-export interface PaymentWithBill {
-  id: number
-  paymentId: number
-  paymentMethod: string
-  amount: number
-  status: string
-  payosOrderId?: string
-}
-
-export class PayOSWebhookDto extends createZodDto(PayOSWebhookSchema) {}
-
 export class CreatePayOSPaymentDto extends createZodDto(CreatePayOSPaymentSchema) {}
-
-export class PaymentResponseDto extends createZodDto(PaymentResponseSchema) {}
 export type Payment = z.infer<typeof PaymentSchema>
 
 export type CreatePayment = z.infer<typeof CreatePaymentSchema>

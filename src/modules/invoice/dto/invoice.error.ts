@@ -1,6 +1,5 @@
 import { InvoiceMessage } from '@/i18n/message-keys'
 import {
-  ConflictException,
   NotFoundException,
   BadRequestException,
   UnprocessableEntityException
@@ -11,15 +10,6 @@ export class InvoiceNotFoundException extends NotFoundException {
     super({
       message: InvoiceMessage.NOT_FOUND,
       errorKey: InvoiceMessage.NOT_FOUND
-    })
-  }
-}
-
-export class InvoiceAlreadyExistsException extends ConflictException {
-  constructor() {
-    super({
-      message: InvoiceMessage.ALREADY_EXISTS,
-      errorKey: InvoiceMessage.ALREADY_EXISTS
     })
   }
 }

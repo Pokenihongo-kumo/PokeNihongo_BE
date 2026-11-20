@@ -30,14 +30,10 @@ export type UpdateShopRarityPriceBody = z.infer<typeof UpdateShopRarityPriceBody
 
 export const UpdateShopRarityPriceResSchema = CreateShopRarityPriceResSchema
 
-export const UpdateWithListItemResSchema = resSchema(z.array(ShopRarityPriceSchema))
-
 // Query Schema
 
 export const GetShopRarityPriceParamsSchema = z.object({
   shopRarityPriceId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
-
-export type GetShopRarityPriceParams = z.infer<typeof GetShopRarityPriceParamsSchema>
 
 export const GetShopRarityPriceDetailResSchema = resSchema(GetShopRarityPriceDetailSchema)

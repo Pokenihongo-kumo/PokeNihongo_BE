@@ -9,13 +9,6 @@ import { KanjiSchema } from '../entities/kanji.entity'
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
 
-// --- Zod Schemas ---
-
-export const TranslationForMeaningUpdateSchema = z.object({
-  languageCode: z.string().min(2).max(10),
-  value: z.string().min(1).max(2000)
-})
-
 export const MeaningForKanjiUpdateSchema = z.object({
   id: z.number().optional(), // Nếu có id thì update, không có thì tạo mới
   meaningKey: z.string().min(1).max(500).optional(), // Optional - sẽ tự động generate nếu không có
@@ -213,7 +206,3 @@ export class UpdateKanjiWithMeaningsResponseSwaggerDTO {
 
 // Type exports
 export type UpdateKanjiWithMeaningsBody = z.infer<typeof UpdateKanjiWithMeaningsSchema>
-export type UpdateKanjiWithMeaningsResponse = z.infer<
-  typeof UpdateKanjiWithMeaningsResponseSchema
->
-export type UpdateKanjiWithMeaningsRes = z.infer<typeof UpdateKanjiWithMeaningsResSchema>

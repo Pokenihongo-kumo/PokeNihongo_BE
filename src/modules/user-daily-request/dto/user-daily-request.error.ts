@@ -9,12 +9,3 @@ export class UserDailyRequestAlreadyExistsException extends ConflictException {
     })
   }
 }
-
-export class UserAlreadyAttendedTodayException extends ConflictException {
-  constructor() {
-    super({
-      message: UserDailyRequestMessage.USER_ALREADY_ATTENDED_TODAY,
-      errorKey: UserDailyRequestMessage.USER_ALREADY_ATTENDED_TODAY
-    })
-  }
-}

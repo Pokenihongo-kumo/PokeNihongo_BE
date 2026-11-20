@@ -38,24 +38,6 @@ export class InvalidUserAccessPokemonException extends BadRequestException {
   }
 }
 
-export class InvalidNextPokemonException extends BadRequestException {
-  constructor() {
-    super({
-      message: USER_POKEMON_MESSAGE.INVALID_NEXT_POKEMON,
-      errorKey: UserPokemonMessage.INVALID_NEXT_POKEMON
-    })
-  }
-}
-
-export class CannotEvolveException extends BadRequestException {
-  constructor() {
-    super({
-      message: USER_POKEMON_MESSAGE.CANNOT_EVOLVE,
-      errorKey: UserPokemonMessage.CANNOT_EVOLVE
-    })
-  }
-}
-
 export class UserHasPokemonException extends ConflictException {
   constructor() {
     super({

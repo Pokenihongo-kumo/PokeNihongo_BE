@@ -51,8 +51,6 @@ export const GetUserPokemonParamsSchema = z.object({
   userPokemonId: checkIdSchema(UserPokemonMessage.INVALID_ID)
 })
 
-export type GetUserPokemonParams = z.infer<typeof GetUserPokemonParamsSchema>
-
 // The app's Pokemon list: hasPokemon true/false filters owned ones
 
 export const GetUserPokemonListWithUserQuerySchema = PaginationQuerySchema.extend({
@@ -231,8 +229,6 @@ export const GetUserPokemonDetailResSchema = resSchema(
   })
 )
 
-export type GetUserPokemonDetailRes = z.infer<typeof GetUserPokemonDetailResSchema>
-
 export const GetUserPokemonStatsResSchema = resSchema(
   z.object({
     ownershipPercentage: z.number(),
@@ -240,70 +236,6 @@ export const GetUserPokemonStatsResSchema = resSchema(
     totalPokemons: z.number()
   })
 )
-
-export const GetUserPokemonAddExpDetailResSchema = resSchema(
-  UserPokemonSchema.extend({
-    user: z
-      .object({
-        id: z.number(),
-        name: z.string(),
-        email: z.string()
-      })
-      .optional(),
-    pokemon: z
-      .object({
-        id: z.number(),
-        pokedex_number: z.number(),
-        nameJp: z.string(),
-        nameTranslations: z.any(),
-        description: z.string().nullable(),
-        conditionLevel: z.number().nullable(),
-        imageUrl: z.string().nullable(),
-        rarity: z.string(),
-        types: z
-          .array(
-            z.object({
-              id: z.number(),
-              type_name: z.string(),
-              display_name: z.any(),
-              color_hex: z.string()
-            })
-          )
-          .optional()
-      })
-      .optional()
-  })
-)
-
-// Add EXP Schema
-
-export const AddExpBodySchema = z
-  .object({
-    expAmount: z.number().min(0, UserPokemonMessage.INVALID_EXP)
-  })
-  .strict()
-
-export type AddExpBody = z.infer<typeof AddExpBodySchema>
-
-// Evolution Schema
-
-export const EvolvePokemonBodySchema = z
-  .object({
-    nextPokemonId: z.number().min(1, UserPokemonMessage.INVALID_ID)
-  })
-  .strict()
-
-export type EvolvePokemonBody = z.infer<typeof EvolvePokemonBodySchema>
-
-export const EvolvePokemonResSchema = resSchema(
-  z.object({
-    newUserPokemon: UserPokemonSchema,
-    transferredExp: z.number(),
-    message: z.string()
-  })
-)
-
-export type EvolvePokemonRes = z.infer<typeof EvolvePokemonResSchema>
 
 export const GetUserPokemonByPokemonIdwithListOwnershipResSchema = resSchema(
   GetUserPokemonByPokemonIdwithListOwnershipSchema

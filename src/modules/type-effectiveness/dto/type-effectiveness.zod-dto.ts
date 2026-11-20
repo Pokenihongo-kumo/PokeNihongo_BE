@@ -74,8 +74,6 @@ export const GetTypeEffectivenessParamsSchema = z.object({
   typeEffectivenessId: checkIdSchema(TypeEffectivenessMessage.INVALID_ID)
 })
 
-export type GetTypeEffectivenessParams = z.infer<typeof GetTypeEffectivenessParamsSchema>
-
 export class GetTypeEffectivenessParamsDTO extends createZodDto(
   GetTypeEffectivenessParamsSchema
 ) {}
@@ -95,8 +93,6 @@ export const CalculateMultiTypeBodySchema = z
     defenderTypeIds: z.array(checkIdSchema(TypeEffectivenessMessage.INVALID_ID))
   })
   .strict()
-
-export type CalculateMultiTypeBody = z.infer<typeof CalculateMultiTypeBodySchema>
 
 export class CalculateMultiTypeBodyDTO extends createZodDto(
   CalculateMultiTypeBodySchema
@@ -126,31 +122,6 @@ export const GetTypeEffectivenessDetailResSchema = resSchema(
   })
 )
 
-export type GetTypeEffectivenessDetailRes = z.infer<
-  typeof GetTypeEffectivenessDetailResSchema
->
-
 export class GetTypeEffectivenessDetailResDTO extends createZodDto(
   GetTypeEffectivenessDetailResSchema
 ) {}
-
-// Response Schema với thông tin attacker và defender
-
-export const TypeEffectivenessResponseSchema = TypeEffectivenessSchema.extend({
-  attacker: z
-    .object({
-      id: z.number(),
-      type_name: z.string(),
-      display_name: z.unknown(),
-      color_hex: z.string()
-    })
-    .optional(),
-  defender: z
-    .object({
-      id: z.number(),
-      type_name: z.string(),
-      display_name: z.unknown(),
-      color_hex: z.string()
-    })
-    .optional()
-})

@@ -4,7 +4,6 @@ import {
   CreateNotificationResSchema,
   GetNotificationDetailResSchema,
   GetNotificationParamsSchema,
-  GetRewardByLeaderboardParamsSchema,
   UpdateNotificationBodySchema,
   UpdateNotificationReadListBodySchema,
   UpdateNotificationReadListResSchema,
@@ -25,10 +24,6 @@ export class UpdateNotificationReadListResDTO extends createZodDto(
 ) {}
 
 export class GetNotificationParamsDTO extends createZodDto(GetNotificationParamsSchema) {}
-
-export class GetRewardByLeaderboardParamsDTO extends createZodDto(
-  GetRewardByLeaderboardParamsSchema
-) {}
 
 // Response DTOs
 export class CreateNotificationResDTO extends createZodDto(CreateNotificationResSchema) {}

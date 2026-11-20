@@ -39,5 +39,3 @@ export class AddMeaningSwaggerDTO {
   })
   exampleSentenceJp?: string
 }
-
-export type AddMeaningToVocabulary = z.infer<typeof AddMeaningToVocabularySchema>

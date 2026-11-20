@@ -116,10 +116,3 @@ export const VocabularySearchHistoryItemSchema = z.object({
 
 // Types
 export type Vocabulary = z.infer<typeof VocabularySchema>
-export type VocabularyStatistics = z.infer<typeof VocabularyStatisticsSchema>
-export type VocabularySearchItem = z.infer<typeof VocabularySearchItemSchema>
-export type VocabularyMeaningDetail = z.infer<typeof VocabularyMeaningDetailSchema>
-export type VocabularyDetail = z.infer<typeof VocabularyDetailSchema>
-export type VocabularySearchHistoryItem = z.infer<
-  typeof VocabularySearchHistoryItemSchema
->

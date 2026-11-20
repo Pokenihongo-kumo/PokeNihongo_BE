@@ -23,13 +23,9 @@ export const RoundStatus = {
   COMPLETED: 'COMPLETED'
 } as const
 
-export type RoundStatusType = (typeof RoundStatus)[keyof typeof RoundStatus]
-
 export const MatchRoundParticipantStatus = {
   SELECTING_POKEMON: 'SELECTING_POKEMON',
   PENDING: 'PENDING',
   IN_PROGRESS: 'IN_PROGRESS',
   COMPLETED: 'COMPLETED'
 } as const
-export type MatchRoundParticipantStatusType =
-  (typeof MatchRoundParticipantStatus)[keyof typeof MatchRoundParticipantStatus]

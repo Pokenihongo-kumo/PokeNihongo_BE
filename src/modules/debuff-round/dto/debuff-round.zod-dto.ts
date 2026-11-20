@@ -56,26 +56,7 @@ export const GetDebuffRoundParamsSchema = z
   })
   .strict()
 
-export type GetDebuffRoundParams = z.infer<typeof GetDebuffRoundParamsSchema>
-
 export class GetDebuffRoundParamsDTO extends createZodDto(GetDebuffRoundParamsSchema) {}
-
-export const GetDebuffRoundDetailWithAllLangResSchema = resSchema(
-  DebuffRoundSchema.extend({
-    nameTranslations: z
-      .array(
-        z.object({
-          key: z.string(),
-          value: z.string()
-        })
-      )
-      .optional()
-  })
-)
-
-export class GetDebuffRoundDetailWithAllLangResDTO extends createZodDto(
-  GetDebuffRoundDetailWithAllLangResSchema
-) {}
 
 export const GetDebuffRoundDetailResSchema = resSchema(
   DebuffRoundSchema.extend({
@@ -83,8 +64,6 @@ export const GetDebuffRoundDetailResSchema = resSchema(
     nameTranslations: TranslationInputSchema.optional().nullable()
   })
 )
-
-export type GetDebuffRoundDetailRes = z.infer<typeof GetDebuffRoundDetailResSchema>
 
 export class GetDebuffRoundDetailResDTO extends createZodDto(
   GetDebuffRoundDetailResSchema

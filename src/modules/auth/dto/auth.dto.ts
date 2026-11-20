@@ -45,25 +45,3 @@ export class LoginBodySwaggerDTO {
   })
   password: string
 }
-
-export class UpdateMeMultipartSwaggerDTO {
-  @ApiProperty({
-    example: 'John Doe',
-    description: 'Tên của người dùng'
-  })
-  name: string
-
-  @ApiProperty({
-    example: '0986056438',
-    description: 'Số điện thoại'
-  })
-  phoneNumber: string
-
-  @ApiProperty({
-    type: 'string',
-    format: 'binary',
-    description: 'Avatar file (chỉ chấp nhận file ảnh: JPEG, PNG, WEBP, GIF. Tối đa 5MB)',
-    required: false
-  })
-  avatar?: any
-}

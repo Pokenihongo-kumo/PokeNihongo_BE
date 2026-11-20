@@ -13,6 +13,3 @@ export const GrammarSchema = z.object({
   createdAt: z.date(),
   updatedAt: z.date()
 })
-
-// Type exports
-export type Grammar = z.infer<typeof GrammarSchema>

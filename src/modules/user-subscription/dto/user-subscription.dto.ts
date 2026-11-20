@@ -2,7 +2,6 @@ import { createZodDto } from 'nestjs-zod'
 import {
   CreateUserSubscriptionBodySchema,
   CreateUserSubscriptionResSchema,
-  GetRewardByLeaderboardParamsSchema,
   GetUserSubscriptionDetailResSchema,
   GetUserSubscriptionParamsSchema,
   UpdateUserSubscriptionBodySchema,
@@ -20,10 +19,6 @@ export class UpdateUserSubscriptionBodyDTO extends createZodDto(
 
 export class GetUserSubscriptionParamsDTO extends createZodDto(
   GetUserSubscriptionParamsSchema
-) {}
-
-export class GetRewardByLeaderboardParamsDTO extends createZodDto(
-  GetRewardByLeaderboardParamsSchema
 ) {}
 
 // Response DTOs

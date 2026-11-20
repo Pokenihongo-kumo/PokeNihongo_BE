@@ -34,8 +34,6 @@ export const GetShopPurchaseParamsSchema = z.object({
   shopPurchaseId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
 
-export type GetShopPurchaseParams = z.infer<typeof GetShopPurchaseParamsSchema>
-
 export const GetShopPurchaseListResSchema = resSchema(
   z.array(GetShopPurchaseDetailSchema)
 )

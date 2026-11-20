@@ -48,7 +48,3 @@ export const LessonWithRelationsSchema = LessonSchema.extend({
     })
     .optional()
 })
-
-// Type exports
-export type Lesson = z.infer<typeof LessonSchema>
-export type LessonWithRelations = z.infer<typeof LessonWithRelationsSchema>

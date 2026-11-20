@@ -29,15 +29,11 @@ export type UpdateUserAchievementBody = z.infer<typeof UpdateUserAchievementBody
 
 export const UpdateUserAchievementResSchema = CreateUserAchievementResSchema
 
-export const UpdateWithListItemResSchema = resSchema(z.array(UserAchievementSchema))
-
 // Query Schema
 
 export const GetUserAchievementParamsSchema = z.object({
   userAchievementId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
-
-export type GetUserAchievementParams = z.infer<typeof GetUserAchievementParamsSchema>
 
 export const GetUserAchievementDetailResSchema = resSchema(GetUserAchievementDetailSchema)
 
@@ -48,7 +44,3 @@ export const GetUserAchievementListForUserQuerySchema = PaginationQuerySchema.ex
   achPageSize: checkIdSchema(UserAchievementMessage.INVALID_PAGE_SIZE).default(3),
   achievementGroupId: checkIdSchema(UserAchievementMessage.INVALID_GROUP_ID).optional()
 })
-
-export type GetUserAchievementListForUserQuery = z.infer<
-  typeof GetUserAchievementListForUserQuerySchema
->

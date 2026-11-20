@@ -43,18 +43,10 @@ export type UpdateUserSeasonHistoryBody = z.infer<
 
 export const UpdateUserSeasonHistoryResSchema = CreateUserSeasonHistoryResSchema
 
-export const UpdateWithListItemResSchema = resSchema(z.array(UserSeasonHistorySchema))
-
 // Query Schema
 
 export const GetUserSeasonHistoryParamsSchema = z.object({
   userSeasonHistoryId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
-})
-
-export type GetUserSeasonHistoryParams = z.infer<typeof GetUserSeasonHistoryParamsSchema>
-
-export const GetRewardByLeaderboardParamsSchema = z.object({
-  leaderboardSeasonId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
 
 export const GetUserSeasonHistoryDetailResSchema = resSchema(

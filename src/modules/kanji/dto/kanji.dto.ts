@@ -12,39 +12,6 @@ export {
   KanjiListResDTO
 } from './zod/kanji.zod-dto'
 
-// Swagger DTOs - for API documentation only
-export class CreateKanjiSwaggerDTO {
-  @ApiProperty({ example: '日', description: 'Ký tự Kanji' })
-  character: string
-
-  @ApiProperty({ example: 'kanji.sun.meaning', description: 'Key dịch nghĩa Kanji' })
-  meaningKey: string
-
-  @ApiProperty({ example: 8, description: 'Số nét viết', required: false })
-  strokeCount?: number
-
-  @ApiProperty({ example: 5, description: 'Cấp độ JLPT (N5-N1)', required: false })
-  jlptLevel?: number
-}
-
-export class UpdateKanjiSwaggerDTO {
-  @ApiProperty({ example: '日', description: 'Ký tự Kanji', required: false })
-  character?: string
-
-  @ApiProperty({
-    example: 'kanji.sun.meaning',
-    description: 'Key dịch nghĩa Kanji',
-    required: false
-  })
-  meaningKey?: string
-
-  @ApiProperty({ example: 8, description: 'Số nét viết', required: false })
-  strokeCount?: number
-
-  @ApiProperty({ example: 5, description: 'Cấp độ JLPT (N5-N1)', required: false })
-  jlptLevel?: number
-}
-
 export class KanjiSwaggerResponseDTO {
   @ApiProperty({ example: 1, description: 'ID' })
   id: number

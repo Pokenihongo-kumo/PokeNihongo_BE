@@ -72,8 +72,6 @@ export const GetAchievementParamsSchema = z
   })
   .strict()
 
-export type GetAchievementParams = z.infer<typeof GetAchievementParamsSchema>
-
 export class GetAchievementParamsDTO extends createZodDto(GetAchievementParamsSchema) {}
 
 export const GetAchievementDetailResSchema = resSchema(
@@ -90,8 +88,6 @@ export const GetAchievementDetailResSchema = resSchema(
     }).nullable()
   })
 )
-
-export type GetAchievementDetailRes = z.infer<typeof GetAchievementDetailResSchema>
 
 export class GetAchievementDetailResDTO extends createZodDto(
   GetAchievementDetailResSchema

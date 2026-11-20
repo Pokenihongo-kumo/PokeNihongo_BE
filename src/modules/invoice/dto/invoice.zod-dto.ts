@@ -41,10 +41,4 @@ export const GetInvoiceParamsSchema = z.object({
   invoiceId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
 
-export type GetInvoiceParams = z.infer<typeof GetInvoiceParamsSchema>
-
-export const GetRewardByLeaderboardParamsSchema = z.object({
-  leaderboardSeasonId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
-})
-
 export const GetInvoiceDetailResSchema = resSchema(GetInvoiceDetailSchema)

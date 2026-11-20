@@ -13,8 +13,6 @@ export const statusOf = z.nativeEnum(PrismaTestAttemptStatus, {
 
 export const CreateUserTestAttemptBodySchema = z.object({}).strict()
 
-export type CreateUserTestAttemptBody = z.infer<typeof CreateUserTestAttemptBodySchema>
-
 export class CreateUserTestAttemptBodyDTO extends createZodDto(
   CreateUserTestAttemptBodySchema
 ) {}
@@ -31,14 +29,10 @@ export class UpdateUserTestAttemptBodyDTO extends createZodDto(
 
 export const UserTestAttemptResSchema = resSchema(UserTestAttemptSchema).strict()
 
-export type UserTestAttemptRes = z.infer<typeof UserTestAttemptResSchema>
-
 export class UserTestAttemptResDTO extends createZodDto(UserTestAttemptResSchema) {}
 
 export const UserTestAttemptListResSchema =
   paginatedResSchema(UserTestAttemptSchema).strict()
-
-export type UserTestAttemptListRes = z.infer<typeof UserTestAttemptListResSchema>
 
 export class UserTestAttemptListResDTO extends createZodDto(
   UserTestAttemptListResSchema
@@ -48,10 +42,6 @@ export const GetUserTestAttemptByIdParamsSchema = z
   .object({ id: checkIdSchema(M.INVALID_ID) })
   .strict()
 
-export type GetUserTestAttemptByIdParams = z.infer<
-  typeof GetUserTestAttemptByIdParamsSchema
->
-
 export class GetUserTestAttemptByIdParamsDTO extends createZodDto(
   GetUserTestAttemptByIdParamsSchema
 ) {}
@@ -59,10 +49,6 @@ export class GetUserTestAttemptByIdParamsDTO extends createZodDto(
 export const CreateUserTestAttemptParamsSchema = z
   .object({ testId: checkIdSchema(M.INVALID_TEST_ID) })
   .strict()
-
-export type CreateUserTestAttemptParams = z.infer<
-  typeof CreateUserTestAttemptParamsSchema
->
 
 export class CreateUserTestAttemptParamsDTO extends createZodDto(
   CreateUserTestAttemptParamsSchema
@@ -109,8 +95,6 @@ export const CheckTestCompletionBodySchema = z
   })
   .strict()
   .default({})
-
-export type CheckTestCompletionBody = z.infer<typeof CheckTestCompletionBodySchema>
 
 export class CheckTestCompletionBodyDTO extends createZodDto(
   CheckTestCompletionBodySchema

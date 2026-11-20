@@ -1,13 +1,12 @@
 import { createZodDto } from 'nestjs-zod'
-import { GetGachasRolHisWithPokemonSchema } from '../entities/gacha-roll-history.entity'
+
 import {
   CreateGachaRollHistoryBodySchema,
   CreateGachaRollHistoryResSchema,
   GetGachaRollHistoryDetailResSchema,
   GetGachaRollHistoryParamsSchema,
   UpdateGachaRollHistoryBodySchema,
-  UpdateGachaRollHistoryResSchema,
-  UpdateWithListItemResSchema
+  UpdateGachaRollHistoryResSchema
 } from './gacha-roll-history.zod-dto'
 
 // Request DTOs
@@ -30,11 +29,6 @@ export class CreateGachaRollHistoryResDTO extends createZodDto(
 export class UpdateGachaRollHistoryResDTO extends createZodDto(
   UpdateGachaRollHistoryResSchema
 ) {}
-export class UpdateWithListItemResDTO extends createZodDto(UpdateWithListItemResSchema) {}
 export class GetGachaRollHistoryDetailResDTO extends createZodDto(
   GetGachaRollHistoryDetailResSchema
-) {}
-
-export class GetGachasRolHisWithPokemonDTO extends createZodDto(
-  GetGachasRolHisWithPokemonSchema
 ) {}

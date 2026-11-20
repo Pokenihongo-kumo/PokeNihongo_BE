@@ -30,7 +30,6 @@ export const GetShopPurchaseDetailSchema = ShopPurchaseSchema.extend({
 
 // Type exports
 export type ShopPurchase = z.infer<typeof ShopPurchaseSchema>
-export type GetShopPurchaseDetail = z.infer<typeof GetShopPurchaseDetailSchema>
 
 // Field for query
 export type ShopPurchaseFieldType = keyof z.infer<typeof ShopPurchaseSchema>

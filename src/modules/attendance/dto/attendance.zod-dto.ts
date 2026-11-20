@@ -17,8 +17,6 @@ export const CreateAttendanceBodySchema = AttendanceSchema.pick({
 
 export type CreateAttendanceBody = z.infer<typeof CreateAttendanceBodySchema>
 
-export class CreateAttendanceBodyDTO extends createZodDto(CreateAttendanceBodySchema) {}
-
 export const CreateAttendanceResSchema = resSchema(
   AttendanceSchema.extend({
     dayOfWeek: z
@@ -56,15 +54,11 @@ export const GetParamsAttendanceSchema = z.object({
   attendanceId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
 
-export type GetParamsAttendance = z.infer<typeof GetParamsAttendanceSchema>
-
 export class GetParamsAttendanceDTO extends createZodDto(GetParamsAttendanceSchema) {}
 
 export const GetParamsDateAttendanceSchema = z.object({
   date: z.date().optional()
 })
-
-export type GetParamsDateAttendance = z.infer<typeof GetParamsDateAttendanceSchema>
 
 export class GetParamsDateAttendanceDTO extends createZodDto(
   GetParamsDateAttendanceSchema
@@ -101,10 +95,6 @@ export const GetAttendanceWithUserStreakResSchema = GetAttendanceResSchema.exten
     totalStreak: z.number()
   })
 })
-
-export type GetAttendanceWithUserStreak = z.infer<
-  typeof GetAttendanceWithUserStreakResSchema
->
 
 export class GetAttendanceWithUserStreakResDTO extends createZodDto(
   GetAttendanceWithUserStreakResSchema

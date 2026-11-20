@@ -12,10 +12,6 @@ import {
 
 export const CreateUserExerciseAttemptBodySchema = z.object({}).strict()
 
-export type CreateUserExerciseAttemptBody = z.infer<
-  typeof CreateUserExerciseAttemptBodySchema
->
-
 export class CreateUserExerciseAttemptBodyDTO extends createZodDto(
   CreateUserExerciseAttemptBodySchema
 ) {}
@@ -43,8 +39,6 @@ export class UpdateUserExerciseAttemptBodyDTO extends createZodDto(
 
 export const UserExerciseAttemptResSchema = resSchema(UserExerciseAttemptSchema).strict()
 
-export type UserExerciseAttemptRes = z.infer<typeof UserExerciseAttemptResSchema>
-
 export class UserExerciseAttemptResDTO extends createZodDto(
   UserExerciseAttemptResSchema
 ) {}
@@ -52,8 +46,6 @@ export class UserExerciseAttemptResDTO extends createZodDto(
 export const UserExerciseAttemptListResSchema = paginatedResSchema(
   UserExerciseAttemptSchema
 ).strict()
-
-export type UserExerciseAttemptListRes = z.infer<typeof UserExerciseAttemptListResSchema>
 
 export class UserExerciseAttemptListResDTO extends createZodDto(
   UserExerciseAttemptListResSchema
@@ -63,10 +55,6 @@ export const GetUserExerciseAttemptByIdParamsSchema = z
   .object({ id: checkIdSchema(M.INVALID_ID) })
   .strict()
 
-export type GetUserExerciseAttemptByIdParams = z.infer<
-  typeof GetUserExerciseAttemptByIdParamsSchema
->
-
 export class GetUserExerciseAttemptByIdParamsDTO extends createZodDto(
   GetUserExerciseAttemptByIdParamsSchema
 ) {}
@@ -74,10 +62,6 @@ export class GetUserExerciseAttemptByIdParamsDTO extends createZodDto(
 export const CreateUserExerciseAttemptParamsSchema = z
   .object({ exerciseId: checkIdSchema(M.INVALID_EXERCISE_ID) })
   .strict()
-
-export type CreateUserExerciseAttemptParams = z.infer<
-  typeof CreateUserExerciseAttemptParamsSchema
->
 
 export class CreateUserExerciseAttemptParamsDTO extends createZodDto(
   CreateUserExerciseAttemptParamsSchema
@@ -117,10 +101,6 @@ export const LatestExerciseAttemptsByLessonResSchema = resSchema(
   z.array(LatestExerciseAttemptSchema)
 ).strict()
 
-export type LatestExerciseAttemptsByLessonRes = z.infer<
-  typeof LatestExerciseAttemptsByLessonResSchema
->
-
 export class LatestExerciseAttemptsByLessonResDTO extends createZodDto(
   LatestExerciseAttemptsByLessonResSchema
 ) {}
@@ -136,10 +116,6 @@ export const CheckExerciseCompletionBodySchema = z
       .optional()
   })
   .strict()
-
-export type CheckExerciseCompletionBody = z.infer<
-  typeof CheckExerciseCompletionBodySchema
->
 
 export class CheckExerciseCompletionBodyDTO extends createZodDto(
   CheckExerciseCompletionBodySchema

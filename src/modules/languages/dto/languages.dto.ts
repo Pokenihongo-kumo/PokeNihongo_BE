@@ -62,51 +62,6 @@ export class LanguagesSwaggerResponseDTO {
   updatedAt: Date
 }
 
-export class GetLanguagesListQuerySwaggerDTO {
-  @ApiProperty({
-    example: 1,
-    description: 'Số trang hiện tại',
-    required: false,
-    default: 1,
-    minimum: 1
-  })
-  currentPage?: number
-
-  @ApiProperty({
-    example: 10,
-    description: 'Số lượng ngôn ngữ mỗi trang',
-    required: false,
-    default: 10,
-    minimum: 1,
-    maximum: 100
-  })
-  pageSize?: number
-
-  @ApiProperty({
-    example: 'vi',
-    description: 'Tìm kiếm theo mã ngôn ngữ',
-    required: false,
-    maxLength: 10
-  })
-  code?: string
-
-  @ApiProperty({
-    example: 'Vietnamese',
-    description: 'Tìm kiếm theo tên ngôn ngữ',
-    required: false,
-    maxLength: 100
-  })
-  name?: string
-
-  @ApiProperty({
-    example: 'vi',
-    description: 'Từ khóa tìm kiếm (có thể tìm theo mã hoặc tên ngôn ngữ)',
-    required: false,
-    maxLength: 100
-  })
-  search?: string
-}
-
 export class LanguagesListSwaggerResponseDTO {
   @ApiProperty({ example: 200, description: 'Mã trạng thái HTTP' })
   statusCode: number

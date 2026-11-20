@@ -3,15 +3,11 @@ export const TagNameSubscription = {
   COMBO: 'COMBO',
   ULTRA: 'ULTRA'
 } as const
-export type TagNameSubscriptionType =
-  (typeof TagNameSubscription)[keyof typeof TagNameSubscription]
 
 export const SubscriptionType = {
   LIFETIME: 'LIFETIME',
   RECURRING: 'RECURRING'
 } as const
-
-export type SubscriptionTypeType = keyof typeof SubscriptionType
 
 export const FeatureKey = {
   UNLOCK_READING: 'UNLOCK_READING',

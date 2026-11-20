@@ -108,8 +108,6 @@ export class UpdateTestWithMeaningsBodyDTO extends createZodDto(
 
 export const TestListResSchema = paginatedResSchema(TestSchema)
 
-export type TestListRes = z.infer<typeof TestListResSchema>
-
 // Test List Response DTO
 export class TestListResDTO extends createZodDto(TestListResSchema) {}
 
@@ -120,8 +118,6 @@ export const GetTestByIdParamsSchema = z
     id: checkIdSchema(M.INVALID_ID)
   })
   .strict()
-
-export type GetTestByIdParams = z.infer<typeof GetTestByIdParamsSchema>
 
 // Params and queries
 export class GetTestByIdParamsDTO extends createZodDto(GetTestByIdParamsSchema) {}

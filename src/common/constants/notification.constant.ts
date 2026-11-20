@@ -9,6 +9,3 @@ export const NotificationType = {
   OTHER: 'OTHER',
   ATTENDANCE: 'ATTENDANCE'
 } as const
-
-export type NotificationTypeType =
-  (typeof NotificationType)[keyof typeof NotificationType]

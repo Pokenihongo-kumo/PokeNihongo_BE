@@ -10,15 +10,6 @@ export class MatchParticipantNotFoundException extends NotFoundException {
   }
 }
 
-export class MatchParticipantAlreadyExistsException extends BadRequestException {
-  constructor() {
-    super({
-      message: MatchParticipantMessage.ALREADY_EXISTS,
-      errorKey: MatchParticipantMessage.ALREADY_EXISTS
-    })
-  }
-}
-
 export class MatchParticipantInvalidActionException extends BadRequestException {
   constructor() {
     super({

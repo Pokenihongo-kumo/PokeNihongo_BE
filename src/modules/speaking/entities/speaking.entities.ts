@@ -35,4 +35,3 @@ export const SpeakingStatisticsSchema = z.object({
 
 // Types
 export type UserSpeakingAttempt = z.infer<typeof UserSpeakingAttemptSchema>
-export type SpeakingStatistics = z.infer<typeof SpeakingStatisticsSchema>

@@ -147,13 +147,5 @@ export const GroupedLessonContentSchema = z.object({
   testId: z.number().nullable().optional(),
   checkLastTest: z.boolean().optional()
 })
-
-// Type exports
-export type LessonContent = z.infer<typeof LessonContentSchema>
-export type LessonContentWithRelations = z.infer<typeof LessonContentWithRelationsSchema>
 export type UpdateLessonContentOrder = z.infer<typeof UpdateLessonContentOrder>
-// New types for grouped content
-export type VocabularyContent = z.infer<typeof VocabularyContentSchema>
-export type GrammarContent = z.infer<typeof GrammarContentSchema>
-export type KanjiContent = z.infer<typeof KanjiContentSchema>
 export type GroupedLessonContent = z.infer<typeof GroupedLessonContentSchema>

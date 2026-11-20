@@ -4,11 +4,7 @@ import { UserSchema } from '@/shared/models/shared-user.model'
 import { resSchema } from '@/shared/utils/res-schema'
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
-import {
-  GetListMatchHisByUserSchema,
-  GetStatsUserSeasonSchema,
-  UserWithoutPasswordSchema
-} from '../entities/user.entity'
+import { UserWithoutPasswordSchema } from '../entities/user.entity'
 
 export const CreateUserBodySchema = UserSchema.pick({
   email: true,
@@ -57,25 +53,9 @@ export const GetUserParamsSchema = z
   })
   .strict()
 
-export type GetUserParams = z.infer<typeof GetUserParamsSchema>
-
 export class GetUserParamsDTO extends createZodDto(GetUserParamsSchema) {}
 
-export const GetUserStatsSeasonResSchema = resSchema(GetStatsUserSeasonSchema)
-
-export class GetStatsUserSeasonResDTO extends createZodDto(GetUserStatsSeasonResSchema) {}
-
-export const GetListMatchHisByUserResSchema = resSchema(
-  z.array(GetListMatchHisByUserSchema)
-)
-
-export class GetListMatchHisByUserResDTO extends createZodDto(
-  GetListMatchHisByUserResSchema
-) {}
-
 export const GetUserDetailResSchema = resSchema(UserWithoutPasswordSchema)
-
-export type GetUserDetailRes = z.infer<typeof GetUserDetailResSchema>
 
 export class GetUserDetailResDTO extends createZodDto(GetUserDetailResSchema) {}
 

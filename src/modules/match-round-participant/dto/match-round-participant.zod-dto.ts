@@ -47,17 +47,11 @@ export type ChoosePokemonMatchRoundParticipantBody = z.infer<
 
 export const UpdateMatchRoundParticipantResSchema = CreateMatchRoundParticipantResSchema
 
-export const UpdateWithListItemResSchema = resSchema(z.array(MatchRoundParticipantSchema))
-
 // Query Schema
 
 export const GetMatchRoundParticipantParamsSchema = z.object({
   matchRoundParticipantId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
-
-export type GetMatchRoundParticipantParams = z.infer<
-  typeof GetMatchRoundParticipantParamsSchema
->
 
 export const GetMatchRoundParticipantByRoundParamsSchema = z.object({
   matchRoundId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)

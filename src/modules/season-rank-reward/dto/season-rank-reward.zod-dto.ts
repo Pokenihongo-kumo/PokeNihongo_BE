@@ -49,10 +49,6 @@ export const UpdateWithListItemBodySchema = z.object({
   items: z.array(UpdateSeasonRankRewardByRankTypeSchema)
 })
 
-export type UpdateWithListSeasonRankRewardBody = z.infer<
-  typeof UpdateWithListItemBodySchema
->
-
 export type UpdateWithListItemBody = z.infer<typeof UpdateWithListItemBodySchema>
 
 export const UpdateWithListItemResSchema = resSchema(z.array(SeasonRankRewardSchema))
@@ -62,8 +58,6 @@ export const UpdateWithListItemResSchema = resSchema(z.array(SeasonRankRewardSch
 export const GetSeasonRankRewardParamsSchema = z.object({
   seasonRankRewardId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
-
-export type GetSeasonRankRewardParams = z.infer<typeof GetSeasonRankRewardParamsSchema>
 
 export const GetSeasonRankRewardDetailResSchema = resSchema(
   GetSeasonRankRewardDetailSchema

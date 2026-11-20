@@ -65,15 +65,6 @@ export class MaxGachaItemsExceededException extends BadRequestException {
   }
 }
 
-export class PokemonHasPrevEvolutionException extends BadRequestException {
-  constructor() {
-    super({
-      message: GachaItemMessage.POKEMON_HAS_PREV_EVOLUTION,
-      errorKey: GachaItemMessage.POKEMON_HAS_PREV_EVOLUTION
-    })
-  }
-}
-
 export class PokemonInvalidRarityWithStarTypeToAddException extends BadRequestException {
   constructor(data?: string) {
     super({

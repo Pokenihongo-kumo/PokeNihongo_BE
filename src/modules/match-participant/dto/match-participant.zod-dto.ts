@@ -28,17 +28,11 @@ export const UpdateMatchParticipantBodySchema = CreateMatchParticipantBodySchema
 
 export type UpdateMatchParticipantBody = z.infer<typeof UpdateMatchParticipantBodySchema>
 
-export const UpdateMatchParticipantResSchema = CreateMatchParticipantResSchema
-
-export const UpdateWithListItemResSchema = resSchema(z.array(MatchParticipantSchema))
-
 // Query Schema
 
 export const GetMatchParticipantParamsSchema = z.object({
   matchParticipantId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
-
-export type GetMatchParticipantParams = z.infer<typeof GetMatchParticipantParamsSchema>
 
 export const GetMatchParticipantDetailResSchema = resSchema(
   GetMatchParticipantDetailSchema

@@ -1,5 +1,5 @@
 import { GachaPityType, GachaStarType } from '@/common/constants/gacha.constant'
-import { PokemonSchema } from '@/modules/pokemon/entities/pokemon.entity'
+
 import { extendZodWithOpenApi } from '@anatine/zod-openapi'
 import { patchNestJsSwagger } from 'nestjs-zod'
 import { z } from 'zod'
@@ -34,17 +34,6 @@ export const GachaRollHistorySchema = z.object({
 })
 
 export const GetGachaRollHistoryDetailSchema = GachaRollHistorySchema
-
-export const GetGachasRolHisWithPokemonSchema = GachaRollHistorySchema.extend({
-  pokemon: PokemonSchema.pick({
-    id: true,
-    pokedex_number: true,
-    nameJp: true,
-    nameTranslations: true,
-    imageUrl: true,
-    rarity: true
-  })
-})
 
 // Type exports
 export type GachaRollHistory = z.infer<typeof GachaRollHistorySchema>

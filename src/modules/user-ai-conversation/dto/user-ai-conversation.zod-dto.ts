@@ -27,10 +27,6 @@ export const CreateUserAIConversationBodySchema = z
   })
   .strict()
 
-export type CreateUserAIConversationBody = z.infer<
-  typeof CreateUserAIConversationBodySchema
->
-
 export class CreateUserAIConversationBodyDTO extends createZodDto(
   CreateUserAIConversationBodySchema
 ) {}

@@ -10,15 +10,6 @@ export class SubscriptionFeatureNotFoundException extends NotFoundException {
   }
 }
 
-export class SubscriptionFeatureAlreadyExistsException extends BadRequestException {
-  constructor() {
-    super({
-      message: SubscriptionFeatureMessage.ALREADY_EXISTS,
-      errorKey: SubscriptionFeatureMessage.ALREADY_EXISTS
-    })
-  }
-}
-
 export class SubscriptionFeatureIsDuplicateException extends BadRequestException {
   constructor() {
     super({

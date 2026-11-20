@@ -42,15 +42,11 @@ export const GetParamsAttendanceConfigSchema = z.object({
   attendenceConfigId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
 
-export type GetParamsAttendanceConfig = z.infer<typeof GetParamsAttendanceConfigSchema>
-
 export class GetParamsAttendanceConfigDTO extends createZodDto(
   GetParamsAttendanceConfigSchema
 ) {}
 
 export const GetAttendanceConfigResSchema = resSchema(AttendanceConfigSchema)
-
-export type GetAttendanceConfigRes = z.infer<typeof GetAttendanceConfigResSchema>
 
 export class GetAttendanceConfigResDTO extends createZodDto(
   GetAttendanceConfigResSchema

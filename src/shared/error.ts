@@ -26,15 +26,6 @@ export class InvalidForeignKeyConstraintException extends ConflictException {
   }
 }
 
-export class InvalidPasswordException extends UnauthorizedException {
-  constructor() {
-    super({
-      message: SystemMessage.INVALID_PASSWORD,
-      errorKey: SystemMessage.INVALID_PASSWORD
-    })
-  }
-}
-
 export class InvalidOldPasswordException extends UnauthorizedException {
   constructor() {
     super({

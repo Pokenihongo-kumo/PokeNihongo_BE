@@ -144,44 +144,6 @@ export class FlashcardImportCardsBodySwaggerDTO {
   items: FlashcardImportItemSwaggerDTO[]
 }
 
-export class FlashcardLibrarySearchQuerySwaggerDTO {
-  @ApiPropertyOptional({
-    example: 'VOCABULARY',
-    enum: ['VOCABULARY', 'KANJI', 'GRAMMAR'],
-    description: 'Loại nội dung muốn tra cứu',
-    default: 'VOCABULARY'
-  })
-  type?: 'VOCABULARY' | 'KANJI' | 'GRAMMAR'
-
-  @ApiPropertyOptional({ example: 1, minimum: 1, description: 'Trang hiện tại' })
-  currentPage?: number
-
-  @ApiPropertyOptional({
-    example: 10,
-    minimum: 1,
-    maximum: 100,
-    description: 'Số bản ghi mỗi trang'
-  })
-  pageSize?: number
-
-  @ApiPropertyOptional({ example: 'xin chào', description: 'Từ khóa tìm kiếm' })
-  search?: string
-
-  @ApiPropertyOptional({
-    example: 5,
-    minimum: 1,
-    maximum: 5,
-    description: 'Lọc theo cấp độ JLPT (dành cho từ vựng / kanji)'
-  })
-  jlptLevel?: number
-
-  @ApiPropertyOptional({
-    example: 'N5',
-    description: 'Lọc theo level (dành cho grammar), so khớp dạng chuỗi'
-  })
-  level?: string
-}
-
 export class FlashcardReviewQuerySwaggerDTO {
   @ApiPropertyOptional({
     example: 20,

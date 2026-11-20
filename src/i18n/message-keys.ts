@@ -929,16 +929,6 @@ export const AchievementMessage = {
   INVALID_DATA: 'achievement.INVALID_DATA'
 } as const
 
-export const DailyRequestCategoryMessage = {
-  CREATE_SUCCESS: 'daily_request_category.CREATE_SUCCESS',
-  UPDATE_SUCCESS: 'daily_request_category.UPDATE_SUCCESS',
-  DELETE_SUCCESS: 'daily_request_category.DELETE_SUCCESS',
-  GET_SUCCESS: 'daily_request_category.GET_SUCCESS',
-  GET_LIST_SUCCESS: 'daily_request_category.GET_LIST_SUCCESS',
-  NOT_FOUND: 'daily_request_category.NOT_FOUND',
-  ALREADY_EXISTS: 'daily_request_category.ALREADY_EXISTS'
-} as const
-
 export const AttendenceConfigMessage = {
   CREATE_SUCCESS: 'attendence_config.CREATE_SUCCESS',
   UPDATE_SUCCESS: 'attendence_config.UPDATE_SUCCESS',
