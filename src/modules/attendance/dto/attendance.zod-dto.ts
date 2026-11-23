@@ -34,6 +34,8 @@ export const CreateAttendanceResSchema = resSchema(
   })
 )
 
+export type CreateAttendanceRes = z.infer<typeof CreateAttendanceResSchema>
+
 export class CreateAttendanceResDTO extends createZodDto(CreateAttendanceResSchema) {}
 
 export const UpdateAttendanceBodySchema = AttendanceSchema.pick({
@@ -48,11 +50,15 @@ export class UpdateAttendanceBodyDTO extends createZodDto(UpdateAttendanceBodySc
 
 export const UpdateAttendanceResSchema = CreateAttendanceResSchema
 
+export type UpdateAttendanceRes = z.infer<typeof UpdateAttendanceResSchema>
+
 export class UpdateAttendanceResDTO extends createZodDto(UpdateAttendanceResSchema) {}
 
 export const GetParamsAttendanceSchema = z.object({
   attendanceId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
+
+export type GetParamsAttendance = z.infer<typeof GetParamsAttendanceSchema>
 
 export class GetParamsAttendanceDTO extends createZodDto(GetParamsAttendanceSchema) {}
 
@@ -60,11 +66,15 @@ export const GetParamsDateAttendanceSchema = z.object({
   date: z.date().optional()
 })
 
+export type GetParamsDateAttendance = z.infer<typeof GetParamsDateAttendanceSchema>
+
 export class GetParamsDateAttendanceDTO extends createZodDto(
   GetParamsDateAttendanceSchema
 ) {}
 
 export const GetAttendanceResSchema = resSchema(AttendanceSchema)
+
+export type GetAttendanceRes = z.infer<typeof GetAttendanceResSchema>
 
 export class GetAttendanceResDTO extends createZodDto(GetAttendanceResSchema) {}
 
@@ -95,6 +105,10 @@ export const GetAttendanceWithUserStreakResSchema = GetAttendanceResSchema.exten
     totalStreak: z.number()
   })
 })
+
+export type GetAttendanceWithUserStreakRes = z.infer<
+  typeof GetAttendanceWithUserStreakResSchema
+>
 
 export class GetAttendanceWithUserStreakResDTO extends createZodDto(
   GetAttendanceWithUserStreakResSchema

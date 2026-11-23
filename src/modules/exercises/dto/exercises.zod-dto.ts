@@ -50,6 +50,8 @@ export const GetExercisesByIdParamsSchema = z.object({
   id: checkIdSchema(M.INVALID_ID)
 })
 
+export type GetExercisesByIdParams = z.infer<typeof GetExercisesByIdParamsSchema>
+
 export class GetExercisesByIdParamsDTO extends createZodDto(
   GetExercisesByIdParamsSchema
 ) {}
@@ -57,6 +59,8 @@ export class GetExercisesByIdParamsDTO extends createZodDto(
 export const GetExercisesByLessonParamsSchema = z.object({
   lessonId: checkIdSchema(M.INVALID_LESSON_ID)
 })
+
+export type GetExercisesByLessonParams = z.infer<typeof GetExercisesByLessonParamsSchema>
 
 export class GetExercisesByLessonParamsDTO extends createZodDto(
   GetExercisesByLessonParamsSchema
@@ -124,9 +128,13 @@ export const ExerciseWithRelationsOutSchema = ExerciseRowOutSchema.extend({
 
 export const ExerciseResSchema = resSchema(ExerciseWithRelationsOutSchema)
 
+export type ExerciseRes = z.infer<typeof ExerciseResSchema>
+
 export class ExerciseResDTO extends createZodDto(ExerciseResSchema) {}
 
 export const ExerciseListResSchema = paginatedResSchema(ExerciseWithRelationsOutSchema)
+
+export type ExerciseListRes = z.infer<typeof ExerciseListResSchema>
 
 export class ExerciseListResDTO extends createZodDto(ExerciseListResSchema) {}
 
@@ -173,6 +181,8 @@ export const ExerciseDetailResSchema = resSchema(
   })
 )
 
+export type ExerciseDetailRes = z.infer<typeof ExerciseDetailResSchema>
+
 export class ExerciseDetailResDTO extends createZodDto(ExerciseDetailResSchema) {}
 
 // Plain: only what a player needs to answer
@@ -209,6 +219,8 @@ export const ExercisePlainResSchema = resSchema(
   })
 )
 
+export type ExercisePlainRes = z.infer<typeof ExercisePlainResSchema>
+
 export class ExercisePlainResDTO extends createZodDto(ExercisePlainResSchema) {}
 
 // By lesson: each exercise with its rewards and the lesson's rewards
@@ -220,5 +232,7 @@ export const ExercisesByLessonResSchema = resSchema(
     })
   )
 )
+
+export type ExercisesByLessonRes = z.infer<typeof ExercisesByLessonResSchema>
 
 export class ExercisesByLessonResDTO extends createZodDto(ExercisesByLessonResSchema) {}

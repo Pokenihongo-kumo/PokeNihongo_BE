@@ -19,6 +19,8 @@ export class CreateAttendanceConfigBodyDTO extends createZodDto(
 
 export const CreateAttendanceConfigResSchema = resSchema(AttendanceConfigSchema)
 
+export type CreateAttendanceConfigRes = z.infer<typeof CreateAttendanceConfigResSchema>
+
 export class CreateAttendanceConfigResDTO extends createZodDto(
   CreateAttendanceConfigResSchema
 ) {}
@@ -34,6 +36,8 @@ export class UpdateAttendanceConfigBodyDTO extends createZodDto(
 
 export const UpdateAttendanceConfigResSchema = CreateAttendanceConfigResSchema
 
+export type UpdateAttendanceConfigRes = z.infer<typeof UpdateAttendanceConfigResSchema>
+
 export class UpdateAttendanceConfigResDTO extends createZodDto(
   UpdateAttendanceConfigResSchema
 ) {}
@@ -42,11 +46,15 @@ export const GetParamsAttendanceConfigSchema = z.object({
   attendenceConfigId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
 
+export type GetParamsAttendanceConfig = z.infer<typeof GetParamsAttendanceConfigSchema>
+
 export class GetParamsAttendanceConfigDTO extends createZodDto(
   GetParamsAttendanceConfigSchema
 ) {}
 
 export const GetAttendanceConfigResSchema = resSchema(AttendanceConfigSchema)
+
+export type GetAttendanceConfigRes = z.infer<typeof GetAttendanceConfigResSchema>
 
 export class GetAttendanceConfigResDTO extends createZodDto(
   GetAttendanceConfigResSchema

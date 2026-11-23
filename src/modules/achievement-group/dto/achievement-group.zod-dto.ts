@@ -34,6 +34,8 @@ export type CreateAchievementGroupBody = z.infer<typeof CreateAchievementGroupBo
 
 export const CreateAchievementGroupResSchema = resSchema(AchievementGroupSchema)
 
+export type CreateAchievementGroupRes = z.infer<typeof CreateAchievementGroupResSchema>
+
 export class CreateAchievementGroupResDTO extends createZodDto(
   CreateAchievementGroupResSchema
 ) {}
@@ -55,6 +57,8 @@ export type UpdateAchievementGroupBody = z.infer<typeof UpdateAchievementGroupBo
 
 export const UpdateAchievementGroupResSchema = CreateAchievementGroupResSchema
 
+export type UpdateAchievementGroupRes = z.infer<typeof UpdateAchievementGroupResSchema>
+
 export class UpdateAchievementGroupResDTO extends createZodDto(
   UpdateAchievementGroupResSchema
 ) {}
@@ -64,6 +68,8 @@ export const GetAchievementGroupParamsSchema = z
     achievementGroupId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
   })
   .strict()
+
+export type GetAchievementGroupParams = z.infer<typeof GetAchievementGroupParamsSchema>
 
 export class GetAchievementGroupParamsDTO extends createZodDto(
   GetAchievementGroupParamsSchema
@@ -85,6 +91,10 @@ export const GetAchievementGroupDetailResSchema = resSchema(
     )
   })
 )
+
+export type GetAchievementGroupDetailRes = z.infer<
+  typeof GetAchievementGroupDetailResSchema
+>
 
 export class GetAchievementGroupDetailResDTO extends createZodDto(
   GetAchievementGroupDetailResSchema

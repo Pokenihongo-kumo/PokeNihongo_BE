@@ -13,6 +13,8 @@ export const CheckEmailParamsSchema = z
   .object({ email: z.string().trim().toLowerCase().email(AuthMessage.INVALID_EMAIL) })
   .strict()
 
+export type CheckEmailParams = z.infer<typeof CheckEmailParamsSchema>
+
 export class CheckEmailParamsDTO extends createZodDto(CheckEmailParamsSchema) {}
 
 export const VerifyOTPBodySchema = VerificationCodeSchema.pick({
@@ -20,6 +22,8 @@ export const VerifyOTPBodySchema = VerificationCodeSchema.pick({
   code: true,
   type: true
 }).strict()
+
+export type VerifyOTPBody = z.infer<typeof VerifyOTPBodySchema>
 
 export class VerifyOTPBodyDTO extends createZodDto(VerifyOTPBodySchema) {}
 
@@ -53,6 +57,8 @@ export const LoginResSchema = resSchema(
   })
 ).strict()
 
+export type LoginRes = z.infer<typeof LoginResSchema>
+
 export class LoginResDTO extends createZodDto(LoginResSchema) {}
 
 export const RegisterBodySchema = UserSchema.pick({
@@ -83,6 +89,8 @@ export class RegisterBodyDTO extends createZodDto(RegisterBodySchema) {}
 // })
 export const RegisterResSchema = LoginResSchema
 
+export type RegisterRes = z.infer<typeof RegisterResSchema>
+
 export class RegisterResDTO extends createZodDto(RegisterResSchema) {}
 
 export const RefreshTokenBodySchema = z
@@ -97,9 +105,13 @@ export class RefreshTokenBodyDTO extends createZodDto(RefreshTokenBodySchema) {}
 
 export const RefreshTokenResSchema = LoginResSchema
 
+export type RefreshTokenRes = z.infer<typeof RefreshTokenResSchema>
+
 export class RefreshTokenResDTO extends createZodDto(RefreshTokenResSchema) {}
 
 export const LogoutBodySchema = RefreshTokenBodySchema
+
+export type LogoutBody = z.infer<typeof LogoutBodySchema>
 
 export class LogoutBodyDTO extends createZodDto(LogoutBodySchema) {}
 
@@ -108,6 +120,8 @@ export const GetAuthorizationUrlResSchema = resSchema(
     url: z.string().url()
   })
 )
+
+export type GetAuthorizationUrlRes = z.infer<typeof GetAuthorizationUrlResSchema>
 
 export class GetAuthorizationUrlResDTO extends createZodDto(
   GetAuthorizationUrlResSchema
@@ -146,6 +160,8 @@ export class GoogleExchangeBodyDTO extends createZodDto(GoogleExchangeBodySchema
 export const GoogleExchangeResSchema = resSchema(
   z.object({ accessToken: z.string(), refreshToken: z.string() })
 )
+
+export type GoogleExchangeRes = z.infer<typeof GoogleExchangeResSchema>
 
 export class GoogleExchangeResDTO extends createZodDto(GoogleExchangeResSchema) {}
 
@@ -208,11 +224,15 @@ export const UpdateLevelJLPTBodySchema = z
   })
   .strict()
 
+export type UpdateLevelJLPTBody = z.infer<typeof UpdateLevelJLPTBodySchema>
+
 export class UpdateLevelJLPTBodyDTO extends createZodDto(UpdateLevelJLPTBodySchema) {}
 
 export const UpdateLevelJLPTResSchema = resSchema(
   UserSchema.omit({ password: true })
 ).strict()
+
+export type UpdateLevelJLPTRes = z.infer<typeof UpdateLevelJLPTResSchema>
 
 export class UpdateLevelJLPTResDTO extends createZodDto(UpdateLevelJLPTResSchema) {}
 
@@ -234,6 +254,8 @@ export const UpdateFcmTokenDeviceBodySchema = z
   })
   .strict()
 
+export type UpdateFcmTokenDeviceBody = z.infer<typeof UpdateFcmTokenDeviceBodySchema>
+
 export class UpdateFcmTokenDeviceBodyDTO extends createZodDto(
   UpdateFcmTokenDeviceBodySchema
 ) {}
@@ -242,6 +264,8 @@ export const AccountResSchema = z.object({
   data: UserSchema.omit({ password: true }),
   message: z.string()
 })
+
+export type AccountRes = z.infer<typeof AccountResSchema>
 
 export class AccountResDTO extends createZodDto(AccountResSchema) {}
 
@@ -266,5 +290,7 @@ export const GetAccountProfileResSchema = resSchema(
     })
   })
 ).strict()
+
+export type GetAccountProfileRes = z.infer<typeof GetAccountProfileResSchema>
 
 export class GetAccountProfileResDTO extends createZodDto(GetAccountProfileResSchema) {}

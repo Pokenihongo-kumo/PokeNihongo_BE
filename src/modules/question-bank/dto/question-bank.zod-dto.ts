@@ -68,11 +68,15 @@ export const GetQuestionBankByIdParamsSchema = z
   })
   .strict()
 
+export type GetQuestionBankByIdParams = z.infer<typeof GetQuestionBankByIdParamsSchema>
+
 export class GetQuestionBankByIdParamsDTO extends createZodDto(
   GetQuestionBankByIdParamsSchema
 ) {}
 
 export const QuestionBankResSchema = resSchema(QuestionBankSchema).strict()
+
+export type QuestionBankRes = z.infer<typeof QuestionBankResSchema>
 
 export class QuestionBankResDTO extends createZodDto(QuestionBankResSchema) {}
 
@@ -92,6 +96,8 @@ export const BulkDeleteQuestionBankBodySchema = z
       .max(100, M.IDS_TOO_MANY)
   })
   .strict()
+
+export type BulkDeleteQuestionBankBody = z.infer<typeof BulkDeleteQuestionBankBodySchema>
 
 export class BulkDeleteQuestionBankBodyDTO extends createZodDto(
   BulkDeleteQuestionBankBodySchema
@@ -153,6 +159,8 @@ export const GetQuestionBanksByIdsQuerySchema = z
     )
   })
   .strict()
+
+export type GetQuestionBanksByIdsQuery = z.infer<typeof GetQuestionBanksByIdsQuerySchema>
 
 export class GetQuestionBanksByIdsQueryDTO extends createZodDto(
   GetQuestionBanksByIdsQuerySchema
@@ -256,6 +264,8 @@ export const QuestionBankRowOutSchema = z.object({
 
 export const QuestionBankRowResSchema = resSchema(QuestionBankRowOutSchema)
 
+export type QuestionBankRowRes = z.infer<typeof QuestionBankRowResSchema>
+
 export class QuestionBankRowResDTO extends createZodDto(QuestionBankRowResSchema) {}
 
 // List: each row with its meanings, plus how many questions each level has
@@ -270,6 +280,8 @@ export const QuestionBankListResSchema = resSchema(
     levelCounts: z.record(z.string(), z.number())
   })
 )
+
+export type QuestionBankListRes = z.infer<typeof QuestionBankListResSchema>
 
 export class QuestionBankListResDTO extends createZodDto(QuestionBankListResSchema) {}
 
@@ -286,6 +298,8 @@ export const QuestionBanksByIdsResSchema = paginatedResSchema(
   })
 )
 
+export type QuestionBanksByIdsRes = z.infer<typeof QuestionBanksByIdsResSchema>
+
 export class QuestionBanksByIdsResDTO extends createZodDto(QuestionBanksByIdsResSchema) {}
 
 export const QuestionBankBulkDeleteResSchema = resSchema(
@@ -296,6 +310,8 @@ export const QuestionBankBulkDeleteResSchema = resSchema(
     notFoundCount: z.number()
   })
 )
+
+export type QuestionBankBulkDeleteRes = z.infer<typeof QuestionBankBulkDeleteResSchema>
 
 export class QuestionBankBulkDeleteResDTO extends createZodDto(
   QuestionBankBulkDeleteResSchema

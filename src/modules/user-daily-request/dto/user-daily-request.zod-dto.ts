@@ -22,6 +22,8 @@ export class CreatedUserDailyRequestBodyDTO extends createZodDto(
 
 export const CreateUserDailyRequestResSchema = resSchema(UserDailyRequestSchema)
 
+export type CreateUserDailyRequestRes = z.infer<typeof CreateUserDailyRequestResSchema>
+
 export class CreateUserDailyRequestResDTO extends createZodDto(
   CreateUserDailyRequestResSchema
 ) {}
@@ -42,6 +44,8 @@ export class UpdateUserDailyRequestBodyDTO extends createZodDto(
 
 export const UpdateUserDailyRequestResSchema = CreateUserDailyRequestResSchema
 
+export type UpdateUserDailyRequestRes = z.infer<typeof UpdateUserDailyRequestResSchema>
+
 export class UpdateUserDailyRequestResDTO extends createZodDto(
   UpdateUserDailyRequestResSchema
 ) {}
@@ -52,11 +56,17 @@ export const GetUserDailyRequestParamsSchema = z
   })
   .strict()
 
+export type GetUserDailyRequestParams = z.infer<typeof GetUserDailyRequestParamsSchema>
+
 export class GetUserDailyRequestParamsDTO extends createZodDto(
   GetUserDailyRequestParamsSchema
 ) {}
 
 export const GetUserDailyRequestDetailResSchema = resSchema(UserDailyRequestDetailSchema)
+
+export type GetUserDailyRequestDetailRes = z.infer<
+  typeof GetUserDailyRequestDetailResSchema
+>
 
 export class GetUserDailyRequestDetailResDTO extends createZodDto(
   GetUserDailyRequestDetailResSchema
@@ -65,6 +75,10 @@ export class GetUserDailyRequestDetailResDTO extends createZodDto(
 export const GetListUserDailyRequestTodayDetailResSchema = resSchema(
   z.array(UserDailyRequestDetailSchema)
 )
+
+export type GetListUserDailyRequestTodayDetailRes = z.infer<
+  typeof GetListUserDailyRequestTodayDetailResSchema
+>
 
 export class GetListUserDailyRequestTodayDetailResDTO extends createZodDto(
   GetListUserDailyRequestTodayDetailResSchema

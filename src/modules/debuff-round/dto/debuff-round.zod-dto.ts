@@ -31,6 +31,8 @@ export type CreateDebuffRoundBody = z.infer<typeof CreateDebuffRoundBodySchema>
 
 export const CreateDebuffRoundResSchema = resSchema(DebuffRoundSchema)
 
+export type CreateDebuffRoundRes = z.infer<typeof CreateDebuffRoundResSchema>
+
 export class CreateDebuffRoundResDTO extends createZodDto(CreateDebuffRoundResSchema) {}
 
 export const UpdateDebuffRoundBodyInputSchema =
@@ -48,6 +50,8 @@ export type UpdateDebuffRoundBody = z.infer<typeof UpdateDebuffRoundBodySchema>
 
 export const UpdateDebuffRoundResSchema = CreateDebuffRoundResSchema
 
+export type UpdateDebuffRoundRes = z.infer<typeof UpdateDebuffRoundResSchema>
+
 export class UpdateDebuffRoundResDTO extends createZodDto(UpdateDebuffRoundResSchema) {}
 
 export const GetDebuffRoundParamsSchema = z
@@ -55,6 +59,8 @@ export const GetDebuffRoundParamsSchema = z
     debuffRoundId: checkIdSchema(DebuffRoundMessage.INVALID_DATA)
   })
   .strict()
+
+export type GetDebuffRoundParams = z.infer<typeof GetDebuffRoundParamsSchema>
 
 export class GetDebuffRoundParamsDTO extends createZodDto(GetDebuffRoundParamsSchema) {}
 
@@ -64,6 +70,8 @@ export const GetDebuffRoundDetailResSchema = resSchema(
     nameTranslations: TranslationInputSchema.optional().nullable()
   })
 )
+
+export type GetDebuffRoundDetailRes = z.infer<typeof GetDebuffRoundDetailResSchema>
 
 export class GetDebuffRoundDetailResDTO extends createZodDto(
   GetDebuffRoundDetailResSchema

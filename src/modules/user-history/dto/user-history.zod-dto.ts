@@ -17,12 +17,16 @@ import {
 
 export const HistoryListResSchema = paginatedResSchema(HistoryItemSchema).strict()
 
+export type HistoryListRes = z.infer<typeof HistoryListResSchema>
+
 export class HistoryListResDTO extends createZodDto(HistoryListResSchema) {}
 
 // Admin History List Response Schema (có thể có user info)
 
 export const AdminHistoryListResSchema =
   paginatedResSchema(AdminHistoryItemSchema).strict()
+
+export type AdminHistoryListRes = z.infer<typeof AdminHistoryListResSchema>
 
 export class AdminHistoryListResDTO extends createZodDto(AdminHistoryListResSchema) {}
 
@@ -79,6 +83,8 @@ export const HistoryExercisesResSchema = resSchema(
   })
 ).strict()
 
+export type HistoryExercisesRes = z.infer<typeof HistoryExercisesResSchema>
+
 export class HistoryExercisesResDTO extends createZodDto(HistoryExercisesResSchema) {}
 
 export const HistoryTestsResSchema = resSchema(
@@ -98,6 +104,8 @@ export const HistoryTestsResSchema = resSchema(
     })
   })
 ).strict()
+
+export type HistoryTestsRes = z.infer<typeof HistoryTestsResSchema>
 
 export class HistoryTestsResDTO extends createZodDto(HistoryTestsResSchema) {}
 
@@ -125,5 +133,7 @@ export class GetRecentExercisesQueryDTO extends createZodDto(
 export const RecentExercisesResSchema = paginatedResSchema(
   RecentExerciseItemSchema
 ).strict()
+
+export type RecentExercisesRes = z.infer<typeof RecentExercisesResSchema>
 
 export class RecentExercisesResDTO extends createZodDto(RecentExercisesResSchema) {}

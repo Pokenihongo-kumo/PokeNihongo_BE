@@ -15,11 +15,10 @@ import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestj
 import { SrsReviewService } from './user-srs-review.service'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import {
-  UpsertSrsReviewDto,
-  ReviewActionDto,
-  ListSrsQueryDto,
-  ListSrsTodayQueryDto,
-  SrsReviewIdParamsDto
+  UpsertSrsReviewBodyDTO,
+  ListSrsQueryDTO,
+  ListSrsTodayQueryDTO,
+  SrsReviewIdParamsDTO
 } from './dto/user-srs-review.zod-dto'
 import { ApiBody, ApiResponse } from '@nestjs/swagger'
 import {
@@ -44,7 +43,7 @@ export class SrsReviewController {
   // The service answers the whole envelope (this used to wrap it in a second
   // one with message 'GET_SUCCESS')
   @ResponseMessage(M.GET_LIST_SUCCESS)
-  async list(@ActiveUser('userId') userId: number, @Query() query: ListSrsQueryDto) {
+  async list(@ActiveUser('userId') userId: number, @Query() query: ListSrsQueryDTO) {
     return this.srsService.list(userId, query)
   }
 
@@ -55,7 +54,7 @@ export class SrsReviewController {
   @ResponseMessage(M.GET_LIST_SUCCESS)
   async listMyToday(
     @ActiveUser('userId') userId: number,
-    @Query() query: ListSrsTodayQueryDto,
+    @Query() query: ListSrsTodayQueryDTO,
     @I18nLang() lang: string
   ) {
     return this.srsService.listToday(userId, query, lang)
@@ -66,7 +65,7 @@ export class SrsReviewController {
   @ResponseMessage(M.GET_SUCCESS)
   async getOne(
     @ActiveUser('userId') userId: number,
-    @Param() params: SrsReviewIdParamsDto,
+    @Param() params: SrsReviewIdParamsDTO,
     @I18nLang() lang: string
   ) {
     return this.srsService.getDetailBySrsId(userId, params.id, lang)
@@ -78,7 +77,10 @@ export class SrsReviewController {
   @ApiBody({ type: UpsertSrsReviewSwaggerDTO })
   @ApiResponse({ status: 200, type: SrsReviewSwaggerDTO })
   @ResponseMessage(M.UPSERT_SUCCESS)
-  async upsert(@ActiveUser('userId') userId: number, @Body() body: UpsertSrsReviewDto) {
+  async upsert(
+    @ActiveUser('userId') userId: number,
+    @Body() body: UpsertSrsReviewBodyDTO
+  ) {
     return this.srsService.upsert(userId, body)
   }
 
@@ -89,7 +91,7 @@ export class SrsReviewController {
   @ResponseMessage(M.UPDATE_SUCCESS)
   async markRead(
     @ActiveUser('userId') userId: number,
-    @Param() params: SrsReviewIdParamsDto
+    @Param() params: SrsReviewIdParamsDTO
   ) {
     return this.srsService.markRead(userId, params.id)
   }

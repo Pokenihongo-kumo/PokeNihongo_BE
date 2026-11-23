@@ -19,6 +19,8 @@ export class CreateElementalTypeBodyDTO extends createZodDto(
 
 export const CreateElementalTypeResSchema = resSchema(ElementalTypeSchema)
 
+export type CreateElementalTypeRes = z.infer<typeof CreateElementalTypeResSchema>
+
 export class CreateElementalTypeResDTO extends createZodDto(
   CreateElementalTypeResSchema
 ) {}
@@ -33,6 +35,8 @@ export class UpdateElementalTypeBodyDTO extends createZodDto(
 
 export const UpdateElementalTypeResSchema = CreateElementalTypeResSchema
 
+export type UpdateElementalTypeRes = z.infer<typeof UpdateElementalTypeResSchema>
+
 export class UpdateElementalTypeResDTO extends createZodDto(
   UpdateElementalTypeResSchema
 ) {}
@@ -43,11 +47,15 @@ export const GetElementalTypeParamsSchema = z
   })
   .strict()
 
+export type GetElementalTypeParams = z.infer<typeof GetElementalTypeParamsSchema>
+
 export class GetElementalTypeParamsDTO extends createZodDto(
   GetElementalTypeParamsSchema
 ) {}
 
 export const GetElementalTypeDetailResSchema = resSchema(ElementalTypeSchema)
+
+export type GetElementalTypeDetailRes = z.infer<typeof GetElementalTypeDetailResSchema>
 
 export class GetElementalTypeDetailResDTO extends createZodDto(
   GetElementalTypeDetailResSchema
@@ -56,6 +64,8 @@ export class GetElementalTypeDetailResDTO extends createZodDto(
 // GET /elemental-type/active: every active type, not paginated
 
 export const GetActiveElementalTypesResSchema = resSchema(z.array(ElementalTypeSchema))
+
+export type GetActiveElementalTypesRes = z.infer<typeof GetActiveElementalTypesResSchema>
 
 export class GetActiveElementalTypesResDTO extends createZodDto(
   GetActiveElementalTypesResSchema

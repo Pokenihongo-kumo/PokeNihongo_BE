@@ -2,6 +2,7 @@
 // DTO layout check (backend-convention section 2): in every dto file a schema's
 // inferred type (z.infer<typeof XSchema>) and DTO class (createZodDto(XSchema))
 // sit right below the schema (blank lines and comments between are fine).
+// A schema that has a DTO class also has its type.
 // Exits 1 and lists each one that does not.
 // Usage: node scripts/arch/dto-companions.mjs  (npm run arch:dto)
 import { createRequire } from 'node:module'
@@ -21,6 +22,7 @@ const walk = (d) =>
 const files = walk('src/modules')
 let bad = 0
 let total = 0
+let untyped = 0
 const report = []
 for (const f of files) {
   const text = fs.readFileSync(f, 'utf8')
@@ -59,9 +61,29 @@ for (const f of files) {
       )
     }
   })
+  // a schema with a DTO class also has its inferred type
+  const typed = new Set(
+    st.flatMap((s) => {
+      const m = s
+        .getText(sf)
+        .match(/^export type \w+\s*=\s*z\.(?:infer|input|output)<\s*typeof (\w+)\s*>/s)
+      return m ? [m[1]] : []
+    })
+  )
+  for (const s of st) {
+    const m = s
+      .getText(sf)
+      .match(/^export class (\w+) extends createZodDto\(\s*(\w+)\s*\)\s*\{\s*\}$/s)
+    if (m && !typed.has(m[2])) {
+      untyped++
+      report.push(
+        `${f.split(path.sep).join('/')}: ${m[1]} has no z.infer type of ${m[2]}`
+      )
+    }
+  }
 }
 if (report.length) console.log(report.join('\n'))
 console.log(
-  `DTO layout: ${files.length} files, ${total} types/DTOs, ${bad} not right below their schema`
+  `DTO layout: ${files.length} files, ${total} types/DTOs, ${bad} not right below their schema, ${untyped} DTOs without a type`
 )
-process.exit(bad ? 1 : 0)
+process.exit(bad || untyped ? 1 : 0)

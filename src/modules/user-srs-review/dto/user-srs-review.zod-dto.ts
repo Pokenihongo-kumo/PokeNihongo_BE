@@ -18,14 +18,18 @@ export const UpsertSrsReviewBodySchema = z.object({
   message: z.string().optional()
 })
 
-export class UpsertSrsReviewDto extends createZodDto(UpsertSrsReviewBodySchema) {}
+export type UpsertSrsReviewBody = z.infer<typeof UpsertSrsReviewBodySchema>
+
+export class UpsertSrsReviewBodyDTO extends createZodDto(UpsertSrsReviewBodySchema) {}
 
 export const ReviewActionBodySchema = z.object({
   result: z.enum(['correct', 'incorrect']),
   message: z.string().optional()
 })
 
-export class ReviewActionDto extends createZodDto(ReviewActionBodySchema) {}
+export type ReviewActionBody = z.infer<typeof ReviewActionBodySchema>
+
+export class ReviewActionBodyDTO extends createZodDto(ReviewActionBodySchema) {}
 
 export const ListSrsQuerySchema = z.object({
   type: SrsContentTypeEnum.optional(),
@@ -36,7 +40,9 @@ export const ListSrsQuerySchema = z.object({
     .optional()
 })
 
-export class ListSrsQueryDto extends createZodDto(ListSrsQuerySchema) {}
+export type ListSrsQuery = z.infer<typeof ListSrsQuerySchema>
+
+export class ListSrsQueryDTO extends createZodDto(ListSrsQuerySchema) {}
 
 export const ListSrsTodayQuerySchema = z.object({
   currentPage: checkIdSchema(M.INVALID_PAGE).optional(),
@@ -45,10 +51,12 @@ export const ListSrsTodayQuerySchema = z.object({
 
 export type ListSrsTodayQuery = z.infer<typeof ListSrsTodayQuerySchema>
 
-export class ListSrsTodayQueryDto extends createZodDto(ListSrsTodayQuerySchema) {}
+export class ListSrsTodayQueryDTO extends createZodDto(ListSrsTodayQuerySchema) {}
 
 export const SrsReviewIdParamsSchema = z.object({
   id: checkIdSchema(M.INVALID_ID)
 })
 
-export class SrsReviewIdParamsDto extends createZodDto(SrsReviewIdParamsSchema) {}
+export type SrsReviewIdParams = z.infer<typeof SrsReviewIdParamsSchema>
+
+export class SrsReviewIdParamsDTO extends createZodDto(SrsReviewIdParamsSchema) {}

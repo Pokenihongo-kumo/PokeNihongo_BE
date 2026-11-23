@@ -13,4 +13,6 @@ export type CreateMatchQueueBody = z.infer<typeof CreateMatchQueueBodySchema>
 
 export const CreateMatchQueueResSchema = resSchema(MatchQueueSchema)
 
+export type CreateMatchQueueRes = z.infer<typeof CreateMatchQueueResSchema>
+
 export class CreateMatchQueueResDTO extends createZodDto(CreateMatchQueueResSchema) {}

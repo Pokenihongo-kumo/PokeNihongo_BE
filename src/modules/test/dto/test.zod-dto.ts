@@ -116,6 +116,9 @@ export class UpdateTestWithMeaningsBodyDTO extends createZodDto(
 export const TestListResSchema = paginatedResSchema(TestSchema)
 
 // Test List Response DTO
+
+export type TestListRes = z.infer<typeof TestListResSchema>
+
 export class TestListResDTO extends createZodDto(TestListResSchema) {}
 
 // Get Test by ID Params Schema
@@ -127,6 +130,9 @@ export const GetTestByIdParamsSchema = z
   .strict()
 
 // Params and queries
+
+export type GetTestByIdParams = z.infer<typeof GetTestByIdParamsSchema>
+
 export class GetTestByIdParamsDTO extends createZodDto(GetTestByIdParamsSchema) {}
 
 export const GetTestByLessonParamsSchema = z
@@ -135,6 +141,8 @@ export const GetTestByLessonParamsSchema = z
   })
   .strict()
 
+export type GetTestByLessonParams = z.infer<typeof GetTestByLessonParamsSchema>
+
 export class GetTestByLessonParamsDTO extends createZodDto(GetTestByLessonParamsSchema) {}
 
 export const GetLessonReviewParamsSchema = z
@@ -142,6 +150,8 @@ export const GetLessonReviewParamsSchema = z
     testId: checkIdSchema(M.INVALID_ID)
   })
   .strict()
+
+export type GetLessonReviewParams = z.infer<typeof GetLessonReviewParamsSchema>
 
 export class GetLessonReviewParamsDTO extends createZodDto(GetLessonReviewParamsSchema) {}
 
@@ -157,6 +167,8 @@ export const GetRandomQuestionsQuerySchema = z
     count: checkIdSchema(M.INVALID_COUNT)
   })
   .strict()
+
+export type GetRandomQuestionsQuery = z.infer<typeof GetRandomQuestionsQuerySchema>
 
 export class GetRandomQuestionsQueryDTO extends createZodDto(
   GetRandomQuestionsQuerySchema
@@ -266,6 +278,8 @@ export const TestRowOutSchema = TestFieldsOutSchema.extend({
 
 export const TestRowResSchema = resSchema(TestRowOutSchema)
 
+export type TestRowRes = z.infer<typeof TestRowResSchema>
+
 export class TestRowResDTO extends createZodDto(TestRowResSchema) {}
 
 const TestSetWithQuestionsFieldsSchema = z.object({
@@ -297,12 +311,16 @@ export const TestFullResSchema = resSchema(
   })
 )
 
+export type TestFullRes = z.infer<typeof TestFullResSchema>
+
 export class TestFullResDTO extends createZodDto(TestFullResSchema) {}
 
 // Full (user): the same without creator and audit fields
 export const TestFullUserResSchema = resSchema(
   TestFieldsOutSchema.extend({ testSets: z.array(TestSetWithQuestionsFieldsSchema) })
 )
+
+export type TestFullUserRes = z.infer<typeof TestFullUserResSchema>
 
 export class TestFullUserResDTO extends createZodDto(TestFullUserResSchema) {}
 
@@ -327,6 +345,8 @@ export const RandomQuestionsResSchema = resSchema(
   })
 )
 
+export type RandomQuestionsRes = z.infer<typeof RandomQuestionsResSchema>
+
 export class RandomQuestionsResDTO extends createZodDto(RandomQuestionsResSchema) {}
 
 export const PlacementQuestionsResSchema = resSchema(
@@ -343,6 +363,8 @@ export const PlacementQuestionsResSchema = resSchema(
     userTestAttemptId: z.number()
   })
 )
+
+export type PlacementQuestionsRes = z.infer<typeof PlacementQuestionsResSchema>
 
 export class PlacementQuestionsResDTO extends createZodDto(PlacementQuestionsResSchema) {}
 
@@ -367,6 +389,8 @@ export const LessonReviewQuestionsResSchema = resSchema(
   })
 )
 
+export type LessonReviewQuestionsRes = z.infer<typeof LessonReviewQuestionsResSchema>
+
 export class LessonReviewQuestionsResDTO extends createZodDto(
   LessonReviewQuestionsResSchema
 ) {}
@@ -380,6 +404,8 @@ export const TestBulkDeleteResSchema = resSchema(
   })
 )
 
+export type TestBulkDeleteRes = z.infer<typeof TestBulkDeleteResSchema>
+
 export class TestBulkDeleteResDTO extends createZodDto(TestBulkDeleteResSchema) {}
 
 export const TestSetsAddedResSchema = resSchema(
@@ -389,6 +415,8 @@ export const TestSetsAddedResSchema = resSchema(
     count: z.number()
   })
 )
+
+export type TestSetsAddedRes = z.infer<typeof TestSetsAddedResSchema>
 
 export class TestSetsAddedResDTO extends createZodDto(TestSetsAddedResSchema) {}
 
@@ -400,11 +428,15 @@ export const TestSetsRemovedResSchema = resSchema(
   })
 )
 
+export type TestSetsRemovedRes = z.infer<typeof TestSetsRemovedResSchema>
+
 export class TestSetsRemovedResDTO extends createZodDto(TestSetsRemovedResSchema) {}
 
 export const AutoAddFreeTestSetsResSchema = resSchema(
   z.object({ totalTests: z.number(), totalTestSetsAdded: z.number() })
 )
+
+export type AutoAddFreeTestSetsRes = z.infer<typeof AutoAddFreeTestSetsResSchema>
 
 export class AutoAddFreeTestSetsResDTO extends createZodDto(
   AutoAddFreeTestSetsResSchema

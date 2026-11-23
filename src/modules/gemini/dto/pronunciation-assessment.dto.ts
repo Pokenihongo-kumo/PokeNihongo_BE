@@ -13,11 +13,17 @@ export const PronunciationAssessmentBodySchema = z
   })
   .strict()
 
+export type PronunciationAssessmentBody = z.infer<
+  typeof PronunciationAssessmentBodySchema
+>
+
 export class PronunciationAssessmentBodyDTO extends createZodDto(
   PronunciationAssessmentBodySchema
 ) {}
 
 export const PronunciationAssessmentResSchema = resSchema(z.record(z.unknown()))
+
+export type PronunciationAssessmentRes = z.infer<typeof PronunciationAssessmentResSchema>
 
 export class PronunciationAssessmentResDTO extends createZodDto(
   PronunciationAssessmentResSchema

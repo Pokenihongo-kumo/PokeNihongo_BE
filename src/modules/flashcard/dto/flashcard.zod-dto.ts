@@ -49,6 +49,8 @@ export const FlashcardDeckParamsSchema = z.object({
   deckId: checkIdSchema(M.INVALID_DECK_ID)
 })
 
+export type FlashcardDeckParams = z.infer<typeof FlashcardDeckParamsSchema>
+
 export class FlashcardDeckParamsDTO extends createZodDto(FlashcardDeckParamsSchema) {}
 
 export const CreateFlashcardCardBodySchema = z
@@ -173,6 +175,8 @@ export const FlashcardReadBodySchema = z.object({
   read: z.boolean()
 })
 
+export type FlashcardReadBody = z.infer<typeof FlashcardReadBodySchema>
+
 export class FlashcardReadBodyDTO extends createZodDto(FlashcardReadBodySchema) {}
 
 export const FlashcardReviewActionBodySchema = z.object({
@@ -192,6 +196,8 @@ export const DeleteFlashcardCardsBodySchema = z.object({
   deckId: checkIdSchema(M.INVALID_DECK_ID),
   cardIds: z.array(checkIdSchema(M.INVALID_CARD_ID)).min(1, M.INVALID_CARD_ID)
 })
+
+export type DeleteFlashcardCardsBody = z.infer<typeof DeleteFlashcardCardsBodySchema>
 
 export class DeleteFlashcardCardsBodyDTO extends createZodDto(
   DeleteFlashcardCardsBodySchema

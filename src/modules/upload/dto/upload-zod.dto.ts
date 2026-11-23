@@ -27,6 +27,8 @@ export const UploadFileBodySchema = z
   })
   .strict()
 
+export type UploadFileBody = z.infer<typeof UploadFileBodySchema>
+
 export class UploadFileBodyDTO extends createZodDto(UploadFileBodySchema) {}
 
 // Response schema
@@ -36,6 +38,8 @@ export const UploadFileResponseSchema = resSchema(
     publicId: z.string().optional()
   })
 )
+
+export type UploadFileResponse = z.infer<typeof UploadFileResponseSchema>
 
 export class UploadFileResponseDTO extends createZodDto(UploadFileResponseSchema) {}
 

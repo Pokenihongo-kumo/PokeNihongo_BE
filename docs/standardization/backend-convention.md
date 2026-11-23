@@ -25,7 +25,7 @@ src/modules/<feature>/
 
 - Bố cục theo [schema-dto-layout-plan](schema-dto-layout-plan.md) (giai đoạn 7, mẫu: module **level**):
   - `entities/` chỉ giữ hình dạng dữ liệu dùng lại ở nhiều response hoặc trong service/repo. Không có schema request/response, không có envelope.
-  - Mọi schema thuộc HTTP (body, query, params, response) nằm trong `dto/<feature>.zod-dto.ts`, mỗi schema kèm ngay bên dưới type suy ra (`export type X = z.infer<typeof XSchema>`) rồi class DTO (`class XDTO extends createZodDto(XSchema)`), không gom type/class xuống cuối file — `npm run arch:dto` kiểm tra; phụ thuộc một chiều `dto → entity`. File quá lớn thì tách theo use case trong `dto/`.
+  - Mọi schema thuộc HTTP (body, query, params, response) nằm trong `dto/<feature>.zod-dto.ts`, mỗi schema kèm ngay bên dưới type suy ra (`export type X = z.infer<typeof XSchema>`) rồi class DTO (`class XDTO extends createZodDto(XSchema)`), không gom type/class xuống cuối file; schema có class DTO thì luôn có type (giữ cả khi chưa ai dùng; script dọn code chết bỏ qua chúng) — `npm run arch:dto` kiểm tra; phụ thuộc một chiều `dto → entity`. File quá lớn thì tách theo use case trong `dto/`.
   - Tên: `XSchema` (giá trị Zod), `X` (type suy ra, **không hậu tố** `Type`), `XDTO` (class). Ví dụ `CreateLevelBodySchema`, `CreateLevelBody`, `CreateLevelBodyDTO`. Trong repo cần cả type dòng Prisma cùng tên thì import Prisma với alias `PrismaX`.
   - Service/repo dùng type suy ra từ schema HTTP (`CreateLevelBody`), import từ `dto/`; không thêm lớp input riêng chỉ để map 1–1.
   - `arch:deps` chặn tái phát: `httpSchemasInEntities` = 0, `handWrittenEnvelopes` chỉ còn 2 ngoại lệ đã ghi trong baseline.

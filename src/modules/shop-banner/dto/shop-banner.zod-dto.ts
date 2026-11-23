@@ -48,6 +48,8 @@ export type CreateShopBannerBody = z.infer<typeof CreateShopBannerBodySchema>
 
 export const CreateShopBannerResSchema = resSchema(ShopBannerSchema)
 
+export type CreateShopBannerRes = z.infer<typeof CreateShopBannerResSchema>
+
 export class CreateShopBannerResDTO extends createZodDto(CreateShopBannerResSchema) {}
 
 export const UpdateShopBannerBodyInputSchema =
@@ -65,6 +67,8 @@ export type UpdateShopBannerBody = z.infer<typeof UpdateShopBannerBodySchema>
 
 export const UpdateShopBannerResSchema = CreateShopBannerResSchema
 
+export type UpdateShopBannerRes = z.infer<typeof UpdateShopBannerResSchema>
+
 export class UpdateShopBannerResDTO extends createZodDto(UpdateShopBannerResSchema) {}
 
 export const GetShopBannerParamsSchema = z
@@ -72,6 +76,8 @@ export const GetShopBannerParamsSchema = z
     shopBannerId: checkIdSchema(ShopBannerMessage.INVALID_DATA)
   })
   .strict()
+
+export type GetShopBannerParams = z.infer<typeof GetShopBannerParamsSchema>
 
 export class GetShopBannerParamsDTO extends createZodDto(GetShopBannerParamsSchema) {}
 
@@ -94,11 +100,15 @@ export const GetShopBannerDetailResSchema = resSchema(
   })
 )
 
+export type GetShopBannerDetailRes = z.infer<typeof GetShopBannerDetailResSchema>
+
 export class GetShopBannerDetailResDTO extends createZodDto(
   GetShopBannerDetailResSchema
 ) {}
 
 export const GetShopBannerByTodayResSchema = resSchema(GetShopBannerDetailByUserSchema)
+
+export type GetShopBannerByTodayRes = z.infer<typeof GetShopBannerByTodayResSchema>
 
 export class GetShopBannerByTodayResDTO extends createZodDto(
   GetShopBannerByTodayResSchema

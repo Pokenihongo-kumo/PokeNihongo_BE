@@ -9,10 +9,10 @@ import {
   SrsNotFoundException
 } from './dto/user-srs-review.error'
 import {
-  ListSrsQueryDto,
+  ListSrsQuery,
   ListSrsTodayQuery,
-  ReviewActionDto,
-  UpsertSrsReviewDto
+  ReviewActionBody,
+  UpsertSrsReviewBody
 } from './dto/user-srs-review.zod-dto'
 import { SrsReviewRepo } from './user-srs-review.repo'
 
@@ -33,7 +33,7 @@ export class SrsReviewService {
   ) {}
 
   // Every review of the user (200 at most), optionally of one type or due now
-  async list(userId: number, query: ListSrsQueryDto) {
+  async list(userId: number, query: ListSrsQuery) {
     const rows = await this.repo.list({
       userId,
       ...(query.type && { contentType: query.type }),
@@ -106,7 +106,7 @@ export class SrsReviewService {
 
   // A new review is due now (nextReviewDate has no default: creating one used
   // to fail, so every upsert of new content answered 400)
-  async upsert(userId: number, body: UpsertSrsReviewDto) {
+  async upsert(userId: number, body: UpsertSrsReviewBody) {
     try {
       const data = await this.repo.upsert(
         userId,
@@ -122,7 +122,7 @@ export class SrsReviewService {
 
   // Used by flashcard. Correct: one level up, next review after SCHEDULE_DAYS
   // of that level. Wrong: back to level 0, review tomorrow
-  async applyReview(userId: number, type: string, id: number, body: ReviewActionDto) {
+  async applyReview(userId: number, type: string, id: number, body: ReviewActionBody) {
     try {
       const contentType = String(type).toUpperCase() as SrsContentType
       const existing =

@@ -77,6 +77,10 @@ export const GetAIConversationRoomByIdParamsSchema = z
   .object({ id: z.string().trim().min(1, M.INVALID_ID).max(100, M.INVALID_ID) })
   .strict()
 
+export type GetAIConversationRoomByIdParams = z.infer<
+  typeof GetAIConversationRoomByIdParamsSchema
+>
+
 export class GetAIConversationRoomByIdParamsDTO extends createZodDto(
   GetAIConversationRoomByIdParamsSchema
 ) {}
@@ -91,10 +95,16 @@ export const GetAIConversationRoomByConversationParamsSchema = z
   })
   .strict()
 
+export type GetAIConversationRoomByConversationParams = z.infer<
+  typeof GetAIConversationRoomByConversationParamsSchema
+>
+
 export class GetAIConversationRoomByConversationParamsDTO extends createZodDto(
   GetAIConversationRoomByConversationParamsSchema
 ) {}
 
 export const AIConversationRoomResSchema = resSchema(AIConversationRoomSchema)
+
+export type AIConversationRoomRes = z.infer<typeof AIConversationRoomResSchema>
 
 export class AIConversationRoomResDTO extends createZodDto(AIConversationRoomResSchema) {}

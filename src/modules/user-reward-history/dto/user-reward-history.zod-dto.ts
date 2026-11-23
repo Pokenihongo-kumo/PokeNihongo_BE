@@ -72,6 +72,10 @@ export const GetUserRewardHistoryByIdParamsSchema = z
   })
   .strict()
 
+export type GetUserRewardHistoryByIdParams = z.infer<
+  typeof GetUserRewardHistoryByIdParamsSchema
+>
+
 export class GetUserRewardHistoryByIdParamsDTO extends createZodDto(
   GetUserRewardHistoryByIdParamsSchema
 ) {}
@@ -116,11 +120,15 @@ export class GetMyRewardHistoryQueryDTO extends createZodDto(
 
 export const UserRewardHistoryResSchema = resSchema(UserRewardHistorySchema).strict()
 
+export type UserRewardHistoryRes = z.infer<typeof UserRewardHistoryResSchema>
+
 export class UserRewardHistoryResDTO extends createZodDto(UserRewardHistoryResSchema) {}
 
 export const UserRewardHistoryListResSchema = paginatedResSchema(
   UserRewardHistorySchema
 ).strict()
+
+export type UserRewardHistoryListRes = z.infer<typeof UserRewardHistoryListResSchema>
 
 export class UserRewardHistoryListResDTO extends createZodDto(
   UserRewardHistoryListResSchema

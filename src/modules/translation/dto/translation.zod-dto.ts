@@ -19,6 +19,8 @@ export class CreateTranslationBodyDTO extends createZodDto(CreateTranslationSche
 
 export const CreateTranslationsSchema = z.array(CreateTranslationSchema)
 
+export type CreateTranslationsBody = z.infer<typeof CreateTranslationsSchema>
+
 export class CreateTranslationsBodyDTO extends createZodDto(CreateTranslationsSchema) {}
 
 export const UpdateTranslationSchema = z.object({
@@ -35,6 +37,8 @@ export const GetTranslationByIdParamsSchema = z.object({
   id: checkIdSchema(TranslationMessage.INVALID_ID)
 })
 
+export type GetTranslationByIdParams = z.infer<typeof GetTranslationByIdParamsSchema>
+
 export class GetTranslationByIdParamsDTO extends createZodDto(
   GetTranslationByIdParamsSchema
 ) {}
@@ -42,6 +46,10 @@ export class GetTranslationByIdParamsDTO extends createZodDto(
 export const DeleteTranslationsByKeyParamsSchema = z.object({
   key: z.string().min(1, TranslationMessage.KEY_REQUIRED)
 })
+
+export type DeleteTranslationsByKeyParams = z.infer<
+  typeof DeleteTranslationsByKeyParamsSchema
+>
 
 export class DeleteTranslationsByKeyParamsDTO extends createZodDto(
   DeleteTranslationsByKeyParamsSchema
@@ -133,9 +141,13 @@ export const TranslationRowSchema = z.object({
 
 export const TranslationResSchema = resSchema(TranslationRowSchema)
 
+export type TranslationRes = z.infer<typeof TranslationResSchema>
+
 export class TranslationResDTO extends createZodDto(TranslationResSchema) {}
 
 export const TranslationListResSchema = paginatedResSchema(TranslationRowSchema)
+
+export type TranslationListRes = z.infer<typeof TranslationListResSchema>
 
 export class TranslationListResDTO extends createZodDto(TranslationListResSchema) {}
 
@@ -143,8 +155,12 @@ export const TranslationsByKeyResSchema = resSchema(
   z.object({ key: z.string(), translations: z.array(TranslationRowSchema) })
 )
 
+export type TranslationsByKeyRes = z.infer<typeof TranslationsByKeyResSchema>
+
 export class TranslationsByKeyResDTO extends createZodDto(TranslationsByKeyResSchema) {}
 
 export const TranslationBulkResSchema = resSchema(z.object({ count: z.number() }))
+
+export type TranslationBulkRes = z.infer<typeof TranslationBulkResSchema>
 
 export class TranslationBulkResDTO extends createZodDto(TranslationBulkResSchema) {}

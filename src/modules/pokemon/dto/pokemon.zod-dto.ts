@@ -136,6 +136,9 @@ export const CreatePokemonResSchema = resSchema(
 )
 
 // Response DTOs
+
+export type CreatePokemonRes = z.infer<typeof CreatePokemonResSchema>
+
 export class CreatePokemonResDTO extends createZodDto(CreatePokemonResSchema) {}
 
 // Update Schema
@@ -276,6 +279,8 @@ export type UpdatePokemonFormData = z.infer<typeof UpdatePokemonFormDataSchema>
 
 export const UpdatePokemonResSchema = CreatePokemonResSchema
 
+export type UpdatePokemonRes = z.infer<typeof UpdatePokemonResSchema>
+
 export class UpdatePokemonResDTO extends createZodDto(UpdatePokemonResSchema) {}
 
 // Query Schema
@@ -284,9 +289,13 @@ export const GetPokemonParamsSchema = z.object({
   pokemonId: checkIdSchema(PokemonMessage.INVALID_ID)
 })
 
+export type GetPokemonParams = z.infer<typeof GetPokemonParamsSchema>
+
 export class GetPokemonParamsDTO extends createZodDto(GetPokemonParamsSchema) {}
 
 export const GetPokemonResSchema = resSchema(z.array(PokemonSchema))
+
+export type GetPokemonRes = z.infer<typeof GetPokemonResSchema>
 
 export class GetPokemonResDTO extends createZodDto(GetPokemonResSchema) {}
 
@@ -342,6 +351,8 @@ export const GetPokemonDetailResSchema = resSchema(
   })
 )
 
+export type GetPokemonDetailRes = z.infer<typeof GetPokemonDetailResSchema>
+
 export class GetPokemonDetailResDTO extends createZodDto(GetPokemonDetailResSchema) {}
 
 // Pokemon Weakness Response Schema
@@ -375,6 +386,8 @@ export const GetPokemonWeaknessResSchema = resSchema(
   })
 )
 
+export type GetPokemonWeaknessRes = z.infer<typeof GetPokemonWeaknessResSchema>
+
 export class GetPokemonWeaknessResDTO extends createZodDto(GetPokemonWeaknessResSchema) {}
 
 // Assign Types Schema
@@ -402,6 +415,8 @@ export const GetEvolutionOptionsResSchema = resSchema(
     })
   )
 )
+
+export type GetEvolutionOptionsRes = z.infer<typeof GetEvolutionOptionsResSchema>
 
 export class GetEvolutionOptionsResDTO extends createZodDto(
   GetEvolutionOptionsResSchema
