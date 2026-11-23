@@ -1,3 +1,5 @@
+import { TestSetQuestionBankSchema } from '../entities/testset-questionbank.entity'
+import { resSchema } from '@/shared/utils/res-schema'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { TestSetQuestionBankMessage } from '@/i18n/message-keys'
 import { createZodDto } from 'nestjs-zod'
@@ -116,4 +118,84 @@ export type DeleteManyTestSetQuestionBankBody = z.infer<
 
 export class DeleteManyTestSetQuestionBankBodyDTO extends createZodDto(
   DeleteManyTestSetQuestionBankBodySchema
+) {}
+
+// ---- responses (output only)
+
+export const TestSetQuestionBankResSchema = resSchema(TestSetQuestionBankSchema)
+
+export class TestSetQuestionBankResDTO extends createZodDto(
+  TestSetQuestionBankResSchema
+) {}
+
+export const TestSetQuestionBankArrayResSchema = resSchema(
+  z.array(TestSetQuestionBankSchema)
+)
+
+export class TestSetQuestionBankArrayResDTO extends createZodDto(
+  TestSetQuestionBankArrayResSchema
+) {}
+
+// An answer label in the request language
+export const AnswerLabelOutSchema = z.object({
+  id: z.number(),
+  answer: z.string().nullable()
+})
+
+// Full: each link flattened with its question bank and answer labels
+export const TestSetQuestionBankFullResSchema = resSchema(
+  z.array(
+    z.object({
+      id: z.number(),
+      questionOrder: z.number(),
+      questionBankId: z.number(),
+      questionJp: z.string().nullable(),
+      questionType: z.string(),
+      audioUrl: z.string().nullable(),
+      questionKey: z.string().nullable(),
+      pronunciation: z.string().nullable(),
+      role: z.string().nullable(),
+      levelN: z.number().nullable(),
+      createdById: z.number().nullable(),
+      createdAt: z.date(),
+      updatedAt: z.date(),
+      answers: z.array(AnswerLabelOutSchema)
+    })
+  )
+)
+
+export class TestSetQuestionBankFullResDTO extends createZodDto(
+  TestSetQuestionBankFullResSchema
+) {}
+
+// A question as the test reads give it: text in the request language
+export const QuestionWithAnswersOutSchema = z.object({
+  id: z.number(),
+  questionOrder: z.number(),
+  questionBank: z.object({
+    id: z.number(),
+    question: z.string().nullable(),
+    questionType: z.string(),
+    audioUrl: z.string().nullable(),
+    role: z.string().nullable(),
+    pronunciation: z.string().nullable(),
+    levelN: z.number().nullable(),
+    answers: z.array(AnswerLabelOutSchema)
+  })
+})
+
+export const TestSetQuestionBankFullWithAnswerResSchema = resSchema(
+  z.array(QuestionWithAnswersOutSchema)
+)
+
+export class TestSetQuestionBankFullWithAnswerResDTO extends createZodDto(
+  TestSetQuestionBankFullWithAnswerResSchema
+) {}
+
+export const TestSetQuestionBankDeletedResSchema = resSchema(
+  z.object({ deletedCount: z.number() })
+)
+
+export class TestSetQuestionBankDeletedResDTO extends createZodDto(
+  TestSetQuestionBankDeletedResSchema
 ) {}

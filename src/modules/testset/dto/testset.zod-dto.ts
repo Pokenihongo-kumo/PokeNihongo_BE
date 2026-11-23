@@ -1,3 +1,5 @@
+import { decimalOutSchema, translatedTextOutSchema } from '@/shared/utils/output-schema'
+import { resSchema } from '@/shared/utils/res-schema'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { isUrl } from '@/common/utils/is-url'
 import { hasJapaneseText } from '@/common/utils/japanese-text'
@@ -298,3 +300,72 @@ export type GetTestSetListQuery = z.infer<typeof GetTestSetListQuerySchema>
 
 // Get TestSet List Query DTO
 export class GetTestSetListQueryDTO extends createZodDto(GetTestSetListQuerySchema) {}
+
+// ---- responses (output only)
+
+// A test set row; name/description translated (one language or all)
+export const TestSetRowOutSchema = z.object({
+  id: z.number(),
+  name: translatedTextOutSchema,
+  description: translatedTextOutSchema.nullable(),
+  content: z.string().nullable(),
+  audioUrl: z.string().nullable(),
+  price: decimalOutSchema.nullable(),
+  levelN: z.number().nullable(),
+  testType: z.string(),
+  status: z.string(),
+  creatorId: z.number().nullable(),
+  createdAt: z.date(),
+  updatedAt: z.date()
+})
+
+export const TestSetRowResSchema = resSchema(TestSetRowOutSchema)
+
+export class TestSetRowResDTO extends createZodDto(TestSetRowResSchema) {}
+
+const QuestionBankFieldsOutSchema = z.object({
+  id: z.number(),
+  questionJp: z.string().nullable(),
+  questionKey: z.string().nullable(),
+  questionType: z.string(),
+  audioUrl: z.string().nullable(),
+  role: z.string().nullable(),
+  pronunciation: z.string().nullable(),
+  levelN: z.number().nullable()
+})
+
+// Upsert: the set with its links and their question banks
+export const TestSetUpsertResSchema = resSchema(
+  TestSetRowOutSchema.extend({
+    testSetQuestionBanks: z.array(
+      z.object({
+        id: z.number(),
+        testSetId: z.number(),
+        questionBankId: z.number(),
+        questionOrder: z.number(),
+        createdAt: z.date(),
+        updatedAt: z.date(),
+        questionBank: QuestionBankFieldsOutSchema
+      })
+    )
+  })
+)
+
+export class TestSetUpsertResDTO extends createZodDto(TestSetUpsertResSchema) {}
+
+// Full: question banks with their meanings as { vi, en, ... }
+export const TestSetFullResSchema = resSchema(
+  TestSetRowOutSchema.extend({
+    testSetQuestionBanks: z.array(
+      z.object({
+        id: z.number(),
+        questionOrder: z.number(),
+        questionBank: QuestionBankFieldsOutSchema.extend({
+          meanings: z.record(z.string(), z.string())
+        })
+      })
+    )
+  })
+)
+
+export class TestSetFullResDTO extends createZodDto(TestSetFullResSchema) {}

@@ -4,9 +4,9 @@ File sinh tự động bằng `node scripts/inventory/module-status.mjs` (đọc
 
 ## 1. Tổng quan
 
-- **85 module** trong `src/modules` (81 module cũ + `gemini`, `mail`, `speech`, `upload` chuyển từ `3rdService` ở giai đoạn 4), **626 endpoint**, 695 file code (không tính spec), 106552 dòng.
+- **85 module** trong `src/modules` (81 module cũ + `gemini`, `mail`, `speech`, `upload` chuyển từ `3rdService` ở giai đoạn 4), **626 endpoint**, 695 file code (không tính spec), 107221 dòng.
 - Bucket ngoài modules: `app.module.ts`, `common`, `config`, `cronjobs`, `i18n`, `infrastructure`, `main.ts`, `shared`, `websockets`.
-- Trạng thái: inventoried 85/85 · contract-covered 68 (+1 module không có route) · standardized 41 (+15 ngoại lệ đã ghi) · extracted-if-needed: đã tách 9, không cần 73, còn mở 3 · verified 44.
+- Trạng thái: inventoried 85/85 · contract-covered 68 (+1 module không có route) · standardized 43 (+18 ngoại lệ đã ghi) · extracted-if-needed: đã tách 9, không cần 73, còn mở 3 · verified 49.
 - Tín hiệu toàn modules: `console.*` 0, `any` 1131, `eslint-disable` 0, import `common/constants/message` 0, import `src/...` 0.
 
 ## 2. Quy tắc trạng thái
@@ -48,17 +48,17 @@ File sinh tự động bằng `node scripts/inventory/module-status.mjs` (đọc
 | Module | Route | Serializer | Unit | E2e | File lớn nhất (dòng) | any | Contract | Standardized | Extracted | Verified | Còn lệch |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | answer | 6 | 6 | 2 | 1 | answer.service.ts (591) | 1 | ✓ | ngoại lệ | không cần | ✓ |  |
-| exercises | 7 | 0 +1 msg/204 | 1 | 1 | exercises.service.ts (258) | 0 | ✓ | ✗ | không cần | ✗ | serializer thiếu 6 |
+| exercises | 7 | 6 +1 msg/204 | 1 | 2 | exercises.service.ts (258) | 0 | ✓ | ✓ | không cần | ✓ |  |
 | flashcard | 14 | 14 | 0 | 1 | flashcard.service.ts (857) | 15 | ✓ | ✓ | không cần | ✓ |  |
-| kanji | 11 | 6 +1 msg/204 | 2 | 2 | kanji-import.service.ts (417) | 20 | ✓ | ✗ | ✓ X5 | ✗ | serializer thiếu 4 |
-| lesson | 7 | 7 | 1 | 1 | dto/lesson.dto.ts (288) | 0 | ✓ | ✓ | không cần | ✓ |  |
+| kanji | 11 | 7 +1 msg/204 | 2 | 3 | kanji-import.service.ts (417) | 20 | ✓ | ✗ | ✓ X5 | ✗ | serializer thiếu 3 |
+| lesson | 7 | 7 | 1 | 2 | dto/lesson.dto.ts (288) | 0 | ✓ | ✓ | không cần | ✓ |  |
 | lesson-content | 6 | 2 | 0 | 0 | lesson-content.service.ts (828) | 1 | ✗ | ✗ | không cần | ✗ | serializer thiếu 4 |
-| question-bank | 7 | 2 +1 @Res | 1 | 1 | question-bank.repo.ts (497) | 5 | ✓ | ✗ | không cần | ✗ | serializer thiếu 4 |
+| question-bank | 7 | 6 +1 @Res | 1 | 2 | question-bank.repo.ts (497) | 5 | ✓ | ngoại lệ | không cần | ✓ |  |
 | speaking | 8 | 8 | 0 | 0 | speaking.service.ts (319) | 9 | ✗ | ✓ | không cần | ✗ |  |
-| test | 15 | 1 | 1 | 1 | test-question-picker.service.ts (875) | 45 | ✓ | ✗ | ✓ X4 | ✗ | serializer thiếu 14 |
-| testset | 9 | 2 | 1 | 1 | dto/testset.dto.ts (859) | 0 | ✓ | ✗ | không cần | ✗ | serializer thiếu 7 |
-| testset-questionbank | 11 | 0 +1 @Res +1 msg/204 | 1 | 1 | testset-questionbank.service.ts (342) | 4 | ✓ | ✗ | không cần | ✗ | serializer thiếu 9 |
-| vocabulary | 13 | 9 | 1 | 3 | vocabulary.service.ts (935) | 31 | ✓ | ✗ | ✓ X5 | ✗ | serializer thiếu 4 |
+| test | 15 | 15 | 1 | 2 | test-question-picker.service.ts (875) | 45 | ✓ | ngoại lệ | ✓ X4 | ✓ |  |
+| testset | 9 | 9 | 1 | 2 | dto/testset.dto.ts (859) | 0 | ✓ | ✓ | không cần | ✓ |  |
+| testset-questionbank | 11 | 9 +1 @Res +1 msg/204 | 1 | 2 | testset-questionbank.service.ts (342) | 4 | ✓ | ngoại lệ | không cần | ✓ |  |
+| vocabulary | 13 | 11 | 1 | 4 | vocabulary.service.ts (935) | 31 | ✓ | ✗ | ✓ X5 | ✗ | serializer thiếu 2 |
 
 ### user (20)
 
@@ -145,5 +145,5 @@ File sinh tự động bằng `node scripts/inventory/module-status.mjs` (đọc
 | i18n | 9 | 6156 | src/i18n/message-keys.ts (1513) | 0 | 1 | 0 | 0 |
 | infrastructure | 29 | 1353 | src/infrastructure/integrations/storage/cloudinary-file-storage.adapter.ts (110) | 0 | 1 | 0 | 0 |
 | main.ts | 1 | 75 | src/main.ts (75) | 0 | 0 | 0 | 0 |
-| shared | 23 | 1292 | src/shared/services/firebase.service.ts (248) | 0 | 16 | 0 | 1 |
+| shared | 24 | 1315 | src/shared/services/firebase.service.ts (248) | 0 | 16 | 0 | 1 |
 | websockets | 11 | 3674 | src/websockets/kaiwa.gateway.ts (1392) | 0 | 37 | 0 | 0 |

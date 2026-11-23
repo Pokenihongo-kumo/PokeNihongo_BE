@@ -6,7 +6,7 @@ import { z } from 'zod'
 extendZodWithOpenApi(z)
 patchNestJsSwagger()
 
-const RewardSummarySchema = z.object({
+export const RewardSummarySchema = z.object({
   id: z.number(),
   name: z.string(),
   rewardType: z.string(),

@@ -1,0 +1,720 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Content serializers contract (e2e) deletes: links of a test set, tests in bulk, one test 1`] = `
+{
+  "deleteLinks": {
+    "body": {
+      "data": {
+        "deletedCount": "number",
+      },
+      "message": "Xóa TestSetQuestionBank theo TestSet thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "deleteTest": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "creatorId": "number",
+        "description": [
+          {
+            "language": "string",
+            "value": "string",
+          },
+        ],
+        "id": "number",
+        "levelN": "number",
+        "limit": "number",
+        "name": [
+          {
+            "language": "string",
+            "value": "string",
+          },
+        ],
+        "price": "null",
+        "status": "string",
+        "testSets": [],
+        "testType": "string",
+        "updatedAt": "string",
+      },
+      "message": "Xóa bài test thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "deleteTestsBulk": {
+    "body": {
+      "data": {
+        "deletedCount": "number",
+        "deletedIds": [
+          "number",
+        ],
+        "notFoundCount": "number",
+        "requestedCount": "number",
+      },
+      "message": "Xóa thành công N/N bài test",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Content serializers contract (e2e) exercises: list, detail, plain detail 1`] = `
+{
+  "detail": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "exerciseType": "string",
+        "id": "number",
+        "isBlocked": "boolean",
+        "lesson": {
+          "id": "number",
+          "slug": "string",
+          "titleKey": "string",
+        },
+        "lessonId": "number",
+        "rewardId": [],
+        "testSet": {
+          "audioUrl": "null",
+          "content": "null",
+          "description": "string",
+          "id": "number",
+          "levelN": "number",
+          "name": "string",
+          "price": "string",
+          "status": "string",
+          "testSetQuestionBanks": [
+            {
+              "createdAt": "string",
+              "id": "number",
+              "questionBank": {
+                "answers": [
+                  {
+                    "answerJp": "string",
+                    "answerKey": "string",
+                    "createdAt": "string",
+                    "id": "number",
+                    "isCorrect": "boolean",
+                    "questionBankId": "number",
+                    "updatedAt": "string",
+                  },
+                ],
+                "audioUrl": "null",
+                "createdAt": "string",
+                "createdById": "number",
+                "id": "number",
+                "levelN": "number",
+                "pronunciation": "null",
+                "questionJp": "string",
+                "questionKey": "string",
+                "questionType": "string",
+                "role": "null",
+                "updatedAt": "string",
+              },
+              "questionBankId": "number",
+              "questionOrder": "number",
+              "testSetId": "number",
+              "updatedAt": "string",
+            },
+          ],
+          "testType": "string",
+        },
+        "testSetId": "number",
+        "updatedAt": "string",
+      },
+      "message": "Lấy thông tin bài tập thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "list": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "createdAt": "string",
+            "exerciseType": "string",
+            "id": "number",
+            "isBlocked": "boolean",
+            "lesson": {
+              "id": "number",
+              "slug": "string",
+              "titleKey": "string",
+            },
+            "lessonId": "number",
+            "rewardId": [],
+            "testSet": {
+              "audioUrl": "null",
+              "content": "null",
+              "description": "string",
+              "id": "number",
+              "levelN": "number",
+              "name": "string",
+              "price": "string",
+              "status": "string",
+              "testType": "string",
+            },
+            "testSetId": "number",
+            "updatedAt": "string",
+          },
+        ],
+      },
+      "message": "Lấy danh sách bài tập thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "plain": {
+    "body": {
+      "data": {
+        "exerciseType": "string",
+        "id": "number",
+        "isBlocked": "boolean",
+        "testSet": {
+          "id": "number",
+          "testSetQuestionBanks": [
+            {
+              "id": "number",
+              "questionBank": {
+                "answers": [
+                  {
+                    "answerJp": "string",
+                    "answerKey": "string",
+                    "id": "number",
+                    "isCorrect": "boolean",
+                  },
+                ],
+                "id": "number",
+                "questionJp": "string",
+                "questionKey": "string",
+              },
+              "questionOrder": "number",
+            },
+          ],
+        },
+        "testSetId": "number",
+      },
+      "message": "Lấy thông tin bài tập thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Content serializers contract (e2e) placement questions and a lesson review test 1`] = `
+{
+  "lessonLink": {
+    "body": {
+      "data": {
+        "addedTestSetIds": [
+          "number",
+        ],
+        "count": "number",
+        "testId": "number",
+      },
+      "message": "Thêm TestSet vào Test thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "lessonReviewQuestions": {
+    "body": {
+      "data": {
+        "testSets": [
+          {
+            "questions": [
+              {
+                "id": "number",
+                "questionBank": {
+                  "answers": [
+                    {
+                      "answer": "string",
+                      "id": "number",
+                    },
+                  ],
+                  "id": "number",
+                  "question": "string",
+                },
+                "questionOrder": "number",
+              },
+            ],
+          },
+        ],
+        "userTestAttemptId": "number",
+      },
+      "message": "Lấy thông tin bài test thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "placementQuestions": {
+    "body": {
+      "data": {
+        "distribution": {
+          "level3": "number",
+          "level4": "number",
+          "level5": "number",
+          "total": "number",
+        },
+        "questions": [
+          {
+            "answers": [
+              {
+                "answer": "string",
+                "id": "number",
+              },
+            ],
+            "audioUrl": "null",
+            "id": "number",
+            "levelN": "number",
+            "pronunciation": "null",
+            "question": "string",
+            "questionType": "string",
+          },
+        ],
+        "userTestAttemptId": "number",
+      },
+      "message": "Lấy câu hỏi placement test thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Content serializers contract (e2e) test reads with questions behind them 1`] = `
+{
+  "detail": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "creatorId": "number",
+        "description": "string",
+        "id": "number",
+        "levelN": "number",
+        "limit": "number",
+        "name": "string",
+        "price": "null",
+        "status": "string",
+        "testSets": [
+          {
+            "audioUrl": "null",
+            "content": "null",
+            "createdAt": "string",
+            "creatorId": "number",
+            "description": "string",
+            "id": "number",
+            "levelN": "number",
+            "name": "string",
+            "price": "number",
+            "status": "string",
+            "testType": "string",
+            "updatedAt": "string",
+          },
+        ],
+        "testType": "string",
+        "updatedAt": "string",
+      },
+      "message": "Lấy thông tin bài test thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "full": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "creatorId": "number",
+        "description": "string",
+        "id": "number",
+        "levelN": "number",
+        "limit": "number",
+        "name": "string",
+        "price": "null",
+        "status": "string",
+        "testSets": [
+          {
+            "audioUrl": "null",
+            "content": "null",
+            "creator": {
+              "email": "string",
+              "id": "number",
+              "name": "string",
+            },
+            "description": "string",
+            "id": "number",
+            "levelN": "number",
+            "name": "string",
+            "price": "number",
+            "questions": [
+              {
+                "id": "number",
+                "questionBank": {
+                  "answers": [
+                    {
+                      "answer": "string",
+                      "id": "number",
+                    },
+                  ],
+                  "audioUrl": "null",
+                  "id": "number",
+                  "levelN": "number",
+                  "pronunciation": "null",
+                  "question": "string",
+                  "questionType": "string",
+                  "role": "null",
+                },
+                "questionOrder": "number",
+              },
+            ],
+            "status": "string",
+            "testType": "string",
+          },
+        ],
+        "testType": "string",
+        "updatedAt": "string",
+      },
+      "message": "Lấy thông tin bài test thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "fullUser": {
+    "body": {
+      "data": {
+        "description": "string",
+        "id": "number",
+        "levelN": "number",
+        "limit": "number",
+        "name": "string",
+        "price": "null",
+        "status": "string",
+        "testSets": [
+          {
+            "audioUrl": "null",
+            "content": "null",
+            "description": "string",
+            "id": "number",
+            "levelN": "number",
+            "name": "string",
+            "price": "number",
+            "questions": [
+              {
+                "id": "number",
+                "questionBank": {
+                  "answers": [
+                    {
+                      "answer": "string",
+                      "id": "number",
+                    },
+                  ],
+                  "audioUrl": "null",
+                  "id": "number",
+                  "levelN": "number",
+                  "pronunciation": "null",
+                  "question": "string",
+                  "questionType": "string",
+                  "role": "null",
+                },
+                "questionOrder": "number",
+              },
+            ],
+            "status": "string",
+            "testType": "string",
+          },
+        ],
+        "testType": "string",
+      },
+      "message": "Lấy thông tin bài test thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "randomQuestions": {
+    "body": {
+      "data": {
+        "count": "number",
+        "levelN": "number",
+        "questions": [
+          {
+            "answers": [
+              {
+                "answer": "string",
+                "id": "number",
+                "isCorrect": "boolean",
+              },
+            ],
+            "audioUrl": "null",
+            "id": "number",
+            "levelN": "number",
+            "pronunciation": "null",
+            "question": "string",
+            "questionType": "string",
+          },
+        ],
+      },
+      "message": "Lấy N câu hỏi level NN thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Content serializers contract (e2e) test set, its question banks and the links 1`] = `
+{
+  "fullWithAnswer": {
+    "body": {
+      "data": [
+        {
+          "id": "number",
+          "questionBank": {
+            "answers": [
+              {
+                "answer": "string",
+                "id": "number",
+              },
+            ],
+            "audioUrl": "null",
+            "id": "number",
+            "levelN": "number",
+            "pronunciation": "null",
+            "question": "string",
+            "questionType": "string",
+            "role": "null",
+          },
+          "questionOrder": "number",
+        },
+      ],
+      "message": "Lấy danh sách TestSetQuestionBank thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "link": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "id": "number",
+        "questionBankId": "number",
+        "questionOrder": "number",
+        "testSetId": "number",
+        "updatedAt": "string",
+      },
+      "message": "Tạo TestSetQuestionBank thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "linkById": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "id": "number",
+        "questionBankId": "number",
+        "questionOrder": "number",
+        "testSetId": "number",
+        "updatedAt": "string",
+      },
+      "message": "Lấy thông tin TestSetQuestionBank thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "linksByTestSet": {
+    "body": {
+      "data": [
+        {
+          "createdAt": "string",
+          "id": "number",
+          "questionBankId": "number",
+          "questionOrder": "number",
+          "testSetId": "number",
+          "updatedAt": "string",
+        },
+      ],
+      "message": "Lấy danh sách TestSetQuestionBank thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "questionBanksByIds": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "answers": [
+              {
+                "answer": "string",
+                "id": "number",
+              },
+            ],
+            "audioUrl": "null",
+            "id": "number",
+            "levelN": "number",
+            "pronunciation": "null",
+            "question": "string",
+            "questionType": "string",
+          },
+        ],
+      },
+      "message": "Lấy danh sách câu hỏi thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "questionOrder": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "id": "number",
+        "questionBankId": "number",
+        "questionOrder": "number",
+        "testSetId": "number",
+        "updatedAt": "string",
+      },
+      "message": "Cập nhật thứ tự câu hỏi thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "testSetDetail": {
+    "body": {
+      "data": {
+        "audioUrl": "null",
+        "content": "null",
+        "createdAt": "string",
+        "creatorId": "number",
+        "description": "string",
+        "id": "number",
+        "levelN": "number",
+        "name": "string",
+        "price": "null",
+        "status": "string",
+        "testType": "string",
+        "updatedAt": "string",
+      },
+      "message": "Lấy thông tin bộ đề thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "testSetUpdate": {
+    "body": {
+      "data": {
+        "audioUrl": "null",
+        "content": "null",
+        "createdAt": "string",
+        "creatorId": "number",
+        "description": "string",
+        "id": "number",
+        "levelN": "number",
+        "name": "string",
+        "price": "string",
+        "status": "string",
+        "testType": "string",
+        "updatedAt": "string",
+      },
+      "message": "Cập nhật bộ đề thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "updateLink": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "id": "number",
+        "questionBankId": "number",
+        "questionOrder": "number",
+        "testSetId": "number",
+        "updatedAt": "string",
+      },
+      "message": "Cập nhật TestSetQuestionBank thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`Content serializers contract (e2e) vocabulary create and add meaning, kanji stats 1`] = `
+{
+  "addMeaning": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "exampleSentenceJp": "string",
+        "exampleSentenceKey": "string",
+        "explanationKey": "string",
+        "id": "number",
+        "meaningKey": "string",
+        "updatedAt": "string",
+        "vocabularyId": "number",
+      },
+      "message": "Thêm nghĩa mới thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "full": {
+    "body": {
+      "data": {
+        "isNew": "boolean",
+        "meaning": {
+          "examples": [],
+          "id": "number",
+          "translations": [
+            {
+              "language_code": "string",
+              "value": "string",
+            },
+          ],
+        },
+        "translationsCreated": "number",
+        "vocabulary": {
+          "audioUrl": "null",
+          "createdAt": "string",
+          "createdById": "number",
+          "id": "number",
+          "imageUrl": "null",
+          "levelN": "number",
+          "reading": "string",
+          "updatedAt": "string",
+          "wordJp": "string",
+          "wordTypeId": "null",
+        },
+      },
+      "message": "Tạo từ vựng mới thành công với nghĩa và translations",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "kanjiStats": {
+    "body": {
+      "data": {
+        "byJlptLevel": [],
+        "totalKanji": "number",
+      },
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;

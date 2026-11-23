@@ -1,3 +1,7 @@
+import { RewardSummarySchema } from '../entities/exercises.entity'
+import { decimalOutSchema } from '@/shared/utils/output-schema'
+import { paginatedResSchema } from '@/shared/utils/pagination'
+import { resSchema } from '@/shared/utils/res-schema'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { ExercisesMessage as M } from '@/i18n/message-keys'
 import { LessonContentsType } from '@prisma/client'
@@ -86,3 +90,135 @@ export const GetExercisesListQuerySchema = z.object({
 export type GetExercisesListQuery = z.infer<typeof GetExercisesListQuerySchema>
 
 export class GetExercisesListQueryDTO extends createZodDto(GetExercisesListQuerySchema) {}
+
+// ---- responses (output only)
+
+const ExerciseRowOutSchema = z.object({
+  id: z.number(),
+  exerciseType: z.string(),
+  isBlocked: z.boolean(),
+  lessonId: z.number(),
+  testSetId: z.number().nullable(),
+  rewardId: z.array(z.number()),
+  createdAt: z.date(),
+  updatedAt: z.date()
+})
+
+const ExerciseTestSetOutSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  description: z.string().nullable(),
+  content: z.string().nullable(),
+  audioUrl: z.string().nullable(),
+  price: decimalOutSchema.nullable(),
+  levelN: z.number().nullable(),
+  testType: z.string(),
+  status: z.string()
+})
+
+// With its lesson and test set (create, update, list)
+export const ExerciseWithRelationsOutSchema = ExerciseRowOutSchema.extend({
+  lesson: z.object({ id: z.number(), slug: z.string(), titleKey: z.string() }),
+  testSet: ExerciseTestSetOutSchema.nullable()
+})
+
+export const ExerciseResSchema = resSchema(ExerciseWithRelationsOutSchema)
+
+export class ExerciseResDTO extends createZodDto(ExerciseResSchema) {}
+
+export const ExerciseListResSchema = paginatedResSchema(ExerciseWithRelationsOutSchema)
+
+export class ExerciseListResDTO extends createZodDto(ExerciseListResSchema) {}
+
+// Detail: the test set's question banks with every answer row
+export const ExerciseDetailResSchema = resSchema(
+  ExerciseRowOutSchema.extend({
+    lesson: z.object({ id: z.number(), slug: z.string(), titleKey: z.string() }),
+    testSet: ExerciseTestSetOutSchema.extend({
+      testSetQuestionBanks: z.array(
+        z.object({
+          id: z.number(),
+          testSetId: z.number(),
+          questionBankId: z.number(),
+          questionOrder: z.number(),
+          createdAt: z.date(),
+          updatedAt: z.date(),
+          questionBank: z.object({
+            id: z.number(),
+            questionJp: z.string().nullable(),
+            questionType: z.string(),
+            audioUrl: z.string().nullable(),
+            questionKey: z.string().nullable(),
+            role: z.string().nullable(),
+            pronunciation: z.string().nullable(),
+            levelN: z.number().nullable(),
+            createdById: z.number().nullable(),
+            createdAt: z.date(),
+            updatedAt: z.date(),
+            answers: z.array(
+              z.object({
+                id: z.number(),
+                answerJp: z.string().nullable(),
+                answerKey: z.string().nullable(),
+                isCorrect: z.boolean(),
+                questionBankId: z.number(),
+                createdAt: z.date(),
+                updatedAt: z.date()
+              })
+            )
+          })
+        })
+      )
+    }).nullable()
+  })
+)
+
+export class ExerciseDetailResDTO extends createZodDto(ExerciseDetailResSchema) {}
+
+// Plain: only what a player needs to answer
+export const ExercisePlainResSchema = resSchema(
+  z.object({
+    id: z.number(),
+    exerciseType: z.string(),
+    isBlocked: z.boolean(),
+    testSetId: z.number().nullable(),
+    testSet: z
+      .object({
+        id: z.number(),
+        testSetQuestionBanks: z.array(
+          z.object({
+            id: z.number(),
+            questionOrder: z.number(),
+            questionBank: z.object({
+              id: z.number(),
+              questionJp: z.string().nullable(),
+              questionKey: z.string().nullable(),
+              answers: z.array(
+                z.object({
+                  id: z.number(),
+                  answerJp: z.string().nullable(),
+                  answerKey: z.string().nullable(),
+                  isCorrect: z.boolean()
+                })
+              )
+            })
+          })
+        )
+      })
+      .nullable()
+  })
+)
+
+export class ExercisePlainResDTO extends createZodDto(ExercisePlainResSchema) {}
+
+// By lesson: each exercise with its rewards and the lesson's rewards
+export const ExercisesByLessonResSchema = resSchema(
+  z.array(
+    ExerciseRowOutSchema.extend({
+      rewards: z.array(RewardSummarySchema),
+      rewardLesson: z.array(RewardSummarySchema)
+    })
+  )
+)
+
+export class ExercisesByLessonResDTO extends createZodDto(ExercisesByLessonResSchema) {}

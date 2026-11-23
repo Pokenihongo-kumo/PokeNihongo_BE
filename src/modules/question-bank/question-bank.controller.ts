@@ -1,3 +1,9 @@
+import {
+  QuestionBankListResDTO,
+  QuestionBanksByIdsResDTO,
+  QuestionBankRowResDTO,
+  QuestionBankBulkDeleteResDTO
+} from './dto/question-bank.zod-dto'
 import { ResponseMessage, msg } from '@/i18n/response-message'
 import { I18nService } from '@/i18n/i18n.service'
 import { QuestionBankMessage as M } from '@/i18n/message-keys'
@@ -110,6 +116,7 @@ export class QuestionBankController {
   })
   @ApiQuery({ type: GetQuestionBankListQuerySwaggerDTO })
   @ResponseMessage(M.GET_LIST_SUCCESS)
+  @ZodSerializerDto(QuestionBankListResDTO)
   async findAll(@Query() query: GetQuestionBankListQueryDTO) {
     return this.questionBankService.findAll(query)
   }
@@ -124,6 +131,7 @@ export class QuestionBankController {
     type: QuestionBankListResponseSwaggerDTO
   })
   @ResponseMessage(M.GET_LIST_SUCCESS)
+  @ZodSerializerDto(QuestionBanksByIdsResDTO)
   async findByIds(
     @Query() query: GetQuestionBanksByIdsQueryDTO,
     @I18nLang() lang: string
@@ -159,6 +167,7 @@ export class QuestionBankController {
     type: QuestionBankResponseSwaggerDTO
   })
   @ResponseMessage(M.UPDATE_SUCCESS)
+  @ZodSerializerDto(QuestionBankRowResDTO)
   async updateWithMeanings(
     @Param() params: GetQuestionBankByIdParamsDTO,
     @Body() body: UpdateQuestionBankWithMeaningsBodyDTO
@@ -202,6 +211,7 @@ export class QuestionBankController {
       }
     }
   })
+  @ZodSerializerDto(QuestionBankBulkDeleteResDTO)
   async removeMany(@Body() body: BulkDeleteQuestionBankBodyDTO) {
     const data = await this.questionBankService.removeMany(body.ids)
     return {

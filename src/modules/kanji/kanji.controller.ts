@@ -1,3 +1,4 @@
+import { KanjiStatsResDTO } from './dto/kanji.zod-dto'
 import { msg, ResponseMessage } from '@/i18n/response-message'
 import { KanjiMessage as M } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
@@ -100,6 +101,7 @@ export class KanjiController {
     status: 200,
     description: 'Lấy thống kê thành công'
   })
+  @ZodSerializerDto(KanjiStatsResDTO)
   getStats() {
     return this.kanjiService.getStats()
   }

@@ -1,3 +1,4 @@
+import { MeaningSchema } from '@/modules/meaning/entities/meaning.entity'
 import { VocabularySortField, VocabularySortOrder } from '@/common/enum/enum'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { VocabularyMessage } from '@/i18n/message-keys'
@@ -149,4 +150,51 @@ export const VocabularySearchHistoryResSchema = paginatedResSchema(
 
 export class VocabularySearchHistoryResDTO extends createZodDto(
   VocabularySearchHistoryResSchema
+) {}
+
+// ---- responses (output only)
+
+export const VocabularyMeaningAddedResSchema = resSchema(MeaningSchema)
+
+export class VocabularyMeaningAddedResDTO extends createZodDto(
+  VocabularyMeaningAddedResSchema
+) {}
+
+// Create full: the word (an existing one may carry more fields: kept), the
+// meaning with the translations and examples as sent
+export const VocabularyCreateFullResSchema = resSchema(
+  z.object({
+    vocabulary: z
+      .object({
+        id: z.number(),
+        wordJp: z.string(),
+        reading: z.string(),
+        imageUrl: z.string().nullable(),
+        audioUrl: z.string().nullable(),
+        levelN: z.number().nullable(),
+        wordTypeId: z.number().nullable(),
+        createdById: z.number().nullable(),
+        createdAt: z.date(),
+        updatedAt: z.date()
+      })
+      .passthrough(),
+    meaning: z.object({
+      id: z.number(),
+      translations: z.array(z.object({ language_code: z.string(), value: z.string() })),
+      examples: z.array(
+        z.object({
+          original_sentence: z.string(),
+          translations: z.array(
+            z.object({ language_code: z.string(), sentence: z.string() })
+          )
+        })
+      )
+    }),
+    translationsCreated: z.number(),
+    isNew: z.boolean()
+  })
+)
+
+export class VocabularyCreateFullResDTO extends createZodDto(
+  VocabularyCreateFullResSchema
 ) {}

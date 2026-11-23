@@ -1,3 +1,7 @@
+import {
+  VocabularyMeaningAddedResDTO,
+  VocabularyCreateFullResDTO
+} from './dto/vocabulary.zod-dto'
 import { VocabularyMessage as M } from '@/i18n/message-keys'
 import { msg, ResponseMessage } from '@/i18n/response-message'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
@@ -383,6 +387,7 @@ export class VocabularyController {
     description: 'Không tìm thấy từ vựng'
   })
   @ResponseMessage(M.MEANING_ADDED)
+  @ZodSerializerDto(VocabularyMeaningAddedResDTO)
   addMeaning(@Body() body: AddMeaningToVocabularyDTO) {
     const { vocabularyId, ...meaningData } = body
     return this.vocabularyService.addMeaningToExistingVocabulary(
@@ -409,6 +414,7 @@ export class VocabularyController {
     type: CreateVocabularyFullMultipartSwaggerDTO,
     description: 'Form data với audio/image files'
   })
+  @ZodSerializerDto(VocabularyCreateFullResDTO)
   async createFull(
     @Body() body: CreateVocabularyFullMultipartDTO,
     @UploadedFiles()
