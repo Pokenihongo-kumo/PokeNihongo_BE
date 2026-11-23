@@ -39,7 +39,11 @@ import {
   GetGrammarListQuerySwaggerDTO
 } from './dto/grammar.dto'
 import { MessageResDTO } from '@/shared/dtos/response.dto'
-import { GrammarResponseDTO } from './dto/grammar.response.dto'
+import {
+  GrammarResponseDTO,
+  GrammarListResDTO,
+  GrammarDetailResDTO
+} from './dto/grammar.response.dto'
 
 @ApiTags('Grammar')
 @Controller('grammars')
@@ -74,6 +78,7 @@ export class GrammarController {
   })
   @ApiQuery({ type: GetGrammarListQuerySwaggerDTO })
   @ResponseMessage(GrammarMessage.GET_LIST_SUCCESS)
+  @ZodSerializerDto(GrammarListResDTO)
   async getGrammarList(@Query() query: GetGrammarListQueryDTO) {
     return this.grammarService.getGrammarList(query)
   }
@@ -87,6 +92,7 @@ export class GrammarController {
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy ngữ pháp' })
   @ResponseMessage(GrammarMessage.GET_SUCCESS)
+  @ZodSerializerDto(GrammarDetailResDTO)
   async getGrammarById(@Param() params: GetGrammarByIdParamsDTO) {
     return this.grammarService.getGrammarById(params.id)
   }
@@ -102,6 +108,7 @@ export class GrammarController {
   @ApiResponse({ status: 404, description: 'Không tìm thấy ngữ pháp' })
   @ApiResponse({ status: 409, description: 'Cấu trúc ngữ pháp đã tồn tại' })
   @ResponseMessage(GrammarMessage.UPDATE_SUCCESS)
+  @ZodSerializerDto(GrammarResponseDTO)
   async updateGrammar(
     @Param() params: GetGrammarByIdParamsDTO,
     @Body() body: UpdateGrammarBodyDTO

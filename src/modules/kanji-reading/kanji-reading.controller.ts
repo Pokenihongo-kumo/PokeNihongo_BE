@@ -8,7 +8,10 @@ import {
   GetKanjiReadingsByTypeParamsDTO,
   KanjiReadingListResDTO,
   KanjiReadingResDTO,
-  UpdateKanjiReadingBodyDTO
+  UpdateKanjiReadingBodyDTO,
+  KanjiReadingStatsResDTO,
+  KanjiReadingArrayResDTO,
+  KanjiReadingTypeStatsResDTO
 } from './dto/kanji-reading.zod-dto'
 import {
   GetKanjiReadingListQuerySwaggerDTO,
@@ -74,6 +77,7 @@ export class KanjiReadingController {
     description: 'Lấy thống kê thành công'
   })
   @ResponseMessage(KanjiReadingMessage.GET_STATS_SUCCESS)
+  @ZodSerializerDto(KanjiReadingStatsResDTO)
   async getStats() {
     return this.kanjiReadingService.getStats()
   }
@@ -94,6 +98,7 @@ export class KanjiReadingController {
     type: [KanjiReadingSwaggerResponseDTO]
   })
   @ResponseMessage(KanjiReadingMessage.GET_LIST_SUCCESS)
+  @ZodSerializerDto(KanjiReadingArrayResDTO)
   async findByKanjiId(@Param() params: GetKanjiReadingsByKanjiIdParamsDTO) {
     return this.kanjiReadingService.findByKanjiId(params.kanjiId)
   }
@@ -116,6 +121,7 @@ export class KanjiReadingController {
     type: [KanjiReadingSwaggerResponseDTO]
   })
   @ResponseMessage(KanjiReadingMessage.GET_LIST_SUCCESS)
+  @ZodSerializerDto(KanjiReadingArrayResDTO)
   async findByReadingType(@Param() params: GetKanjiReadingsByTypeParamsDTO) {
     return this.kanjiReadingService.findByReadingType(params.readingType)
   }
@@ -239,6 +245,7 @@ export class KanjiReadingController {
     description: 'Lấy thống kê loại cách đọc thành công'
   })
   @ResponseMessage(KanjiReadingMessage.GET_STATS_SUCCESS)
+  @ZodSerializerDto(KanjiReadingTypeStatsResDTO)
   async getReadingTypeStats() {
     return this.kanjiReadingService.getReadingTypeStats()
   }

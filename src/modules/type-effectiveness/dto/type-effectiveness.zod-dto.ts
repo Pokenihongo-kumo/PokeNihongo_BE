@@ -98,30 +98,65 @@ export class CalculateMultiTypeBodyDTO extends createZodDto(
   CalculateMultiTypeBodySchema
 ) {}
 
+// A row with its attacker and defender types (detail, weaknesses, resistances)
+export const TypeEffectivenessWithTypesResItemSchema = z.object({
+  ...TypeEffectivenessSchema.shape,
+  attacker: z
+    .object({
+      id: z.number(),
+      type_name: z.string(),
+      display_name: z.unknown(),
+      color_hex: z.string()
+    })
+    .optional()
+    .nullable(),
+  defender: z
+    .object({
+      id: z.number(),
+      type_name: z.string(),
+      display_name: z.unknown(),
+      color_hex: z.string()
+    })
+    .optional()
+    .nullable()
+})
+
 export const GetTypeEffectivenessDetailResSchema = resSchema(
-  z.object({
-    ...TypeEffectivenessSchema.shape,
-    attacker: z
-      .object({
-        id: z.number(),
-        type_name: z.string(),
-        display_name: z.unknown(),
-        color_hex: z.string()
-      })
-      .optional()
-      .nullable(),
-    defender: z
-      .object({
-        id: z.number(),
-        type_name: z.string(),
-        display_name: z.unknown(),
-        color_hex: z.string()
-      })
-      .optional()
-      .nullable()
-  })
+  TypeEffectivenessWithTypesResItemSchema
 )
 
 export class GetTypeEffectivenessDetailResDTO extends createZodDto(
   GetTypeEffectivenessDetailResSchema
+) {}
+
+export const TypeEffectivenessArrayResSchema = resSchema(
+  z.array(TypeEffectivenessWithTypesResItemSchema)
+)
+
+export class TypeEffectivenessArrayResDTO extends createZodDto(
+  TypeEffectivenessArrayResSchema
+) {}
+
+// attacker type name -> defender type name -> multiplier
+export const TypeEffectivenessMatrixResSchema = resSchema(
+  z.record(z.string(), z.record(z.string(), z.number()))
+)
+
+export class TypeEffectivenessMatrixResDTO extends createZodDto(
+  TypeEffectivenessMatrixResSchema
+) {}
+
+// attacker type name -> combined multiplier, split by outcome
+const MultiplierByTypeSchema = z.record(z.string(), z.number())
+
+export const MultiTypeEffectivenessResSchema = resSchema(
+  z.object({
+    weaknesses: MultiplierByTypeSchema,
+    resistances: MultiplierByTypeSchema,
+    immunities: MultiplierByTypeSchema
+  })
+)
+
+export class MultiTypeEffectivenessResDTO extends createZodDto(
+  MultiTypeEffectivenessResSchema
 ) {}

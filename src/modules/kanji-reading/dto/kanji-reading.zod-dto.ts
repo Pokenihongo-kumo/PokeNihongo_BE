@@ -93,3 +93,21 @@ export class KanjiReadingResDTO extends createZodDto(KanjiReadingResSchema) {}
 export const KanjiReadingListResSchema = paginatedResSchema(KanjiReadingResItemSchema)
 
 export class KanjiReadingListResDTO extends createZodDto(KanjiReadingListResSchema) {}
+
+export const KanjiReadingArrayResSchema = resSchema(z.array(KanjiReadingResItemSchema))
+
+export class KanjiReadingArrayResDTO extends createZodDto(KanjiReadingArrayResSchema) {}
+
+const ReadingTypeCountSchema = z.object({ readingType: z.string(), count: z.number() })
+
+export const KanjiReadingStatsResSchema = resSchema(
+  z.object({ total: z.number(), byReadingType: z.array(ReadingTypeCountSchema) })
+)
+
+export class KanjiReadingStatsResDTO extends createZodDto(KanjiReadingStatsResSchema) {}
+
+export const KanjiReadingTypeStatsResSchema = resSchema(z.array(ReadingTypeCountSchema))
+
+export class KanjiReadingTypeStatsResDTO extends createZodDto(
+  KanjiReadingTypeStatsResSchema
+) {}

@@ -92,3 +92,7 @@ export class WordTypeListResDTO extends createZodDto(WordTypeListResSchema) {}
 export const WordTypeResSchema = resSchema(WordTypeSchema)
 
 export class WordTypeResDTO extends createZodDto(WordTypeResSchema) {}
+
+export const WordTypeStatsResSchema = resSchema(z.object({ total: z.number() }))
+
+export class WordTypeStatsResDTO extends createZodDto(WordTypeStatsResSchema) {}

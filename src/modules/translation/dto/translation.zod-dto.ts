@@ -1,3 +1,5 @@
+import { paginatedResSchema } from '@/shared/utils/pagination'
+import { resSchema } from '@/shared/utils/res-schema'
 import { SortOrder, TranslationSortField } from '@/common/enum/enum'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { TranslationMessage } from '@/i18n/message-keys'
@@ -102,3 +104,47 @@ export type GetTranslationsByLanguageQuery = z.infer<
 export class GetTranslationsByLanguageQueryDTO extends createZodDto(
   GetTranslationsByLanguageQuerySchema
 ) {}
+
+// ---- responses (output only: no input rules such as the key format)
+
+// A translation row as stored: the reverse-relation key columns come back too
+export const TranslationRowSchema = z.object({
+  id: z.number(),
+  languageId: z.number(),
+  key: z.string(),
+  value: z.string(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+  rewardNameKey: z.string().nullable(),
+  dailyRequestNameKey: z.string().nullable(),
+  dailyRequestDescriptionKey: z.string().nullable(),
+  shopBannerNameKey: z.string().nullable(),
+  gachaBannerNameKey: z.string().nullable(),
+  leaderboardSeasonNameKey: z.string().nullable(),
+  debuffRoundNameKey: z.string().nullable(),
+  achievementGroupNameKey: z.string().nullable(),
+  achievementNameKey: z.string().nullable(),
+  achievementDescriptionKey: z.string().nullable(),
+  achievementConditionTextKey: z.string().nullable(),
+  subscriptionNameKey: z.string().nullable(),
+  subscriptionDescriptionKey: z.string().nullable(),
+  featureNameKey: z.string().nullable()
+})
+
+export const TranslationResSchema = resSchema(TranslationRowSchema)
+
+export class TranslationResDTO extends createZodDto(TranslationResSchema) {}
+
+export const TranslationListResSchema = paginatedResSchema(TranslationRowSchema)
+
+export class TranslationListResDTO extends createZodDto(TranslationListResSchema) {}
+
+export const TranslationsByKeyResSchema = resSchema(
+  z.object({ key: z.string(), translations: z.array(TranslationRowSchema) })
+)
+
+export class TranslationsByKeyResDTO extends createZodDto(TranslationsByKeyResSchema) {}
+
+export const TranslationBulkResSchema = resSchema(z.object({ count: z.number() }))
+
+export class TranslationBulkResDTO extends createZodDto(TranslationBulkResSchema) {}

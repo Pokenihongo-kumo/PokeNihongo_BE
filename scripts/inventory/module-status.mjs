@@ -121,8 +121,13 @@ const rows = modules.map((m) => {
   for (const b of routeBlocks) {
     if (/@ZodSerializerDto\(/.test(b)) serialized++
     else if (/@Res\(/.test(b)) rawRoutes++
-    // no `return <value>` (or only a message): the envelope carries data: null
-    else if (!/\breturn\s+(?!msg\()(?![;}\s])/.test(b)) messageOnly++
+    // no `return <value>` (or only a message): the envelope carries data: null;
+    // a 204 route has no body at all
+    else if (
+      /@HttpCode\(HttpStatus\.NO_CONTENT\)/.test(b) ||
+      !/\breturn\s+(?!msg\()(?![;}\s])/.test(b)
+    )
+      messageOnly++
   }
   const prefixes = [...ctrlText.matchAll(/@Controller\(\s*['"`]([^'"`]+)['"`]/g)].map(
     (x) => x[1]
@@ -263,7 +268,7 @@ for (const g of [...Object.keys(GROUPS), 'integration']) {
     'Còn lệch'
   ])
   for (const r of rs)
-    md += `| ${r.module} | ${r.endpoints} | ${r.serialized}${r.rawRoutes ? ` +${r.rawRoutes} @Res` : ''}${r.messageOnly ? ` +${r.messageOnly} msg` : ''} | ${r.unitSpecs} | ${r.e2eSpecs} | ${r.biggest} | ${r.any} | ${r.status.contract} | ${r.status.standardized} | ${r.status.extracted} | ${r.status.verified} | ${r.gaps.join('; ') || ''} |\n`
+    md += `| ${r.module} | ${r.endpoints} | ${r.serialized}${r.rawRoutes ? ` +${r.rawRoutes} @Res` : ''}${r.messageOnly ? ` +${r.messageOnly} msg/204` : ''} | ${r.unitSpecs} | ${r.e2eSpecs} | ${r.biggest} | ${r.any} | ${r.status.contract} | ${r.status.standardized} | ${r.status.extracted} | ${r.status.verified} | ${r.gaps.join('; ') || ''} |\n`
   md += '\n'
 }
 md += `## 4. Ngoài \`src/modules\`\n\n`

@@ -4,9 +4,9 @@ File sinh tự động bằng `node scripts/inventory/module-status.mjs` (đọc
 
 ## 1. Tổng quan
 
-- **85 module** trong `src/modules` (81 module cũ + `gemini`, `mail`, `speech`, `upload` chuyển từ `3rdService` ở giai đoạn 4), **626 endpoint**, 695 file code (không tính spec), 106362 dòng.
+- **85 module** trong `src/modules` (81 module cũ + `gemini`, `mail`, `speech`, `upload` chuyển từ `3rdService` ở giai đoạn 4), **626 endpoint**, 695 file code (không tính spec), 106552 dòng.
 - Bucket ngoài modules: `app.module.ts`, `common`, `config`, `cronjobs`, `i18n`, `infrastructure`, `main.ts`, `shared`, `websockets`.
-- Trạng thái: inventoried 85/85 · contract-covered 68 (+1 module không có route) · standardized 35 (+15 ngoại lệ đã ghi) · extracted-if-needed: đã tách 9, không cần 73, còn mở 3 · verified 38.
+- Trạng thái: inventoried 85/85 · contract-covered 68 (+1 module không có route) · standardized 41 (+15 ngoại lệ đã ghi) · extracted-if-needed: đã tách 9, không cần 73, còn mở 3 · verified 44.
 - Tín hiệu toàn modules: `console.*` 0, `any` 1131, `eslint-disable` 0, import `common/constants/message` 0, import `src/...` 0.
 
 ## 2. Quy tắc trạng thái
@@ -28,36 +28,36 @@ File sinh tự động bằng `node scripts/inventory/module-status.mjs` (đọc
 | elemental-type | 6 | 6 | 0 | 1 | elemental-type.repo.ts (137) | 0 | ✓ | ✓ | không cần | ✓ |  |
 | feature | 5 | 5 | 0 | 0 | feature.service.ts (387) | 32 | ✗ | ✓ | không cần | ✗ |  |
 | gemini-config | 24 | 12 | 1 | 0 | gemini-config.service.ts (379) | 32 | ✗ | ✗ | không cần | ✗ | serializer thiếu 12 |
-| grammar | 5 | 2 | 1 | 1 | grammar.repo.ts (252) | 0 | ✓ | ✗ | không cần | ✗ | serializer thiếu 3 |
+| grammar | 5 | 5 | 1 | 1 | grammar.repo.ts (252) | 0 | ✓ | ✓ | không cần | ✓ |  |
 | grammar-usage | 5 | 5 | 1 | 1 | dto/grammar-usage.dto.ts (183) | 0 | ✓ | ✓ | không cần | ✓ |  |
-| kanji-reading | 10 | 4 +2 msg | 1 | 1 | kanji-reading.controller.ts (246) | 0 | ✓ | ✗ | không cần | ✗ | serializer thiếu 4 |
-| languages | 10 | 6 +2 msg | 1 | 3 | languages.controller.ts (340) | 0 | ✓ | ✗ | không cần | ✗ | serializer thiếu 2 |
+| kanji-reading | 10 | 8 +2 msg/204 | 1 | 1 | kanji-reading.controller.ts (253) | 0 | ✓ | ✓ | không cần | ✓ |  |
+| languages | 10 | 7 +2 msg/204 | 1 | 3 | languages.controller.ts (343) | 0 | ✓ | ✗ | không cần | ✗ | serializer thiếu 1 |
 | lesson-category | 7 | 6 | 1 | 2 | lesson-category.service.ts (324) | 0 | ✓ | ✗ | không cần | ✗ | serializer thiếu 1 |
 | level | 5 | 5 | 1 | 3 | level.repo.ts (182) | 0 | ✓ | ✓ | không cần | ✓ |  |
-| meaning | 6 | 3 +1 msg | 1 | 1 | meaning.controller.ts (218) | 0 | ✓ | ✗ | không cần | ✗ | serializer thiếu 2 |
+| meaning | 6 | 4 +2 msg/204 | 1 | 1 | meaning.controller.ts (220) | 0 | ✓ | ✓ | không cần | ✓ |  |
 | permission | 5 | 5 | 0 | 0 | permission.repo.ts (119) | 0 | ✗ | ✗ | không cần | ✗ | thiếu zod-dto |
 | pokemon | 8 | 8 | 0 | 0 | pokemon.repo.ts (1037) | 18 | ✗ | ngoại lệ | cần xét (1037 dòng) | ✗ |  |
 | role | 5 | 5 | 0 | 0 | role.repo.ts (157) | 5 | ✗ | ✗ | không cần | ✗ | thiếu zod-dto |
 | shop-rarity-price | 5 | 5 | 0 | 1 | shop-rarity-price.service.ts (176) | 2 | ✓ | ngoại lệ | không cần | ✓ |  |
-| translation | 9 | 0 +1 msg | 1 | 1 | translation.repo.ts (438) | 0 | ✓ | ✗ | không cần | ✗ | serializer thiếu 8 |
-| type-effectiveness | 9 | 5 | 1 | 1 | type-effectiveness.repo.ts (216) | 0 | ✓ | ✗ | không cần | ✗ | serializer thiếu 4 |
-| wordtype | 8 | 5 +2 msg | 1 | 3 | wordtype.service.ts (399) | 1 | ✓ | ✗ | không cần | ✗ | serializer thiếu 1 |
+| translation | 9 | 7 +2 msg/204 | 1 | 1 | translation.repo.ts (438) | 0 | ✓ | ✓ | không cần | ✓ |  |
+| type-effectiveness | 9 | 9 | 1 | 1 | type-effectiveness.repo.ts (216) | 0 | ✓ | ✓ | không cần | ✓ |  |
+| wordtype | 8 | 6 +2 msg/204 | 1 | 3 | wordtype.service.ts (399) | 1 | ✓ | ✓ | không cần | ✓ |  |
 
 ### content (12)
 
 | Module | Route | Serializer | Unit | E2e | File lớn nhất (dòng) | any | Contract | Standardized | Extracted | Verified | Còn lệch |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | answer | 6 | 6 | 2 | 1 | answer.service.ts (591) | 1 | ✓ | ngoại lệ | không cần | ✓ |  |
-| exercises | 7 | 0 +1 msg | 1 | 1 | exercises.service.ts (258) | 0 | ✓ | ✗ | không cần | ✗ | serializer thiếu 6 |
+| exercises | 7 | 0 +1 msg/204 | 1 | 1 | exercises.service.ts (258) | 0 | ✓ | ✗ | không cần | ✗ | serializer thiếu 6 |
 | flashcard | 14 | 14 | 0 | 1 | flashcard.service.ts (857) | 15 | ✓ | ✓ | không cần | ✓ |  |
-| kanji | 11 | 6 +1 msg | 2 | 2 | kanji-import.service.ts (417) | 20 | ✓ | ✗ | ✓ X5 | ✗ | serializer thiếu 4 |
+| kanji | 11 | 6 +1 msg/204 | 2 | 2 | kanji-import.service.ts (417) | 20 | ✓ | ✗ | ✓ X5 | ✗ | serializer thiếu 4 |
 | lesson | 7 | 7 | 1 | 1 | dto/lesson.dto.ts (288) | 0 | ✓ | ✓ | không cần | ✓ |  |
 | lesson-content | 6 | 2 | 0 | 0 | lesson-content.service.ts (828) | 1 | ✗ | ✗ | không cần | ✗ | serializer thiếu 4 |
 | question-bank | 7 | 2 +1 @Res | 1 | 1 | question-bank.repo.ts (497) | 5 | ✓ | ✗ | không cần | ✗ | serializer thiếu 4 |
 | speaking | 8 | 8 | 0 | 0 | speaking.service.ts (319) | 9 | ✗ | ✓ | không cần | ✗ |  |
 | test | 15 | 1 | 1 | 1 | test-question-picker.service.ts (875) | 45 | ✓ | ✗ | ✓ X4 | ✗ | serializer thiếu 14 |
 | testset | 9 | 2 | 1 | 1 | dto/testset.dto.ts (859) | 0 | ✓ | ✗ | không cần | ✗ | serializer thiếu 7 |
-| testset-questionbank | 11 | 0 +1 @Res +1 msg | 1 | 1 | testset-questionbank.service.ts (342) | 4 | ✓ | ✗ | không cần | ✗ | serializer thiếu 9 |
+| testset-questionbank | 11 | 0 +1 @Res +1 msg/204 | 1 | 1 | testset-questionbank.service.ts (342) | 4 | ✓ | ✗ | không cần | ✗ | serializer thiếu 9 |
 | vocabulary | 13 | 9 | 1 | 3 | vocabulary.service.ts (935) | 31 | ✓ | ✗ | ✓ X5 | ✗ | serializer thiếu 4 |
 
 ### user (20)
@@ -81,7 +81,7 @@ File sinh tự động bằng `node scripts/inventory/module-status.mjs` (đọc
 | user-pokemon | 10 | 9 | 0 | 2 | user-pokemon.service.ts (733) | 32 | ✓ | ✗ | không cần | ✗ | serializer thiếu 1 |
 | user-progress | 10 | 8 | 0 | 1 | user-progress.service.ts (611) | 13 | ✓ | ✗ | không cần | ✗ | serializer thiếu 2 |
 | user-srs-review | 5 | 0 | 1 | 1 | user-srs-review.service.ts (251) | 0 | ✓ | ✗ | không cần | ✗ | serializer thiếu 5 |
-| user-test | 8 | 2 +1 msg | 0 | 1 | user-test.service.ts (431) | 9 | ✓ | ✗ | không cần | ✗ | serializer thiếu 5 |
+| user-test | 8 | 2 +1 msg/204 | 0 | 1 | user-test.service.ts (431) | 9 | ✓ | ✗ | không cần | ✗ | serializer thiếu 5 |
 | user-test-answer-log | 6 | 6 | 1 | 1 | user-test-answer-log.controller.ts (145) | 0 | ✓ | ✓ | không cần | ✓ |  |
 | user-test-attempt | 13 | 7 | 2 | 1 | test-attempt-grading.service.ts (690) | 63 | ✓ | ✗ | ✓ X3 | ✗ | serializer thiếu 6 |
 
@@ -95,7 +95,7 @@ File sinh tự động bằng `node scripts/inventory/module-status.mjs` (đọc
 | gacha-purchase | 4 | 4 | 0 | 1 | gacha-purchase.service.ts (429) | 7 | ✓ | ✓ | không cần | ✓ |  |
 | gacha-roll-history | 6 | 6 | 0 | 0 | gacha-roll-history.repo.ts (188) | 0 | ✗ | ✓ | không cần | ✗ |  |
 | invoice | 4 | 4 | 0 | 2 | invoice.service.ts (322) | 4 | ✓ | ✓ | không cần | ✓ |  |
-| payment | 5 | 0 +2 @Res +1 msg | 1 | 5 | payment.service.ts (447) | 2 | ✓ | ✗ | không cần | ✗ | thiếu zod-dto; serializer thiếu 2 |
+| payment | 5 | 0 +2 @Res +1 msg/204 | 1 | 5 | payment.service.ts (447) | 2 | ✓ | ✗ | không cần | ✗ | thiếu zod-dto; serializer thiếu 2 |
 | reward | 8 | 8 | 1 | 2 | reward.service.ts (1062) | 41 | ✓ | ngoại lệ | ✓ X6 | ✓ |  |
 | shop-banner | 8 | 8 | 0 | 1 | shop-banner.service.ts (720) | 64 | ✓ | ngoại lệ | không cần | ✓ |  |
 | shop-item | 8 | 8 | 0 | 1 | shop-item.service.ts (470) | 7 | ✓ | ngoại lệ | không cần | ✓ |  |

@@ -101,3 +101,12 @@ export class LanguagesResDTO extends createZodDto(LanguagesResSchema) {}
 export const LanguagesListResSchema = paginatedResSchema(LanguagesSchema)
 
 export class LanguagesListResDTO extends createZodDto(LanguagesListResSchema) {}
+
+// GET /languages/check/:code has no success message today: message is optional
+export const LanguageSupportResSchema = resSchema(
+  z.object({ supported: z.boolean() })
+).partial({
+  message: true
+})
+
+export class LanguageSupportResDTO extends createZodDto(LanguageSupportResSchema) {}

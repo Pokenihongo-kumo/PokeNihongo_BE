@@ -1,3 +1,4 @@
+import { ZodSerializerDto } from 'nestjs-zod'
 import { ResponseMessage } from '@/i18n/response-message'
 import { TranslationMessage } from '@/i18n/message-keys'
 import {
@@ -8,7 +9,11 @@ import {
   GetTranslationListQueryDTO,
   GetTranslationsByKeyQueryDTO,
   GetTranslationsByLanguageQueryDTO,
-  UpdateTranslationBodyDTO
+  UpdateTranslationBodyDTO,
+  TranslationListResDTO,
+  TranslationsByKeyResDTO,
+  TranslationResDTO,
+  TranslationBulkResDTO
 } from './dto/translation.zod-dto'
 import {
   CreateTranslationSwaggerDTO,
@@ -59,6 +64,7 @@ export class TranslationController {
     type: TranslationListSwaggerResponseDTO
   })
   @ResponseMessage(TranslationMessage.GET_LIST_SUCCESS)
+  @ZodSerializerDto(TranslationListResDTO)
   async findMany(@Query() query: GetTranslationListQueryDTO) {
     return this.translationService.findMany(query)
   }
@@ -80,6 +86,7 @@ export class TranslationController {
     type: TranslationByKeySwaggerResponseDTO
   })
   @ResponseMessage(TranslationMessage.GET_SUCCESS)
+  @ZodSerializerDto(TranslationsByKeyResDTO)
   async findByKey(@Query() query: GetTranslationsByKeyQueryDTO) {
     return this.translationService.getByKey(query)
   }
@@ -113,6 +120,7 @@ export class TranslationController {
     type: TranslationListSwaggerResponseDTO
   })
   @ResponseMessage(TranslationMessage.GET_LIST_SUCCESS)
+  @ZodSerializerDto(TranslationListResDTO)
   async findByLanguage(@Query() query: GetTranslationsByLanguageQueryDTO) {
     return this.translationService.findByLanguage(query)
   }
@@ -138,6 +146,7 @@ export class TranslationController {
     description: 'Bản dịch không tồn tại'
   })
   @ResponseMessage(TranslationMessage.GET_SUCCESS)
+  @ZodSerializerDto(TranslationResDTO)
   async findById(@Param() params: GetTranslationByIdParamsDTO) {
     return this.translationService.getById(params.id)
   }
@@ -158,6 +167,7 @@ export class TranslationController {
     type: TranslationSwaggerResponseDTO
   })
   @ResponseMessage(TranslationMessage.CREATE_SUCCESS)
+  @ZodSerializerDto(TranslationResDTO)
   async create(@Body() body: CreateTranslationBodyDTO) {
     return this.translationService.createTranslation(body)
   }
@@ -186,6 +196,7 @@ export class TranslationController {
     }
   })
   @ResponseMessage(TranslationMessage.CREATE_SUCCESS)
+  @ZodSerializerDto(TranslationBulkResDTO)
   async createMany(@Body() body: CreateTranslationsBodyDTO) {
     return this.translationService.createTranslations(body)
   }
@@ -206,6 +217,7 @@ export class TranslationController {
     description: 'Dữ liệu cập nhật bản dịch'
   })
   @ResponseMessage(TranslationMessage.UPDATE_SUCCESS)
+  @ZodSerializerDto(TranslationResDTO)
   async update(
     @Param() params: GetTranslationByIdParamsDTO,
     @Body() body: UpdateTranslationBodyDTO

@@ -1,10 +1,10 @@
+import { MeaningSchema, MeaningWithTranslationsSchema } from '../entities/meaning.entity'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { MeaningMessage } from '@/i18n/message-keys'
 import { paginatedResSchema } from '@/shared/utils/pagination'
 import { resSchema } from '@/shared/utils/res-schema'
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
-import { MeaningSchema } from '../entities/meaning.entity'
 
 // Translation keys follow module.id.field, e.g. meaning.example.definition
 const isValidTranslationKey = (key: string): boolean =>
@@ -127,3 +127,11 @@ export class MeaningResDTO extends createZodDto(MeaningResSchema) {}
 export const MeaningListResSchema = paginatedResSchema(MeaningSchema)
 
 export class MeaningListResDTO extends createZodDto(MeaningListResSchema) {}
+
+export const MeaningsByVocabularyResSchema = resSchema(
+  z.array(MeaningWithTranslationsSchema)
+)
+
+export class MeaningsByVocabularyResDTO extends createZodDto(
+  MeaningsByVocabularyResSchema
+) {}
