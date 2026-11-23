@@ -33,6 +33,7 @@
     "email:export": "email export",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "arch:deps": "node scripts/arch/module-deps.mjs",
+    "arch:dto": "node scripts/arch/dto-companions.mjs",
     "inventory": "node scripts/inventory/module-status.mjs",
     "lint:check": "eslint \"{src,apps,libs,test}/**/*.ts\"",
     "prisma:studio": "npx prisma studio",
