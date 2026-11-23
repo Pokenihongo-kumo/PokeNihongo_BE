@@ -7,7 +7,8 @@ import {
   GetMeaningsByVocabularyParamsDTO,
   MeaningListResDTO,
   MeaningResDTO,
-  UpdateMeaningBodyDTO
+  UpdateMeaningBodyDTO,
+  MeaningsByVocabularyResDTO
 } from './dto/meaning.zod-dto'
 import {
   CreateMeaningSwaggerDTO,
@@ -105,6 +106,7 @@ export class MeaningController {
     type: [MeaningSwaggerResponseDTO]
   })
   @ResponseMessage(MeaningMessage.GET_SUCCESS)
+  @ZodSerializerDto(MeaningsByVocabularyResDTO)
   async findByVocabularyId(@Param() params: GetMeaningsByVocabularyParamsDTO) {
     return this.meaningService.getByVocabularyId(params.vocabularyId)
   }

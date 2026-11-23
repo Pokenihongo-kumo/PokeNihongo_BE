@@ -1,3 +1,4 @@
+import { WordTypeStatsResDTO } from './dto/wordtype.zod-dto'
 import { ResponseMessage } from '@/i18n/response-message'
 import {
   Body,
@@ -76,6 +77,7 @@ export class WordTypeController {
     description: 'Không có quyền truy cập'
   })
   @ResponseMessage(WordTypeMessage.GET_STATS_SUCCESS)
+  @ZodSerializerDto(WordTypeStatsResDTO)
   async getStats() {
     return this.wordTypeService.getStats()
   }

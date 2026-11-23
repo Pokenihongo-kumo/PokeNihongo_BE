@@ -25,7 +25,10 @@ import {
   GetTypeEffectivenessDetailResDTO,
   GetTypeEffectivenessParamsDTO,
   UpdateTypeEffectivenessBodyDTO,
-  UpdateTypeEffectivenessResDTO
+  UpdateTypeEffectivenessResDTO,
+  TypeEffectivenessMatrixResDTO,
+  TypeEffectivenessArrayResDTO,
+  MultiTypeEffectivenessResDTO
 } from './dto/type-effectiveness.zod-dto'
 import { TypeEffectivenessService } from './type-effectiveness.service'
 
@@ -44,6 +47,7 @@ export class TypeEffectivenessController {
   @Get('matrix')
   @IsPublic()
   @ResponseMessage(TypeEffectivenessMessage.GET_SUCCESS)
+  @ZodSerializerDto(TypeEffectivenessMatrixResDTO)
   async getMatrix() {
     return this.typeEffectivenessService.getEffectivenessMatrix()
   }
@@ -51,6 +55,7 @@ export class TypeEffectivenessController {
   @Get('weaknesses/:defenderId')
   @IsPublic()
   @ResponseMessage(TypeEffectivenessMessage.GET_LIST_SUCCESS)
+  @ZodSerializerDto(TypeEffectivenessArrayResDTO)
   async getWeaknesses(@Param() params: GetDefenderParamsDTO) {
     return this.typeEffectivenessService.getWeaknessesForDefender(params.defenderId)
   }
@@ -58,6 +63,7 @@ export class TypeEffectivenessController {
   @Get('resistances/:defenderId')
   @IsPublic()
   @ResponseMessage(TypeEffectivenessMessage.GET_LIST_SUCCESS)
+  @ZodSerializerDto(TypeEffectivenessArrayResDTO)
   async getResistances(@Param() params: GetDefenderParamsDTO) {
     return this.typeEffectivenessService.getResistancesForDefender(params.defenderId)
   }
@@ -66,6 +72,7 @@ export class TypeEffectivenessController {
   @HttpCode(HttpStatus.OK)
   @IsPublic()
   @ResponseMessage(TypeEffectivenessMessage.GET_SUCCESS)
+  @ZodSerializerDto(MultiTypeEffectivenessResDTO)
   async calculateMultiType(@Body() body: CalculateMultiTypeBodyDTO) {
     return this.typeEffectivenessService.calculateMultiTypeEffectiveness(
       body.defenderTypeIds

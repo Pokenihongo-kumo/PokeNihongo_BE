@@ -1,3 +1,4 @@
+import { LanguageSupportResDTO } from './dto/languages.zod-dto'
 import { ResponseMessage } from '@/i18n/response-message'
 import { LanguagesMessage } from '@/i18n/message-keys'
 import {
@@ -105,6 +106,7 @@ export class LanguagesController {
       }
     }
   })
+  @ZodSerializerDto(LanguageSupportResDTO)
   async checkLanguageSupport(@Param() params: GetLanguagesByCodeParamsDTO) {
     const supported = await this.languagesService.isLanguageSupported(params.code)
     return { supported }
@@ -333,7 +335,8 @@ export class LanguagesController {
     status: 200,
     description: 'Tạo ngôn ngữ mặc định thành công'
   })
-  createDefaultLanguages() {
-    return this.languagesService.createDefaultLanguages()
+  async createDefaultLanguages() {
+    // seeds the rows; nothing to return (data: null)
+    await this.languagesService.createDefaultLanguages()
   }
 }
