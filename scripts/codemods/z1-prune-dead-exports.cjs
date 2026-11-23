@@ -70,6 +70,14 @@ for (let round = 1; round <= 1; round++) {
       const sym = checker.getSymbolAtLocation(nameNode)
       if (!sym || (sym.declarations || []).length > 1) continue
       if (refCount.get(sym)) continue
+      // A dto file keeps each schema's inferred type next to its DTO class
+      // (backend-convention section 2), used or not
+      if (
+        /\/dto\//.test(f) &&
+        ts.isTypeAliasDeclaration(st) &&
+        /^z\.(infer|input|output)<\s*typeof \w+\s*>$/.test(st.type.getText(sf))
+      )
+        continue
       if (!edits.has(sf.fileName)) edits.set(sf.fileName, { sf, ranges: [] })
       edits.get(sf.fileName).ranges.push([st.getFullStart(), st.end])
       removed.push(`${f}\t${nameNode.text}`)

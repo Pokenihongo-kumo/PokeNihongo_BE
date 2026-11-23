@@ -46,6 +46,9 @@ export class UpdateUserSpeakingAttemptDTO extends createZodDto(
 export const UserSpeakingAttemptResSchema = resSchema(UserSpeakingAttemptSchema).strict()
 
 // UserSpeakingAttempt Response DTO
+
+export type UserSpeakingAttemptRes = z.infer<typeof UserSpeakingAttemptResSchema>
+
 export class UserSpeakingAttemptResDTO extends createZodDto(
   UserSpeakingAttemptResSchema
 ) {}
@@ -57,6 +60,9 @@ export const UserSpeakingAttemptListResSchema = paginatedResSchema(
 ).strict()
 
 // UserSpeakingAttempt List Response DTO
+
+export type UserSpeakingAttemptListRes = z.infer<typeof UserSpeakingAttemptListResSchema>
+
 export class UserSpeakingAttemptListResDTO extends createZodDto(
   UserSpeakingAttemptListResSchema
 ) {}
@@ -70,6 +76,10 @@ export const GetUserSpeakingAttemptByIdParamsSchema = z
   .strict()
 
 // Get UserSpeakingAttempt by ID Params DTO
+export type GetUserSpeakingAttemptByIdParams = z.infer<
+  typeof GetUserSpeakingAttemptByIdParamsSchema
+>
+
 export class GetUserSpeakingAttemptByIdParamsDTO extends createZodDto(
   GetUserSpeakingAttemptByIdParamsSchema
 ) {}
@@ -155,6 +165,9 @@ export const EvaluateSpeakingResponseSchema = resSchema(
 ).strict()
 
 // Evaluate Speaking Response DTO
+
+export type EvaluateSpeakingResponse = z.infer<typeof EvaluateSpeakingResponseSchema>
+
 export class EvaluateSpeakingResponseDTO extends createZodDto(
   EvaluateSpeakingResponseSchema
 ) {}
@@ -162,4 +175,7 @@ export class EvaluateSpeakingResponseDTO extends createZodDto(
 export const SpeakingStatisticsResSchema = resSchema(SpeakingStatisticsSchema).strict()
 
 // Speaking Statistics Response DTO
+
+export type SpeakingStatisticsRes = z.infer<typeof SpeakingStatisticsResSchema>
+
 export class SpeakingStatisticsResDTO extends createZodDto(SpeakingStatisticsResSchema) {}

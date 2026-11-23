@@ -13,6 +13,8 @@ export type CreateMatchBody = z.infer<typeof CreateMatchBodySchema>
 
 export const CreateMatchResSchema = resSchema(MatchSchema)
 
+export type CreateMatchRes = z.infer<typeof CreateMatchResSchema>
+
 export class CreateMatchResDTO extends createZodDto(CreateMatchResSchema) {}
 
 export const UpdateMatchBodySchema = CreateMatchBodySchema.partial().strict()
@@ -23,6 +25,8 @@ export class UpdateMatchBodyDTO extends createZodDto(UpdateMatchBodySchema) {}
 
 export const UpdateMatchResSchema = CreateMatchResSchema
 
+export type UpdateMatchRes = z.infer<typeof UpdateMatchResSchema>
+
 export class UpdateMatchResDTO extends createZodDto(UpdateMatchResSchema) {}
 
 export const GetMatchParamsSchema = z
@@ -31,8 +35,12 @@ export const GetMatchParamsSchema = z
   })
   .strict()
 
+export type GetMatchParams = z.infer<typeof GetMatchParamsSchema>
+
 export class GetMatchParamsDTO extends createZodDto(GetMatchParamsSchema) {}
 
 export const GetMatchDetailResSchema = resSchema(MatchSchema)
+
+export type GetMatchDetailRes = z.infer<typeof GetMatchDetailResSchema>
 
 export class GetMatchDetailResDTO extends createZodDto(GetMatchDetailResSchema) {}

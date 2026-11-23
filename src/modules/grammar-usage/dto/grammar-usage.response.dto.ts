@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { paginatedResSchema } from '@/shared/utils/pagination'
 import { resSchema } from '@/shared/utils/res-schema'
 import { createZodDto } from 'nestjs-zod'
@@ -8,6 +9,10 @@ export const GrammarUsageWithGrammarResponseSchema = resSchema(
   GrammarUsageWithGrammarSchema
 )
 
+export type GrammarUsageWithGrammarResponse = z.infer<
+  typeof GrammarUsageWithGrammarResponseSchema
+>
+
 export class GrammarUsageWithGrammarResponseDTO extends createZodDto(
   GrammarUsageWithGrammarResponseSchema
 ) {}
@@ -16,6 +21,8 @@ export class GrammarUsageWithGrammarResponseDTO extends createZodDto(
 export const GrammarUsageListResponseSchema = paginatedResSchema(
   GrammarUsageWithGrammarSchema
 )
+
+export type GrammarUsageListResponse = z.infer<typeof GrammarUsageListResponseSchema>
 
 export class GrammarUsageListResponseDTO extends createZodDto(
   GrammarUsageListResponseSchema

@@ -73,6 +73,10 @@ export const GetTestSetQuestionBankByTestSetIdParamsSchema = z
   })
   .strict()
 
+export type GetTestSetQuestionBankByTestSetIdParams = z.infer<
+  typeof GetTestSetQuestionBankByTestSetIdParamsSchema
+>
+
 export class GetTestSetQuestionBankByTestSetIdParamsDTO extends createZodDto(
   GetTestSetQuestionBankByTestSetIdParamsSchema
 ) {}
@@ -85,6 +89,10 @@ export const GetTestSetQuestionBankByIdParamsSchema = z
   })
   .strict()
 
+export type GetTestSetQuestionBankByIdParams = z.infer<
+  typeof GetTestSetQuestionBankByIdParamsSchema
+>
+
 export class GetTestSetQuestionBankByIdParamsDTO extends createZodDto(
   GetTestSetQuestionBankByIdParamsSchema
 ) {}
@@ -96,6 +104,8 @@ export const UpdateQuestionOrderSchema = z
     questionOrder: QuestionOrderSchema
   })
   .strict()
+
+export type UpdateQuestionOrder = z.infer<typeof UpdateQuestionOrderSchema>
 
 export class UpdateQuestionOrderDTO extends createZodDto(UpdateQuestionOrderSchema) {}
 
@@ -124,6 +134,8 @@ export class DeleteManyTestSetQuestionBankBodyDTO extends createZodDto(
 
 export const TestSetQuestionBankResSchema = resSchema(TestSetQuestionBankSchema)
 
+export type TestSetQuestionBankRes = z.infer<typeof TestSetQuestionBankResSchema>
+
 export class TestSetQuestionBankResDTO extends createZodDto(
   TestSetQuestionBankResSchema
 ) {}
@@ -131,6 +143,10 @@ export class TestSetQuestionBankResDTO extends createZodDto(
 export const TestSetQuestionBankArrayResSchema = resSchema(
   z.array(TestSetQuestionBankSchema)
 )
+
+export type TestSetQuestionBankArrayRes = z.infer<
+  typeof TestSetQuestionBankArrayResSchema
+>
 
 export class TestSetQuestionBankArrayResDTO extends createZodDto(
   TestSetQuestionBankArrayResSchema
@@ -164,6 +180,8 @@ export const TestSetQuestionBankFullResSchema = resSchema(
   )
 )
 
+export type TestSetQuestionBankFullRes = z.infer<typeof TestSetQuestionBankFullResSchema>
+
 export class TestSetQuestionBankFullResDTO extends createZodDto(
   TestSetQuestionBankFullResSchema
 ) {}
@@ -188,6 +206,10 @@ export const TestSetQuestionBankFullWithAnswerResSchema = resSchema(
   z.array(QuestionWithAnswersOutSchema)
 )
 
+export type TestSetQuestionBankFullWithAnswerRes = z.infer<
+  typeof TestSetQuestionBankFullWithAnswerResSchema
+>
+
 export class TestSetQuestionBankFullWithAnswerResDTO extends createZodDto(
   TestSetQuestionBankFullWithAnswerResSchema
 ) {}
@@ -195,6 +217,10 @@ export class TestSetQuestionBankFullWithAnswerResDTO extends createZodDto(
 export const TestSetQuestionBankDeletedResSchema = resSchema(
   z.object({ deletedCount: z.number() })
 )
+
+export type TestSetQuestionBankDeletedRes = z.infer<
+  typeof TestSetQuestionBankDeletedResSchema
+>
 
 export class TestSetQuestionBankDeletedResDTO extends createZodDto(
   TestSetQuestionBankDeletedResSchema

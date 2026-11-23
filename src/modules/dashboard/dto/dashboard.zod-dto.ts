@@ -17,6 +17,8 @@ const YearSchema = z.coerce
 
 export const DashboardPeriodQuerySchema = z.object({ period: PeriodSchema }).strict()
 
+export type DashboardPeriodQuery = z.infer<typeof DashboardPeriodQuerySchema>
+
 export class DashboardPeriodQueryDTO extends createZodDto(DashboardPeriodQuerySchema) {}
 
 export const DashboardRevenueQuerySchema = z
@@ -31,15 +33,21 @@ export const DashboardRevenueQuerySchema = z
   })
   .strict()
 
+export type DashboardRevenueQuery = z.infer<typeof DashboardRevenueQuerySchema>
+
 export class DashboardRevenueQueryDTO extends createZodDto(DashboardRevenueQuerySchema) {}
 
 export const DashboardYearQuerySchema = z.object({ year: YearSchema.optional() }).strict()
+
+export type DashboardYearQuery = z.infer<typeof DashboardYearQuerySchema>
 
 export class DashboardYearQueryDTO extends createZodDto(DashboardYearQuerySchema) {}
 
 export const DashboardSeasonStatsQuerySchema = PaginationQuerySchema.extend({
   period: PeriodSchema
 })
+
+export type DashboardSeasonStatsQuery = z.infer<typeof DashboardSeasonStatsQuerySchema>
 
 export class DashboardSeasonStatsQueryDTO extends createZodDto(
   DashboardSeasonStatsQuerySchema
@@ -49,11 +57,15 @@ export const DashboardSeasonParamsSchema = z
   .object({ seasonId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID) })
   .strict()
 
+export type DashboardSeasonParams = z.infer<typeof DashboardSeasonParamsSchema>
+
 export class DashboardSeasonParamsDTO extends createZodDto(DashboardSeasonParamsSchema) {}
 
 export const DashboardGachaBannerParamsSchema = z
   .object({ gachaBannerId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID) })
   .strict()
+
+export type DashboardGachaBannerParams = z.infer<typeof DashboardGachaBannerParamsSchema>
 
 export class DashboardGachaBannerParamsDTO extends createZodDto(
   DashboardGachaBannerParamsSchema

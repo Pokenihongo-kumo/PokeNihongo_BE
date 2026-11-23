@@ -124,4 +124,6 @@ export const KanjiStatsResSchema = resSchema(
   })
 ).partial({ message: true })
 
+export type KanjiStatsRes = z.infer<typeof KanjiStatsResSchema>
+
 export class KanjiStatsResDTO extends createZodDto(KanjiStatsResSchema) {}

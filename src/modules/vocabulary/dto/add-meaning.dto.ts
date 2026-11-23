@@ -13,6 +13,9 @@ export const AddMeaningToVocabularySchema = z.object({
 })
 
 // Zod DTO
+
+export type AddMeaningToVocabulary = z.infer<typeof AddMeaningToVocabularySchema>
+
 export class AddMeaningToVocabularyDTO extends createZodDto(
   AddMeaningToVocabularySchema
 ) {}

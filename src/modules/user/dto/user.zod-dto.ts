@@ -24,6 +24,8 @@ export class CreateUserBodyDTO extends createZodDto(CreateUserBodySchema) {}
 
 export const CreateUserResSchema = resSchema(UserSchema.omit({ password: true }))
 
+export type CreateUserRes = z.infer<typeof CreateUserResSchema>
+
 export class CreateUserResDTO extends createZodDto(CreateUserResSchema) {}
 
 export const UpdateUserBodySchema = UserSchema.pick({
@@ -45,6 +47,8 @@ export class UpdateUserBodyDTO extends createZodDto(UpdateUserBodySchema) {}
 
 export const UpdateUserResSchema = CreateUserResSchema
 
+export type UpdateUserRes = z.infer<typeof UpdateUserResSchema>
+
 export class UpdateUserResDTO extends createZodDto(UpdateUserResSchema) {}
 
 export const GetUserParamsSchema = z
@@ -53,9 +57,13 @@ export const GetUserParamsSchema = z
   })
   .strict()
 
+export type GetUserParams = z.infer<typeof GetUserParamsSchema>
+
 export class GetUserParamsDTO extends createZodDto(GetUserParamsSchema) {}
 
 export const GetUserDetailResSchema = resSchema(UserWithoutPasswordSchema)
+
+export type GetUserDetailRes = z.infer<typeof GetUserDetailResSchema>
 
 export class GetUserDetailResDTO extends createZodDto(GetUserDetailResSchema) {}
 

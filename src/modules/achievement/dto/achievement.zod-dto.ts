@@ -48,6 +48,8 @@ export type CreateAchievementBody = z.infer<typeof CreateAchievementBodySchema>
 
 export const CreateAchievementResSchema = resSchema(AchievementSchema)
 
+export type CreateAchievementRes = z.infer<typeof CreateAchievementResSchema>
+
 export class CreateAchievementResDTO extends createZodDto(CreateAchievementResSchema) {}
 
 export const UpdateAchievementBodyInputSchema = CreateAchievementBodyInputSchema.partial()
@@ -64,6 +66,8 @@ export type UpdateAchievementBody = z.infer<typeof UpdateAchievementBodySchema>
 
 export const UpdateAchievementResSchema = CreateAchievementResSchema
 
+export type UpdateAchievementRes = z.infer<typeof UpdateAchievementResSchema>
+
 export class UpdateAchievementResDTO extends createZodDto(UpdateAchievementResSchema) {}
 
 export const GetAchievementParamsSchema = z
@@ -71,6 +75,8 @@ export const GetAchievementParamsSchema = z
     achievementId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
   })
   .strict()
+
+export type GetAchievementParams = z.infer<typeof GetAchievementParamsSchema>
 
 export class GetAchievementParamsDTO extends createZodDto(GetAchievementParamsSchema) {}
 
@@ -88,6 +94,8 @@ export const GetAchievementDetailResSchema = resSchema(
     }).nullable()
   })
 )
+
+export type GetAchievementDetailRes = z.infer<typeof GetAchievementDetailResSchema>
 
 export class GetAchievementDetailResDTO extends createZodDto(
   GetAchievementDetailResSchema

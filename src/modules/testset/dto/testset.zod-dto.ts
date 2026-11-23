@@ -240,6 +240,9 @@ export class UpsertTestSetWithQuestionBanksBodyDTO extends createZodDto(
 export const TestSetListResSchema = paginatedResSchema(TestSetSchema)
 
 // TestSet List Response DTO
+
+export type TestSetListRes = z.infer<typeof TestSetListResSchema>
+
 export class TestSetListResDTO extends createZodDto(TestSetListResSchema) {}
 
 // Get TestSet by ID Params Schema
@@ -251,6 +254,9 @@ export const GetTestSetByIdParamsSchema = z
   .strict()
 
 // Get TestSet by ID Params DTO
+
+export type GetTestSetByIdParams = z.infer<typeof GetTestSetByIdParamsSchema>
+
 export class GetTestSetByIdParamsDTO extends createZodDto(GetTestSetByIdParamsSchema) {}
 
 const flag = z
@@ -321,6 +327,8 @@ export const TestSetRowOutSchema = z.object({
 
 export const TestSetRowResSchema = resSchema(TestSetRowOutSchema)
 
+export type TestSetRowRes = z.infer<typeof TestSetRowResSchema>
+
 export class TestSetRowResDTO extends createZodDto(TestSetRowResSchema) {}
 
 const QuestionBankFieldsOutSchema = z.object({
@@ -351,6 +359,8 @@ export const TestSetUpsertResSchema = resSchema(
   })
 )
 
+export type TestSetUpsertRes = z.infer<typeof TestSetUpsertResSchema>
+
 export class TestSetUpsertResDTO extends createZodDto(TestSetUpsertResSchema) {}
 
 // Full: question banks with their meanings as { vi, en, ... }
@@ -367,5 +377,7 @@ export const TestSetFullResSchema = resSchema(
     )
   })
 )
+
+export type TestSetFullRes = z.infer<typeof TestSetFullResSchema>
 
 export class TestSetFullResDTO extends createZodDto(TestSetFullResSchema) {}

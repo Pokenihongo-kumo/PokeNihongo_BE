@@ -13,6 +13,9 @@ export const GetLevelParamsSchema = z
     levelId: checkIdSchema(LevelMessage.INVALID_DATA)
   })
   .strict()
+
+export type GetLevelParams = z.infer<typeof GetLevelParamsSchema>
+
 export class GetLevelParamsDTO extends createZodDto(GetLevelParamsSchema) {}
 
 export const CreateLevelBodySchema = LevelSchema.pick({
@@ -22,18 +25,29 @@ export const CreateLevelBodySchema = LevelSchema.pick({
   nextLevelId: true,
   rewardId: true
 }).strict()
+
 export type CreateLevelBody = z.infer<typeof CreateLevelBodySchema>
 export class CreateLevelBodyDTO extends createZodDto(CreateLevelBodySchema) {}
 
 export const UpdateLevelBodySchema = CreateLevelBodySchema.partial().strict()
+
 export type UpdateLevelBody = z.infer<typeof UpdateLevelBodySchema>
 export class UpdateLevelBodyDTO extends createZodDto(UpdateLevelBodySchema) {}
 
 export const GetLevelDetailResSchema = resSchema(LevelWithRelationsSchema)
+
+export type GetLevelDetailRes = z.infer<typeof GetLevelDetailResSchema>
+
 export class GetLevelDetailResDTO extends createZodDto(GetLevelDetailResSchema) {}
 
 export const CreateLevelResSchema = resSchema(LevelSchema)
+
+export type CreateLevelRes = z.infer<typeof CreateLevelResSchema>
+
 export class CreateLevelResDTO extends createZodDto(CreateLevelResSchema) {}
 
 export const UpdateLevelResSchema = CreateLevelResSchema
+
+export type UpdateLevelRes = z.infer<typeof UpdateLevelResSchema>
+
 export class UpdateLevelResDTO extends createZodDto(UpdateLevelResSchema) {}

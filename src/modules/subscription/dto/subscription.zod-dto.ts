@@ -36,6 +36,8 @@ export type CreateSubscriptionBody = z.infer<typeof CreateSubscriptionBodySchema
 
 export const CreateSubscriptionResSchema = resSchema(SubscriptionSchema)
 
+export type CreateSubscriptionRes = z.infer<typeof CreateSubscriptionResSchema>
+
 export class CreateSubscriptionResDTO extends createZodDto(CreateSubscriptionResSchema) {}
 
 export const UpdateSubscriptionBodyInputSchema =
@@ -56,6 +58,8 @@ export type UpdateSubscriptionBody = z.infer<typeof UpdateSubscriptionBodySchema
 
 export const UpdateSubscriptionResSchema = CreateSubscriptionResSchema
 
+export type UpdateSubscriptionRes = z.infer<typeof UpdateSubscriptionResSchema>
+
 export class UpdateSubscriptionResDTO extends createZodDto(UpdateSubscriptionResSchema) {}
 
 export const GetSubscriptionParamsSchema = z
@@ -63,6 +67,8 @@ export const GetSubscriptionParamsSchema = z
     subscriptionId: checkIdSchema(SubscriptionMessage.INVALID_DATA)
   })
   .strict()
+
+export type GetSubscriptionParams = z.infer<typeof GetSubscriptionParamsSchema>
 
 export class GetSubscriptionParamsDTO extends createZodDto(GetSubscriptionParamsSchema) {}
 
@@ -83,6 +89,8 @@ export const GetSubscriptionDetailResSchema = resSchema(
       .optional()
   })
 )
+
+export type GetSubscriptionDetailRes = z.infer<typeof GetSubscriptionDetailResSchema>
 
 export class GetSubscriptionDetailResDTO extends createZodDto(
   GetSubscriptionDetailResSchema
@@ -149,11 +157,15 @@ export const GetMarketplaceListResSchema = resSchema(
   z.array(MarketplaceSubscriptionSchema)
 )
 
+export type GetMarketplaceListRes = z.infer<typeof GetMarketplaceListResSchema>
+
 export class GetMarketplaceListResDTO extends createZodDto(GetMarketplaceListResSchema) {}
 
 export const GetMarketplaceOptionsResSchema = resSchema(
   MarketplaceSubscriptionOptionsSchema
 )
+
+export type GetMarketplaceOptionsRes = z.infer<typeof GetMarketplaceOptionsResSchema>
 
 export class GetMarketplaceOptionsResDTO extends createZodDto(
   GetMarketplaceOptionsResSchema

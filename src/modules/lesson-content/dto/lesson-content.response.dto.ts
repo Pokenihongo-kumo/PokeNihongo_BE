@@ -10,6 +10,9 @@ export const LessonContentListResponseSchema = z.object({
   totalPages: z.number(),
   message: z.string()
 })
+
+export type LessonContentListResponse = z.infer<typeof LessonContentListResponseSchema>
+
 export class LessonContentListResponseDTO extends createZodDto(
   LessonContentListResponseSchema
 ) {}

@@ -73,6 +73,10 @@ export const GetUserAIConversationByIdParamsSchema = z
   .object({ id: checkIdSchema(M.INVALID_ID) })
   .strict()
 
+export type GetUserAIConversationByIdParams = z.infer<
+  typeof GetUserAIConversationByIdParamsSchema
+>
+
 export class GetUserAIConversationByIdParamsDTO extends createZodDto(
   GetUserAIConversationByIdParamsSchema
 ) {}
@@ -81,6 +85,10 @@ export const GetUserAIConversationByConversationParamsSchema = z
   .object({ conversationId: conversationIdSchema })
   .strict()
 
+export type GetUserAIConversationByConversationParams = z.infer<
+  typeof GetUserAIConversationByConversationParamsSchema
+>
+
 export class GetUserAIConversationByConversationParamsDTO extends createZodDto(
   GetUserAIConversationByConversationParamsSchema
 ) {}
@@ -88,5 +96,7 @@ export class GetUserAIConversationByConversationParamsDTO extends createZodDto(
 // Was the bare entity: every single-message response failed serialization (500)
 
 export const UserAIConversationResSchema = resSchema(UserAIConversationSchema)
+
+export type UserAIConversationRes = z.infer<typeof UserAIConversationResSchema>
 
 export class UserAIConversationResDTO extends createZodDto(UserAIConversationResSchema) {}

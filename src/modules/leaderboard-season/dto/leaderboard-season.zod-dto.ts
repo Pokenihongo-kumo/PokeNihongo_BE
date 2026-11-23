@@ -50,6 +50,8 @@ export type CreateLeaderboardSeasonBody = z.infer<
 
 export const CreateLeaderboardSeasonResSchema = resSchema(LeaderboardSeasonSchema)
 
+export type CreateLeaderboardSeasonRes = z.infer<typeof CreateLeaderboardSeasonResSchema>
+
 export class CreateLeaderboardSeasonResDTO extends createZodDto(
   CreateLeaderboardSeasonResSchema
 ) {}
@@ -74,6 +76,8 @@ export type UpdateLeaderboardSeasonBody = z.infer<
 
 export const UpdateLeaderboardSeasonResSchema = CreateLeaderboardSeasonResSchema
 
+export type UpdateLeaderboardSeasonRes = z.infer<typeof UpdateLeaderboardSeasonResSchema>
+
 export class UpdateLeaderboardSeasonResDTO extends createZodDto(
   UpdateLeaderboardSeasonResSchema
 ) {}
@@ -84,6 +88,8 @@ export const GetLeaderboardSeasonParamsSchema = z
   })
   .strict()
 
+export type GetLeaderboardSeasonParams = z.infer<typeof GetLeaderboardSeasonParamsSchema>
+
 export class GetLeaderboardSeasonParamsDTO extends createZodDto(
   GetLeaderboardSeasonParamsSchema
 ) {}
@@ -91,6 +97,10 @@ export class GetLeaderboardSeasonParamsDTO extends createZodDto(
 export const GetLeaderboardWithRewardSeasonDetailResSchema = resSchema(
   GetLeaderboardWithRewardSeasonDetailSchema
 )
+
+export type GetLeaderboardWithRewardSeasonDetailRes = z.infer<
+  typeof GetLeaderboardWithRewardSeasonDetailResSchema
+>
 
 export class GetLeaderboardWithRewardSeasonDetailResDTO extends createZodDto(
   GetLeaderboardWithRewardSeasonDetailResSchema
@@ -121,6 +131,10 @@ export const GetLeaderboardSeasonDetailResSchema = resSchema(
     )
   })
 )
+
+export type GetLeaderboardSeasonDetailRes = z.infer<
+  typeof GetLeaderboardSeasonDetailResSchema
+>
 
 export class GetLeaderboardSeasonDetailResDTO extends createZodDto(
   GetLeaderboardSeasonDetailResSchema

@@ -119,6 +119,8 @@ export const GetAnswerByIdParamsSchema = z.object({
   id: checkIdSchema(AnswerMessage.INVALID_ID)
 })
 
+export type GetAnswerByIdParams = z.infer<typeof GetAnswerByIdParamsSchema>
+
 export class GetAnswerByIdParamsDTO extends createZodDto(GetAnswerByIdParamsSchema) {}
 
 export const GetAnswerListQuerySchema = z.object({
@@ -164,11 +166,15 @@ export const AnswerResponseSchema = resSchema(
   })
 ).strict()
 
+export type AnswerResponse = z.infer<typeof AnswerResponseSchema>
+
 export class AnswerResponseDTO extends createZodDto(AnswerResponseSchema) {}
 
 export const AnswerListResSchema = paginatedResSchema(
   AnswerWithTranslationSchema
 ).strict()
+
+export type AnswerListRes = z.infer<typeof AnswerListResSchema>
 
 export class AnswerListResDTO extends createZodDto(AnswerListResSchema) {}
 
@@ -192,6 +198,10 @@ export const CreateMultipleAnswersResponseSchema = resSchema(
     })
   })
 ).strict()
+
+export type CreateMultipleAnswersResponse = z.infer<
+  typeof CreateMultipleAnswersResponseSchema
+>
 
 export class CreateMultipleAnswersResponseDTO extends createZodDto(
   CreateMultipleAnswersResponseSchema

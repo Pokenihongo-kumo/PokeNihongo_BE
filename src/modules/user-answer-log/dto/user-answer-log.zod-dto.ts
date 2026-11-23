@@ -37,9 +37,13 @@ export class UpdateUserAnswerLogBodyDTO extends createZodDto(
 
 export const UserAnswerLogResSchema = resSchema(UserAnswerLogSchema).strict()
 
+export type UserAnswerLogRes = z.infer<typeof UserAnswerLogResSchema>
+
 export class UserAnswerLogResDTO extends createZodDto(UserAnswerLogResSchema) {}
 
 export const UserAnswerLogListResSchema = paginatedResSchema(UserAnswerLogSchema).strict()
+
+export type UserAnswerLogListRes = z.infer<typeof UserAnswerLogListResSchema>
 
 export class UserAnswerLogListResDTO extends createZodDto(UserAnswerLogListResSchema) {}
 
@@ -48,6 +52,8 @@ export const GetUserAnswerLogByIdParamsSchema = z
     id: checkIdSchema(M.INVALID_ID)
   })
   .strict()
+
+export type GetUserAnswerLogByIdParams = z.infer<typeof GetUserAnswerLogByIdParamsSchema>
 
 export class GetUserAnswerLogByIdParamsDTO extends createZodDto(
   GetUserAnswerLogByIdParamsSchema

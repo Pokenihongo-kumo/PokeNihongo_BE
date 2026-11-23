@@ -84,11 +84,17 @@ export const GetMeaningByIdParamsSchema = z.object({
   id: checkIdSchema(MeaningMessage.INVALID_ID)
 })
 
+export type GetMeaningByIdParams = z.infer<typeof GetMeaningByIdParamsSchema>
+
 export class GetMeaningByIdParamsDTO extends createZodDto(GetMeaningByIdParamsSchema) {}
 
 export const GetMeaningsByVocabularyParamsSchema = z.object({
   vocabularyId: checkIdSchema(MeaningMessage.VOCABULARY_ID_INVALID)
 })
+
+export type GetMeaningsByVocabularyParams = z.infer<
+  typeof GetMeaningsByVocabularyParamsSchema
+>
 
 export class GetMeaningsByVocabularyParamsDTO extends createZodDto(
   GetMeaningsByVocabularyParamsSchema
@@ -122,15 +128,21 @@ export class GetMeaningListQueryDTO extends createZodDto(GetMeaningListQuerySche
 
 export const MeaningResSchema = resSchema(MeaningSchema)
 
+export type MeaningRes = z.infer<typeof MeaningResSchema>
+
 export class MeaningResDTO extends createZodDto(MeaningResSchema) {}
 
 export const MeaningListResSchema = paginatedResSchema(MeaningSchema)
+
+export type MeaningListRes = z.infer<typeof MeaningListResSchema>
 
 export class MeaningListResDTO extends createZodDto(MeaningListResSchema) {}
 
 export const MeaningsByVocabularyResSchema = resSchema(
   z.array(MeaningWithTranslationsSchema)
 )
+
+export type MeaningsByVocabularyRes = z.infer<typeof MeaningsByVocabularyResSchema>
 
 export class MeaningsByVocabularyResDTO extends createZodDto(
   MeaningsByVocabularyResSchema

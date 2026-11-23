@@ -29,6 +29,8 @@ export type CreateFeatureBody = z.infer<typeof CreateFeatureBodySchema>
 
 export const CreateFeatureResSchema = resSchema(FeatureSchema)
 
+export type CreateFeatureRes = z.infer<typeof CreateFeatureResSchema>
+
 export class CreateFeatureResDTO extends createZodDto(CreateFeatureResSchema) {}
 
 export const UpdateFeatureBodyInputSchema =
@@ -46,6 +48,8 @@ export type UpdateFeatureBody = z.infer<typeof UpdateFeatureBodySchema>
 
 export const UpdateFeatureResSchema = CreateFeatureResSchema
 
+export type UpdateFeatureRes = z.infer<typeof UpdateFeatureResSchema>
+
 export class UpdateFeatureResDTO extends createZodDto(UpdateFeatureResSchema) {}
 
 export const GetFeatureParamsSchema = z
@@ -53,6 +57,8 @@ export const GetFeatureParamsSchema = z
     featureId: checkIdSchema(FeatureMessage.INVALID_DATA)
   })
   .strict()
+
+export type GetFeatureParams = z.infer<typeof GetFeatureParamsSchema>
 
 export class GetFeatureParamsDTO extends createZodDto(GetFeatureParamsSchema) {}
 
@@ -62,5 +68,7 @@ export const GetFeatureDetailResSchema = resSchema(
     nameTranslations: TranslationInputSchema.nullable().optional()
   })
 )
+
+export type GetFeatureDetailRes = z.infer<typeof GetFeatureDetailResSchema>
 
 export class GetFeatureDetailResDTO extends createZodDto(GetFeatureDetailResSchema) {}

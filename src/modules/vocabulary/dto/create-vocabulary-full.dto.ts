@@ -48,6 +48,10 @@ export const CreateVocabularyFullMultipartSchema = z.object({
 
 // Zod DTOs
 
+export type CreateVocabularyFullMultipart = z.infer<
+  typeof CreateVocabularyFullMultipartSchema
+>
+
 export class CreateVocabularyFullMultipartDTO extends createZodDto(
   CreateVocabularyFullMultipartSchema
 ) {}
@@ -376,6 +380,10 @@ const CreateVocabularyFullResponseSchema = z.object({
   }),
   message: z.string()
 })
+
+export type CreateVocabularyFullResponse = z.infer<
+  typeof CreateVocabularyFullResponseSchema
+>
 
 export class CreateVocabularyFullResponseDTO extends createZodDto(
   CreateVocabularyFullResponseSchema

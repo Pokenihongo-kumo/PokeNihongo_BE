@@ -28,6 +28,8 @@ export class CreateTypeEffectivenessBodyDTO extends createZodDto(
 
 export const CreateTypeEffectivenessResSchema = resSchema(TypeEffectivenessSchema)
 
+export type CreateTypeEffectivenessRes = z.infer<typeof CreateTypeEffectivenessResSchema>
+
 export class CreateTypeEffectivenessResDTO extends createZodDto(
   CreateTypeEffectivenessResSchema
 ) {}
@@ -64,6 +66,8 @@ export class UpdateTypeEffectivenessBodyDTO extends createZodDto(
 
 export const UpdateTypeEffectivenessResSchema = CreateTypeEffectivenessResSchema
 
+export type UpdateTypeEffectivenessRes = z.infer<typeof UpdateTypeEffectivenessResSchema>
+
 export class UpdateTypeEffectivenessResDTO extends createZodDto(
   UpdateTypeEffectivenessResSchema
 ) {}
@@ -73,6 +77,8 @@ export class UpdateTypeEffectivenessResDTO extends createZodDto(
 export const GetTypeEffectivenessParamsSchema = z.object({
   typeEffectivenessId: checkIdSchema(TypeEffectivenessMessage.INVALID_ID)
 })
+
+export type GetTypeEffectivenessParams = z.infer<typeof GetTypeEffectivenessParamsSchema>
 
 export class GetTypeEffectivenessParamsDTO extends createZodDto(
   GetTypeEffectivenessParamsSchema
@@ -84,6 +90,8 @@ export const GetDefenderParamsSchema = z.object({
   defenderId: checkIdSchema(TypeEffectivenessMessage.INVALID_ID)
 })
 
+export type GetDefenderParams = z.infer<typeof GetDefenderParamsSchema>
+
 export class GetDefenderParamsDTO extends createZodDto(GetDefenderParamsSchema) {}
 
 // POST /calculate-multi-type
@@ -93,6 +101,8 @@ export const CalculateMultiTypeBodySchema = z
     defenderTypeIds: z.array(checkIdSchema(TypeEffectivenessMessage.INVALID_ID))
   })
   .strict()
+
+export type CalculateMultiTypeBody = z.infer<typeof CalculateMultiTypeBodySchema>
 
 export class CalculateMultiTypeBodyDTO extends createZodDto(
   CalculateMultiTypeBodySchema
@@ -125,6 +135,10 @@ export const GetTypeEffectivenessDetailResSchema = resSchema(
   TypeEffectivenessWithTypesResItemSchema
 )
 
+export type GetTypeEffectivenessDetailRes = z.infer<
+  typeof GetTypeEffectivenessDetailResSchema
+>
+
 export class GetTypeEffectivenessDetailResDTO extends createZodDto(
   GetTypeEffectivenessDetailResSchema
 ) {}
@@ -132,6 +146,8 @@ export class GetTypeEffectivenessDetailResDTO extends createZodDto(
 export const TypeEffectivenessArrayResSchema = resSchema(
   z.array(TypeEffectivenessWithTypesResItemSchema)
 )
+
+export type TypeEffectivenessArrayRes = z.infer<typeof TypeEffectivenessArrayResSchema>
 
 export class TypeEffectivenessArrayResDTO extends createZodDto(
   TypeEffectivenessArrayResSchema
@@ -141,6 +157,8 @@ export class TypeEffectivenessArrayResDTO extends createZodDto(
 export const TypeEffectivenessMatrixResSchema = resSchema(
   z.record(z.string(), z.record(z.string(), z.number()))
 )
+
+export type TypeEffectivenessMatrixRes = z.infer<typeof TypeEffectivenessMatrixResSchema>
 
 export class TypeEffectivenessMatrixResDTO extends createZodDto(
   TypeEffectivenessMatrixResSchema
@@ -156,6 +174,8 @@ export const MultiTypeEffectivenessResSchema = resSchema(
     immunities: MultiplierByTypeSchema
   })
 )
+
+export type MultiTypeEffectivenessRes = z.infer<typeof MultiTypeEffectivenessResSchema>
 
 export class MultiTypeEffectivenessResDTO extends createZodDto(
   MultiTypeEffectivenessResSchema

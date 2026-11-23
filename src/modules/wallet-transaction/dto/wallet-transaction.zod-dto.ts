@@ -35,6 +35,8 @@ export class UpdateWalletTransactionBodyDTO extends createZodDto(
 
 export const UpdateWalletTransactionResSchema = CreateWalletTransactionResSchema
 
+export type UpdateWalletTransactionRes = z.infer<typeof UpdateWalletTransactionResSchema>
+
 export class UpdateWalletTransactionResDTO extends createZodDto(
   UpdateWalletTransactionResSchema
 ) {}
@@ -45,11 +47,17 @@ export const GetWalletTransactionParamsSchema = z
   })
   .strict()
 
+export type GetWalletTransactionParams = z.infer<typeof GetWalletTransactionParamsSchema>
+
 export class GetWalletTransactionParamsDTO extends createZodDto(
   GetWalletTransactionParamsSchema
 ) {}
 
 export const GetWalletTransactionDetailResSchema = CreateWalletTransactionResSchema
+
+export type GetWalletTransactionDetailRes = z.infer<
+  typeof GetWalletTransactionDetailResSchema
+>
 
 export class GetWalletTransactionDetailResDTO extends createZodDto(
   GetWalletTransactionDetailResSchema

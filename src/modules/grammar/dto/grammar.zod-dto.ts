@@ -90,6 +90,8 @@ export const GetGrammarByIdParamsSchema = z.object({
   id: checkIdSchema(GrammarMessage.INVALID_ID)
 })
 
+export type GetGrammarByIdParams = z.infer<typeof GetGrammarByIdParamsSchema>
+
 export class GetGrammarByIdParamsDTO extends createZodDto(GetGrammarByIdParamsSchema) {}
 
 export const GetGrammarListQuerySchema = z.object({

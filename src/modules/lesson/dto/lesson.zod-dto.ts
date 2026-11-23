@@ -77,6 +77,8 @@ export const GetLessonByIdParamsSchema = z.object({
   id: checkIdSchema(M.INVALID_ID)
 })
 
+export type GetLessonByIdParams = z.infer<typeof GetLessonByIdParamsSchema>
+
 export class GetLessonByIdParamsDTO extends createZodDto(GetLessonByIdParamsSchema) {}
 
 export const GetLessonListQuerySchema = z.object({
@@ -110,8 +112,13 @@ export class GetLessonListQueryDTO extends createZodDto(GetLessonListQuerySchema
 export const LessonResSchema = resSchema(LessonWithRelationsSchema)
 
 // Response serializers (they strip unknown fields)
+
+export type LessonRes = z.infer<typeof LessonResSchema>
+
 export class LessonResDTO extends createZodDto(LessonResSchema) {}
 
 export const LessonListResSchema = paginatedResSchema(LessonWithRelationsSchema)
+
+export type LessonListRes = z.infer<typeof LessonListResSchema>
 
 export class LessonListResDTO extends createZodDto(LessonListResSchema) {}

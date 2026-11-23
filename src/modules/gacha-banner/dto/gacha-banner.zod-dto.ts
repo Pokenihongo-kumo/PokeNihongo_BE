@@ -60,6 +60,8 @@ export type CreateGachaBannerBody = z.infer<typeof CreateGachaBannerBodySchema>
 
 export const CreateGachaBannerResSchema = resSchema(GachaBannerSchema)
 
+export type CreateGachaBannerRes = z.infer<typeof CreateGachaBannerResSchema>
+
 export class CreateGachaBannerResDTO extends createZodDto(CreateGachaBannerResSchema) {}
 
 export const UpdateGachaBannerBodyInputSchema =
@@ -77,6 +79,8 @@ export type UpdateGachaBannerBody = z.infer<typeof UpdateGachaBannerBodySchema>
 
 export const UpdateGachaBannerResSchema = CreateGachaBannerResSchema
 
+export type UpdateGachaBannerRes = z.infer<typeof UpdateGachaBannerResSchema>
+
 export class UpdateGachaBannerResDTO extends createZodDto(UpdateGachaBannerResSchema) {}
 
 export const GetGachaBannerParamsSchema = z
@@ -84,6 +88,8 @@ export const GetGachaBannerParamsSchema = z
     gachaBannerId: checkIdSchema(GachaBannerMessage.INVALID_DATA)
   })
   .strict()
+
+export type GetGachaBannerParams = z.infer<typeof GetGachaBannerParamsSchema>
 
 export class GetGachaBannerParamsDTO extends createZodDto(GetGachaBannerParamsSchema) {}
 
@@ -112,6 +118,8 @@ export const GetGachaBannerDetailResSchema = resSchema(
   })
 )
 
+export type GetGachaBannerDetailRes = z.infer<typeof GetGachaBannerDetailResSchema>
+
 export class GetGachaBannerDetailResDTO extends createZodDto(
   GetGachaBannerDetailResSchema
 ) {}
@@ -119,6 +127,8 @@ export class GetGachaBannerDetailResDTO extends createZodDto(
 export const GetGachaBannerByTodayResSchema = resSchema(
   z.array(GetGachaBannerDetailByUserSchema)
 )
+
+export type GetGachaBannerByTodayRes = z.infer<typeof GetGachaBannerByTodayResSchema>
 
 export class GetGachaBannerByTodayResDTO extends createZodDto(
   GetGachaBannerByTodayResSchema

@@ -43,6 +43,8 @@ export type CreateDailyRequestBody = z.infer<typeof CreateDailyRequestBodySchema
 
 export const CreateDailyRequestResSchema = resSchema(DailyRequestSchema)
 
+export type CreateDailyRequestRes = z.infer<typeof CreateDailyRequestResSchema>
+
 export class CreateDailyRequestResDTO extends createZodDto(CreateDailyRequestResSchema) {}
 
 export const UpdateDailyRequestBodyInputSchema =
@@ -63,11 +65,15 @@ export type UpdateDailyRequestBody = z.infer<typeof UpdateDailyRequestBodySchema
 
 export const UpdateDailyRequestResSchema = CreateDailyRequestResSchema
 
+export type UpdateDailyRequestRes = z.infer<typeof UpdateDailyRequestResSchema>
+
 export class UpdateDailyRequestResDTO extends createZodDto(UpdateDailyRequestResSchema) {}
 
 export const GetParamsDailyRequestSchema = z.object({
   dailyRequestId: checkIdSchema(ENTITY_MESSAGE.INVALID_ID)
 })
+
+export type GetDailyRequestParams = z.infer<typeof GetParamsDailyRequestSchema>
 
 export class GetDailyRequestParamsDTO extends createZodDto(GetParamsDailyRequestSchema) {}
 
@@ -84,6 +90,8 @@ export const GetDailyRequestDetailResSchema = resSchema(
       .optional()
   })
 )
+
+export type GetDailyRequestDetailRes = z.infer<typeof GetDailyRequestDetailResSchema>
 
 export class GetDailyRequestDetailResDTO extends createZodDto(
   GetDailyRequestDetailResSchema
@@ -102,6 +110,10 @@ export const GetDailyRequestDetailwithAllLangResSchema = resSchema(
       .optional()
   })
 )
+
+export type GetDailyRequestDetailwithAllLangRes = z.infer<
+  typeof GetDailyRequestDetailwithAllLangResSchema
+>
 
 export class GetDailyRequestDetailwithAllLangResDTO extends createZodDto(
   GetDailyRequestDetailwithAllLangResSchema
