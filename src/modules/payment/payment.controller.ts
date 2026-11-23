@@ -14,7 +14,7 @@ import {
   Res
 } from '@nestjs/common'
 import { ApiOperation, ApiResponse } from '@nestjs/swagger'
-import { CreatePayOSPaymentDto } from './entities/payment.model'
+import { CreatePayOSPaymentDto } from './entities/payment.entity'
 import { PaymentService } from './payment.service'
 
 @Controller('payments')

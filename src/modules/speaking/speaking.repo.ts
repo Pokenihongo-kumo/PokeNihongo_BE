@@ -5,10 +5,10 @@ import {
   GetUserSpeakingAttemptListQuery,
   UpdateUserSpeakingAttempt
 } from './dto/speaking.zod-dto'
-import { UserSpeakingAttempt } from './entities/speaking.entities'
+import { UserSpeakingAttempt } from './entities/speaking.entity'
 
 @Injectable()
-export class SpeakingRepository {
+export class SpeakingRepo {
   constructor(private readonly prisma: PrismaService) {}
 
   // The question the attempt answers (existence check before upload)

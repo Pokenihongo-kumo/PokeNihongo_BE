@@ -5,7 +5,7 @@ import { z } from 'zod'
 import {
   GetUserGachaPityDetailSchema,
   UserGachaPitySchema
-} from '../entities/user-gacha-pityentity'
+} from '../entities/user-gacha-pity.entity'
 
 // Create Schema
 

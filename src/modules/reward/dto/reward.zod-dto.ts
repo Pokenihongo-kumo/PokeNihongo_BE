@@ -1,6 +1,6 @@
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { RewardMessage } from '@/i18n/message-keys'
-import { UserRewardSourceTypeSchema } from '@/modules/user-reward-history/entities/user-reward-history.entities'
+import { UserRewardSourceTypeSchema } from '@/modules/user-reward-history/entities/user-reward-history.entity'
 import { TranslationInputSchema } from '@/shared/models/translation-input.model'
 import { resSchema } from '@/shared/utils/res-schema'
 import { createZodDto } from 'nestjs-zod'

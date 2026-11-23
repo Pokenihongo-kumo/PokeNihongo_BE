@@ -4,7 +4,7 @@ import { addTimeUTC, isUniqueConstraintPrismaError } from '@/shared/helpers'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { Injectable } from '@nestjs/common'
 import { Prisma, PrismaClient } from '@prisma/client'
-import { CreatePayment, Payment } from './entities/payment.model'
+import { CreatePayment, Payment } from './entities/payment.entity'
 
 @Injectable()
 export class PaymentRepo {

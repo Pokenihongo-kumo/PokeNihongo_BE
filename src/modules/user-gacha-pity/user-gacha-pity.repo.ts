@@ -8,7 +8,7 @@ import {
   CreateUserGachaPityBody,
   UpdateUserGachaPityBody
 } from './dto/user-gacha-pity.zod-dto'
-import { USER_GACHA_PITY_FIELDS, UserGachaPity } from './entities/user-gacha-pityentity'
+import { USER_GACHA_PITY_FIELDS, UserGachaPity } from './entities/user-gacha-pity.entity'
 
 @Injectable()
 export class UserGachaPityRepo {

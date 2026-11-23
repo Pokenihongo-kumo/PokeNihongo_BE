@@ -5,7 +5,7 @@ import { z } from 'zod'
 import {
   SpeakingStatisticsSchema,
   UserSpeakingAttemptSchema
-} from '../entities/speaking.entities'
+} from '../entities/speaking.entity'
 
 // Create UserSpeakingAttempt Schema
 

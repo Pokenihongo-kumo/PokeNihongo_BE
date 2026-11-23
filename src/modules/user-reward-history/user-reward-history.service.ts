@@ -13,14 +13,14 @@ import {
   GetUserRewardHistoryListQuery,
   UpdateUserRewardHistoryBody
 } from './dto/user-reward-history.zod-dto'
-import { UserRewardHistoryRepository } from './user-reward-history.repo'
+import { UserRewardHistoryRepo } from './user-reward-history.repo'
 
 @Injectable()
 export class UserRewardHistoryService {
   private readonly logger = new Logger(UserRewardHistoryService.name)
 
   constructor(
-    private readonly userRewardHistoryRepository: UserRewardHistoryRepository,
+    private readonly userRewardHistoryRepository: UserRewardHistoryRepo,
     private readonly rewardRepo: RewardRepo,
     private readonly translationService: TranslationService,
     private readonly languagesService: LanguagesService

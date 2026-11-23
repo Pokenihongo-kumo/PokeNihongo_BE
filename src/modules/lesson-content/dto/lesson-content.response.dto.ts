@@ -1,6 +1,6 @@
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
-import { LessonContentWithRelationsSchema } from '../entities/lesson-content.entities'
+import { LessonContentWithRelationsSchema } from '../entities/lesson-content.entity'
 
 export const LessonContentListResponseSchema = z.object({
   data: z.array(LessonContentWithRelationsSchema),

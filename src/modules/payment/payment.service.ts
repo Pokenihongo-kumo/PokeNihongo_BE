@@ -32,7 +32,7 @@ import {
   InvoiceNotFoundException,
   PaymentLinkInProgressException
 } from './dto/payment.error'
-import { CreatePayOSPaymentDto, Payment } from './entities/payment.model'
+import { CreatePayOSPaymentDto, Payment } from './entities/payment.entity'
 import { PaymentRepo } from './payment.repo'
 
 @Injectable()

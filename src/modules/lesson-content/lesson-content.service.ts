@@ -33,15 +33,15 @@ import {
 import {
   GroupedLessonContent,
   UpdateLessonContentOrder
-} from './entities/lesson-content.entities'
-import { LessonContentRepository } from './lesson-content.repo'
+} from './entities/lesson-content.entity'
+import { LessonContentRepo } from './lesson-content.repo'
 
 @Injectable()
 export class LessonContentService {
   private readonly logger = new Logger(LessonContentService.name)
 
   constructor(
-    private readonly lessonContentRepository: LessonContentRepository,
+    private readonly lessonContentRepository: LessonContentRepo,
     private readonly vocabularyService: VocabularyService,
     private readonly grammarService: GrammarService,
     private readonly kanjiService: KanjiService,

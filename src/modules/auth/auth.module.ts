@@ -4,7 +4,7 @@ import { RoleModule } from '@/modules/role/role.module'
 import { UserCoreModule } from '@/modules/user/user-core.module'
 import { MailSenderModule } from '@/infrastructure/integrations/mail/mail-sender.module'
 import { UploadModule } from '@/modules/upload/upload.module'
-import { AuthRepository } from '@/modules/auth/auth.repo'
+import { AuthRepo } from '@/modules/auth/auth.repo'
 import { UserProgressModule } from '@/modules/user-progress/user-progress.module'
 import { UserTestModule } from '@/modules/user-test/user-test.module'
 import { Module } from '@nestjs/common'
@@ -32,7 +32,7 @@ import { OtpService } from './otp.service'
   controllers: [AuthController, MailToolsController],
   providers: [
     AuthService,
-    AuthRepository,
+    AuthRepo,
     GoogleService,
     OtpService,
     RefreshTokenCleanupCronjob

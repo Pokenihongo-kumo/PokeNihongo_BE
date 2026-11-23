@@ -4,7 +4,7 @@ import { resSchema } from '@/shared/utils/res-schema'
 import { LessonContentsType as PrismaLessonContentType } from '@prisma/client'
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
-import { GroupedLessonContentSchema } from '../entities/lesson-content.entities'
+import { GroupedLessonContentSchema } from '../entities/lesson-content.entity'
 
 // Request/Response Types
 
