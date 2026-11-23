@@ -4,8 +4,8 @@ import { LanguagesService } from '@/modules/languages/languages.service'
 import { PaginationQuery } from '@/shared/models/request.model'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { GeminiConfigType as PrismaGeminiConfigType } from '@prisma/client'
-import { NotFoundRecordException } from 'src/shared/error'
-import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared/helpers'
+import { NotFoundRecordException } from '@/shared/error'
+import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from '@/shared/helpers'
 import { GeminiConfigAlreadyExistsException } from './dto/gemini-config.error'
 import {
   CreateGeminiConfigBody,

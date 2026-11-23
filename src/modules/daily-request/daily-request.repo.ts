@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common'
 // conditionType was replaced by dailyRequestCategoryId (foreign key to DailyRequestCategory)
 import { parseQs } from '@/common/utils/qs-parser'
 import { PrismaClient } from '@prisma/client'
-import { PrismaService } from 'src/shared/services/prisma.service'
+import { PrismaService } from '@/shared/services/prisma.service'
 import {
   CreateDailyRequestBody,
   UpdateDailyRequestBody

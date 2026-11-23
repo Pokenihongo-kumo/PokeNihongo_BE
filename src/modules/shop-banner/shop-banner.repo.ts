@@ -8,7 +8,7 @@ import {
 } from '@/common/constants/shop-banner.constant'
 import { parseQs } from '@/common/utils/qs-parser'
 import { Prisma, PrismaClient } from '@prisma/client'
-import { PrismaService } from 'src/shared/services/prisma.service'
+import { PrismaService } from '@/shared/services/prisma.service'
 import { CreateShopBannerBody, UpdateShopBannerBody } from './dto/shop-banner.zod-dto'
 import { REWARD_FIELDS, ShopBanner } from './entities/shop-banner.entity'
 

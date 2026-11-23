@@ -2,7 +2,7 @@ import { parseQs } from '@/common/utils/qs-parser'
 import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
-import { PrismaService } from 'src/shared/services/prisma.service'
+import { PrismaService } from '@/shared/services/prisma.service'
 import { CreateShopItemBody, UpdateShopItemBody } from './dto/shop-item.zod-dto'
 import { SHOP_ITEM_FIELDS, ShopItem } from './entities/shop-item.entity'
 

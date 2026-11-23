@@ -6,8 +6,8 @@ import {
   PERMISSION_FIELDS,
   Permission,
   UpdatePermissionBody
-} from 'src/modules/permission/permission.model'
-import { PrismaService } from 'src/shared/services/prisma.service'
+} from '@/modules/permission/permission.model'
+import { PrismaService } from '@/shared/services/prisma.service'
 
 @Injectable()
 export class PermissionRepo {

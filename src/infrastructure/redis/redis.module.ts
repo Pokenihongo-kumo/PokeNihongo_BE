@@ -1,6 +1,8 @@
-import { Global, Inject, Module, OnModuleDestroy } from '@nestjs/common'
+import { Global, Inject, Module, OnModuleDestroy, Logger } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { Redis } from 'ioredis'
+
+const logger = new Logger('RedisModule')
 
 @Global()
 @Module({
@@ -18,8 +20,8 @@ import { Redis } from 'ioredis'
           retryStrategy: (times) => Math.min(times * 50, 2000),
           connectTimeout: 30000
         })
-        client.on('error', (err) => console.error('Redis Client Error:', err))
-        client.on('connect', () => console.log('Connected to Redis'))
+        client.on('error', (err) => logger.error('Redis Client Error:', err))
+        client.on('connect', () => logger.log('Connected to Redis'))
         try {
           await client.ping()
           global.REDIS_CLIENT = client

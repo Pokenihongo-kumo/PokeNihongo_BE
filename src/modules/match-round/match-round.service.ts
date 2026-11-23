@@ -14,7 +14,7 @@ import {
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
 import { InjectQueue } from '@nestjs/bull'
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { Queue } from 'bull'
 import { MatchRoundAlreadyExistsException } from './dto/match-round.error'
 import { CreateMatchRoundBody, UpdateMatchRoundBody } from './dto/match-round.zod-dto'
@@ -22,6 +22,8 @@ import { MatchRoundRepo } from './match-round.repo'
 
 @Injectable()
 export class MatchRoundService {
+  private readonly logger = new Logger(MatchRoundService.name)
+
   constructor(
     private matchRoundRepo: MatchRoundRepo,
     private matchService: MatchService,
@@ -291,7 +293,7 @@ export class MatchRoundService {
             }
           )
 
-          console.log(
+          this.logger.debug(
             `[MatchRoundService] Enqueued initial CHECK_POKEMON_SELECTION_TIMEOUT job ${job.id} for participant ${firstParticipant.id}`
           )
         }

@@ -2,7 +2,7 @@ import { RarityPokemon, RarityPokemonType } from '@/common/constants/pokemon.con
 import { parseQs } from '@/common/utils/qs-parser'
 import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
-import { PrismaService } from 'src/shared/services/prisma.service'
+import { PrismaService } from '@/shared/services/prisma.service'
 import {
   AssignPokemonTypesBody,
   CreatePokemonBody,

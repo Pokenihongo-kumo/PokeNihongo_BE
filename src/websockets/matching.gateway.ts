@@ -106,7 +106,7 @@ export class MatchingGateway {
   notifyUser(userId: number, payload: MatchingEventPayload): void {
     const lang = this.socketServerService.getLangByUserId(userId)
     const roomName = SOCKET_ROOM.getMatchingRoomByUserId(userId)
-    console.log('roomName: ', roomName)
+    this.logger.debug(`roomName: ${roomName}`)
     if (payload.type && payload.type === 'MATCHMAKING_FAILED') {
       payload.reason = this.i18nService.translate(payload.reason, lang)
     } else if (

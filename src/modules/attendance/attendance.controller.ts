@@ -13,11 +13,11 @@ import {
   GetParamsDateAttendanceDTO,
   UpdateAttendanceBodyDTO,
   UpdateAttendanceResDTO
-} from 'src/modules/attendance/dto/attendance.zod-dto'
+} from '@/modules/attendance/dto/attendance.zod-dto'
 
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 import { ApiBearerAuth } from '@nestjs/swagger'
-import { MessageResDTO } from 'src/shared/dtos/response.dto'
+import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { AttendanceService } from './attendance.service'
 
 @Controller('attendance')

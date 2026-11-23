@@ -609,14 +609,12 @@ export class GachaBannerService {
           }
         }
         const { items, gachaItemRate, nameTranslations, ...bannerWithoutItems } = banner
-        // console.log(bannerWithoutItems)
 
         return {
           ...bannerWithoutItems,
           pokemon: chosen
         }
       })
-      // console.log(enrichedBanners)
 
       return enrichedBanners
     } catch (error) {

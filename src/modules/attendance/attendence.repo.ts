@@ -2,7 +2,7 @@ import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 
 import { parseQs } from '@/common/utils/qs-parser'
-import { PrismaService } from 'src/shared/services/prisma.service'
+import { PrismaService } from '@/shared/services/prisma.service'
 import { CreateAttendanceBody, UpdateAttendanceBody } from './dto/attendance.zod-dto'
 import { ATTENDANCE_FIELDS, Attendance } from './entities/attendance.entity'
 

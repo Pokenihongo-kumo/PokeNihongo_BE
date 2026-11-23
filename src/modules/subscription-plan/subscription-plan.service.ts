@@ -9,7 +9,7 @@ import {
   isNotFoundPrismaError
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { SubscriptionPlanNotFoundException } from './dto/subscription-plan.error'
 import {
   CreateSubscriptionPlanBody,
@@ -19,6 +19,8 @@ import { SubscriptionPlanRepo } from './subscription-plan.repo'
 
 @Injectable()
 export class SubscriptionPlanService {
+  private readonly logger = new Logger(SubscriptionPlanService.name)
+
   constructor(
     private subscriptionPlanRepo: SubscriptionPlanRepo,
     private readonly languagesService: LanguagesService,
@@ -174,7 +176,6 @@ export class SubscriptionPlanService {
       if (isForeignKeyConstraintPrismaError(error)) {
         throw new NotFoundRecordException()
       }
-      console.log('errpr', error)
 
       throw error
     }

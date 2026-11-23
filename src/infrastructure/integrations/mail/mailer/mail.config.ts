@@ -1,9 +1,12 @@
+import { Logger } from '@nestjs/common'
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter'
 import { ConfigService } from '@nestjs/config'
 import * as fs from 'fs'
 import * as Handlebars from 'handlebars'
 import * as moment from 'moment'
 import { join } from 'path'
+
+const logger = new Logger('MailConfig')
 
 export const templateDir =
   process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'Production'
@@ -33,7 +36,7 @@ export function registerHandlebarsHelpers() {
 
 export const mailerConfigFactory = async (configService: ConfigService) => {
   if (!fs.existsSync(templateDir)) {
-    console.error(`Template directory does not exist: ${templateDir}`)
+    logger.error(`Template directory does not exist: ${templateDir}`)
   }
 
   return {

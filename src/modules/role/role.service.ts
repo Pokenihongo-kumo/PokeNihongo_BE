@@ -5,11 +5,11 @@ import { Injectable } from '@nestjs/common'
 import {
   ProhibitedActionOnBaseRoleException,
   RoleAlreadyExistsException
-} from 'src/modules/role/role.error'
-import { CreateRoleBody, UpdateRoleBody } from 'src/modules/role/role.model'
-import { RoleRepo } from 'src/modules/role/role.repo'
-import { NotFoundRecordException } from 'src/shared/error'
-import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared/helpers'
+} from '@/modules/role/role.error'
+import { CreateRoleBody, UpdateRoleBody } from '@/modules/role/role.model'
+import { RoleRepo } from '@/modules/role/role.repo'
+import { NotFoundRecordException } from '@/shared/error'
+import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from '@/shared/helpers'
 import { RoleCoreRepo } from './role-core.repo'
 
 @Injectable()

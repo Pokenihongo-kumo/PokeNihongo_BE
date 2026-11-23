@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common'
 import { WalletTypeType } from '@/common/constants/wallet.constant'
 import { parseQs } from '@/common/utils/qs-parser'
 import { PrismaClient } from '@prisma/client'
-import { PrismaService } from 'src/shared/services/prisma.service'
+import { PrismaService } from '@/shared/services/prisma.service'
 import { CreateWalletBody, UpdateWalletBody } from './dto/wallet.zod-dto'
 import { WALLET_FIELDS, Wallet } from './entities/wallet.entity'
 

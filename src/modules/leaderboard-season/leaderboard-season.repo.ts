@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common'
 
 import { parseQs } from '@/common/utils/qs-parser'
 import { LeaderboardStatus, Prisma, PrismaClient } from '@prisma/client'
-import { PrismaService } from 'src/shared/services/prisma.service'
+import { PrismaService } from '@/shared/services/prisma.service'
 import { SeasonRankReward } from '../season-rank-reward/entities/season-rank-reward.entity'
 import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { UserSeasonHistory } from '../user-season-history/entities/user-season-history.entity'

@@ -12,8 +12,8 @@ import {
   UnauthorizedException
 } from '@nestjs/common'
 import { RoleService } from '@/modules/role/role.service'
-import { TokenService } from 'src/shared/services/token.service'
-import { AccessTokenPayload } from 'src/shared/types/jwt.type'
+import { TokenService } from '@/shared/services/token.service'
+import { AccessTokenPayload } from '@/shared/types/jwt.type'
 import { SYSTEM_MESSAGE } from '../constants/message'
 
 @Injectable()

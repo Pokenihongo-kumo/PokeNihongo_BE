@@ -1,6 +1,6 @@
 import { resSchema } from '@/shared/utils/res-schema'
-import { PermissionSchema } from 'src/shared/models/shared-permission.model'
-import { RoleSchema } from 'src/shared/models/shared-role.model'
+import { PermissionSchema } from '@/shared/models/shared-permission.model'
+import { RoleSchema } from '@/shared/models/shared-role.model'
 import { z } from 'zod'
 
 export const RoleWithPermissionsSchema = RoleSchema.extend({

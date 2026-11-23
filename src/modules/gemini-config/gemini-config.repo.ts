@@ -6,7 +6,7 @@ import {
   GeminiConfigType as PrismaGeminiConfigType,
   GeminiConfigType as PrismaGeminiConfigTypeEnum
 } from '@prisma/client'
-import { PrismaService } from 'src/shared/services/prisma.service'
+import { PrismaService } from '@/shared/services/prisma.service'
 import { GEMINI_CONFIG_FIELDS } from './entities/gemini-config.entity'
 
 @Injectable()

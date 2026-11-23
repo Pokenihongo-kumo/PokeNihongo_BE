@@ -1,11 +1,10 @@
-import { USER_POKEMON_MESSAGE } from '@/common/constants/message'
 import { UserPokemonMessage } from '@/i18n/message-keys'
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common'
 
 export class UserPokemonNotFoundException extends NotFoundException {
   constructor() {
     super({
-      message: USER_POKEMON_MESSAGE.NOT_FOUND,
+      message: UserPokemonMessage.NOT_FOUND,
       errorKey: UserPokemonMessage.NOT_FOUND
     })
   }
@@ -14,7 +13,7 @@ export class UserPokemonNotFoundException extends NotFoundException {
 export class NicknameAlreadyExistsException extends ConflictException {
   constructor() {
     super({
-      message: USER_POKEMON_MESSAGE.NICKNAME_ALREADY_EXISTS,
+      message: UserPokemonMessage.NICKNAME_ALREADY_EXISTS,
       errorKey: UserPokemonMessage.NICKNAME_ALREADY_EXISTS
     })
   }
@@ -23,7 +22,7 @@ export class NicknameAlreadyExistsException extends ConflictException {
 export class ErrorInitLevelPokemonException extends BadRequestException {
   constructor() {
     super({
-      message: USER_POKEMON_MESSAGE.ERROR_INIT_LEVEL,
+      message: UserPokemonMessage.ERROR_INIT_LEVEL,
       errorKey: UserPokemonMessage.ERROR_INIT_LEVEL
     })
   }
@@ -32,7 +31,7 @@ export class ErrorInitLevelPokemonException extends BadRequestException {
 export class InvalidUserAccessPokemonException extends BadRequestException {
   constructor() {
     super({
-      message: USER_POKEMON_MESSAGE.INVALID_ACCESS_POKEMON,
+      message: UserPokemonMessage.INVALID_ACCESS_POKEMON,
       errorKey: UserPokemonMessage.INVALID_ACCESS_POKEMON
     })
   }
@@ -41,7 +40,7 @@ export class InvalidUserAccessPokemonException extends BadRequestException {
 export class UserHasPokemonException extends ConflictException {
   constructor() {
     super({
-      message: USER_POKEMON_MESSAGE.USER_HAS_POKEMON,
+      message: UserPokemonMessage.USER_HAS_POKEMON,
       errorKey: UserPokemonMessage.USER_HAS_POKEMON
     })
   }

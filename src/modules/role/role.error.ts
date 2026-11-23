@@ -1,5 +1,5 @@
 import { ForbiddenException, UnprocessableEntityException } from '@nestjs/common'
-import { RoleMessage } from 'src/i18n/message-keys'
+import { RoleMessage } from '@/i18n/message-keys'
 
 export class RoleAlreadyExistsException extends UnprocessableEntityException {
   constructor() {

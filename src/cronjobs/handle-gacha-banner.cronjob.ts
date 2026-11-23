@@ -3,7 +3,7 @@ import { addDaysUTC0000, todayUTCWith0000 } from '@/shared/helpers'
 import { Injectable, Logger } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { GachaStarType } from '@prisma/client'
-import { GachaItemService } from 'src/modules/gacha-item/gacha-item.service'
+import { GachaItemService } from '@/modules/gacha-item/gacha-item.service'
 import { LanguagesService } from '@/modules/languages/languages.service'
 import { GachaBannerService } from '@/modules/gacha-banner/gacha-banner.service'
 

@@ -9,7 +9,7 @@ import {
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { UploadService } from '@/modules/upload/upload.service'
 import {
   PokemonAlreadyExistsException,
@@ -26,6 +26,8 @@ import { PokemonRepo } from './pokemon.repo'
 
 @Injectable()
 export class PokemonService {
+  private readonly logger = new Logger(PokemonService.name)
+
   constructor(
     private pokemonRepo: PokemonRepo,
     private uploadService: UploadService,
@@ -218,7 +220,7 @@ export class PokemonService {
             await this.uploadService.deleteFile(existPokemon.imageUrl, FolderName.POKEMON)
           } catch (error) {
             // Log warning but don't fail the update
-            console.warn('Failed to delete old Pokemon image:', error)
+            this.logger.warn('Failed to delete old Pokemon image:', error)
           }
         }
       }
@@ -240,7 +242,7 @@ export class PokemonService {
           try {
             await this.pokemonRepo.removeFromPreviousPokemons(nextPokemonId, id)
           } catch (error) {
-            console.warn(
+            this.logger.warn(
               'Failed to remove from old next Pokemon previousPokemons:',
               error
             )
@@ -254,7 +256,7 @@ export class PokemonService {
           try {
             await this.pokemonRepo.addToPreviousPokemons(nextPokemonId, id)
           } catch (error) {
-            console.warn('Failed to add to new next Pokemon previousPokemons:', error)
+            this.logger.warn('Failed to add to new next Pokemon previousPokemons:', error)
           }
         }
       }
@@ -293,7 +295,7 @@ export class PokemonService {
             try {
               await this.pokemonRepo.removeFromPreviousPokemons(nextPokemon.id, id)
             } catch (error) {
-              console.warn(
+              this.logger.warn(
                 'Failed to remove from next Pokemon previousPokemons on delete:',
                 error
               )

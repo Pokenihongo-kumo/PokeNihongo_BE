@@ -1,4 +1,4 @@
-import { PermissionSchema } from 'src/shared/models/shared-permission.model'
+import { PermissionSchema } from '@/shared/models/shared-permission.model'
 import { z } from 'zod'
 
 export const GetPermissionParamsSchema = z

@@ -1,10 +1,10 @@
 import { Level } from '@/modules/level/entities/level.entity'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
-import { Permission } from 'src/shared/models/shared-permission.model'
-import { Role } from 'src/shared/models/shared-role.model'
-import { User, WhereUniqueUserType } from 'src/shared/models/shared-user.model'
-import { PrismaService } from 'src/shared/services/prisma.service'
+import { Permission } from '@/shared/models/shared-permission.model'
+import { Role } from '@/shared/models/shared-role.model'
+import { User, WhereUniqueUserType } from '@/shared/models/shared-user.model'
+import { PrismaService } from '@/shared/services/prisma.service'
 
 type UserIncludeRolePermissionsType = User & {
   role: Role & { permissions: Permission[] }

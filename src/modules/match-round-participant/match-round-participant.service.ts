@@ -19,7 +19,7 @@ import { PaginationQuery } from '@/shared/models/request.model'
 import { InjectQueue } from '@nestjs/bull'
 import { Injectable, Logger } from '@nestjs/common'
 import { Queue } from 'bull'
-import { MatchingGateway } from 'src/websockets/matching.gateway'
+import { MatchingGateway } from '@/websockets/matching.gateway'
 import {
   MatchRoundParticipantNotFoundException,
   NotYourTurnToPickException,

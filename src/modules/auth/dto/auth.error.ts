@@ -1,4 +1,3 @@
-import { AUTH_MESSAGE } from '@/common/constants/message'
 import { AuthMessage } from '@/i18n/message-keys'
 import {
   NotFoundException,
@@ -10,7 +9,7 @@ import {
 export class EmailAlreadyExistsException extends UnprocessableEntityException {
   constructor() {
     super({
-      message: AUTH_MESSAGE.EMAIL_ALREADY_EXISTS,
+      message: AuthMessage.EMAIL_ALREADY_EXISTS,
       errorKey: AuthMessage.EMAIL_ALREADY_EXISTS
     })
   }
@@ -19,7 +18,7 @@ export class EmailAlreadyExistsException extends UnprocessableEntityException {
 export class EmailNotFoundException extends NotFoundException {
   constructor() {
     super({
-      message: AUTH_MESSAGE.NOT_FOUND_EMAIL,
+      message: AuthMessage.NOT_FOUND_EMAIL,
       errorKey: AuthMessage.NOT_FOUND_EMAIL
     })
   }
@@ -38,7 +37,7 @@ export class FailToLoginException extends UnauthorizedException {
 export class InvalidOTPExceptionForEmail extends UnauthorizedException {
   constructor() {
     super({
-      message: AUTH_MESSAGE.INVALID_OTP,
+      message: AuthMessage.INVALID_OTP,
       errorKey: AuthMessage.INVALID_OTP
     })
   }
@@ -48,7 +47,7 @@ export class InvalidOTPExceptionForEmail extends UnauthorizedException {
 export class RefreshTokenAlreadyUsedException extends UnauthorizedException {
   constructor() {
     super({
-      message: AUTH_MESSAGE.REFRESH_TOKEN_ALREADY_USED,
+      message: AuthMessage.REFRESH_TOKEN_ALREADY_USED,
       errorKey: AuthMessage.REFRESH_TOKEN_ALREADY_USED
     })
   }
@@ -57,7 +56,7 @@ export class RefreshTokenAlreadyUsedException extends UnauthorizedException {
 export class UnauthorizedAccessException extends UnauthorizedException {
   constructor() {
     super({
-      message: AUTH_MESSAGE.UNAUTHORIZED_ACCESS,
+      message: AuthMessage.UNAUTHORIZED_ACCESS,
       errorKey: AuthMessage.UNAUTHORIZED_ACCESS
     })
   }
@@ -66,7 +65,7 @@ export class UnauthorizedAccessException extends UnauthorizedException {
 // Google auth related errors
 export class GoogleUserInfoException extends Error {
   constructor() {
-    super(AUTH_MESSAGE.FAILD_TO_GET_GOOGLE_USER_INFO)
+    super(AuthMessage.FAILD_TO_GET_GOOGLE_USER_INFO)
     this.name = 'GoogleUserInfoException'
   }
 }

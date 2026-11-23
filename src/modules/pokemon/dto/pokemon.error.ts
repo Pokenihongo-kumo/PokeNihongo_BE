@@ -1,11 +1,10 @@
-import { POKEMON_MESSAGE } from '@/common/constants/message'
 import { PokemonMessage } from '@/i18n/message-keys'
 import { ConflictException, NotFoundException } from '@nestjs/common'
 
 export class PokemonNotFoundException extends NotFoundException {
   constructor() {
     super({
-      message: POKEMON_MESSAGE.NOT_FOUND,
+      message: PokemonMessage.NOT_FOUND,
       errorKey: PokemonMessage.NOT_FOUND
     })
   }
@@ -14,7 +13,7 @@ export class PokemonNotFoundException extends NotFoundException {
 export class PokemonAlreadyExistsException extends ConflictException {
   constructor() {
     super({
-      message: POKEMON_MESSAGE.ALREADY_EXISTS,
+      message: PokemonMessage.ALREADY_EXISTS,
       errorKey: PokemonMessage.ALREADY_EXISTS
     })
   }

@@ -1,4 +1,4 @@
-import { RequestMethod, VersioningType } from '@nestjs/common'
+import { RequestMethod, VersioningType, Logger } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import { NestExpressApplication } from '@nestjs/platform-express'
 import { patchNestJsSwagger } from 'nestjs-zod'
@@ -10,6 +10,8 @@ import {
   localStorageDir
 } from './infrastructure/integrations/storage/local-file-storage.adapter'
 import { WebsocketAdapter } from './websockets/websocket.adapter'
+
+const logger = new Logger('Bootstrap')
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule)
@@ -29,7 +31,7 @@ async function bootstrap() {
     allowedHeaders: 'Content-Type, Accept, Authorization',
     credentials: true
   })
-  console.info('CORS Origin:', corsOrigin)
+  logger.log('CORS Origin:', corsOrigin)
 
   patchNestJsSwagger()
 
@@ -53,7 +55,7 @@ async function bootstrap() {
 
   await app.listen(envConfig.APP_PORT, '0.0.0.0')
 
-  console.log(`
+  logger.log(`
     ███╗   ██╗███████╗███████╗████████╗    ██████╗  ██████╗  ██████╗
     ████╗  ██║██╔════╝██╔════╝╚══██╔══╝    ██╔══██╗██╔═══██╗██╔═══██╗
     ██╔██╗ ██║█████╗  █████╗     ██║       ██████╔╝██║   ██║██║   ██║
@@ -65,7 +67,7 @@ async function bootstrap() {
     🛠️  Built with TypeScript & NestJS
     `)
 
-  console.info(`Server running on ${await app.getUrl()}`)
+  logger.log(`Server running on ${await app.getUrl()}`)
 
   return app
 }

@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common'
 
 import { parseQs } from '@/common/utils/qs-parser'
 import { PrismaClient } from '@prisma/client'
-import { PrismaService } from 'src/shared/services/prisma.service'
+import { PrismaService } from '@/shared/services/prisma.service'
 import { Achievement } from '../achievement/entities/achievement.entity'
 import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import {

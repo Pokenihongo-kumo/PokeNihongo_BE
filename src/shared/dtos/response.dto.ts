@@ -2,7 +2,7 @@ import { createZodDto } from 'nestjs-zod'
 import {
   MessageResSchema,
   PaginationResponseSchema
-} from 'src/shared/models/response.model'
+} from '@/shared/models/response.model'
 
 export class MessageResDTO extends createZodDto(MessageResSchema) {}
 
