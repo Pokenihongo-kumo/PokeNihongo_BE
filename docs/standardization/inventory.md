@@ -1,5 +1,7 @@
 # Inventory backend PokeNihongo — Giai đoạn 0
 
+> Bảng hiện tại (đếm lại theo source, có trạng thái từng module): [module-status.md](module-status.md), sinh bằng `npm run inventory`. File này giữ số liệu baseline 2026-11-02.
+
 Ngày 2026-11-02, trên `dev` @ `8fe80d0`. Bảng sinh bằng script tìm kiếm tĩnh (regex trên source BE/FE/MO), không chạy app. Các cột là **tín hiệu để lên batch**, không phải kết luận về hành vi; mỗi batch phải đọc lại code và consumer trước khi sửa. Đếm lại khi source đổi.
 
 ## 1. Tổng quan
