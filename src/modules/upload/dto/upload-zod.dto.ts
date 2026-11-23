@@ -27,6 +27,8 @@ export const UploadFileBodySchema = z
   })
   .strict()
 
+export class UploadFileBodyDTO extends createZodDto(UploadFileBodySchema) {}
+
 // Response schema
 export const UploadFileResponseSchema = resSchema(
   z.object({
@@ -35,8 +37,6 @@ export const UploadFileResponseSchema = resSchema(
   })
 )
 
-// DTOs
-export class UploadFileBodyDTO extends createZodDto(UploadFileBodySchema) {}
 export class UploadFileResponseDTO extends createZodDto(UploadFileResponseSchema) {}
 
 // Swagger DTO cho multipart form

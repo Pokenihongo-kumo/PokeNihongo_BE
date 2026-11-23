@@ -26,6 +26,8 @@ const TranslationsSchema = z.object({
   examples: z.array(ExampleTranslationSchema).optional()
 })
 
+export type Translations = z.infer<typeof TranslationsSchema>
+
 // Schema for multipart/form-data (translations as string or object)
 export const CreateVocabularyFullMultipartSchema = z.object({
   word_jp: z.string().min(1, 'Từ tiếng Nhật không được để trống'),
@@ -374,7 +376,7 @@ const CreateVocabularyFullResponseSchema = z.object({
   }),
   message: z.string()
 })
+
 export class CreateVocabularyFullResponseDTO extends createZodDto(
   CreateVocabularyFullResponseSchema
 ) {}
-export type Translations = z.infer<typeof TranslationsSchema>

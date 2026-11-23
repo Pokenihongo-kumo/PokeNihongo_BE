@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { KanjiSchema } from '../entities/kanji.entity'
 
 extendZodWithOpenApi(z)
+
 patchNestJsSwagger()
 
 export const MeaningForKanjiUpdateSchema = z.object({
@@ -30,6 +31,8 @@ export const UpdateKanjiWithMeaningsSchema = z.object({
     .optional(),
   meanings: z.array(MeaningForKanjiUpdateSchema).optional()
 })
+
+export type UpdateKanjiWithMeaningsBody = z.infer<typeof UpdateKanjiWithMeaningsSchema>
 
 export const UpdateKanjiWithMeaningsResponseSchema = z.object({
   kanji: KanjiSchema.optional(),
@@ -203,6 +206,3 @@ export class UpdateKanjiWithMeaningsResponseSwaggerDTO {
   })
   meanings?: MeaningResponseSwaggerDTO[]
 }
-
-// Type exports
-export type UpdateKanjiWithMeaningsBody = z.infer<typeof UpdateKanjiWithMeaningsSchema>

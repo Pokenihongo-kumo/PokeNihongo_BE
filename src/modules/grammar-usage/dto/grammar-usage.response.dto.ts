@@ -8,14 +8,15 @@ export const GrammarUsageWithGrammarResponseSchema = resSchema(
   GrammarUsageWithGrammarSchema
 )
 
+export class GrammarUsageWithGrammarResponseDTO extends createZodDto(
+  GrammarUsageWithGrammarResponseSchema
+) {}
+
 // { results, pagination } like every list (was { data[], total, page, limit, totalPages })
 export const GrammarUsageListResponseSchema = paginatedResSchema(
   GrammarUsageWithGrammarSchema
 )
 
-export class GrammarUsageWithGrammarResponseDTO extends createZodDto(
-  GrammarUsageWithGrammarResponseSchema
-) {}
 export class GrammarUsageListResponseDTO extends createZodDto(
   GrammarUsageListResponseSchema
 ) {}
