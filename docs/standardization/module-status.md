@@ -4,9 +4,9 @@ File sinh tự động bằng `node scripts/inventory/module-status.mjs` (đọc
 
 ## 1. Tổng quan
 
-- **85 module** trong `src/modules` (81 module cũ + `gemini`, `mail`, `speech`, `upload` chuyển từ `3rdService` ở giai đoạn 4), **626 endpoint**, 695 file code (không tính spec), 107221 dòng.
+- **85 module** trong `src/modules` (81 module cũ + `gemini`, `mail`, `speech`, `upload` chuyển từ `3rdService` ở giai đoạn 4), **626 endpoint**, 695 file code (không tính spec), 108707 dòng.
 - Bucket ngoài modules: `app.module.ts`, `common`, `config`, `cronjobs`, `i18n`, `infrastructure`, `main.ts`, `shared`, `websockets`.
-- Trạng thái: inventoried 85/85 · contract-covered 68 (+1 module không có route) · standardized 43 (+18 ngoại lệ đã ghi) · extracted-if-needed: đã tách 9, không cần 73, còn mở 3 · verified 49.
+- Trạng thái: inventoried 85/85 · contract-covered 68 (+1 module không có route) · standardized 48 (+19 ngoại lệ đã ghi) · extracted-if-needed: đã tách 9, không cần 73, còn mở 3 · verified 55.
 - Tín hiệu toàn modules: `console.*` 0, `any` 1131, `eslint-disable` 0, import `common/constants/message` 0, import `src/...` 0.
 
 ## 2. Quy tắc trạng thái
@@ -51,7 +51,7 @@ File sinh tự động bằng `node scripts/inventory/module-status.mjs` (đọc
 | exercises | 7 | 6 +1 msg/204 | 1 | 2 | exercises.service.ts (258) | 0 | ✓ | ✓ | không cần | ✓ |  |
 | flashcard | 14 | 14 | 0 | 1 | flashcard.service.ts (857) | 15 | ✓ | ✓ | không cần | ✓ |  |
 | kanji | 11 | 7 +1 msg/204 | 2 | 3 | kanji-import.service.ts (417) | 20 | ✓ | ✗ | ✓ X5 | ✗ | serializer thiếu 3 |
-| lesson | 7 | 7 | 1 | 2 | dto/lesson.dto.ts (288) | 0 | ✓ | ✓ | không cần | ✓ |  |
+| lesson | 7 | 7 | 1 | 3 | dto/lesson.dto.ts (288) | 0 | ✓ | ✓ | không cần | ✓ |  |
 | lesson-content | 6 | 2 | 0 | 0 | lesson-content.service.ts (828) | 1 | ✗ | ✗ | không cần | ✗ | serializer thiếu 4 |
 | question-bank | 7 | 6 +1 @Res | 1 | 2 | question-bank.repo.ts (497) | 5 | ✓ | ngoại lệ | không cần | ✓ |  |
 | speaking | 8 | 8 | 0 | 0 | speaking.service.ts (319) | 9 | ✗ | ✓ | không cần | ✗ |  |
@@ -65,23 +65,23 @@ File sinh tự động bằng `node scripts/inventory/module-status.mjs` (đọc
 | Module | Route | Serializer | Unit | E2e | File lớn nhất (dòng) | any | Contract | Standardized | Extracted | Verified | Còn lệch |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | achievement | 5 | 5 | 0 | 1 | achievement.service.ts (522) | 42 | ✓ | ✓ | không cần | ✓ |  |
-| ai-conversation-room | 6 | 4 | 0 | 1 | ai-conversation-room.service.ts (118) | 0 | ✓ | ✗ | ✓ X7 (gateway) | ✗ | serializer thiếu 2 |
+| ai-conversation-room | 6 | 6 | 0 | 1 | dto/ai-conversation-room.zod-dto.ts (122) | 0 | ✓ | ✓ | ✓ X7 (gateway) | ✓ |  |
 | attendance | 6 | 6 | 0 | 1 | attendance.service.ts (378) | 2 | ✓ | ✓ | không cần | ✓ |  |
-| auth | 17 | 13 +1 @Res | 2 | 9 | auth.service.ts (620) | 0 | ✓ | ✗ | không cần | ✗ | serializer thiếu 3 |
+| auth | 17 | 14 +1 @Res | 2 | 9 | auth.service.ts (620) | 0 | ✓ | ✗ | không cần | ✗ | serializer thiếu 2 |
 | daily-request | 7 | 7 | 0 | 1 | daily-request.service.ts (469) | 64 | ✓ | ✓ | không cần | ✓ |  |
 | dashboard | 20 | 0 | 0 | 1 | dashboard.repo.ts (1778) | 7 | ✓ | ✗ | cần xét (1778 dòng) | ✗ | serializer thiếu 20 |
 | notification | 8 | 8 | 0 | 1 | notification.service.ts (198) | 3 | ✓ | ✓ | không cần | ✓ |  |
 | user | 9 | 8 | 0 | 1 | user.service.ts (680) | 31 | ✓ | ✗ | không cần | ✗ | serializer thiếu 1 |
 | user-achievement | 7 | 7 | 0 | 1 | user-achievement.service.ts (416) | 13 | ✓ | ✓ | không cần | ✓ |  |
-| user-ai-conversation | 7 | 4 | 0 | 1 | dto/user-ai-conversation.dto.ts (196) | 0 | ✓ | ✗ | ✓ X7 (gateway) | ✗ | serializer thiếu 3 |
+| user-ai-conversation | 7 | 7 | 0 | 1 | dto/user-ai-conversation.dto.ts (196) | 0 | ✓ | ✓ | ✓ X7 (gateway) | ✓ |  |
 | user-answer-log | 6 | 6 | 1 | 1 | user-answer-log.controller.ts (144) | 0 | ✓ | ✓ | không cần | ✓ |  |
 | user-daily-request | 6 | 6 | 0 | 1 | user-daily-request.service.ts (468) | 20 | ✓ | ✓ | không cần | ✓ |  |
 | user-exercise-attempt | 13 | 9 | 1 | 1 | user-exercise-attempt.service.ts (880) | 40 | ✓ | ✗ | không cần | ✗ | serializer thiếu 4 |
 | user-history | 5 | 5 | 0 | 1 | user-history.service.ts (851) | 15 | ✓ | ✓ | không cần | ✓ |  |
-| user-pokemon | 10 | 9 | 0 | 2 | user-pokemon.service.ts (733) | 32 | ✓ | ✗ | không cần | ✗ | serializer thiếu 1 |
-| user-progress | 10 | 8 | 0 | 1 | user-progress.service.ts (611) | 13 | ✓ | ✗ | không cần | ✗ | serializer thiếu 2 |
-| user-srs-review | 5 | 0 | 1 | 1 | user-srs-review.service.ts (251) | 0 | ✓ | ✗ | không cần | ✗ | serializer thiếu 5 |
-| user-test | 8 | 2 +1 msg/204 | 0 | 1 | user-test.service.ts (431) | 9 | ✓ | ✗ | không cần | ✗ | serializer thiếu 5 |
+| user-pokemon | 10 | 10 | 0 | 3 | user-pokemon.service.ts (733) | 32 | ✓ | ✓ | không cần | ✓ |  |
+| user-progress | 10 | 10 | 0 | 2 | user-progress.service.ts (611) | 13 | ✓ | ✓ | không cần | ✓ |  |
+| user-srs-review | 5 | 5 | 1 | 2 | user-srs-review.service.ts (251) | 0 | ✓ | ✓ | không cần | ✓ |  |
+| user-test | 8 | 6 +2 msg/204 | 0 | 2 | user-test.service.ts (431) | 9 | ✓ | ngoại lệ | không cần | ✓ |  |
 | user-test-answer-log | 6 | 6 | 1 | 1 | user-test-answer-log.controller.ts (145) | 0 | ✓ | ✓ | không cần | ✓ |  |
 | user-test-attempt | 13 | 7 | 2 | 1 | test-attempt-grading.service.ts (690) | 63 | ✓ | ✗ | ✓ X3 | ✗ | serializer thiếu 6 |
 

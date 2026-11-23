@@ -1,3 +1,4 @@
+import { paginatedResSchema } from '@/shared/utils/pagination'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { UserAIConversationMessage as M } from '@/i18n/message-keys'
 import { resSchema } from '@/shared/utils/res-schema'
@@ -100,3 +101,35 @@ export const UserAIConversationResSchema = resSchema(UserAIConversationSchema)
 export type UserAIConversationRes = z.infer<typeof UserAIConversationResSchema>
 
 export class UserAIConversationResDTO extends createZodDto(UserAIConversationResSchema) {}
+
+export const UserAIConversationListResSchema = paginatedResSchema(
+  UserAIConversationSchema
+)
+
+export type UserAIConversationListRes = z.infer<typeof UserAIConversationListResSchema>
+
+export class UserAIConversationListResDTO extends createZodDto(
+  UserAIConversationListResSchema
+) {}
+
+export const UserAIConversationArrayResSchema = resSchema(
+  z.array(UserAIConversationSchema)
+)
+
+export type UserAIConversationArrayRes = z.infer<typeof UserAIConversationArrayResSchema>
+
+export class UserAIConversationArrayResDTO extends createZodDto(
+  UserAIConversationArrayResSchema
+) {}
+
+export const UserAIConversationDeletedResSchema = resSchema(
+  z.object({ deletedCount: z.number() })
+)
+
+export type UserAIConversationDeletedRes = z.infer<
+  typeof UserAIConversationDeletedResSchema
+>
+
+export class UserAIConversationDeletedResDTO extends createZodDto(
+  UserAIConversationDeletedResSchema
+) {}

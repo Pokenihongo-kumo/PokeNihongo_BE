@@ -294,3 +294,12 @@ export const GetAccountProfileResSchema = resSchema(
 export type GetAccountProfileRes = z.infer<typeof GetAccountProfileResSchema>
 
 export class GetAccountProfileResDTO extends createZodDto(GetAccountProfileResSchema) {}
+
+// Check email: what the app does next (REGISTER, or LOGIN with or without OTP)
+export const CheckEmailResSchema = resSchema(
+  z.object({ type: z.string(), requiresOtp: z.boolean() })
+)
+
+export type CheckEmailRes = z.infer<typeof CheckEmailResSchema>
+
+export class CheckEmailResDTO extends createZodDto(CheckEmailResSchema) {}

@@ -1,3 +1,4 @@
+import { MyUserPokemonListResDTO } from './dto/user-pokemon.zod-dto'
 import { ResponseMessage } from '@/i18n/response-message'
 import { UserPokemonMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
@@ -67,6 +68,7 @@ export class UserPokemonController {
 
   @Get('/pokemons')
   @ResponseMessage(UserPokemonMessage.GET_LIST_SUCCESS)
+  @ZodSerializerDto(MyUserPokemonListResDTO)
   async getWithUserId(@ActiveUser('userId') userId: number) {
     return this.userPokemonService.listWithUserId(userId)
   }

@@ -1,3 +1,4 @@
+import { createZodDto } from 'nestjs-zod'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { UserPokemonMessage } from '@/i18n/message-keys'
 import { PaginationQuerySchema } from '@/shared/models/request.model'
@@ -240,3 +241,48 @@ export const GetUserPokemonStatsResSchema = resSchema(
 export const GetUserPokemonByPokemonIdwithListOwnershipResSchema = resSchema(
   GetUserPokemonByPokemonIdwithListOwnershipSchema
 )
+
+// ---- responses (output only)
+
+const ElementalTypeOutSchema = z.object({
+  id: z.number(),
+  type_name: z.string(),
+  display_name: z.unknown(),
+  color_hex: z.string()
+})
+
+// Each pokemon with its types and, when it has types, its weaknesses
+export const MyUserPokemonListResSchema = resSchema(
+  z.array(
+    z.object({
+      id: z.number(),
+      userId: z.number(),
+      pokemonId: z.number(),
+      nickname: z.string().nullable(),
+      exp: z.number(),
+      isEvolved: z.boolean(),
+      isMain: z.boolean(),
+      deletedAt: z.date().nullable(),
+      createdAt: z.date(),
+      updatedAt: z.date(),
+      pokemon: z.object({
+        id: z.number(),
+        pokedex_number: z.number(),
+        nameJp: z.string(),
+        nameTranslations: z.unknown(),
+        description: z.string().nullable(),
+        imageUrl: z.string().nullable(),
+        rarity: z.string(),
+        types: z.array(ElementalTypeOutSchema),
+        weaknesses: z
+          .array(ElementalTypeOutSchema.extend({ effectiveness_multiplier: z.number() }))
+          .optional()
+      }),
+      user: z.object({ id: z.number(), name: z.string(), email: z.string() })
+    })
+  )
+)
+
+export type MyUserPokemonListRes = z.infer<typeof MyUserPokemonListResSchema>
+
+export class MyUserPokemonListResDTO extends createZodDto(MyUserPokemonListResSchema) {}
