@@ -1,3 +1,5 @@
+import { PaginationMetaSchema } from '@/shared/models/response.model'
+import { paginatedResSchema } from '@/shared/utils/pagination'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { isUrl } from '@/common/utils/is-url'
 import { QuestionBankMessage as M } from '@/i18n/message-keys'
@@ -233,4 +235,68 @@ export type CreateQuestionBankWithAnswersBody = z.infer<
 
 export class CreateQuestionBankWithAnswersBodyDTO extends createZodDto(
   CreateQuestionBankWithAnswersBodySchema
+) {}
+
+// ---- responses (output only)
+
+// A question bank row as stored (createdById is left out by some reads)
+export const QuestionBankRowOutSchema = z.object({
+  id: z.number(),
+  questionJp: z.string().nullable(),
+  questionType: z.string(),
+  audioUrl: z.string().nullable(),
+  questionKey: z.string().nullable(),
+  role: z.string().nullable(),
+  pronunciation: z.string().nullable(),
+  levelN: z.number().nullable(),
+  createdById: z.number().nullable().optional(),
+  createdAt: z.date(),
+  updatedAt: z.date()
+})
+
+export const QuestionBankRowResSchema = resSchema(QuestionBankRowOutSchema)
+
+export class QuestionBankRowResDTO extends createZodDto(QuestionBankRowResSchema) {}
+
+// List: each row with its meanings, plus how many questions each level has
+export const QuestionBankListResSchema = resSchema(
+  z.object({
+    results: z.array(
+      QuestionBankRowOutSchema.extend({
+        meanings: z.array(z.object({ language: z.string(), value: z.string() }))
+      })
+    ),
+    pagination: PaginationMetaSchema,
+    levelCounts: z.record(z.string(), z.number())
+  })
+)
+
+export class QuestionBankListResDTO extends createZodDto(QuestionBankListResSchema) {}
+
+// By ids: the question text in the request language and the answer labels
+export const QuestionBanksByIdsResSchema = paginatedResSchema(
+  z.object({
+    id: z.number(),
+    question: z.string().nullable(),
+    questionType: z.string(),
+    audioUrl: z.string().nullable(),
+    pronunciation: z.string().nullable(),
+    levelN: z.number().nullable(),
+    answers: z.array(z.object({ id: z.number(), answer: z.string().nullable() }))
+  })
+)
+
+export class QuestionBanksByIdsResDTO extends createZodDto(QuestionBanksByIdsResSchema) {}
+
+export const QuestionBankBulkDeleteResSchema = resSchema(
+  z.object({
+    deletedCount: z.number(),
+    deletedIds: z.array(z.number()),
+    requestedCount: z.number(),
+    notFoundCount: z.number()
+  })
+)
+
+export class QuestionBankBulkDeleteResDTO extends createZodDto(
+  QuestionBankBulkDeleteResSchema
 ) {}

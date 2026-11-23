@@ -1,3 +1,4 @@
+import { createZodDto } from 'nestjs-zod'
 import { KanjiSortField, SortOrder } from '@/common/enum/enum'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { KanjiMessage } from '@/i18n/message-keys'
@@ -112,3 +113,15 @@ export const KanjiListResSchema = paginatedResSchema(KanjiSchema).strict()
 
 export const KanjiManagementListResSchema =
   paginatedResSchema(KanjiManagementSchema).strict()
+
+// GET /kanji/stats has no success message today: message is optional
+export const KanjiStatsResSchema = resSchema(
+  z.object({
+    totalKanji: z.number(),
+    byJlptLevel: z.array(
+      z.object({ jlptLevel: z.number().nullable(), count: z.number() })
+    )
+  })
+).partial({ message: true })
+
+export class KanjiStatsResDTO extends createZodDto(KanjiStatsResSchema) {}

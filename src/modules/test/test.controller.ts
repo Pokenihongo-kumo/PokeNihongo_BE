@@ -15,7 +15,17 @@ import {
   UpdateTestWithMeaningsBodyDTO,
   DeleteManyTestsBodyDTO,
   AddTestSetsToTestBodyDTO,
-  RemoveTestSetsFromTestBodyDTO
+  RemoveTestSetsFromTestBodyDTO,
+  TestRowResDTO,
+  PlacementQuestionsResDTO,
+  RandomQuestionsResDTO,
+  LessonReviewQuestionsResDTO,
+  TestFullResDTO,
+  TestFullUserResDTO,
+  TestBulkDeleteResDTO,
+  TestSetsAddedResDTO,
+  TestSetsRemovedResDTO,
+  AutoAddFreeTestSetsResDTO
 } from './dto/test.zod-dto'
 import {
   TestResponseSwaggerDTO,
@@ -70,6 +80,7 @@ export class TestController {
     type: TestResponseSwaggerDTO
   })
   @ResponseMessage(M.CREATE_SUCCESS)
+  @ZodSerializerDto(TestRowResDTO)
   async createTestWithMeanings(
     @Body() body: CreateTestWithMeaningsBodyDTO,
     @ActiveUser('userId') userId: number
@@ -111,6 +122,7 @@ export class TestController {
     type: MessageResDTO
   })
   @ResponseMessage(M.PLACEMENT_QUESTIONS_SUCCESS)
+  @ZodSerializerDto(PlacementQuestionsResDTO)
   async getPlacementQuestions(
     @Param() params: GetTestByIdParamsDTO,
     @ActiveUser('userId') userId: number,
@@ -135,6 +147,7 @@ export class TestController {
     description: 'Lấy câu hỏi random thành công',
     type: MessageResDTO
   })
+  @ZodSerializerDto(RandomQuestionsResDTO)
   async getRandomQuestionsByLevel(
     @Param() params: GetTestByIdParamsDTO,
     @Query() query: GetRandomQuestionsQueryDTO,
@@ -169,6 +182,7 @@ export class TestController {
     type: TestResponseSwaggerDTO
   })
   @ResponseMessage(M.GET_SUCCESS)
+  @ZodSerializerDto(LessonReviewQuestionsResDTO)
   async generateLessonReviewTest(
     @Param() params: GetLessonReviewParamsDTO,
     @ActiveUser('userId') userId: number,
@@ -186,6 +200,7 @@ export class TestController {
     type: TestResponseSwaggerDTO
   })
   @ResponseMessage(M.GET_SUCCESS)
+  @ZodSerializerDto(TestFullResDTO)
   async findFull(@Param() params: GetTestByIdParamsDTO, @I18nLang() lang: string) {
     return this.testService.findFullById(params.id, lang)
   }
@@ -199,6 +214,7 @@ export class TestController {
     type: TestResponseSwaggerDTO
   })
   @ResponseMessage(M.GET_SUCCESS)
+  @ZodSerializerDto(TestFullUserResDTO)
   async findFullUser(@Param() params: GetTestByIdParamsDTO, @I18nLang() lang: string) {
     return this.testService.findFullByIdForUser(params.id, lang)
   }
@@ -212,6 +228,7 @@ export class TestController {
     type: TestResponseSwaggerDTO
   })
   @ResponseMessage(M.GET_SUCCESS)
+  @ZodSerializerDto(TestRowResDTO)
   async findOne(@Param() params: GetTestByIdParamsDTO, @I18nLang() lang: string) {
     return this.testService.findOne(params.id, lang)
   }
@@ -226,6 +243,7 @@ export class TestController {
     type: TestResponseSwaggerDTO
   })
   @ResponseMessage(M.UPDATE_SUCCESS)
+  @ZodSerializerDto(TestRowResDTO)
   async updateTestWithMeanings(
     @Param() params: GetTestByIdParamsDTO,
     @Body() body: UpdateTestWithMeaningsBodyDTO,
@@ -259,6 +277,7 @@ export class TestController {
       }
     }
   })
+  @ZodSerializerDto(TestBulkDeleteResDTO)
   async deleteManyTests(
     @Body() body: DeleteManyTestsBodyDTO,
     @ActiveUser('userId') userId: number
@@ -283,6 +302,7 @@ export class TestController {
     type: TestResponseSwaggerDTO
   })
   @ResponseMessage(M.DELETE_SUCCESS)
+  @ZodSerializerDto(TestRowResDTO)
   async deleteTest(
     @Param() params: GetTestByIdParamsDTO,
     @ActiveUser('userId') userId: number
@@ -301,6 +321,7 @@ export class TestController {
     type: MessageResDTO
   })
   @ResponseMessage(M.ADD_TESTSETS_SUCCESS)
+  @ZodSerializerDto(TestSetsAddedResDTO)
   async addTestSetsToLessonReviewTest(
     @Param() params: GetTestByLessonParamsDTO,
     @Body() body: AddTestSetsToTestBodyDTO
@@ -319,6 +340,7 @@ export class TestController {
     type: MessageResDTO
   })
   @ResponseMessage(M.ADD_TESTSETS_SUCCESS)
+  @ZodSerializerDto(TestSetsAddedResDTO)
   async addTestSetsToTest(
     @Param() params: GetTestByIdParamsDTO,
     @Body() body: AddTestSetsToTestBodyDTO
@@ -337,6 +359,7 @@ export class TestController {
     type: MessageResDTO
   })
   @ResponseMessage(M.REMOVE_TESTSETS_SUCCESS)
+  @ZodSerializerDto(TestSetsRemovedResDTO)
   async removeTestSetsFromTest(
     @Param() params: GetTestByIdParamsDTO,
     @Body() body: RemoveTestSetsFromTestBodyDTO
@@ -356,6 +379,7 @@ export class TestController {
     description: 'Thêm TestSet vào Test thành công',
     type: MessageResDTO
   })
+  @ZodSerializerDto(AutoAddFreeTestSetsResDTO)
   async autoAddFreeTestSets() {
     const { outcome, data } = await this.testService.autoAddFreeTestSets()
     const message =

@@ -9,7 +9,10 @@ import {
   TestSetListResDTO,
   CreateTestSetWithMeaningsBodyDTO,
   UpdateTestSetWithMeaningsBodyDTO,
-  UpsertTestSetWithQuestionBanksBodyDTO
+  UpsertTestSetWithQuestionBanksBodyDTO,
+  TestSetUpsertResDTO,
+  TestSetRowResDTO,
+  TestSetFullResDTO
 } from './dto/testset.zod-dto'
 import {
   TestSetResponseSwaggerDTO,
@@ -59,6 +62,7 @@ export class TestSetController {
       'Nếu không có id trong body → tạo mới testset. Nếu có id → cập nhật testset. Có thể: tạo questionBank mới, update thông tin testset/questionBank, và update vị trí order (drag & drop) trong 1 API'
   })
   @ApiBody({ type: UpsertTestSetWithQuestionBanksSwaggerDTO })
+  @ZodSerializerDto(TestSetUpsertResDTO)
   async upsertTestSetWithQuestionBanks(
     @Body() body: UpsertTestSetWithQuestionBanksBodyDTO,
     @ActiveUser('userId') userId: number
@@ -85,6 +89,7 @@ export class TestSetController {
     type: TestSetResponseSwaggerDTO
   })
   @ResponseMessage(M.CREATE_SUCCESS)
+  @ZodSerializerDto(TestSetRowResDTO)
   async createTestSetWithMeanings(
     @Body() body: CreateTestSetWithMeaningsBodyDTO,
     @ActiveUser('userId') userId: number
@@ -131,6 +136,7 @@ export class TestSetController {
     type: TestSetWithQuestionsResponseSwaggerDTO
   })
   @ResponseMessage(M.GET_SUCCESS)
+  @ZodSerializerDto(TestSetRowResDTO)
   async findOne(@Param() params: GetTestSetByIdParamsDTO, @I18nLang() lang: string) {
     return this.testSetService.findOne(params.id, lang)
   }
@@ -153,6 +159,7 @@ export class TestSetController {
     type: TestSetWithQuestionsFullResponseSwaggerDTO
   })
   @ResponseMessage(M.GET_SUCCESS)
+  @ZodSerializerDto(TestSetFullResDTO)
   async findOneWithQuestionBanksFull(@Param() params: GetTestSetByIdParamsDTO) {
     return this.testSetService.findOneWithQuestionBanksFull(params.id)
   }
@@ -167,6 +174,7 @@ export class TestSetController {
     type: TestSetResponseSwaggerDTO
   })
   @ResponseMessage(M.UPDATE_SUCCESS)
+  @ZodSerializerDto(TestSetRowResDTO)
   async updateTestSet(
     @Param() params: GetTestSetByIdParamsDTO,
     @Body() body: UpdateTestSetBodyDTO
@@ -184,6 +192,7 @@ export class TestSetController {
     type: TestSetResponseSwaggerDTO
   })
   @ResponseMessage(M.UPDATE_SUCCESS)
+  @ZodSerializerDto(TestSetRowResDTO)
   async updateTestSetWithMeanings(
     @Param() params: GetTestSetByIdParamsDTO,
     @Body() body: UpdateTestSetWithMeaningsBodyDTO
@@ -201,6 +210,7 @@ export class TestSetController {
     type: TestSetResponseSwaggerDTO
   })
   @ResponseMessage(M.DELETE_SUCCESS)
+  @ZodSerializerDto(TestSetRowResDTO)
   async deleteTestSet(@Param() params: GetTestSetByIdParamsDTO) {
     return this.testSetService.deleteTestSet(params.id)
   }

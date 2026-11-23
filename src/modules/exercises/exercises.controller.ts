@@ -1,3 +1,4 @@
+import { ZodSerializerDto } from 'nestjs-zod'
 import { ResponseMessage } from '@/i18n/response-message'
 import { ExercisesMessage as M } from '@/i18n/message-keys'
 import {
@@ -35,7 +36,12 @@ import {
   UpdateExercisesBodyDTO,
   GetExercisesByIdParamsDTO,
   GetExercisesByLessonParamsDTO,
-  GetExercisesListQueryDTO
+  GetExercisesListQueryDTO,
+  ExerciseResDTO,
+  ExerciseListResDTO,
+  ExerciseDetailResDTO,
+  ExercisePlainResDTO,
+  ExercisesByLessonResDTO
 } from './dto/exercises.zod-dto'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
 
@@ -67,6 +73,7 @@ export class ExercisesController {
     type: ExercisesResponseSwaggerDTO
   })
   @ResponseMessage(M.CREATE_SUCCESS)
+  @ZodSerializerDto(ExerciseResDTO)
   async create(@Body() body: CreateExercisesBodyDTO) {
     return this.exercisesService.create(body)
   }
@@ -84,6 +91,7 @@ export class ExercisesController {
     type: ExercisesListResponseSwaggerDTO
   })
   @ResponseMessage(M.GET_LIST_SUCCESS)
+  @ZodSerializerDto(ExerciseListResDTO)
   async getExercisesList(@Query() query: GetExercisesListQueryDTO) {
     return this.exercisesService.getExercisesList(query)
   }
@@ -99,6 +107,7 @@ export class ExercisesController {
     type: ExercisesResponseSwaggerDTO
   })
   @ResponseMessage(M.GET_SUCCESS)
+  @ZodSerializerDto(ExerciseDetailResDTO)
   async getExercisesById(@Param() params: GetExercisesByIdParamsDTO) {
     return this.exercisesService.getExercisesById(params.id)
   }
@@ -114,6 +123,7 @@ export class ExercisesController {
     type: ExercisesResponseSwaggerDTO
   })
   @ResponseMessage(M.GET_SUCCESS)
+  @ZodSerializerDto(ExercisePlainResDTO)
   async getExercisesByIdPlain(@Param() params: GetExercisesByIdParamsDTO) {
     return this.exercisesService.getExercisesByIdHaveQuestionBanks(params.id)
   }
@@ -129,6 +139,7 @@ export class ExercisesController {
     type: [ExercisesResponseSwaggerDTO]
   })
   @ResponseMessage(M.GET_LIST_SUCCESS)
+  @ZodSerializerDto(ExercisesByLessonResDTO)
   async getExercisesByLessonId(
     @Param() params: GetExercisesByLessonParamsDTO,
     @I18nLang() lang: string
@@ -151,6 +162,7 @@ export class ExercisesController {
     type: ExercisesResponseSwaggerDTO
   })
   @ResponseMessage(M.UPDATE_SUCCESS)
+  @ZodSerializerDto(ExerciseResDTO)
   async update(
     @Param() params: GetExercisesByIdParamsDTO,
     @Body() body: UpdateExercisesBodyDTO

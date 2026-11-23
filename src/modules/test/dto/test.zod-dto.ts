@@ -1,3 +1,10 @@
+import {
+  AnswerLabelOutSchema,
+  QuestionWithAnswersOutSchema
+} from '@/modules/testset-questionbank/dto/testset-questionbank.zod-dto'
+import { TestSetRowOutSchema } from '@/modules/testset/dto/testset.zod-dto'
+import { decimalOutSchema, translatedTextOutSchema } from '@/shared/utils/output-schema'
+import { resSchema } from '@/shared/utils/res-schema'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { TestMessage as M } from '@/i18n/message-keys'
 import { paginatedResSchema } from '@/shared/utils/pagination'
@@ -234,4 +241,171 @@ export type RemoveTestSetsFromTestBody = z.infer<typeof RemoveTestSetsFromTestBo
 
 export class RemoveTestSetsFromTestBodyDTO extends createZodDto(
   RemoveTestSetsFromTestBodySchema
+) {}
+
+// ---- responses (output only)
+
+const TestFieldsOutSchema = z.object({
+  id: z.number(),
+  name: translatedTextOutSchema,
+  description: translatedTextOutSchema.nullable().optional(),
+  price: decimalOutSchema.nullable(),
+  levelN: z.number().nullable(),
+  limit: z.number().nullable(),
+  testType: z.string(),
+  status: z.string()
+})
+
+// A test row; its test sets when the read includes them
+export const TestRowOutSchema = TestFieldsOutSchema.extend({
+  creatorId: z.number().nullable(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+  testSets: z.array(TestSetRowOutSchema).optional()
+})
+
+export const TestRowResSchema = resSchema(TestRowOutSchema)
+
+export class TestRowResDTO extends createZodDto(TestRowResSchema) {}
+
+const TestSetWithQuestionsFieldsSchema = z.object({
+  id: z.number(),
+  name: translatedTextOutSchema,
+  description: translatedTextOutSchema.nullable(),
+  content: translatedTextOutSchema.nullable(),
+  audioUrl: z.string().nullable(),
+  price: decimalOutSchema.nullable(),
+  levelN: z.number().nullable(),
+  testType: z.string(),
+  status: z.string(),
+  questions: z.array(QuestionWithAnswersOutSchema)
+})
+
+// Full (admin): each test set with its creator and questions
+export const TestFullResSchema = resSchema(
+  TestFieldsOutSchema.extend({
+    creatorId: z.number().nullable(),
+    createdAt: z.date(),
+    updatedAt: z.date(),
+    testSets: z.array(
+      TestSetWithQuestionsFieldsSchema.extend({
+        creator: z
+          .object({ id: z.number(), name: z.string(), email: z.string() })
+          .nullable()
+      })
+    )
+  })
+)
+
+export class TestFullResDTO extends createZodDto(TestFullResSchema) {}
+
+// Full (user): the same without creator and audit fields
+export const TestFullUserResSchema = resSchema(
+  TestFieldsOutSchema.extend({ testSets: z.array(TestSetWithQuestionsFieldsSchema) })
+)
+
+export class TestFullUserResDTO extends createZodDto(TestFullUserResSchema) {}
+
+const PickedQuestionFieldsSchema = z.object({
+  id: z.number(),
+  question: z.string().nullable(),
+  questionType: z.string(),
+  audioUrl: z.string().nullable(),
+  pronunciation: z.string().nullable(),
+  levelN: z.number().nullable()
+})
+
+export const RandomQuestionsResSchema = resSchema(
+  z.object({
+    levelN: z.number(),
+    count: z.number(),
+    questions: z.array(
+      PickedQuestionFieldsSchema.extend({
+        answers: z.array(AnswerLabelOutSchema.extend({ isCorrect: z.boolean() }))
+      })
+    )
+  })
+)
+
+export class RandomQuestionsResDTO extends createZodDto(RandomQuestionsResSchema) {}
+
+export const PlacementQuestionsResSchema = resSchema(
+  z.object({
+    distribution: z.object({
+      level5: z.number(),
+      level4: z.number(),
+      level3: z.number(),
+      total: z.number()
+    }),
+    questions: z.array(
+      PickedQuestionFieldsSchema.extend({ answers: z.array(AnswerLabelOutSchema) })
+    ),
+    userTestAttemptId: z.number()
+  })
+)
+
+export class PlacementQuestionsResDTO extends createZodDto(PlacementQuestionsResSchema) {}
+
+export const LessonReviewQuestionsResSchema = resSchema(
+  z.object({
+    testSets: z.array(
+      z.object({
+        questions: z.array(
+          z.object({
+            id: z.number(),
+            questionOrder: z.number(),
+            questionBank: z.object({
+              id: z.number(),
+              question: z.string().nullable(),
+              answers: z.array(AnswerLabelOutSchema)
+            })
+          })
+        )
+      })
+    ),
+    userTestAttemptId: z.number()
+  })
+)
+
+export class LessonReviewQuestionsResDTO extends createZodDto(
+  LessonReviewQuestionsResSchema
+) {}
+
+export const TestBulkDeleteResSchema = resSchema(
+  z.object({
+    deletedCount: z.number(),
+    deletedIds: z.array(z.number()),
+    requestedCount: z.number(),
+    notFoundCount: z.number()
+  })
+)
+
+export class TestBulkDeleteResDTO extends createZodDto(TestBulkDeleteResSchema) {}
+
+export const TestSetsAddedResSchema = resSchema(
+  z.object({
+    testId: z.number(),
+    addedTestSetIds: z.array(z.number()),
+    count: z.number()
+  })
+)
+
+export class TestSetsAddedResDTO extends createZodDto(TestSetsAddedResSchema) {}
+
+export const TestSetsRemovedResSchema = resSchema(
+  z.object({
+    testId: z.number(),
+    removedTestSetIds: z.array(z.number()),
+    count: z.number()
+  })
+)
+
+export class TestSetsRemovedResDTO extends createZodDto(TestSetsRemovedResSchema) {}
+
+export const AutoAddFreeTestSetsResSchema = resSchema(
+  z.object({ totalTests: z.number(), totalTestSetsAdded: z.number() })
+)
+
+export class AutoAddFreeTestSetsResDTO extends createZodDto(
+  AutoAddFreeTestSetsResSchema
 ) {}

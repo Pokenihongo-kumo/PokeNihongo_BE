@@ -1,3 +1,4 @@
+import { ZodSerializerDto } from 'nestjs-zod'
 import { ResponseMessage } from '@/i18n/response-message'
 import { I18nService } from '@/i18n/i18n.service'
 import { TestSetQuestionBankMessage as M } from '@/i18n/message-keys'
@@ -9,7 +10,12 @@ import {
   GetTestSetQuestionBankByIdParamsDTO,
   GetTestSetQuestionBankByTestSetIdParamsDTO,
   UpdateQuestionOrderDTO,
-  DeleteManyTestSetQuestionBankBodyDTO
+  DeleteManyTestSetQuestionBankBodyDTO,
+  TestSetQuestionBankResDTO,
+  TestSetQuestionBankArrayResDTO,
+  TestSetQuestionBankFullResDTO,
+  TestSetQuestionBankFullWithAnswerResDTO,
+  TestSetQuestionBankDeletedResDTO
 } from './dto/testset-questionbank.zod-dto'
 import {
   CreateTestSetQuestionBankSwaggerDTO,
@@ -77,6 +83,7 @@ export class TestSetQuestionBankController {
     type: TestSetQuestionBankResponseSwaggerDTO
   })
   @ResponseMessage(M.CREATE_SUCCESS)
+  @ZodSerializerDto(TestSetQuestionBankResDTO)
   async create(@Body() body: CreateTestSetQuestionBankBodyDTO) {
     return this.testSetQuestionBankService.create(body)
   }
@@ -152,6 +159,7 @@ export class TestSetQuestionBankController {
     type: TestSetQuestionBankResponseSwaggerDTO
   })
   @ResponseMessage(M.GET_SUCCESS)
+  @ZodSerializerDto(TestSetQuestionBankResDTO)
   async findById(@Param() params: GetTestSetQuestionBankByIdParamsDTO) {
     return this.testSetQuestionBankService.findById(params.id)
   }
@@ -168,6 +176,7 @@ export class TestSetQuestionBankController {
     type: TestSetQuestionBankListResponseSwaggerDTO
   })
   @ResponseMessage(M.GET_LIST_SUCCESS)
+  @ZodSerializerDto(TestSetQuestionBankArrayResDTO)
   async findByTestSetId(@Param() params: GetTestSetQuestionBankByTestSetIdParamsDTO) {
     return this.testSetQuestionBankService.findByTestSetId(params.testSetId)
   }
@@ -179,6 +188,7 @@ export class TestSetQuestionBankController {
     description: 'Trả về các liên kết cùng dữ liệu QuestionBank'
   })
   @ResponseMessage(M.GET_LIST_SUCCESS)
+  @ZodSerializerDto(TestSetQuestionBankFullResDTO)
   async findFullByTestSetId(
     @Param() params: GetTestSetQuestionBankByTestSetIdParamsDTO,
     @I18nLang() lang: string
@@ -195,6 +205,7 @@ export class TestSetQuestionBankController {
       'Trả về các liên kết cùng dữ liệu QuestionBank và Answers với translations theo ngôn ngữ'
   })
   @ResponseMessage(M.GET_LIST_SUCCESS)
+  @ZodSerializerDto(TestSetQuestionBankFullWithAnswerResDTO)
   async findFullWithAnswerByTestSetId(
     @Param() params: GetTestSetQuestionBankByTestSetIdParamsDTO,
     @I18nLang() lang: string
@@ -221,6 +232,7 @@ export class TestSetQuestionBankController {
     }
   })
   @ResponseMessage(M.DELETE_SUCCESS)
+  @ZodSerializerDto(TestSetQuestionBankDeletedResDTO)
   async deleteMany(@Body() body: DeleteManyTestSetQuestionBankBodyDTO) {
     return this.testSetQuestionBankService.deleteMany(body)
   }
@@ -241,6 +253,7 @@ export class TestSetQuestionBankController {
     type: TestSetQuestionBankResponseSwaggerDTO
   })
   @ResponseMessage(M.UPDATE_SUCCESS)
+  @ZodSerializerDto(TestSetQuestionBankResDTO)
   async update(
     @Param() params: GetTestSetQuestionBankByIdParamsDTO,
     @Body() body: UpdateTestSetQuestionBankBodyDTO
@@ -269,6 +282,7 @@ export class TestSetQuestionBankController {
     type: TestSetQuestionBankResponseSwaggerDTO
   })
   @ResponseMessage(M.UPDATE_QUESTION_ORDER_SUCCESS)
+  @ZodSerializerDto(TestSetQuestionBankResDTO)
   async updateQuestionOrder(
     @Param() params: GetTestSetQuestionBankByIdParamsDTO,
     @Body() body: UpdateQuestionOrderDTO
@@ -309,6 +323,7 @@ export class TestSetQuestionBankController {
   })
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(M.DELETE_BY_TESTSET_SUCCESS)
+  @ZodSerializerDto(TestSetQuestionBankDeletedResDTO)
   async deleteByTestSetId(@Param() params: GetTestSetQuestionBankByTestSetIdParamsDTO) {
     return this.testSetQuestionBankService.deleteByTestSetId(params.testSetId)
   }
