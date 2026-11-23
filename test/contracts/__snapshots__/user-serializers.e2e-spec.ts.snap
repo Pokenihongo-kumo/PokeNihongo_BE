@@ -1,0 +1,348 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`User serializers contract (e2e) SRS reviews of a vocabulary, a grammar and a kanji 1`] = `
+{
+  "grammarDetail": {
+    "body": {
+      "data": {
+        "content": {
+          "id": "number",
+          "level": "string",
+          "structure": "string",
+          "type": "string",
+          "usages": [
+            {
+              "exampleSentence": "null",
+              "explanation": "null",
+              "id": "number",
+            },
+          ],
+        },
+        "srs": {
+          "id": "number",
+          "incorrectStreak": "number",
+          "isLeech": "boolean",
+          "isRead": "boolean",
+          "message": "contract-z2c3",
+          "srsLevel": "number",
+          "userId": "number",
+        },
+      },
+      "message": "Lấy thông tin SRS thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "kanjiDetail": {
+    "body": {
+      "data": {
+        "content": {
+          "character": "string",
+          "id": "number",
+          "jlptLevel": "null",
+          "kunReading": "string",
+          "meaning": "null",
+          "onReading": "string",
+          "type": "string",
+        },
+        "srs": {
+          "id": "number",
+          "incorrectStreak": "number",
+          "isLeech": "boolean",
+          "isRead": "boolean",
+          "message": "contract-z2c3",
+          "srsLevel": "number",
+          "userId": "number",
+        },
+      },
+      "message": "Lấy thông tin SRS thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "list": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "contentId": "number",
+            "contentType": "string",
+            "createdAt": "string",
+            "id": "number",
+            "incorrectStreak": "number",
+            "isLeech": "boolean",
+            "isRead": "boolean",
+            "message": "contract-z2c3",
+            "nextReviewDate": "string",
+            "srsLevel": "number",
+            "updatedAt": "string",
+            "userId": "number",
+          },
+        ],
+      },
+      "message": "Lấy danh sách SRS thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "myToday": {
+    "body": {
+      "data": {
+        "pagination": {
+          "current": "number",
+          "pageSize": "number",
+          "totalItem": "number",
+          "totalPage": "number",
+        },
+        "results": [
+          {
+            "content": {
+              "audioUrl": "null",
+              "id": "number",
+              "imageUrl": "null",
+              "meaning": "null",
+              "reading": "string",
+              "type": "string",
+              "wordJp": "string",
+            },
+            "contentId": "number",
+            "contentType": "string",
+            "id": "number",
+            "isRead": "boolean",
+            "message": "contract-z2c3",
+            "userId": "number",
+          },
+        ],
+      },
+      "message": "Lấy danh sách SRS thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "upsert": {
+    "body": {
+      "data": {
+        "contentId": "number",
+        "contentType": "string",
+        "createdAt": "string",
+        "id": "number",
+        "incorrectStreak": "number",
+        "isLeech": "boolean",
+        "isRead": "boolean",
+        "message": "contract-z2c3",
+        "nextReviewDate": "string",
+        "srsLevel": "number",
+        "updatedAt": "string",
+        "userId": "number",
+      },
+      "message": "Tạo/cập nhật SRS thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "vocabularyDetail": {
+    "body": {
+      "data": {
+        "content": {
+          "audioUrl": "null",
+          "id": "number",
+          "imageUrl": "null",
+          "meaning": "null",
+          "reading": "string",
+          "type": "string",
+          "wordJp": "string",
+        },
+        "srs": {
+          "id": "number",
+          "incorrectStreak": "number",
+          "isLeech": "boolean",
+          "isRead": "boolean",
+          "message": "contract-z2c3",
+          "srsLevel": "number",
+          "userId": "number",
+        },
+      },
+      "message": "Lấy thông tin SRS thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`User serializers contract (e2e) admin progress init: one user, all users 1`] = `
+{
+  "initAll": {
+    "body": {
+      "data": {
+        "processedUsers": [
+          "number",
+        ],
+        "totalCreatedProgress": "number",
+        "totalLessons": "number",
+        "totalUsers": "number",
+      },
+      "message": "Khởi tạo UserProgress cho tất cả user thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "initUser": {
+    "body": {
+      "data": {
+        "createdProgress": "number",
+        "totalLessons": "number",
+        "userId": "number",
+      },
+      "message": "Khởi tạo UserProgress thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`User serializers contract (e2e) my pokemon with their weaknesses 1`] = `
+{
+  "pokemons": {
+    "body": {
+      "data": [
+        {
+          "createdAt": "string",
+          "deletedAt": "null",
+          "exp": "number",
+          "id": "number",
+          "isEvolved": "boolean",
+          "isMain": "boolean",
+          "nickname": "null",
+          "pokemon": {
+            "description": "null",
+            "id": "number",
+            "imageUrl": "null",
+            "nameJp": "string",
+            "nameTranslations": {
+              "en": "string",
+              "vi": "string",
+            },
+            "pokedex_number": "number",
+            "rarity": "string",
+            "types": [
+              {
+                "color_hex": "string",
+                "display_name": {
+                  "en": "string",
+                  "ja": "string",
+                  "vi": "string",
+                },
+                "id": "number",
+                "type_name": "string",
+              },
+            ],
+            "weaknesses": [
+              {
+                "color_hex": "string",
+                "display_name": {
+                  "en": "string",
+                  "ja": "string",
+                  "vi": "string",
+                },
+                "effectiveness_multiplier": "number",
+                "id": "number",
+                "type_name": "string",
+              },
+            ],
+          },
+          "pokemonId": "number",
+          "updatedAt": "string",
+          "user": {
+            "email": "string",
+            "id": "number",
+            "name": "string",
+          },
+          "userId": "number",
+        },
+      ],
+      "message": "Lấy danh sách User Pokemon thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;
+
+exports[`User serializers contract (e2e) user tests: create, detail, update, init for all users, limit job 1`] = `
+{
+  "autoUpdateLimit": {
+    "body": {
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "create": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "id": "number",
+        "limit": "null",
+        "status": "string",
+        "testId": "number",
+        "updatedAt": "string",
+        "userId": "number",
+      },
+      "message": "Tạo UserTest thành công",
+      "statusCode": 201,
+    },
+    "httpStatus": 201,
+  },
+  "detail": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "id": "number",
+        "limit": "null",
+        "status": "string",
+        "testId": "number",
+        "updatedAt": "string",
+        "userId": "number",
+      },
+      "message": "Lấy thông tin UserTest thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "initAll": {
+    "body": {
+      "data": {
+        "totalTests": "number",
+        "totalUserTests": "number",
+        "totalUsers": "number",
+      },
+      "message": "Khởi tạo thành công N test cho N user",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+  "update": {
+    "body": {
+      "data": {
+        "createdAt": "string",
+        "id": "number",
+        "limit": "number",
+        "status": "string",
+        "testId": "number",
+        "updatedAt": "string",
+        "userId": "number",
+      },
+      "message": "Cập nhật UserTest thành công",
+      "statusCode": 200,
+    },
+    "httpStatus": 200,
+  },
+}
+`;

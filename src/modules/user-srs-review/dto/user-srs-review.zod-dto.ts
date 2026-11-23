@@ -1,3 +1,5 @@
+import { paginatedResSchema } from '@/shared/utils/pagination'
+import { resSchema } from '@/shared/utils/res-schema'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { SrsReviewMessage as M } from '@/i18n/message-keys'
 import { createZodDto } from 'nestjs-zod'
@@ -60,3 +62,107 @@ export const SrsReviewIdParamsSchema = z.object({
 export type SrsReviewIdParams = z.infer<typeof SrsReviewIdParamsSchema>
 
 export class SrsReviewIdParamsDTO extends createZodDto(SrsReviewIdParamsSchema) {}
+
+// ---- responses (output only)
+
+export const SrsReviewRowOutSchema = z.object({
+  id: z.number(),
+  userId: z.number(),
+  message: z.string().nullable(),
+  contentType: z.string(),
+  contentId: z.number(),
+  srsLevel: z.number(),
+  nextReviewDate: z.date(),
+  incorrectStreak: z.number(),
+  isLeech: z.boolean(),
+  isRead: z.boolean(),
+  createdAt: z.date(),
+  updatedAt: z.date()
+})
+
+export type SrsReviewRowOut = z.infer<typeof SrsReviewRowOutSchema>
+
+export const SrsReviewResSchema = resSchema(SrsReviewRowOutSchema)
+
+export type SrsReviewRes = z.infer<typeof SrsReviewResSchema>
+
+export class SrsReviewResDTO extends createZodDto(SrsReviewResSchema) {}
+
+export const SrsReviewListResSchema = paginatedResSchema(SrsReviewRowOutSchema)
+
+export type SrsReviewListRes = z.infer<typeof SrsReviewListResSchema>
+
+export class SrsReviewListResDTO extends createZodDto(SrsReviewListResSchema) {}
+
+// The content a review points to, texts in the request language; null when gone
+export const SrsContentOutSchema = z.union([
+  z.object({
+    type: z.literal('grammar'),
+    id: z.number(),
+    structure: z.string(),
+    level: z.string(),
+    usages: z.array(
+      z.object({
+        id: z.number(),
+        explanation: z.string().nullable(),
+        exampleSentence: z.string().nullable()
+      })
+    )
+  }),
+  z.object({
+    type: z.literal('kanji'),
+    id: z.number(),
+    character: z.string(),
+    meaning: z.string().nullable(),
+    jlptLevel: z.number().nullable(),
+    onReading: z.string(),
+    kunReading: z.string()
+  }),
+  z.object({
+    type: z.literal('vocabulary'),
+    id: z.number(),
+    wordJp: z.string(),
+    reading: z.string(),
+    meaning: z.string().nullable(),
+    audioUrl: z.string().nullable(),
+    imageUrl: z.string().nullable()
+  }),
+  z.object({ type: z.string(), id: z.number() })
+])
+
+export type SrsContentOut = z.infer<typeof SrsContentOutSchema>
+
+export const SrsReviewTodayResSchema = paginatedResSchema(
+  z.object({
+    id: z.number(),
+    userId: z.number(),
+    message: z.string().nullable(),
+    contentType: z.string(),
+    contentId: z.number(),
+    isRead: z.boolean(),
+    content: SrsContentOutSchema.nullable()
+  })
+)
+
+export type SrsReviewTodayRes = z.infer<typeof SrsReviewTodayResSchema>
+
+export class SrsReviewTodayResDTO extends createZodDto(SrsReviewTodayResSchema) {}
+
+export const SrsReviewDetailResSchema = resSchema(
+  z.object({
+    srs: z.object({
+      id: z.number(),
+      userId: z.number(),
+      message: z.string().nullable(),
+      srsLevel: z.number(),
+      incorrectStreak: z.number(),
+      isLeech: z.boolean(),
+      isRead: z.boolean()
+    }),
+    content: SrsContentOutSchema.nullable()
+  })
+)
+
+export type SrsReviewDetailRes = z.infer<typeof SrsReviewDetailResSchema>
+
+export class SrsReviewDetailResDTO extends createZodDto(SrsReviewDetailResSchema) {}

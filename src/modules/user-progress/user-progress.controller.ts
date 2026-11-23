@@ -1,3 +1,7 @@
+import {
+  InitUserProgressResDTO,
+  InitAllUsersProgressResDTO
+} from './dto/user-progress.zod-dto'
 import { msg, ResponseMessage } from '@/i18n/response-message'
 import { UserProgressMessage as M } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
@@ -230,6 +234,7 @@ export class UserProgressController {
     description: 'Khởi tạo UserProgress thành công',
     type: InitUserProgressForAdminResponseSwaggerDTO
   })
+  @ZodSerializerDto(InitUserProgressResDTO)
   async initUserProgressForAdmin(@Param() params: UserProgressUserParamsDTO) {
     const { outcome, data } = await this.userProgressService.initUserProgressForAdmin(
       params.userId
@@ -248,6 +253,7 @@ export class UserProgressController {
     description: 'Khởi tạo UserProgress cho tất cả user thành công',
     type: InitAllUsersProgressResponseSwaggerDTO
   })
+  @ZodSerializerDto(InitAllUsersProgressResDTO)
   async initAllUsersProgress() {
     const { outcome, data } = await this.userProgressService.initAllUsersProgress()
     return {

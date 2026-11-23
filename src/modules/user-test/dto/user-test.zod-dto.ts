@@ -1,3 +1,4 @@
+import { resSchema } from '@/shared/utils/res-schema'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { UserTestMessage as M } from '@/i18n/message-keys'
 import { paginatedResSchema } from '@/shared/utils/pagination'
@@ -50,12 +51,7 @@ export class UpdateUserTestBodyDTO extends createZodDto(UpdateUserTestBodySchema
 
 // Response schemas
 
-export const UserTestResSchema = z
-  .object({
-    data: UserTestSchema,
-    message: z.string()
-  })
-  .strict()
+export const UserTestResSchema = resSchema(UserTestSchema)
 
 export type UserTestRes = z.infer<typeof UserTestResSchema>
 
@@ -127,3 +123,19 @@ export type GetUserTestMyListQuery = z.infer<typeof GetUserTestMyListQuerySchema
 export class GetUserTestMyListQueryDTO extends createZodDto(
   GetUserTestMyListQuerySchema
 ) {}
+
+// Init for all users: counts, or what was missing (no user / no active test)
+export const InitAllUserTestsResSchema = resSchema(
+  z.union([
+    z.object({
+      totalUsers: z.number(),
+      totalTests: z.number(),
+      totalUserTests: z.number()
+    }),
+    z.object({ totalUsers: z.number(), totalTestsAdded: z.number() })
+  ])
+)
+
+export type InitAllUserTestsRes = z.infer<typeof InitAllUserTestsResSchema>
+
+export class InitAllUserTestsResDTO extends createZodDto(InitAllUserTestsResSchema) {}

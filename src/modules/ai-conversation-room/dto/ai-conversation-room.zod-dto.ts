@@ -1,3 +1,4 @@
+import { paginatedResSchema } from '@/shared/utils/pagination'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { AIConversationRoomMessage as M } from '@/i18n/message-keys'
 import { resSchema } from '@/shared/utils/res-schema'
@@ -108,3 +109,13 @@ export const AIConversationRoomResSchema = resSchema(AIConversationRoomSchema)
 export type AIConversationRoomRes = z.infer<typeof AIConversationRoomResSchema>
 
 export class AIConversationRoomResDTO extends createZodDto(AIConversationRoomResSchema) {}
+
+export const AIConversationRoomListResSchema = paginatedResSchema(
+  AIConversationRoomSchema
+)
+
+export type AIConversationRoomListRes = z.infer<typeof AIConversationRoomListResSchema>
+
+export class AIConversationRoomListResDTO extends createZodDto(
+  AIConversationRoomListResSchema
+) {}

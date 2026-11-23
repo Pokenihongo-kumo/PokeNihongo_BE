@@ -29,7 +29,8 @@ import {
   GetUserTestMyListQueryDTO,
   UserTestResDTO,
   UserTestListResDTO,
-  UserTestMyListResDTO
+  UserTestMyListResDTO,
+  InitAllUserTestsResDTO
 } from './dto/user-test.zod-dto'
 import {
   CreateUserTestSwaggerDTO,
@@ -57,6 +58,7 @@ export class UserTestController {
     type: UserTestResponseSwaggerDTO
   })
   @ResponseMessage(M.CREATE_SUCCESS)
+  @ZodSerializerDto(UserTestResDTO)
   async create(@Body() body: CreateUserTestBodyDTO) {
     return this.userTestService.create(body)
   }
@@ -105,6 +107,7 @@ export class UserTestController {
     type: UserTestResponseSwaggerDTO
   })
   @ResponseMessage(M.GET_SUCCESS)
+  @ZodSerializerDto(UserTestResDTO)
   async findOne(@Param() { id }: GetUserTestByIdParamsDTO) {
     return this.userTestService.findOne(id)
   }
@@ -118,6 +121,7 @@ export class UserTestController {
     type: UserTestResponseSwaggerDTO
   })
   @ResponseMessage(M.UPDATE_SUCCESS)
+  @ZodSerializerDto(UserTestResDTO)
   async update(
     @Param() { id }: GetUserTestByIdParamsDTO,
     @Body() body: UpdateUserTestBodyDTO
@@ -146,6 +150,7 @@ export class UserTestController {
     status: 200,
     description: 'Khởi tạo UserTest thành công'
   })
+  @ZodSerializerDto(InitAllUserTestsResDTO)
   async initAllUsersTests() {
     const result = await this.userTestService.initAllUsersTests()
     const message =
@@ -168,6 +173,7 @@ export class UserTestController {
     description: 'Cập nhật limit thành công'
   })
   async runAutoTest() {
-    return this.userTestService.runAutoTest()
+    // the job returns nothing (no data, no message)
+    await this.userTestService.runAutoTest()
   }
 }

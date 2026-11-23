@@ -1,3 +1,4 @@
+import { CheckEmailResDTO } from './dto/auth.zod-dto'
 import { ResponseMessage, msg } from '@/i18n/response-message'
 import { TypeOfVerificationCode } from '@/common/constants/auth.constant'
 import { AuthMessage } from '@/i18n/message-keys'
@@ -184,6 +185,7 @@ export class AuthController {
   @IsPublic()
   @UseGuards(RateLimitGuard)
   @RateLimit(otpSendLimits((req) => req.params?.email))
+  @ZodSerializerDto(CheckEmailResDTO)
   async checkEmailExist(
     @Param() { email }: CheckEmailParamsDTO,
     @UserAgent() userAgent: string,

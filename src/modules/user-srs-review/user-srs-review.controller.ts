@@ -1,3 +1,4 @@
+import { ZodSerializerDto } from 'nestjs-zod'
 import { ResponseMessage } from '@/i18n/response-message'
 import { SrsReviewMessage as M } from '@/i18n/message-keys'
 import {
@@ -18,7 +19,11 @@ import {
   UpsertSrsReviewBodyDTO,
   ListSrsQueryDTO,
   ListSrsTodayQueryDTO,
-  SrsReviewIdParamsDTO
+  SrsReviewIdParamsDTO,
+  SrsReviewListResDTO,
+  SrsReviewTodayResDTO,
+  SrsReviewDetailResDTO,
+  SrsReviewResDTO
 } from './dto/user-srs-review.zod-dto'
 import { ApiBody, ApiResponse } from '@nestjs/swagger'
 import {
@@ -43,6 +48,7 @@ export class SrsReviewController {
   // The service answers the whole envelope (this used to wrap it in a second
   // one with message 'GET_SUCCESS')
   @ResponseMessage(M.GET_LIST_SUCCESS)
+  @ZodSerializerDto(SrsReviewListResDTO)
   async list(@ActiveUser('userId') userId: number, @Query() query: ListSrsQueryDTO) {
     return this.srsService.list(userId, query)
   }
@@ -52,6 +58,7 @@ export class SrsReviewController {
   @ApiQuery({ type: ListSrsTodayQuerySwaggerDTO })
   @ApiResponse({ status: 200, type: SrsReviewSwaggerDTO, isArray: true })
   @ResponseMessage(M.GET_LIST_SUCCESS)
+  @ZodSerializerDto(SrsReviewTodayResDTO)
   async listMyToday(
     @ActiveUser('userId') userId: number,
     @Query() query: ListSrsTodayQueryDTO,
@@ -63,6 +70,7 @@ export class SrsReviewController {
   @Get(':id')
   @ApiOperation({ summary: 'Lấy SRS theo contentType + contentId' })
   @ResponseMessage(M.GET_SUCCESS)
+  @ZodSerializerDto(SrsReviewDetailResDTO)
   async getOne(
     @ActiveUser('userId') userId: number,
     @Param() params: SrsReviewIdParamsDTO,
@@ -77,6 +85,7 @@ export class SrsReviewController {
   @ApiBody({ type: UpsertSrsReviewSwaggerDTO })
   @ApiResponse({ status: 200, type: SrsReviewSwaggerDTO })
   @ResponseMessage(M.UPSERT_SUCCESS)
+  @ZodSerializerDto(SrsReviewResDTO)
   async upsert(
     @ActiveUser('userId') userId: number,
     @Body() body: UpsertSrsReviewBodyDTO
@@ -89,6 +98,7 @@ export class SrsReviewController {
   @ApiParam({ name: 'id', description: 'ID của SRS review', example: 1 })
   @ApiResponse({ status: 200, type: SrsReviewSwaggerDTO })
   @ResponseMessage(M.UPDATE_SUCCESS)
+  @ZodSerializerDto(SrsReviewResDTO)
   async markRead(
     @ActiveUser('userId') userId: number,
     @Param() params: SrsReviewIdParamsDTO

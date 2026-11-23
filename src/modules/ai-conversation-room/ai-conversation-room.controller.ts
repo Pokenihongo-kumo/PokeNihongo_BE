@@ -11,7 +11,8 @@ import {
   GetAIConversationRoomByConversationParamsDTO,
   GetAIConversationRoomByIdParamsDTO,
   GetAIConversationRoomListQueryDTO,
-  UpdateAIConversationRoomBodyDTO
+  UpdateAIConversationRoomBodyDTO,
+  AIConversationRoomListResDTO
 } from './dto/ai-conversation-room.zod-dto'
 
 // The user's own kaiwa rooms; the mobile app lists and deletes them
@@ -35,6 +36,7 @@ export class AIConversationRoomController {
   @Get()
   @ApiOperation({ summary: 'Lấy danh sách phòng hội thoại AI' })
   @ResponseMessage(M.GET_LIST_SUCCESS)
+  @ZodSerializerDto(AIConversationRoomListResDTO)
   async findAll(
     @Query() query: GetAIConversationRoomListQueryDTO,
     @ActiveUser('userId') userId: number
@@ -45,6 +47,7 @@ export class AIConversationRoomController {
   @Get('conversation/:conversationId')
   @ApiOperation({ summary: 'Lấy thông tin phòng theo conversationId' })
   @ResponseMessage(M.GET_SUCCESS)
+  @ZodSerializerDto(AIConversationRoomResDTO)
   async findByConversationId(
     @Param() { conversationId }: GetAIConversationRoomByConversationParamsDTO,
     @ActiveUser('userId') userId: number

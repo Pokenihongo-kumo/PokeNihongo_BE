@@ -1,3 +1,4 @@
+import { resSchema } from '@/shared/utils/res-schema'
 import { checkIdSchema } from '@/common/utils/id.validation'
 import { UserProgressMessage } from '@/i18n/message-keys'
 import { paginatedResSchema } from '@/shared/utils/pagination'
@@ -148,3 +149,26 @@ export const CompleteLessonBodySchema = z
 export type CompleteLessonBody = z.infer<typeof CompleteLessonBodySchema>
 
 export class CompleteLessonBodyDTO extends createZodDto(CompleteLessonBodySchema) {}
+
+export const InitUserProgressResSchema = resSchema(
+  z.object({ userId: z.number(), totalLessons: z.number(), createdProgress: z.number() })
+)
+
+export type InitUserProgressRes = z.infer<typeof InitUserProgressResSchema>
+
+export class InitUserProgressResDTO extends createZodDto(InitUserProgressResSchema) {}
+
+export const InitAllUsersProgressResSchema = resSchema(
+  z.object({
+    totalUsers: z.number(),
+    totalLessons: z.number(),
+    totalCreatedProgress: z.number(),
+    processedUsers: z.array(z.number())
+  })
+)
+
+export type InitAllUsersProgressRes = z.infer<typeof InitAllUsersProgressResSchema>
+
+export class InitAllUsersProgressResDTO extends createZodDto(
+  InitAllUsersProgressResSchema
+) {}

@@ -29,7 +29,10 @@ import {
   GetUserAIConversationByConversationParamsDTO,
   GetUserAIConversationByIdParamsDTO,
   GetUserAIConversationListQueryDTO,
-  UserAIConversationResDTO
+  UserAIConversationResDTO,
+  UserAIConversationListResDTO,
+  UserAIConversationArrayResDTO,
+  UserAIConversationDeletedResDTO
 } from './dto/user-ai-conversation.zod-dto'
 import {
   UserAIConversationSwaggerDTO,
@@ -76,6 +79,7 @@ export class UserAIConversationController {
     type: UserAIConversationListResponseSwaggerDTO
   })
   @ResponseMessage(M.GET_LIST_SUCCESS)
+  @ZodSerializerDto(UserAIConversationListResDTO)
   async findAll(
     @Query() query: GetUserAIConversationListQueryDTO,
     @ActiveUser('userId') userId: number
@@ -92,6 +96,7 @@ export class UserAIConversationController {
     type: UserAIConversationListResponseSwaggerDTO
   })
   @ResponseMessage(M.GET_LIST_SUCCESS)
+  @ZodSerializerDto(UserAIConversationArrayResDTO)
   async findByConversationId(
     @Param() { conversationId }: GetUserAIConversationByConversationParamsDTO,
     @ActiveUser('userId') userId: number
@@ -162,6 +167,7 @@ export class UserAIConversationController {
     description: 'Xóa tất cả messages thành công',
     type: DeleteByConversationIdResponseSwaggerDTO
   })
+  @ZodSerializerDto(UserAIConversationDeletedResDTO)
   async removeByConversationId(
     @Param() { conversationId }: GetUserAIConversationByConversationParamsDTO,
     @ActiveUser('userId') userId: number
