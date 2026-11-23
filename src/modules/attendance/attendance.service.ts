@@ -1,5 +1,5 @@
 import { PaginationQuery } from '@/shared/models/request.model'
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 
 import { dailyRequestType } from '@/common/constants/achievement.constant'
 import {
@@ -7,13 +7,13 @@ import {
   WalletTransactionSourceType
 } from '@/common/constants/wallet-transaction.constant'
 import { walletType } from '@/common/constants/wallet.constant'
-import { NotFoundRecordException } from 'src/shared/error'
+import { NotFoundRecordException } from '@/shared/error'
 import {
   getWeekDay,
   isNotFoundPrismaError,
   isUniqueConstraintPrismaError,
   todayUTCWith0000
-} from 'src/shared/helpers'
+} from '@/shared/helpers'
 import { UserDailyRequestService } from '../user-daily-request/user-daily-request.service'
 
 import { AttendancesStatus } from '@/common/constants/attendance.constant'
@@ -33,6 +33,8 @@ import { Attendance } from './entities/attendance.entity'
 type AttendanceWithDayOfWeekType = Attendance & { dayOfWeek: WeekDayType }
 @Injectable()
 export class AttendanceService {
+  private readonly logger = new Logger(AttendanceService.name)
+
   constructor(
     private attendanceRepo: AttendanceRepo,
     private attendenceConfigService: AttendenceConfigService,
@@ -79,7 +81,6 @@ export class AttendanceService {
   async create({ createdById }: { createdById: number }, lang: string = 'vi') {
     try {
       const date = todayUTCWith0000()
-      console.log(date)
 
       const getWeekDate = getWeekDay(date)
       const attendenceConfig =
@@ -96,9 +97,9 @@ export class AttendanceService {
       // Nếu hôm nay là ngày streak thứ 7, 14, 21,... thì streakData.count sẽ là 6, 13, 20,...
       const totalStreakWithToday = streakData.count + 1 // Bao gồm cả hôm nay
       isStreakSunday = totalStreakWithToday % 7 === 0 ? true : false
-      console.log('Streak count (before today):', streakData.count)
-      console.log('Total streak (with today):', totalStreakWithToday)
-      console.log('Is bonus day (7, 14, 21...):', isStreakSunday)
+      this.logger.debug('Streak count (before today):', streakData.count)
+      this.logger.debug('Total streak (with today):', totalStreakWithToday)
+      this.logger.debug('Is bonus day (7, 14, 21...):', isStreakSunday)
 
       const data: CreateAttendanceBody = {
         date,
@@ -299,7 +300,7 @@ export class AttendanceService {
     endOfWeek.setDate(startOfWeek.getDate() + 6) // Sunday
     endOfWeek.setHours(23, 59, 59, 999)
 
-    console.log(
+    this.logger.debug(
       `[findWeekAttendances] Finding attendances between ${startOfWeek.toISOString()} and ${endOfWeek.toISOString()}`
     )
 
@@ -309,7 +310,7 @@ export class AttendanceService {
       endOfWeek
     )
 
-    console.log(
+    this.logger.debug(
       `[findWeekAttendances] Found ${attendances.length} attendances for user ${userId}`
     )
 

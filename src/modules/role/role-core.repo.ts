@@ -1,7 +1,7 @@
 import { HTTPMethod, RoleName } from '@/common/constants/role.constant'
 import { Injectable } from '@nestjs/common'
-import { Role } from 'src/shared/models/shared-role.model'
-import { PrismaService } from 'src/shared/services/prisma.service'
+import { Role } from '@/shared/models/shared-role.model'
+import { PrismaService } from '@/shared/services/prisma.service'
 
 @Injectable()
 // Role ids used by sign-up and admin checks, through RoleService (module-

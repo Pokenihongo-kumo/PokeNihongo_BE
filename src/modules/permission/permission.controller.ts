@@ -1,5 +1,5 @@
 import { ResponseMessage } from '@/i18n/response-message'
-import { PermissionMessage } from 'src/i18n/message-keys'
+import { PermissionMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
 import { PaginationResponseSchema } from '@/shared/models/response.model'
@@ -13,9 +13,9 @@ import {
   GetPermissionParamsDTO,
   UpdatePermissionBodyDTO,
   UpdatePermissionResDTO
-} from 'src/modules/permission/permission.dto'
-import { PermissionService } from 'src/modules/permission/permission.service'
-import { MessageResDTO } from 'src/shared/dtos/response.dto'
+} from '@/modules/permission/permission.dto'
+import { PermissionService } from '@/modules/permission/permission.service'
+import { MessageResDTO } from '@/shared/dtos/response.dto'
 
 @Controller('permissions')
 @ApiBearerAuth()

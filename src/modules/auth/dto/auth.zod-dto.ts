@@ -5,7 +5,7 @@ import { UserSchema } from '@/shared/models/shared-user.model'
 import { resSchema } from '@/shared/utils/res-schema'
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
-import { VerificationCodeSchema, emailSchema } from '../entities/auth.entities'
+import { VerificationCodeSchema, emailSchema } from '../entities/auth.entity'
 
 // GET /auth/check-email/:email (any string used to be taken as a new email)
 

@@ -3,12 +3,12 @@ import { parseQs } from '@/common/utils/qs-parser'
 import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
-import { PrismaService } from 'src/shared/services/prisma.service'
+import { PrismaService } from '@/shared/services/prisma.service'
 import {
   CreateUserGachaPityBody,
   UpdateUserGachaPityBody
 } from './dto/user-gacha-pity.zod-dto'
-import { USER_GACHA_PITY_FIELDS, UserGachaPity } from './entities/user-gacha-pityentity'
+import { USER_GACHA_PITY_FIELDS, UserGachaPity } from './entities/user-gacha-pity.entity'
 
 @Injectable()
 export class UserGachaPityRepo {

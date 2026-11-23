@@ -6,7 +6,7 @@ import {
   GetRoleParamsSchema,
   UpdateRoleBodySchema,
   UpdateRoleResSchema
-} from 'src/modules/role/role.model'
+} from '@/modules/role/role.model'
 
 export class GetRoleParamsDTO extends createZodDto(GetRoleParamsSchema) {}
 

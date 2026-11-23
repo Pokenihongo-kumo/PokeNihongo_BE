@@ -43,7 +43,6 @@ import {
   CreateVocabularyFullResponseDTO
 } from '@/modules/vocabulary/dto/create-vocabulary-full.dto'
 import { MessageResDTO } from '@/shared/dtos/response.dto'
-import { VOCABULARY_MESSAGE } from '@/common/constants/message'
 import {
   Body,
   Controller,

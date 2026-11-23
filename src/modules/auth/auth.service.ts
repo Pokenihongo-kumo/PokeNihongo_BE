@@ -29,7 +29,7 @@ import { LevelService } from '../level/level.service'
 import { UserProgressService } from '../user-progress/user-progress.service'
 import { UserTestService } from '../user-test/user-test.service'
 import { WalletService } from '../wallet/wallet.service'
-import { AuthRepository } from './auth.repo'
+import { AuthRepo } from './auth.repo'
 import {
   EmailAlreadyExistsException,
   EmailNotFoundException,
@@ -63,7 +63,7 @@ export class AuthService {
   constructor(
     private readonly hashingService: HashingService,
     private readonly roleService: RoleService,
-    private readonly authRepository: AuthRepository,
+    private readonly authRepository: AuthRepo,
     private readonly userCoreService: UserCoreService,
     private readonly otpService: OtpService,
     private readonly levelService: LevelService,

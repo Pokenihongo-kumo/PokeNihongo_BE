@@ -9,7 +9,7 @@ import {
 import { PaginationQuery } from '@/shared/models/request.model'
 import { MatchingGateway } from '@/websockets/matching.gateway'
 import { InjectQueue } from '@nestjs/bull'
-import { forwardRef, Inject, Injectable } from '@nestjs/common'
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common'
 import { Queue } from 'bull'
 import {
   RoundQuestionAlreadyAnsweredException,
@@ -26,6 +26,8 @@ import { RoundQuestionRepo } from './round-question.repo'
 
 @Injectable()
 export class RoundQuestionService {
+  private readonly logger = new Logger(RoundQuestionService.name)
+
   constructor(
     private roundQuestionRepo: RoundQuestionRepo,
     private readonly matchingGateway: MatchingGateway,
@@ -189,14 +191,14 @@ export class RoundQuestionService {
       )
 
       if (jobsToRemove.length > 0) {
-        console.log(
+        this.logger.debug(
           `[RoundQuestion] 🗑️ Removing ${jobsToRemove.length} timeout job(s) for roundQuestionId=${id}, participantId=${roundQuestion.matchRoundParticipantId}: jobIds=[${jobsToRemove.map((j) => j.id).join(', ')}]`
         )
       }
 
       await Promise.all(jobsToRemove.map((j) => j.remove()))
     } catch (e) {
-      console.warn('[RoundQuestion] Failed to remove timeout job', e)
+      this.logger.warn('[RoundQuestion] Failed to remove timeout job', e)
     }
 
     // Check provided answer
@@ -285,7 +287,7 @@ export class RoundQuestionService {
         }
       }
     } catch (e) {
-      console.warn('[RoundQuestion] Failed to schedule next question timeout', e)
+      this.logger.warn('[RoundQuestion] Failed to schedule next question timeout', e)
       // keep going even if scheduling fails - we'll still notify the answer result
     }
 
@@ -308,7 +310,7 @@ export class RoundQuestionService {
           nextQuestionForNotify.endTimeQuestion = endTimeQuestion?.toISOString() || null
         }
       } catch (err) {
-        console.warn(
+        this.logger.warn(
           '[RoundQuestion] Failed to fetch formatted questionBank for nextQuestion',
           err
         )
@@ -377,7 +379,7 @@ export class RoundQuestionService {
           )
 
           if (duplicateJobs.length > 0) {
-            console.log(
+            this.logger.debug(
               `[RoundQuestion] 🗑️ Found ${duplicateJobs.length} existing job(s) for next question ${nextQuestion.id}, removing them`
             )
             await Promise.all(duplicateJobs.map((j) => j.remove()))
@@ -408,7 +410,7 @@ export class RoundQuestionService {
           )
         }
       } catch (e) {
-        console.warn('[RoundQuestion] Failed to schedule next question timeout', e)
+        this.logger.warn('[RoundQuestion] Failed to schedule next question timeout', e)
       }
     }
 

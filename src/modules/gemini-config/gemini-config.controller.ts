@@ -32,14 +32,14 @@ import {
   GetParamsGeminiConfigDTO,
   UpdateGeminiConfigBodyDTO,
   UpdateGeminiConfigResDTO
-} from 'src/modules/gemini-config/dto/gemini-config.zod-dto'
+} from '@/modules/gemini-config/dto/gemini-config.zod-dto'
 import {
   CreateGeminiConfigSwaggerDTO,
   UpdateGeminiConfigSwaggerDTO
 } from './dto/gemini-config.dto'
 import { GeminiConfigType } from '@prisma/client'
 import { I18nLang } from '@/i18n/decorators/i18n-lang.decorator'
-import { MessageResDTO } from 'src/shared/dtos/response.dto'
+import { MessageResDTO } from '@/shared/dtos/response.dto'
 import { GeminiConfigService } from './gemini-config.service'
 import {
   GeminiConfigListQuerySwaggerDTO,

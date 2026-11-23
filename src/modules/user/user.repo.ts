@@ -3,7 +3,7 @@ import { PaginationQuery } from '@/shared/models/request.model'
 import { PaginationResponseType } from '@/shared/models/response.model'
 import { Injectable } from '@nestjs/common'
 import { UserStatus } from '@prisma/client'
-import { PrismaService } from 'src/shared/services/prisma.service'
+import { PrismaService } from '@/shared/services/prisma.service'
 import { CreateUserBody, UpdateUserBody } from './dto/user.zod-dto'
 import {
   User,

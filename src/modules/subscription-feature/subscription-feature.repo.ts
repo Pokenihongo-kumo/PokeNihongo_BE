@@ -2,7 +2,7 @@ import { parseQs } from '@/common/utils/qs-parser'
 import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
 import { Prisma, PrismaClient } from '@prisma/client'
-import { PrismaService } from 'src/shared/services/prisma.service'
+import { PrismaService } from '@/shared/services/prisma.service'
 import {
   CreateSubscriptionFeatureBody,
   UpdateSubscriptionFeatureBody

@@ -14,7 +14,7 @@ import {
 } from '@nestjs/bull'
 import { Logger } from '@nestjs/common'
 import { Job, Queue } from 'bull'
-import { MatchingGateway } from 'src/websockets/matching.gateway'
+import { MatchingGateway } from '@/websockets/matching.gateway'
 
 interface MatchParticipantTimeoutJobData {
   matchParticipantId: number

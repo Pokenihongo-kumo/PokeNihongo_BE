@@ -6,9 +6,9 @@ import {
   ROLE_FIELDS,
   RoleWithPermissions,
   UpdateRoleBody
-} from 'src/modules/role/role.model'
-import { Role } from 'src/shared/models/shared-role.model'
-import { PrismaService } from 'src/shared/services/prisma.service'
+} from '@/modules/role/role.model'
+import { Role } from '@/shared/models/shared-role.model'
+import { PrismaService } from '@/shared/services/prisma.service'
 
 @Injectable()
 export class RoleRepo {

@@ -1,7 +1,7 @@
 import { HandleMatchmakingCronjob } from './handle-matchmaking.cronjob'
 import { UserCoreModule } from '@/modules/user/user-core.module'
 import { Module } from '@nestjs/common'
-import { WebsocketsModule } from 'src/websockets/websockets.module'
+import { WebsocketsModule } from '@/websockets/websockets.module'
 import { LeaderboardSeasonModule } from '../leaderboard-season/leaderboard-season.module'
 import { MatchParticipantModule } from '../match-participant/match-participant.module'
 import { MatchModule } from '../match/match.module'

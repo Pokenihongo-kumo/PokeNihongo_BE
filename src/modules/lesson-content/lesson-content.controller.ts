@@ -37,7 +37,7 @@ import {
   GetLessonContentListQueryDTO,
   LessonContentFullResDTO
 } from './dto/lesson-content.zod-dto'
-import { UpdateLessonContentOrder } from './entities/lesson-content.entities'
+import { UpdateLessonContentOrder } from './entities/lesson-content.entity'
 import { LessonContentService } from './lesson-content.service'
 
 @ApiTags('Lesson Contents')

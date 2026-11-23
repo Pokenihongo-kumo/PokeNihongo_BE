@@ -1,8 +1,11 @@
+import { Logger } from '@nestjs/common'
 import { config } from 'dotenv'
 import { z } from 'zod'
 
+const logger = new Logger('EnvConfig')
+
 if (process.env.NODE_ENV !== 'production') {
-  console.log('Running in development mode, loading .env file...')
+  logger.log('Running in development mode, loading .env file...')
   config({ path: '.env' })
 }
 
@@ -111,8 +114,8 @@ export const productionDriverErrors = (env: {
 const configServer = configSchema.safeParse(process.env)
 
 if (!configServer.success) {
-  console.error('Invalid environment variables')
-  console.error(configServer.error.format())
+  logger.error('Invalid environment variables')
+  logger.error(configServer.error.format())
   process.exit(1)
 }
 
@@ -121,8 +124,8 @@ const driverErrors = productionDriverErrors({
   NODE_ENV: process.env.NODE_ENV
 })
 if (driverErrors.length > 0) {
-  console.error('Invalid environment variables')
-  driverErrors.forEach((message) => console.error(message))
+  logger.error('Invalid environment variables')
+  driverErrors.forEach((message) => logger.error(message))
   process.exit(1)
 }
 

@@ -11,7 +11,8 @@ import {
   Put,
   ForbiddenException,
   HttpCode,
-  HttpStatus
+  HttpStatus,
+  Logger
 } from '@nestjs/common'
 import { ZodSerializerDto } from 'nestjs-zod'
 import {
@@ -45,6 +46,8 @@ import {
 @Controller('gemini')
 @ApiBearerAuth()
 export class GeminiController {
+  private readonly logger = new Logger(GeminiController.name)
+
   constructor(
     private readonly geminiService: GeminiService,
     private readonly userSubscriptionService: UserSubscriptionService
@@ -76,7 +79,7 @@ export class GeminiController {
     const filtered = rawItems.filter((r: any) => Number(r.targetId || r.contentId) > 0)
     if (rawItems.length !== filtered.length) {
       try {
-        console.warn(
+        this.logger.warn(
           `[RECOMMEND][UI] filtered out ${rawItems.length - filtered.length} invalid items (contentId<=0)`
         )
       } catch {}
@@ -132,7 +135,7 @@ export class GeminiController {
     const filtered = rawItems.filter((r: any) => Number(r.targetId || r.contentId) > 0)
     if (rawItems.length !== filtered.length) {
       try {
-        console.warn(
+        this.logger.warn(
           `[RECOMMEND][UI] filtered out ${rawItems.length - filtered.length} invalid SRS items`
         )
       } catch {}
@@ -179,7 +182,7 @@ export class GeminiController {
     const filtered = rawItems.filter((r: any) => Number(r.targetId || r.contentId) > 0)
     if (rawItems.length !== filtered.length) {
       try {
-        console.warn(
+        this.logger.warn(
           `[RECOMMEND][UI] filtered out ${rawItems.length - filtered.length} invalid skill items`
         )
       } catch {}

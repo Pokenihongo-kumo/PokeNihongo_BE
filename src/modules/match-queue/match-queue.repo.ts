@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 
 import { PrismaClient, QueueStatus } from '@prisma/client'
-import { PrismaService } from 'src/shared/services/prisma.service'
+import { PrismaService } from '@/shared/services/prisma.service'
 import { CreateMatchQueueBody } from './dto/match-queue.zod-dto'
 import { MatchQueue } from './entities/match-queue.entity'
 

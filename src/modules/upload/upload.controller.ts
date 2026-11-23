@@ -9,7 +9,8 @@ import {
   UploadedFile,
   UploadedFiles,
   UseFilters,
-  UseInterceptors
+  UseInterceptors,
+  Logger
 } from '@nestjs/common'
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express'
 import {
@@ -45,6 +46,8 @@ import { UploadResult, UploadService } from './upload.service'
 @ApiBearerAuth()
 @UseFilters(MulterExceptionFilter)
 export class UploadController {
+  private readonly logger = new Logger(UploadController.name)
+
   constructor(private readonly uploadService: UploadService) {}
 
   @Post('generate-upload-url')
@@ -89,7 +92,7 @@ export class UploadController {
         throw error
       }
 
-      console.error('Generate upload URL error:', error)
+      this.logger.error('Generate upload URL error:', error)
       throw new BadRequestException('Đã xảy ra lỗi khi tạo upload URL. Vui lòng thử lại.')
     }
   }
@@ -187,7 +190,7 @@ export class UploadController {
       }
 
       // Handle other service errors
-      console.error('Upload service error:', error)
+      this.logger.error('Upload service error:', error)
       throw new BadRequestException('Đã xảy ra lỗi khi upload file. Vui lòng thử lại.')
     }
   }
@@ -323,7 +326,7 @@ export class UploadController {
       }
 
       // Handle other service errors
-      console.error('Upload service error:', error)
+      this.logger.error('Upload service error:', error)
       throw new BadRequestException('Đã xảy ra lỗi khi upload file. Vui lòng thử lại.')
     }
   }

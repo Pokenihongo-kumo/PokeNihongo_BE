@@ -1,7 +1,7 @@
 import { SortOrder, TranslationSortField } from '@/common/enum/enum'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { toSkipTake } from '@/shared/utils/pagination'
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { Prisma, PrismaClient } from '@prisma/client'
 import {
   DuplicateLanguageException,
@@ -17,6 +17,8 @@ import { Translation } from './entities/translation.entity'
 
 @Injectable()
 export class TranslationRepo {
+  private readonly logger = new Logger(TranslationRepo.name)
+
   constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(
@@ -281,8 +283,6 @@ export class TranslationRepo {
       })
 
       if (conflictRecord) {
-        console.log(existing)
-
         throw new DuplicateRecordException() // conflict với database
       }
     }

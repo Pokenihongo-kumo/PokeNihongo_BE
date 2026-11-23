@@ -1,5 +1,5 @@
 import { ResponseMessage } from '@/i18n/response-message'
-import { RoleMessage } from 'src/i18n/message-keys'
+import { RoleMessage } from '@/i18n/message-keys'
 import { ActiveUser } from '@/common/decorators/active-user.decorator'
 import { PaginationQueryDTO } from '@/shared/dtos/request.dto'
 import { PaginationResponseSchema } from '@/shared/models/response.model'
@@ -13,9 +13,9 @@ import {
   GetRoleParamsDTO,
   UpdateRoleBodyDTO,
   UpdateRoleResDTO
-} from 'src/modules/role/role.dto'
-import { RoleService } from 'src/modules/role/role.service'
-import { MessageResDTO } from 'src/shared/dtos/response.dto'
+} from '@/modules/role/role.dto'
+import { RoleService } from '@/modules/role/role.service'
+import { MessageResDTO } from '@/shared/dtos/response.dto'
 
 @Controller('roles')
 @ApiBearerAuth()

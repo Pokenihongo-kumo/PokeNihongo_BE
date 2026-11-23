@@ -32,7 +32,7 @@ import {
   InvoiceNotFoundException,
   PaymentLinkInProgressException
 } from './dto/payment.error'
-import { CreatePayOSPaymentDto, Payment } from './entities/payment.model'
+import { CreatePayOSPaymentDto, Payment } from './entities/payment.entity'
 import { PaymentRepo } from './payment.repo'
 
 @Injectable()
@@ -77,7 +77,6 @@ export class PaymentService {
   async createPayOSPayment(paymentData: CreatePayOSPaymentDto, userId: number) {
     try {
       const { invoiceId, buyerName, buyerEmail, buyerPhone } = paymentData
-      console.log('create -payment')
 
       // 1. Lấy invoice
       const invoice = await this.invoiceService.getById(invoiceId)
@@ -354,7 +353,7 @@ export class PaymentService {
         redirect: `${feUrl}/payment/success?orderId=${payment.payosOrderId}&amount=${payment.amount}&plan=${encodeURIComponent(plan ? (plan.type === 'LIFETIME' ? 'Lifetime' : `Recurring`) : '')}`
       }
     } catch (error) {
-      console.error('PayOS callback error:', error)
+      this.logger.error('PayOS callback error:', error)
       return failed(
         'system_error',
         this.i18nService.translate(PaymentMessage.ERROR_UNKNOWN_PAY, lang)

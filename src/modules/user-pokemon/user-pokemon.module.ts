@@ -1,6 +1,6 @@
 import { UserCoreModule } from '@/modules/user/user-core.module'
 import { Module } from '@nestjs/common'
-import { SharedModule } from 'src/shared/shared.module'
+import { SharedModule } from '@/shared/shared.module'
 import { LevelModule } from '../level/level.module'
 import { MatchModule } from '../match/match.module'
 import { PokemonModule } from '../pokemon/pokemon.module'

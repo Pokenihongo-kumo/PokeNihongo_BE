@@ -17,14 +17,14 @@ import {
   GetUserSpeakingAttemptListQuery,
   UpdateUserSpeakingAttempt
 } from './dto/speaking.zod-dto'
-import { SpeakingRepository } from './speaking.repo'
+import { SpeakingRepo } from './speaking.repo'
 
 @Injectable()
 export class SpeakingService {
   private readonly logger = new Logger(SpeakingService.name)
 
   constructor(
-    private readonly speakingRepo: SpeakingRepository,
+    private readonly speakingRepo: SpeakingRepo,
     private readonly speechToTextService: SpeechToTextService,
     private readonly textToSpeechService: TextToSpeechService,
     private readonly uploadService: UploadService

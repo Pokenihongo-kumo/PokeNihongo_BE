@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
 import { LessonContentController } from './lesson-content.controller'
 import { LessonContentService } from './lesson-content.service'
-import { LessonContentRepository } from './lesson-content.repo'
+import { LessonContentRepo } from './lesson-content.repo'
 import { SharedModule } from '@/shared/shared.module'
 import { VocabularyModule } from '../vocabulary/vocabulary.module'
 import { GrammarModule } from '../grammar/grammar.module'
@@ -27,7 +27,7 @@ import { ExercisesModule } from '../exercises/exercises.module'
     ExercisesModule
   ],
   controllers: [LessonContentController],
-  providers: [LessonContentService, LessonContentRepository],
-  exports: [LessonContentService, LessonContentRepository]
+  providers: [LessonContentService, LessonContentRepo],
+  exports: [LessonContentService, LessonContentRepo]
 })
 export class LessonContentModule {}

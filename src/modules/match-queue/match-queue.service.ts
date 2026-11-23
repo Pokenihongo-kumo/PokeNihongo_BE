@@ -12,7 +12,7 @@ import { InjectQueue } from '@nestjs/bull'
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { QueueStatus } from '@prisma/client'
 import { Queue } from 'bull'
-import { MatchingGateway } from 'src/websockets/matching.gateway'
+import { MatchingGateway } from '@/websockets/matching.gateway'
 import { NotStartedLeaderboardSeasonException } from '../leaderboard-season/dto/leaderboard-season.error'
 import { LeaderboardSeasonService } from '@/modules/leaderboard-season/leaderboard-season.service'
 import { MatchParticipantService } from '@/modules/match-participant/match-participant.service'
@@ -316,7 +316,6 @@ export class MatchQueueService implements OnModuleInit {
           this.i18nService.translate(MatchQueueMessage.AMOUNT_POKEMON_NEED, lang) +
           ` ${requiredPokemons}`
 
-        console.log(msg)
         throw new UserNotEnoughConditionException(msg)
       }
 

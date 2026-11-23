@@ -8,7 +8,7 @@ import {
 } from './dto/lesson-content.zod-dto'
 
 @Injectable()
-export class LessonContentRepository {
+export class LessonContentRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(params: GetLessonContentListQuery) {

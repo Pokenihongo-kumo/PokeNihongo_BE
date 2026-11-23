@@ -8,10 +8,10 @@ import { Inject, Injectable, Logger } from '@nestjs/common'
 import { createHash, randomBytes } from 'crypto'
 import { google } from 'googleapis'
 import Redis from 'ioredis'
-import { AuthService } from 'src/modules/auth/auth.service'
-import { HashingService } from 'src/shared/services/hashing.service'
+import { AuthService } from '@/modules/auth/auth.service'
+import { HashingService } from '@/shared/services/hashing.service'
 import { v4 as uuidv4 } from 'uuid'
-import { AuthRepository } from './auth.repo'
+import { AuthRepo } from './auth.repo'
 import {
   ExchangeCodeInvalidException,
   GoogleRedirectNotAllowedException,
@@ -48,7 +48,7 @@ export class GoogleService {
   constructor(
     private readonly hashingService: HashingService,
     private readonly authService: AuthService,
-    private readonly authRepository: AuthRepository,
+    private readonly authRepository: AuthRepo,
     private readonly roleService: RoleService,
     private readonly userProgressService: UserProgressService,
     private readonly userTestService: UserTestService,

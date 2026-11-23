@@ -11,7 +11,7 @@ import {
   isUniqueConstraintPrismaError
 } from '@/shared/helpers'
 import { PaginationQuery } from '@/shared/models/request.model'
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { DebuffRoundRepo } from './debuff-round.repo'
 import { DebuffRoundAlreadyExistsException } from './dto/debuff-round.error'
@@ -24,6 +24,8 @@ import {
 
 @Injectable()
 export class DebuffRoundService {
+  private readonly logger = new Logger(DebuffRoundService.name)
+
   constructor(
     private debuffRoundRepo: DebuffRoundRepo,
     private readonly languagesService: LanguagesService,
@@ -101,7 +103,6 @@ export class DebuffRoundService {
     const currentTranslation = ((debuffRound as any).nameTranslations || []).find(
       (t: any) => t.languageId === langId
     )
-    console.log(nameTranslations)
 
     // Remove raw nameTranslations from shopBanner
     const { nameTranslations: _, ...leaderboardWithoutTranslations } = debuffRound as any

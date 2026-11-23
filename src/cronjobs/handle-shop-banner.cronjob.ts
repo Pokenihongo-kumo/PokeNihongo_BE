@@ -3,7 +3,7 @@ import { addDaysUTC0000, todayUTCWith0000 } from '@/shared/helpers'
 import { Injectable, Logger } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { LanguagesService } from '@/modules/languages/languages.service'
-import { ShopItemService } from 'src/modules/shop-item/shop-item.service'
+import { ShopItemService } from '@/modules/shop-item/shop-item.service'
 import { ShopBannerService } from '@/modules/shop-banner/shop-banner.service'
 
 @Injectable()

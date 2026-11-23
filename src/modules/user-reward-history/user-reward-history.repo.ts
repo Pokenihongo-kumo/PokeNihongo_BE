@@ -6,10 +6,10 @@ import {
   GetUserRewardHistoryListQuery,
   UpdateUserRewardHistoryBody
 } from './dto/user-reward-history.zod-dto'
-import { UserRewardHistory } from './entities/user-reward-history.entities'
+import { UserRewardHistory } from './entities/user-reward-history.entity'
 
 @Injectable()
-export class UserRewardHistoryRepository {
+export class UserRewardHistoryRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   private get delegate() {

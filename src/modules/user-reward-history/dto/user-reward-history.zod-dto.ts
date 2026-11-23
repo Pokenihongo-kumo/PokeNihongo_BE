@@ -9,7 +9,7 @@ import {
   RewardTargetSchema,
   UserRewardHistorySchema,
   UserRewardSourceTypeSchema
-} from '../entities/user-reward-history.entities'
+} from '../entities/user-reward-history.entity'
 
 // Page numbers and ids from the query string: whole numbers above 0 (abc and
 // 0 used to become NaN)

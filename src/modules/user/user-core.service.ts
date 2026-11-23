@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { User, WhereUniqueUserType } from 'src/shared/models/shared-user.model'
+import { User, WhereUniqueUserType } from '@/shared/models/shared-user.model'
 import { UserCoreRepo } from './user-core.repo'
 
 // The User table for other modules (module-boundary plan B2, tier 0): reads

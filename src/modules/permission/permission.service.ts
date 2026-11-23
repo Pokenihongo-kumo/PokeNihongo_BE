@@ -1,13 +1,13 @@
 import { PaginationQuery } from '@/shared/models/request.model'
 import { Injectable } from '@nestjs/common'
-import { PermissionAlreadyExistsException } from 'src/modules/permission/permission.error'
+import { PermissionAlreadyExistsException } from '@/modules/permission/permission.error'
 import {
   CreatePermissionBody,
   UpdatePermissionBody
-} from 'src/modules/permission/permission.model'
-import { PermissionRepo } from 'src/modules/permission/permission.repo'
-import { NotFoundRecordException } from 'src/shared/error'
-import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared/helpers'
+} from '@/modules/permission/permission.model'
+import { PermissionRepo } from '@/modules/permission/permission.repo'
+import { NotFoundRecordException } from '@/shared/error'
+import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from '@/shared/helpers'
 
 @Injectable()
 export class PermissionService {

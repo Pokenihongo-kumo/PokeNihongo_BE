@@ -1,5 +1,5 @@
 import { UnprocessableEntityException } from '@nestjs/common'
-import { PermissionMessage } from 'src/i18n/message-keys'
+import { PermissionMessage } from '@/i18n/message-keys'
 
 export class PermissionAlreadyExistsException extends UnprocessableEntityException {
   constructor() {

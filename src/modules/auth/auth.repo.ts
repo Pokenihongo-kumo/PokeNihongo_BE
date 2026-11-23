@@ -1,13 +1,13 @@
 import { UserStatus } from '@/common/constants/auth.constant'
-import { Device, RefreshToken } from '@/modules/auth/entities/auth.entities'
+import { Device, RefreshToken } from '@/modules/auth/entities/auth.entity'
 import { WhereUniqueUserType } from '@/shared/models/shared-user.model'
 import { Injectable } from '@nestjs/common'
-import { Role } from 'src/shared/models/shared-role.model'
-import { User } from 'src/shared/models/shared-user.model'
-import { PrismaService } from 'src/shared/services/prisma.service'
+import { Role } from '@/shared/models/shared-role.model'
+import { User } from '@/shared/models/shared-user.model'
+import { PrismaService } from '@/shared/services/prisma.service'
 
 @Injectable()
-export class AuthRepository {
+export class AuthRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findUniqueUser(where: WhereUniqueUserType): Promise<User | null> {

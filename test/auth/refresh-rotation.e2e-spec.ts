@@ -1,6 +1,6 @@
 import { AppModule } from '@/app.module'
 import { MailService } from '@/modules/mail/mail.service'
-import { AuthRepository } from '@/modules/auth/auth.repo'
+import { AuthRepo } from '@/modules/auth/auth.repo'
 import { PrismaService } from '@/shared/services/prisma.service'
 import { INestApplication, VersioningType } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
@@ -81,7 +81,7 @@ describe('Refresh token rotation (e2e)', () => {
   it('storing the new token fails: the old token stays usable and the answer is not 401', async () => {
     const token = await login()
     // the instance the auth module writes through (modules have their own)
-    const db = (app.get(AuthRepository) as unknown as { prismaService: PrismaService })
+    const db = (app.get(AuthRepo) as unknown as { prismaService: PrismaService })
       .prismaService
     const failure = new Error('DB unavailable (test double)')
     // The rotation may write through the client or through a transaction

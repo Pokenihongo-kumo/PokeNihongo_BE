@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common'
 
 import { parseQs } from '@/common/utils/qs-parser'
 import { PrismaClient, RewardTarget } from '@prisma/client'
-import { PrismaService } from 'src/shared/services/prisma.service'
+import { PrismaService } from '@/shared/services/prisma.service'
 import { CreateTranslationBody } from '../translation/dto/translation.zod-dto'
 import { CreateRewardBody, UpdateRewardBody } from './dto/reward.zod-dto'
 import { REWARD_FIELDS, Reward } from './entities/reward.entity'
